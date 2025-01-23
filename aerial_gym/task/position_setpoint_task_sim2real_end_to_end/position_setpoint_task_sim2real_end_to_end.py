@@ -1,5 +1,6 @@
 from aerial_gym.task.base_task import BaseTask
 from aerial_gym.sim.sim_builder import SimBuilder
+from pytorch3d.transforms import euler_angles_to_matrix, matrix_to_rotation_6d, quaternion_to_matrix, matrix_to_euler_angles
 import torch
 import numpy as np
 
@@ -7,7 +8,6 @@ from aerial_gym.utils.math import *
 
 from aerial_gym.utils.logging import CustomLogger
 
-import gymnasium as gym
 from gym.spaces import Dict, Box
 
 logger = CustomLogger("position_setpoint_task")
@@ -17,7 +17,7 @@ def dict_to_class(dict):
     return type("ClassFromDict", (object,), dict)
 
 
-class PositionSetpointTask(BaseTask):
+class PositionSetpointTaskSim2RealEndToEnd(BaseTask):
     def __init__(
         self, task_config, seed=None, num_envs=None, headless=None, device=None, use_warp=None
     ):
@@ -75,6 +75,10 @@ class PositionSetpointTask(BaseTask):
             requires_grad=False,
         )
         self.prev_actions = torch.zeros_like(self.actions)
+        self.action_history = torch.zeros(
+            (self.sim_env.num_envs, self.task_config.action_space_dim*10), device=self.device, requires_grad=False)
+        #self.action_history[:, 2] = 0.344
+        
         self.counter = 0
 
         self.target_position = torch.zeros(
@@ -88,9 +92,12 @@ class PositionSetpointTask(BaseTask):
         self.terminations = self.obs_dict["crashes"]
         self.truncations = self.obs_dict["truncations"]
         self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
+        self.prev_position = torch.zeros_like(self.obs_dict["robot_position"])
+        
+        self.prev_pos_error = torch.zeros((self.sim_env.num_envs, 3), device=self.device, requires_grad=False)
 
         self.observation_space = Dict(
-            {"observations": Box(low=-1.0, high=1.0, shape=(13,), dtype=np.float32)}
+            {"observations": Box(low=-1.0, high=1.0, shape=(self.task_config.observation_space_dim,), dtype=np.float32)}
         )
         self.action_space = Box(
             low=-1.0,
@@ -101,8 +108,6 @@ class PositionSetpointTask(BaseTask):
         # self.action_transformation_function = self.sim_env.robot_manager.robot.action_transformation_function
 
         self.num_envs = self.sim_env.num_envs
-
-        self.counter = 0
 
         # Currently only the "observations" are sent to the actor and critic.
         # The "priviliged_obs" are not handled so far in sample-factory
@@ -144,26 +149,25 @@ class PositionSetpointTask(BaseTask):
         )
         self.infos = {}
         self.sim_env.reset_idx(env_ids)
+        self.action_history[env_ids] = 0.0
         return
 
     def render(self):
         return None
+    
+    def handle_action_history(self, actions):
+        old_action_history = self.action_history.clone()
+        self.action_history[:, self.task_config.action_space_dim:] = old_action_history[:, :-self.task_config.action_space_dim]
+        self.action_history[:, :self.task_config.action_space_dim] = actions
 
     def step(self, actions):
         self.counter += 1
-        self.prev_actions[:] = self.actions
-        self.actions = actions
-
-        # this uses the action, gets observations
-        # calculates rewards, returns tuples
-        # In this case, the episodes that are terminated need to be
-        # first reset, and the first obseration of the new episode
-        # needs to be returned.
+        self.actions = self.task_config.process_actions_for_task(
+            actions, self.task_config.action_limit_min, self.task_config.action_limit_max
+        )
+        self.prev_position[:] = self.obs_dict["robot_position"].clone()
+        
         self.sim_env.step(actions=self.actions)
-
-        # This step must be done since the reset is done after the reward is calculated.
-        # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
-        # This is important for the RL agent to get the correct state after the reset.
         self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
 
         if self.task_config.return_state_before_reset == True:
@@ -172,12 +176,18 @@ class PositionSetpointTask(BaseTask):
         self.truncations[:] = torch.where(
             self.sim_env.sim_steps > self.task_config.episode_len_steps, 1, 0
         )
-        self.sim_env.post_reward_calculation_step()
+        
+        reset_envs = self.sim_env.post_reward_calculation_step()
+        if len(reset_envs) > 0:
+            self.reset_idx(reset_envs)
 
         self.infos = {}  # self.obs_dict["infos"]
 
         if self.task_config.return_state_before_reset == False:
             return_tuple = self.get_return_tuple()
+            
+        self.prev_actions = self.actions.clone()
+        self.prev_pos_error = self.target_position - self.obs_dict["robot_position"]
 
         return return_tuple
 
@@ -192,40 +202,53 @@ class PositionSetpointTask(BaseTask):
         )
 
     def process_obs_for_task(self):
-        self.task_obs["observations"][:, 0:3] = (
-            self.target_position - self.obs_dict["robot_position"]
-        )
-        self.task_obs["observations"][:, 3:7] = self.obs_dict["robot_orientation"]
-        self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
-        self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
+        sim_with_noise = 1.
+        
+        pos_noise = torch.normal(mean=torch.zeros_like(self.obs_dict["robot_position"]), std=0.001) * sim_with_noise
+        obs_pos_noisy = (self.target_position - self.obs_dict["robot_position"]) + pos_noise
+        
+        or_noise = torch.normal(mean=torch.zeros_like(self.obs_dict["robot_orientation"][:,:3]), std=torch.pi/1032) * sim_with_noise 
+        or_quat = self.obs_dict["robot_orientation"][:,[3, 0, 1, 2]]
+        or_euler = matrix_to_euler_angles(quaternion_to_matrix(or_quat), "ZYX")[:, [2, 1, 0]]
+        obs_or_euler_noisy = or_euler + or_noise
+        
+        lin_vel_noise = torch.normal(mean=torch.zeros_like(self.obs_dict["robot_linvel"]), std=0.002) * sim_with_noise
+        obs_linvel_noisy = self.obs_dict["robot_linvel"] + lin_vel_noise
+        
+        ang_vel_noise = torch.normal(mean=torch.zeros_like(self.obs_dict["robot_body_angvel"]), std=0.001) * sim_with_noise
+        ang_vel_noisy = self.obs_dict["robot_body_angvel"] + ang_vel_noise
+        
+        self.task_obs["observations"][:, 0:3] = obs_pos_noisy
+        or_matr_with_noise = euler_angles_to_matrix(obs_or_euler_noisy[:, [2, 1, 0]], "ZYX")
+        self.task_obs["observations"][:, 3:9] = matrix_to_rotation_6d(or_matr_with_noise) 
+        self.task_obs["observations"][:, 9:12] = obs_linvel_noisy
+        self.task_obs["observations"][:, 12:15] = ang_vel_noisy
+
         self.task_obs["rewards"] = self.rewards
         self.task_obs["terminations"] = self.terminations
         self.task_obs["truncations"] = self.truncations
 
+
     def compute_rewards_and_crashes(self, obs_dict):
         robot_position = obs_dict["robot_position"]
-        target_position = self.target_position
         robot_linvel = obs_dict["robot_linvel"]
-        robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
+        target_position = self.target_position
         robot_orientation = obs_dict["robot_orientation"]
-        target_orientation = torch.zeros_like(robot_orientation, device=self.device)
-        target_orientation[:, 3] = 1.0
         angular_velocity = obs_dict["robot_body_angvel"]
-        root_quats = obs_dict["robot_orientation"]
+        action_input = self.actions
 
-        pos_error_vehicle_frame = quat_apply_inverse(
-            robot_vehicle_orientation, (target_position - robot_position)
-        )
+        pos_error_frame = target_position - robot_position
+        
         return compute_reward(
-            pos_error_vehicle_frame,
+            pos_error_frame,
+            robot_orientation,
             robot_linvel,
-            root_quats,
             angular_velocity,
             obs_dict["crashes"],
-            1.0,  # obs_dict["curriculum_level_multiplier"],
-            self.actions,
+            action_input.clone(),
             self.prev_actions,
-            self.task_config.reward_parameters,
+            self.prev_pos_error,
+            self.task_config.crash_dist
         )
 
 
@@ -241,42 +264,48 @@ def exp_penalty_func(x, gain, exp):
     return gain * (torch.exp(-exp * x * x) - 1)
 
 
-@torch.jit.script
 def compute_reward(
-    pos_error,
-    lin_vels,
-    robot_quats,
-    robot_angvels,
-    crashes,
-    curriculum_level_multiplier,
-    current_action,
-    prev_actions,
-    parameter_dict,
-):
-    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, float, Tensor, Tensor, Dict[str, Tensor]) -> Tuple[Tensor, Tensor]
+                     pos_error, 
+                     quats, 
+                     linvels_err, 
+                     angvels_err, 
+                     crashes, 
+                     action_input,
+                     prev_action, 
+                     prev_pos_error,
+                     crash_dist):
     
-    dist = torch.norm(pos_error, dim=1)
-
-    pos_reward = exp_func(dist, 3.0, 8.0) + exp_func(dist, 2.0, 4.0)
-
-    dist_reward = (20 - dist) / 40.0  
-
-    ups = quat_axis(robot_quats, 2)
-    tiltage = torch.abs(1 - ups[..., 2])
-    up_reward = 0.2 / (0.1 + tiltage * tiltage)
-
-    spinnage = torch.norm(robot_angvels, dim=1)
-    ang_vel_reward = (1.0 / (1.0 + spinnage * spinnage)) * 3
-
-    total_reward = (
-        pos_reward + dist_reward + pos_reward * (up_reward + ang_vel_reward)
-    )
-    total_reward[:] = curriculum_level_multiplier * total_reward
-
-    crashes[:] = torch.where(dist > 8.0, torch.ones_like(crashes), crashes)
-
-    total_reward[:] = torch.where(crashes > 0.0, -20 * torch.ones_like(total_reward), total_reward)
+    target_dist = torch.norm(pos_error[:, :3], dim=1)
     
-    
+    prev_target_dist = torch.norm(prev_pos_error, dim=1)
 
-    return total_reward, crashes
+    pos_error[:,2] = pos_error[:,2]*11. 
+    pos_reward = torch.sum(exp_func(pos_error[:, :3], 10., 10.0), dim=1) + torch.sum(exp_func(pos_error[:, :3], 2.0, 2.0), dim=1)
+
+    ups = quat_axis(quats, 2)
+    tiltage = 1 - ups[..., 2]
+    upright_reward = exp_func(tiltage, 2.5, 5.0)
+    
+    forw = quat_axis(quats, 0)
+    alignment = 1 - forw[..., 0]
+    alignment_reward = exp_func(alignment, 6., 5.0)
+
+    angvel_reward = torch.sum(exp_func(angvels_err, .3 , 10.0), dim=1)
+    vel_reward = torch.sum(exp_func(linvels_err, 1., 5.0), dim=1)
+    
+    action_input_offset = action_input - 9.81 * 0.372/4
+    action_cost = torch.sum(exp_penalty_func(action_input_offset, 0.01, 10.0), dim=1)
+    
+    closer_by_dist = prev_target_dist - target_dist 
+    towards_goal_reward = torch.where(closer_by_dist >= 0, 10*closer_by_dist, 15*closer_by_dist)
+
+    action_difference = action_input - prev_action
+    action_difference_penalty = torch.sum(exp_penalty_func(action_difference, 1.3, 6.0), dim=1)
+
+    reward = towards_goal_reward + (pos_reward * (alignment_reward + vel_reward + angvel_reward + action_difference_penalty) + (angvel_reward + vel_reward + upright_reward + pos_reward + action_cost)) / 100.0
+      
+    crashes[:] = torch.where(target_dist > crash_dist, torch.ones_like(crashes), crashes)
+    
+    return reward, crashes
+
+
