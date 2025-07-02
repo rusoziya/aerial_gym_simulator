@@ -10,11 +10,23 @@ import torch
 class DCE_RL_Navigation_Task(NavigationTask):
     def __init__(self, task_config, **kwargs):
         task_config.action_space_dim = 3
-        task_config.curriculum.min_level = 36
+        task_config.curriculum.min_level = 30  # DCE curriculum starts from level 30
+        task_config.curriculum.max_level = 50
         
-        # Enable visualization by default for DCE navigation training
-        task_config.headless = False
-        logger.info(f"DCE Navigation Task - Headless mode: {task_config.headless}")
+        # Handle headless setting from Sample Factory command line parameters
+        # Check if Sample Factory passed headless setting via environment or direct config
+        import os
+        sf_headless = os.environ.get('SF_HEADLESS', None)
+        if sf_headless is not None:
+            task_config.headless = sf_headless.lower() == 'true'
+            logger.info(f"DCE Navigation Task - Using SF_HEADLESS environment variable: {task_config.headless}")
+        elif not hasattr(task_config, 'headless') or task_config.headless is None:
+            task_config.headless = False  # Default to visualization enabled
+            logger.info(f"DCE Navigation Task - Using default headless=False for visualization")
+        else:
+            logger.info(f"DCE Navigation Task - Using pre-configured headless: {task_config.headless}")
+        
+        logger.info(f"DCE Navigation Task - Final headless mode: {task_config.headless}")
         
         # Check for Sample Factory env_agents parameter to force specific environment count  
         # This handles rollout worker subprocesses that don't go through registration
@@ -32,11 +44,8 @@ class DCE_RL_Navigation_Task(NavigationTask):
         if env_agents_override is not None and env_agents_override > 0:
             logger.info(f"Detected env_agents={env_agents_override} from environment - setting environment count.")
             task_config.num_envs = env_agents_override
-        elif task_config.num_envs <= 16:
-            logger.info(f"Using {task_config.num_envs} environments as configured.")
         else:
-            logger.critical("Hardcoding number of envs to 16 if it is greater than that.")
-            task_config.num_envs = 16
+            logger.info(f"Using {task_config.num_envs} environments as configured.")
             
         super().__init__(task_config=task_config, **kwargs)
 
