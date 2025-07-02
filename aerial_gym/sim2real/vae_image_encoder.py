@@ -35,9 +35,29 @@ class VAEImageEncoder:
         Class to encode the set of images to a latent space. We can return both the means and sampled latent space variables.
         """
         with torch.no_grad():
-            # need to squeeze 0th dimension and unsqueeze 1st dimension to make it work with the VAE
-            image_tensors = image_tensors.squeeze(0).unsqueeze(1)
-            x_res, y_res = image_tensors.shape[-2], image_tensors.shape[-1]
+            # Handle different input tensor shapes more robustly
+            original_shape = image_tensors.shape
+            
+            # If the tensor is 3D [batch, height, width], add channel dimension
+            if len(original_shape) == 3:
+                image_tensors = image_tensors.unsqueeze(1)  # Add channel dimension
+            # If the tensor is 2D [height, width], add batch and channel dimensions
+            elif len(original_shape) == 2:
+                image_tensors = image_tensors.unsqueeze(0).unsqueeze(0)
+            # If the tensor is already 4D [batch, channel, height, width], use as is
+            elif len(original_shape) == 4:
+                pass
+            else:
+                raise ValueError(f"Unexpected tensor shape: {original_shape}. Expected 2D, 3D, or 4D tensor.")
+            
+            # Ensure we have the expected dimensions: [batch, channels, height, width]
+            if len(image_tensors.shape) != 4:
+                raise ValueError(f"After processing, expected 4D tensor, got shape: {image_tensors.shape}")
+            
+            # Get actual image dimensions
+            batch_size, channels, x_res, y_res = image_tensors.shape
+            
+            # Check if we need to interpolate to match expected resolution
             if self.config.image_res != (x_res, y_res):
                 interpolated_image = torch.nn.functional.interpolate(
                     image_tensors,
@@ -46,6 +66,7 @@ class VAEImageEncoder:
                 )
             else:
                 interpolated_image = image_tensors
+            
             z_sampled, means, *_ = self.vae_model.encode(interpolated_image)
         if self.config.return_sampled_latent:
             returned_val = z_sampled

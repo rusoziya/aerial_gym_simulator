@@ -174,3 +174,83 @@ class LMF2Cfg:
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.07
             use_discrete_approximation = True  # use discrete approximation for motor dynamics
+
+
+# Configuration for Drone 1 (positioned at -2, 0, 1.5)
+class LMF2Drone1Cfg(LMF2Cfg):
+    class init_config(LMF2Cfg.init_config):
+        # Position drone 1 at (-2, 0, 1.5) - left side of center
+        min_init_state = [
+            0.3,  # ratio_x: -2.0 in [-5, 5] range = ((-2 + 5) / 10) = 0.3
+            0.5,  # ratio_y: 0.0 in [-5, 5] range = ((0 + 5) / 10) = 0.5 
+            0.625,  # ratio_z: 1.5 in [-1, 3] range = ((1.5 + 1) / 4) = 0.625
+            0,  # no rotation
+            0,  # no rotation 
+            0,  # no rotation
+            1.0,
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+        ]
+        max_init_state = [
+            0.3,  # same as min for fixed position
+            0.5,  # same as min for fixed position
+            0.625,  # same as min for fixed position
+            0,  # no rotation
+            0,  # no rotation
+            0,  # no rotation
+            1.0,
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+        ]
+    
+    class robot_asset(LMF2Cfg.robot_asset):
+        name = "drone_1"  # unique name for first drone
+        semantic_id = 1  # different semantic ID for identification
+
+
+# Configuration for Drone 2 (positioned at 2, 0, 1.5)
+class LMF2Drone2Cfg(LMF2Cfg):
+    class init_config(LMF2Cfg.init_config):
+        # Position drone 2 at (2, 0, 1.5) - right side of center
+        min_init_state = [
+            0.7,  # ratio_x: 2.0 in [-5, 5] range = ((2 + 5) / 10) = 0.7
+            0.5,  # ratio_y: 0.0 in [-5, 5] range = ((0 + 5) / 10) = 0.5
+            0.625,  # ratio_z: 1.5 in [-1, 3] range = ((1.5 + 1) / 4) = 0.625
+            0,  # no rotation
+            0,  # no rotation
+            0,  # no rotation
+            1.0,
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+        ]
+        max_init_state = [
+            0.7,  # same as min for fixed position
+            0.5,  # same as min for fixed position
+            0.625,  # same as min for fixed position
+            0,  # no rotation
+            0,  # no rotation
+            0,  # no rotation
+            1.0,
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+            0,  # no angular velocity
+        ]
+    
+    class robot_asset(LMF2Cfg.robot_asset):
+        name = "drone_2"  # unique name for second drone
+        semantic_id = 2  # different semantic ID for identification

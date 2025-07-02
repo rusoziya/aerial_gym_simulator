@@ -192,6 +192,26 @@ env_configs = dict(
         wandb_project="quad",
         wandb_user="mihirkulkarni",
     ),
+    n_drone_navigation_task=dict(
+        train_for_env_steps=10000000,
+        encoder_mlp_layers=[512, 256, 128],
+        use_rnn=True,
+        rnn_num_layers=1,
+        rnn_size=512,
+        rnn_type="gru",
+        gamma=0.98,
+        rollout=32,
+        learning_rate=0.0003,
+        lr_schedule_kl_threshold=0.016,
+        batch_size=2048,
+        num_epochs=1,
+        max_grad_norm=4.0,
+        num_batches_per_epoch=4,
+        exploration_loss_coeff=0.001,
+        with_wandb=False,
+        wandb_project="n_drone_navigation",
+        wandb_user="aerial_gym",
+    ),
 )
 
 

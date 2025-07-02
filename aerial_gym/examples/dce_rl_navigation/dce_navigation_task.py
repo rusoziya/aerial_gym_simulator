@@ -11,8 +11,33 @@ class DCE_RL_Navigation_Task(NavigationTask):
     def __init__(self, task_config, **kwargs):
         task_config.action_space_dim = 3
         task_config.curriculum.min_level = 36
-        logger.critical("Hardcoding number of envs to 16 if it is greater than that.")
-        task_config.num_envs = 16 if task_config.num_envs > 16 else task_config.num_envs
+        
+        # Enable visualization by default for DCE navigation training
+        task_config.headless = False
+        logger.info(f"DCE Navigation Task - Headless mode: {task_config.headless}")
+        
+        # Check for Sample Factory env_agents parameter to force specific environment count  
+        # This handles rollout worker subprocesses that don't go through registration
+        env_agents_override = None
+        try:
+            # Try to access the global Sample Factory config if available
+            import os
+            if 'SF_ENV_AGENTS' in os.environ:
+                env_agents_override = int(os.environ['SF_ENV_AGENTS'])
+                logger.info(f"Found SF_ENV_AGENTS environment variable: {env_agents_override}")
+        except:
+            pass
+        
+        # Force specific environment count if env_agents is specified
+        if env_agents_override is not None and env_agents_override > 0:
+            logger.info(f"Detected env_agents={env_agents_override} from environment - setting environment count.")
+            task_config.num_envs = env_agents_override
+        elif task_config.num_envs <= 16:
+            logger.info(f"Using {task_config.num_envs} environments as configured.")
+        else:
+            logger.critical("Hardcoding number of envs to 16 if it is greater than that.")
+            task_config.num_envs = 16
+            
         super().__init__(task_config=task_config, **kwargs)
 
     # just changing how the observations are returned for the code to work
