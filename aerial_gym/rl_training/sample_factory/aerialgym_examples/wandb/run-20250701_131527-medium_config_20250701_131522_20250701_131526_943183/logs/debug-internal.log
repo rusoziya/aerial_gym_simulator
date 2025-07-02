@@ -1,0 +1,175 @@
+2025-07-01 13:15:27,799 INFO    MainThread:82840 [internal.py:wandb_internal():90] W&B internal server running at pid: 82840, started at: 2025-07-01 13:15:27.798944
+2025-07-01 13:15:27,804 DEBUG   SenderThread:82840 [sender.py:send():236] send: header
+2025-07-01 13:15:27,805 INFO    WriterThread:82840 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/run-medium_config_20250701_131522_20250701_131526_943183.wandb
+2025-07-01 13:15:27,841 DEBUG   SenderThread:82840 [sender.py:send():236] send: run
+2025-07-01 13:15:27,845 INFO    SenderThread:82840 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso-ucl/vae_rl_navigation/medium_config_20250701_131522_20250701_131526_943183
+2025-07-01 13:15:28,386 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: check_version
+2025-07-01 13:15:28,387 INFO    SenderThread:82840 [dir_watcher.py:__init__():216] watching files in: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files
+2025-07-01 13:15:28,387 INFO    SenderThread:82840 [sender.py:_start_run_threads():815] run started: medium_config_20250701_131522_20250701_131526_943183 with start time 1751372127
+2025-07-01 13:15:28,387 DEBUG   SenderThread:82840 [sender.py:send():236] send: summary
+2025-07-01 13:15:28,388 INFO    SenderThread:82840 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-01 13:15:28,388 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: check_version
+2025-07-01 13:15:28,432 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: run_start
+2025-07-01 13:15:28,442 DEBUG   HandlerThread:82840 [meta.py:__init__():35] meta init
+2025-07-01 13:15:28,442 DEBUG   HandlerThread:82840 [meta.py:__init__():49] meta init done
+2025-07-01 13:15:28,442 DEBUG   HandlerThread:82840 [meta.py:probe():209] probe
+2025-07-01 13:15:28,448 DEBUG   HandlerThread:82840 [meta.py:_setup_git():199] setup git
+2025-07-01 13:15:28,513 DEBUG   HandlerThread:82840 [meta.py:_setup_git():206] setup git done
+2025-07-01 13:15:28,513 DEBUG   HandlerThread:82840 [meta.py:_save_pip():53] save pip
+2025-07-01 13:15:28,514 DEBUG   HandlerThread:82840 [meta.py:_save_pip():67] save pip done
+2025-07-01 13:15:28,514 DEBUG   HandlerThread:82840 [meta.py:_save_conda():74] save conda
+2025-07-01 13:15:29,389 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/requirements.txt
+2025-07-01 13:15:29,390 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/conda-environment.yaml
+2025-07-01 13:15:29,390 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/wandb-summary.json
+2025-07-01 13:15:29,584 DEBUG   HandlerThread:82840 [meta.py:_save_conda():84] save conda done
+2025-07-01 13:15:29,584 DEBUG   HandlerThread:82840 [meta.py:probe():247] probe done
+2025-07-01 13:15:29,587 DEBUG   SenderThread:82840 [sender.py:send():236] send: files
+2025-07-01 13:15:29,587 INFO    SenderThread:82840 [sender.py:_save_file():952] saving file wandb-metadata.json with policy now
+2025-07-01 13:15:29,592 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: stop_status
+2025-07-01 13:15:29,593 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: stop_status
+2025-07-01 13:15:29,603 INFO    HandlerThread:82840 [handler.py:handle_tbrecord():723] handling tbrecord: tbrecord {
+  log_dir: "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/train_dir/medium_config_20250701_131522/.summary/0"
+  save: true
+}
+
+2025-07-01 13:15:29,604 DEBUG   HandlerThread:82840 [config_util.py:dict_from_config_file():100] no default config file found in config-defaults.yaml
+2025-07-01 13:15:29,832 DEBUG   SenderThread:82840 [sender.py:send():236] send: telemetry
+2025-07-01 13:15:29,832 DEBUG   SenderThread:82840 [sender.py:send():236] send: config
+2025-07-01 13:15:29,833 DEBUG   SenderThread:82840 [sender.py:send():236] send: tbrecord
+2025-07-01 13:15:29,833 DEBUG   SenderThread:82840 [sender.py:send():236] send: files
+2025-07-01 13:15:29,833 INFO    SenderThread:82840 [sender.py:_save_file():952] saving file events.out.tfevents.1751372129.ziyar with policy live
+2025-07-01 13:15:30,025 INFO    Thread-12 :82840 [upload_job.py:push():138] Uploaded file /tmp/tmpkszwof33wandb/hqo2657b-wandb-metadata.json
+2025-07-01 13:15:30,387 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/conda-environment.yaml
+2025-07-01 13:15:30,387 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/events.out.tfevents.1751372129.ziyar
+2025-07-01 13:15:30,388 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/wandb-metadata.json
+2025-07-01 13:15:30,388 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:32,388 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:34,389 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:36,390 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:38,391 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:39,389 DEBUG   SenderThread:82840 [sender.py:send():236] send: telemetry
+2025-07-01 13:15:39,391 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/events.out.tfevents.1751372129.ziyar
+2025-07-01 13:15:39,921 INFO    Thread-15 :82840 [upload_job.py:push():138] Uploaded file /tmp/tmpkszwof33wandb/ub5oggrg-events.out.tfevents.1751372129.ziyar
+2025-07-01 13:15:40,392 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:41,417 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:41,417 DEBUG   SenderThread:82840 [sender.py:send():236] send: exit
+2025-07-01 13:15:41,417 INFO    SenderThread:82840 [sender.py:send_exit():372] handling exit code: 0
+2025-07-01 13:15:41,417 INFO    SenderThread:82840 [sender.py:send_exit():374] handling runtime: 12
+2025-07-01 13:15:41,418 INFO    SenderThread:82840 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-01 13:15:41,418 INFO    SenderThread:82840 [sender.py:send_exit():380] send defer
+2025-07-01 13:15:41,418 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:41,419 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:41,419 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 0
+2025-07-01 13:15:41,419 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:41,419 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 0
+2025-07-01 13:15:41,419 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 1
+2025-07-01 13:15:41,420 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:41,420 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 1
+2025-07-01 13:15:41,488 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:41,488 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 1
+2025-07-01 13:15:41,488 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 2
+2025-07-01 13:15:41,489 DEBUG   SenderThread:82840 [sender.py:send():236] send: stats
+2025-07-01 13:15:41,490 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:41,490 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 2
+2025-07-01 13:15:41,491 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:41,491 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 2
+2025-07-01 13:15:41,491 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 3
+2025-07-01 13:15:41,492 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:41,492 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 3
+2025-07-01 13:15:42,393 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:42,393 INFO    Thread-8  :82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/wandb-summary.json
+2025-07-01 13:15:47,609 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:47,609 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:47,609 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 3
+2025-07-01 13:15:47,610 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:47,610 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 4
+2025-07-01 13:15:47,610 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:47,611 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:47,612 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:47,612 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 4
+2025-07-01 13:15:47,612 DEBUG   SenderThread:82840 [sender.py:send():236] send: summary
+2025-07-01 13:15:47,617 INFO    SenderThread:82840 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-01 13:15:47,617 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:47,617 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 4
+2025-07-01 13:15:47,617 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 5
+2025-07-01 13:15:47,618 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:47,619 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 5
+2025-07-01 13:15:47,619 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:47,619 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 5
+2025-07-01 13:15:47,713 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:47,831 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 6
+2025-07-01 13:15:47,831 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:47,832 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:47,832 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 6
+2025-07-01 13:15:47,832 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:47,832 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 6
+2025-07-01 13:15:47,832 INFO    SenderThread:82840 [dir_watcher.py:finish():353] shutting down directory watcher
+2025-07-01 13:15:47,933 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:48,396 INFO    SenderThread:82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/wandb-summary.json
+2025-07-01 13:15:48,396 INFO    SenderThread:82840 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/config.yaml
+2025-07-01 13:15:48,397 INFO    SenderThread:82840 [dir_watcher.py:finish():383] scan: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files
+2025-07-01 13:15:48,397 INFO    SenderThread:82840 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/events.out.tfevents.1751372129.ziyar events.out.tfevents.1751372129.ziyar
+2025-07-01 13:15:48,397 INFO    SenderThread:82840 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/conda-environment.yaml conda-environment.yaml
+2025-07-01 13:15:48,398 INFO    SenderThread:82840 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/requirements.txt requirements.txt
+2025-07-01 13:15:48,398 INFO    SenderThread:82840 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/wandb-summary.json wandb-summary.json
+2025-07-01 13:15:48,399 INFO    SenderThread:82840 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/config.yaml config.yaml
+2025-07-01 13:15:48,410 INFO    SenderThread:82840 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log output.log
+2025-07-01 13:15:48,420 INFO    SenderThread:82840 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/wandb-metadata.json wandb-metadata.json
+2025-07-01 13:15:48,421 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 7
+2025-07-01 13:15:48,421 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:48,422 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:48,422 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 7
+2025-07-01 13:15:48,422 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:48,422 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 7
+2025-07-01 13:15:48,427 INFO    SenderThread:82840 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-01 13:15:48,523 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:48,524 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:48,627 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:48,627 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:48,739 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:48,739 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:48,852 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:48,853 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:48,955 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:48,956 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:49,032 INFO    Thread-17 :82840 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/requirements.txt
+2025-07-01 13:15:49,046 INFO    Thread-18 :82840 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/wandb-summary.json
+2025-07-01 13:15:49,046 INFO    Thread-19 :82840 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/config.yaml
+2025-07-01 13:15:49,048 INFO    Thread-16 :82840 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/conda-environment.yaml
+2025-07-01 13:15:49,058 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:49,058 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:49,103 INFO    Thread-20 :82840 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/files/output.log
+2025-07-01 13:15:49,160 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:49,161 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:49,262 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:49,263 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:49,304 INFO    Thread-7  :82840 [sender.py:transition_state():393] send defer: 8
+2025-07-01 13:15:49,304 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:49,304 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 8
+2025-07-01 13:15:49,305 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:49,305 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 8
+2025-07-01 13:15:49,365 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:49,433 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 9
+2025-07-01 13:15:49,434 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:49,434 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:49,435 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 9
+2025-07-01 13:15:49,435 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:49,435 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 9
+2025-07-01 13:15:49,435 INFO    SenderThread:82840 [sender.py:transition_state():393] send defer: 10
+2025-07-01 13:15:49,437 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: defer
+2025-07-01 13:15:49,437 DEBUG   SenderThread:82840 [sender.py:send():236] send: final
+2025-07-01 13:15:49,437 INFO    HandlerThread:82840 [handler.py:handle_request_defer():163] handle defer: 10
+2025-07-01 13:15:49,438 DEBUG   SenderThread:82840 [sender.py:send():236] send: footer
+2025-07-01 13:15:49,438 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: defer
+2025-07-01 13:15:49,439 INFO    SenderThread:82840 [sender.py:send_request_defer():389] handle sender defer: 10
+2025-07-01 13:15:49,536 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-01 13:15:49,537 DEBUG   SenderThread:82840 [sender.py:send_request():250] send_request: poll_exit
+2025-07-01 13:15:49,537 INFO    SenderThread:82840 [file_pusher.py:join():176] waiting for file pusher
+2025-07-01 13:15:49,955 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: sampled_history
+2025-07-01 13:15:49,957 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: get_summary
+2025-07-01 13:15:49,958 DEBUG   HandlerThread:82840 [handler.py:handle_request():140] handle_request: shutdown
+2025-07-01 13:15:49,958 INFO    HandlerThread:82840 [handler.py:finish():806] shutting down handler
+2025-07-01 13:15:50,437 INFO    WriterThread:82840 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250701_131527-medium_config_20250701_131522_20250701_131526_943183/run-medium_config_20250701_131522_20250701_131526_943183.wandb
+2025-07-01 13:15:50,853 INFO    SenderThread:82840 [sender.py:finish():1114] shutting down sender
+2025-07-01 13:15:50,854 INFO    SenderThread:82840 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-01 13:15:50,854 INFO    SenderThread:82840 [file_pusher.py:join():176] waiting for file pusher

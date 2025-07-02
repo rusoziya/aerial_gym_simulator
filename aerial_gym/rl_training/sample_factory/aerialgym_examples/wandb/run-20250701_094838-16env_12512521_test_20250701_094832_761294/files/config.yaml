@@ -1,0 +1,421 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.12.21
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.8.19
+    start_time: 1751359718
+    t:
+      1:
+      - 1
+      - 55
+      2:
+      - 1
+      - 55
+      3:
+      - 13
+      - 14
+      - 15
+      - 35
+      4: 3.8.19
+      5: 0.12.21
+      8:
+      - 6
+actor_critic_share_weights:
+  desc: null
+  value: true
+actor_worker_gpus:
+  desc: null
+  value:
+  - 0
+adam_beta1:
+  desc: null
+  value: 0.9
+adam_beta2:
+  desc: null
+  value: 0.999
+adam_eps:
+  desc: null
+  value: 1.0e-06
+adaptive_stddev:
+  desc: null
+  value: true
+algo:
+  desc: null
+  value: APPO
+async_rl:
+  desc: null
+  value: true
+batch_size:
+  desc: null
+  value: 2048
+batched_sampling:
+  desc: null
+  value: true
+benchmark:
+  desc: null
+  value: false
+cli_args:
+  desc: null
+  value:
+    async_rl: true
+    env: quad_with_obstacles
+    experiment: 16env_12512521_test
+    normalize_input: true
+    train_for_env_steps: 100000000
+    use_env_info_cache: false
+command_line:
+  desc: null
+  value: --env=quad_with_obstacles --train_for_env_steps=100000000 --experiment=16env_12512521_test
+    --async_rl=True --use_env_info_cache=False --normalize_input=True
+continuous_tanh_scale:
+  desc: null
+  value: 0.0
+decoder_mlp_layers:
+  desc: null
+  value: []
+decorrelate_envs_on_one_worker:
+  desc: null
+  value: true
+decorrelate_experience_max_seconds:
+  desc: null
+  value: 0
+default_niceness:
+  desc: null
+  value: 0
+device:
+  desc: null
+  value: gpu
+encoder_conv_architecture:
+  desc: null
+  value: convnet_simple
+encoder_conv_mlp_layers:
+  desc: null
+  value:
+  - 512
+encoder_mlp_layers:
+  desc: null
+  value:
+  - 512
+  - 256
+  - 64
+env:
+  desc: null
+  value: quad_with_obstacles
+env_agents:
+  desc: null
+  value: -1
+env_frameskip:
+  desc: null
+  value: 1
+env_framestack:
+  desc: null
+  value: 1
+env_gpu_actions:
+  desc: null
+  value: true
+env_gpu_observations:
+  desc: null
+  value: true
+eval_stats:
+  desc: null
+  value: false
+experiment:
+  desc: null
+  value: 16env_12512521_test
+experiment_summaries_interval:
+  desc: null
+  value: 10
+exploration_loss:
+  desc: null
+  value: entropy
+exploration_loss_coeff:
+  desc: null
+  value: 0.001
+flush_summaries_interval:
+  desc: null
+  value: 30
+force_envs_single_thread:
+  desc: null
+  value: false
+gae_lambda:
+  desc: null
+  value: 0.95
+gamma:
+  desc: null
+  value: 0.98
+git_hash:
+  desc: null
+  value: 7f35eed17f2afcde33e3a7aec669b48e9e8e34cd
+git_repo_name:
+  desc: null
+  value: https://github.com/ntnu-arl/aerial_gym_simulator.git
+heartbeat_interval:
+  desc: null
+  value: 20
+heartbeat_reporting_interval:
+  desc: null
+  value: 180
+help:
+  desc: null
+  value: false
+ige_api_version:
+  desc: null
+  value: preview4
+initial_stddev:
+  desc: null
+  value: 1.0
+keep_checkpoints:
+  desc: null
+  value: 2
+kl_loss_coeff:
+  desc: null
+  value: 0.1
+learning_rate:
+  desc: null
+  value: 0.0003
+load_checkpoint_kind:
+  desc: null
+  value: latest
+log_to_file:
+  desc: null
+  value: true
+lr_adaptive_max:
+  desc: null
+  value: 0.01
+lr_adaptive_min:
+  desc: null
+  value: 1.0e-06
+lr_schedule:
+  desc: null
+  value: kl_adaptive_epoch
+lr_schedule_kl_threshold:
+  desc: null
+  value: 0.016
+max_grad_norm:
+  desc: null
+  value: 1.0
+max_policy_lag:
+  desc: null
+  value: 1000
+nonlinearity:
+  desc: null
+  value: elu
+normalize_input:
+  desc: null
+  value: true
+normalize_input_keys:
+  desc: null
+  value: null
+normalize_returns:
+  desc: null
+  value: true
+num_batches_per_epoch:
+  desc: null
+  value: 8
+num_batches_to_accumulate:
+  desc: null
+  value: 2
+num_envs_per_worker:
+  desc: null
+  value: 16
+num_epochs:
+  desc: null
+  value: 4
+num_policies:
+  desc: null
+  value: 1
+num_workers:
+  desc: null
+  value: 1
+obs_key:
+  desc: null
+  value: obs
+obs_scale:
+  desc: null
+  value: 1.0
+obs_subtract_mean:
+  desc: null
+  value: 0.0
+optimizer:
+  desc: null
+  value: adam
+pbt_mix_policies_in_one_env:
+  desc: null
+  value: true
+pbt_mutation_rate:
+  desc: null
+  value: 0.15
+pbt_optimize_gamma:
+  desc: null
+  value: false
+pbt_period_env_steps:
+  desc: null
+  value: 5000000
+pbt_perturb_max:
+  desc: null
+  value: 1.5
+pbt_perturb_min:
+  desc: null
+  value: 1.1
+pbt_replace_fraction:
+  desc: null
+  value: 0.3
+pbt_replace_reward_gap:
+  desc: null
+  value: 0.1
+pbt_replace_reward_gap_absolute:
+  desc: null
+  value: 1.0e-06
+pbt_start_mutation:
+  desc: null
+  value: 20000000
+pbt_target_objective:
+  desc: null
+  value: true_objective
+pixel_format:
+  desc: null
+  value: CHW
+policy_init_gain:
+  desc: null
+  value: 1.0
+policy_initialization:
+  desc: null
+  value: torch_default
+policy_workers_per_policy:
+  desc: null
+  value: 1
+ppo_clip_ratio:
+  desc: null
+  value: 0.2
+ppo_clip_value:
+  desc: null
+  value: 1.0
+recurrence:
+  desc: null
+  value: 32
+restart_behavior:
+  desc: null
+  value: resume
+reward_clip:
+  desc: null
+  value: 1000.0
+reward_scale:
+  desc: null
+  value: 0.1
+rnn_num_layers:
+  desc: null
+  value: 1
+rnn_size:
+  desc: null
+  value: 64
+rnn_type:
+  desc: null
+  value: gru
+rollout:
+  desc: null
+  value: 32
+save_best_after:
+  desc: null
+  value: 5000000
+save_best_every_sec:
+  desc: null
+  value: 5
+save_best_metric:
+  desc: null
+  value: reward
+save_every_sec:
+  desc: null
+  value: 120
+save_milestones_sec:
+  desc: null
+  value: -1
+seed:
+  desc: null
+  value: null
+serial_mode:
+  desc: null
+  value: true
+set_workers_cpu_affinity:
+  desc: null
+  value: true
+shuffle_minibatches:
+  desc: null
+  value: false
+stats_avg:
+  desc: null
+  value: 100
+subtask:
+  desc: null
+  value: null
+summaries_use_frameskip:
+  desc: null
+  value: true
+train_dir:
+  desc: null
+  value: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/train_dir
+train_for_env_steps:
+  desc: null
+  value: 100000000
+train_for_seconds:
+  desc: null
+  value: 10000000000
+use_env_info_cache:
+  desc: null
+  value: false
+use_record_episode_statistics:
+  desc: null
+  value: true
+use_rnn:
+  desc: null
+  value: true
+value_bootstrap:
+  desc: null
+  value: true
+value_loss_coeff:
+  desc: null
+  value: 2.0
+vtrace_c:
+  desc: null
+  value: 1.0
+vtrace_rho:
+  desc: null
+  value: 1.0
+wandb_group:
+  desc: null
+  value: dce_navigation_training
+wandb_job_type:
+  desc: null
+  value: SF
+wandb_project:
+  desc: null
+  value: vae_rl_navigation
+wandb_tags:
+  desc: null
+  value:
+  - aerial_gym
+  - dce
+  - navigation
+  - sample_factory
+wandb_unique_id:
+  desc: null
+  value: 16env_12512521_test_20250701_094832_761294
+wandb_user:
+  desc: null
+  value: ziya-ruso-ucl
+with_pbt:
+  desc: null
+  value: false
+with_vtrace:
+  desc: null
+  value: false
+with_wandb:
+  desc: null
+  value: true
+worker_num_splits:
+  desc: null
+  value: 1

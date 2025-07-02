@@ -1,0 +1,11 @@
+*.pyc
+runs/
+*.npz
+*.pt
+*.tfevents*
+*.egg-info/
+
+*/__pycache__/
+nn/
+
+train_dir/

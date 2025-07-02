@@ -1,0 +1,98 @@
+2025-06-29 11:25:37,028 INFO    MainThread:56546 [wandb_setup.py:_flush():76] Configure stats pid to 56546
+2025-06-29 11:25:37,028 INFO    MainThread:56546 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/.config/wandb/settings
+2025-06-29 11:25:37,028 INFO    MainThread:56546 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/settings
+2025-06-29 11:25:37,028 INFO    MainThread:56546 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2025-06-29 11:25:37,028 INFO    MainThread:56546 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net.py', 'program': 'train_aerialgym_custom_net.py'}
+2025-06-29 11:25:37,028 INFO    MainThread:56546 [wandb_init.py:_log_setup():461] Logging user logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250629_112537-4_envs_wandb_training_20250629_112536_077221/logs/debug.log
+2025-06-29 11:25:37,029 INFO    MainThread:56546 [wandb_init.py:_log_setup():462] Logging internal logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250629_112537-4_envs_wandb_training_20250629_112536_077221/logs/debug-internal.log
+2025-06-29 11:25:37,029 INFO    MainThread:56546 [wandb_init.py:init():495] calling init triggers
+2025-06-29 11:25:37,029 INFO    MainThread:56546 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {}
+2025-06-29 11:25:37,030 INFO    MainThread:56546 [wandb_init.py:init():548] starting backend
+2025-06-29 11:25:37,030 INFO    MainThread:56546 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: fork
+2025-06-29 11:25:37,037 INFO    MainThread:56546 [backend.py:ensure_launched():217] starting backend process...
+2025-06-29 11:25:37,054 INFO    MainThread:56546 [backend.py:ensure_launched():222] started backend process with pid: 56614
+2025-06-29 11:25:37,055 INFO    MainThread:56546 [wandb_init.py:init():558] backend started and connected
+2025-06-29 11:25:37,061 INFO    MainThread:56614 [internal.py:wandb_internal():90] W&B internal server running at pid: 56614, started at: 2025-06-29 11:25:37.059886
+2025-06-29 11:25:37,062 INFO    MainThread:56546 [wandb_init.py:init():634] updated telemetry
+2025-06-29 11:25:37,065 INFO    WriterThread:56614 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250629_112537-4_envs_wandb_training_20250629_112536_077221/run-4_envs_wandb_training_20250629_112536_077221.wandb
+2025-06-29 11:25:37,108 INFO    MainThread:56546 [wandb_init.py:init():665] communicating run to backend with 30 second timeout
+2025-06-29 11:25:37,116 INFO    SenderThread:56614 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso/aerialgym/4_envs_wandb_training_20250629_112536_077221
+2025-06-29 11:25:37,429 ERROR   SenderThread:56614 [internal_api.py:execute():161] 403 response executing GraphQL.
+2025-06-29 11:25:37,430 ERROR   SenderThread:56614 [internal_api.py:execute():162] {"errors":[{"message":"permission denied","path":["upsertBucket"],"extensions":{"code":"PERMISSION_ERROR"}}],"data":{"upsertBucket":null}}
+2025-06-29 11:25:38,112 INFO    HandlerThread:56614 [handler.py:finish():806] shutting down handler
+2025-06-29 11:25:38,113 INFO    WriterThread:56614 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250629_112537-4_envs_wandb_training_20250629_112536_077221/run-4_envs_wandb_training_20250629_112536_077221.wandb
+2025-06-29 11:25:38,113 ERROR   MainThread:56614 [internal.py:wandb_internal():165] Thread SenderThread:
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/lib/retry.py", line 108, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/internal_api.py", line 158, in execute
+    return self.client.execute(*args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/transport/requests.py", line 39, in execute
+    request.raise_for_status()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://api.wandb.ai/graphql
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/apis/normalize.py", line 25, in wrapper
+    return func(*args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/internal_api.py", line 1341, in upsert_run
+    response = self.gql(mutation, variable_values=variable_values, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/lib/retry.py", line 124, in __call__
+    if not check_retry_fn(e):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/util.py", line 887, in no_retry_auth
+    raise CommError("Permission denied, ask the project owner to grant you access")
+wandb.errors.CommError: Permission denied, ask the project owner to grant you access
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/internal_util.py", line 51, in run
+    self._run()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/internal_util.py", line 102, in _run
+    self._process(record)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/internal.py", line 310, in _process
+    self._sm.send(record)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/sender.py", line 238, in send
+    send_handler(record)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/sender.py", line 696, in send_run
+    self._init_run(run, config_value_dict)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/sender.py", line 720, in _init_run
+    server_run, inserted = self._api.upsert_run(
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/apis/normalize.py", line 61, in wrapper
+    raise CommError(message, err).with_traceback(sys.exc_info()[2])
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/apis/normalize.py", line 25, in wrapper
+    return func(*args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/internal_api.py", line 1341, in upsert_run
+    response = self.gql(mutation, variable_values=variable_values, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/lib/retry.py", line 124, in __call__
+    if not check_retry_fn(e):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/util.py", line 887, in no_retry_auth
+    raise CommError("Permission denied, ask the project owner to grant you access")
+wandb.errors.CommError: Permission denied, ask the project owner to grant you access
+2025-06-29 11:25:42,947 WARNING MainThread:56546 [wandb_init.py:init():1064] interrupted
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/wandb_init.py", line 1043, in init
+    run = wi.init()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/wandb_init.py", line 668, in init
+    run_result = backend.interface.communicate_run(
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/interface/interface.py", line 223, in communicate_run
+    return self._communicate_run(run, timeout=timeout)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/interface/interface_shared.py", line 324, in _communicate_run
+    resp = self._communicate(req, timeout=timeout)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/interface/interface_shared.py", line 226, in _communicate
+    return self._communicate_async(rec, local=local).get(timeout=timeout)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/interface/router.py", line 37, in get
+    is_set = self._object_ready.wait(timeout)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/threading.py", line 558, in wait
+    signaled = self._cond.wait(timeout)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/threading.py", line 306, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt
