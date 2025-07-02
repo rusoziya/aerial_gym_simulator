@@ -268,6 +268,17 @@ class NavigationTask(BaseTask):
             logger.warning(
                 f"\nSuccesses: {self.success_aggregate}\nCrashes : {self.crashes_aggregate}\nTimeouts: {self.timeouts_aggregate}"
             )
+            
+            # Add curriculum metrics to infos for wandb logging
+            self.infos["curriculum/level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
+            self.infos["curriculum/progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
+            self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
+            self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
+            self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
+            self.infos["curriculum/total_successes"] = torch.tensor(self.success_aggregate, dtype=torch.float32)
+            self.infos["curriculum/total_crashes"] = torch.tensor(self.crashes_aggregate, dtype=torch.float32)
+            self.infos["curriculum/total_timeouts"] = torch.tensor(self.timeouts_aggregate, dtype=torch.float32)
+            
             self.success_aggregate = 0
             self.crashes_aggregate = 0
             self.timeouts_aggregate = 0
@@ -330,6 +341,10 @@ class NavigationTask(BaseTask):
         self.infos["successes"] = successes
         self.infos["timeouts"] = timeouts
         self.infos["crashes"] = self.terminations
+        
+        # Add continuous curriculum tracking for wandb
+        self.infos["curriculum/current_level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
+        self.infos["curriculum/current_progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
 
         self.logging_sanity_check(self.infos)
         self.check_and_update_curriculum_level(

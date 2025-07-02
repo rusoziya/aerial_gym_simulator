@@ -1,0 +1,31 @@
+{
+    "os": "Linux-6.8.0-60-generic-x86_64-with-glibc2.10",
+    "python": "3.8.19",
+    "heartbeatAt": "2025-07-01T11:22:44.759319",
+    "startedAt": "2025-07-01T11:22:44.080203",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 4080 Laptop GPU",
+    "gpu_count": 1,
+    "cpu_count": 20,
+    "cuda": null,
+    "args": [
+        "--env=quad_with_obstacles",
+        "--train_for_env_steps=100000000",
+        "--experiment=16env_third_test3",
+        "--async_rl=True",
+        "--use_env_info_cache=False",
+        "--normalize_input=True"
+    ],
+    "state": "running",
+    "program": "train_aerialgym_custom_net.py",
+    "codePath": "aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net.py",
+    "git": {
+        "remote": "https://github.com/ntnu-arl/aerial_gym_simulator.git",
+        "commit": "7f35eed17f2afcde33e3a7aec669b48e9e8e34cd"
+    },
+    "email": "ziya.ruso@gmail.com",
+    "root": "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator",
+    "host": "ziyar",
+    "username": "ziyar",
+    "executable": "/home/ziyar/miniforge3/envs/aerialgym/bin/python"
+}

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<robot name="gate_racing">
+
+  <!-- This material will apply the racing pattern texture to the mesh. -->
+  <material name="racing_material">
+    <texture filename="textures/racing_pattern.png"/>
+  </material>
+
+  <!-- A single link representing the entire gate. -->
+  <link name="gate_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <!-- 
+        This loads the 3D model. We assume the model from the reference
+        repository is named 'gate.obj'.
+        -->
+        <mesh filename="../objects/gate.obj" scale="1.5 1.5 1.5"/>
+      </geometry>
+      <material name="racing_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="../objects/gate.obj" scale="1.5 1.5 1.5"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="20"/>
+      <inertia ixx="4.0" ixy="0.0" ixz="0.0" iyy="4.0" iyz="0.0" izz="4.0"/>
+    </inertial>
+  </link>
+
+  <!-- This joint fixes the gate to the world. -->
+  <joint name="world_to_gate_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gate_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- The base link is the invisible anchor point for the gate. -->
+  <link name="base_link"/>
+
+</robot> 

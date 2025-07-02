@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<robot name="gate">
+
+  <!-- Simple gate material (blue color) -->
+  <material name="gate_material">
+    <color rgba="0.1 0.4 0.8 1.0"/>
+  </material>
+
+  <!-- The base of the gate, to which all other parts are connected. -->
+  <link name="base_link"/>
+
+  <!-- Left vertical post of the gate. -->
+  <link name="left_post">
+    <visual>
+      <origin xyz="0 0 1.25" rpy="0 0 0"/>
+      <geometry>
+        <!-- Increased thickness from 0.1 to 0.2 -->
+        <box size="0.2 0.2 2.5"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 1.25" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 2.5"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the left post to the base. -->
+  <joint name="base_to_left_post" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_post"/>
+    <origin xyz="0 1.25 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Right vertical post of the gate. -->
+  <link name="right_post">
+    <visual>
+      <origin xyz="0 0 1.25" rpy="0 0 0"/>
+      <geometry>
+        <!-- Increased thickness from 0.1 to 0.2 -->
+        <box size="0.2 0.2 2.5"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 1.25" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.2 2.5"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the right post to the base. -->
+  <joint name="base_to_right_post" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_post"/>
+    <origin xyz="0 -1.25 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Top horizontal bar of the gate. -->
+  <link name="top_bar">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <!-- Increased thickness and adjusted length -->
+        <box size="0.2 2.7 0.2"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 2.7 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the top bar to the base. -->
+  <joint name="base_to_top_bar" type="fixed">
+    <parent link="base_link"/>
+    <child link="top_bar"/>
+    <!-- Adjusted position for new thickness -->
+    <origin xyz="0 0 2.4" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Bottom horizontal bar of the gate. -->
+  <link name="bottom_bar">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <!-- Increased thickness and adjusted length -->
+        <box size="0.2 2.7 0.2"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 2.7 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the bottom bar to the base. -->
+  <joint name="base_to_bottom_bar" type="fixed">
+    <parent link="base_link"/>
+    <child link="bottom_bar"/>
+    <!-- Adjusted position for new thickness -->
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+  </joint>
+
+</robot>

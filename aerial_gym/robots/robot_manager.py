@@ -19,7 +19,7 @@ logger = CustomLogger("robot_manager")
 
 
 class RobotManagerIGE(BaseManager):
-    def __init__(self, global_sim_dict, robot_name, controller_name, device):
+    def __init__(self, global_sim_dict, robot_name, controller_name, device, robot_id=0):
         logger.debug("Initializing RobotManagerIGE")
         self.gym = global_sim_dict["gym"]
         self.sim = global_sim_dict["sim"]
@@ -50,6 +50,9 @@ class RobotManagerIGE(BaseManager):
         self.dof_control_mode = "none"
 
         self.dof_control_mode = "none"
+
+        self.robot_id = robot_id  # Unique identifier for this robot manager
+        self.robot_name_prefix = f"robot_{robot_id}_"  # Prefix for robot names
 
         if self.use_warp == False:
             if self.cfg.sensor_config.enable_camera:
@@ -278,7 +281,14 @@ class RobotManagerIGE(BaseManager):
         global_asset_counter,
         env_id,
         segmentation_counter,
+        robot_idx_in_env=None,
     ):
+        if robot_idx_in_env is None:
+            robot_idx_in_env = self.robot_id
+            
+        # Create unique robot name
+        robot_name = f"{self.robot_name_prefix}env_{env_id}"
+        
         self.actor_handle, _ = simulation_env_class.add_asset_to_env(
             self.robot_asset_dict,
             env_handle,
@@ -469,6 +479,12 @@ class RobotManagerIGE(BaseManager):
 
         self.robot_masses[env_id] = self.robot_mass
         self.robot_inertias[env_id] = self.robot_inertia
+        
+        # Store mapping of environment to robot index within that environment
+        if not hasattr(self, 'env_robot_mapping'):
+            self.env_robot_mapping = {}
+        self.env_robot_mapping[env_id] = robot_idx_in_env
+        
         return segmentation_counter + 1
 
     def reset(self):
@@ -499,3 +515,34 @@ class RobotManagerIGE(BaseManager):
             self.warp_sensor.update()
         if self.camera_sensor is not None:
             self.camera_sensor.update()
+
+    def get_observations(self):
+        """
+        Get observations with robot ID information
+        """
+        observations = super().get_observations()  # Get base observations
+        
+        # Add robot ID to observations for identification
+        observations["robot_id"] = self.robot_id
+        observations["robot_position"] = self.get_robot_positions()
+        observations["robot_velocity"] = self.get_robot_velocities()
+        
+        return observations
+        
+    def get_robot_positions(self):
+        """Get current robot positions across all environments"""
+        # Implementation depends on existing robot state access
+        # This should return tensor of shape (num_envs, 3)
+        pass
+        
+    def get_robot_velocities(self):
+        """Get current robot velocities across all environments"""
+        # Implementation depends on existing robot state access
+        # This should return tensor of shape (num_envs, 3)
+        pass
+        
+    def set_robot_positions(self, positions):
+        """Set robot positions for reset"""
+        # Implementation depends on existing robot control interface
+        # positions: tensor of shape (num_envs, 3)
+        pass

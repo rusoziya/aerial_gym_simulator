@@ -1,0 +1,168 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-01 17:58:39,754][108605] Queried available GPUs: 0
+[37m[1m[2025-07-01 17:58:39,754][108605] Environment var CUDA_VISIBLE_DEVICES is 0
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[1740 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task] - INFO : Found SF_ENV_AGENTS environment variable: 6 (dce_navigation_task.py:23)
+[37m[1740 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task] - INFO : Detected env_agents=6 from environment - setting environment count. (dce_navigation_task.py:29)
+[37m[1740 ms][base_task] - INFO : Setting seed: 2091607843 (base_task.py:38)
+[37m[1741 ms][navigation_task] - INFO : Building environment for navigation task. (navigation_task.py:44)
+[37m[1741 ms][navigation_task] - INFO : Sim Name: base_sim, Env Name: env_with_obstacles, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task.py:45)
+[37m[1741 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[1741 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[1741 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[1741 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[1741 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[1741 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[1742 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[1742 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[1742 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[31m[1742 ms][IsaacGymEnvManager] - CRITICAL : 
+[31m Setting graphics device to -1.
+[31m This is done because the simulation is run in headless mode and no Isaac Gym cameras are used.
+[31m No need to worry. The simulation and warp rendering will work as expected. (IGE_env_manager.py:112)
+[37m[1742 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: -1 (IGE_env_manager.py:119)
+[37m[1742 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[1742 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[1742 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[2540 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[2540 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] Setting num_envs to 6 based on env_agents=6
+[SUBPROCESS] Set SF_ENV_AGENTS=6 environment variable
+[SUBPROCESS] DCE config batch_size: 1536
+[SUBPROCESS] Using MODIFIED ARCHITECTURE (6 environments - inference compatible)
+Registered quad_with_obstacles and dce_navigation_task in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles', '--train_for_env_steps=100000000', '--experiment=MEDIUM_CONFIG_6_ENVS_TEST_1536batch_FIXEDINPUT_V4', '--async_rl=True', '--use_env_info_cache=False', '--normalize_input=True']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+[37m[2744 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[2744 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[2744 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[2744 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[2744 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[2744 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[2744 ms][base_multirotor] - WARNING : Creating 6 multirotors. (base_multirotor.py:32)
+[37m[2744 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[2744 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[2744 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2745 ms][asset_loader] - INFO : Loading asset: panel.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2746 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2749 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2750 ms][asset_loader] - INFO : Loading asset: 1_x_1_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2751 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2752 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2753 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2754 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2754 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2755 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2756 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[2758 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[3128 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[3128 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[3128 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[3138 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[3145 ms][IsaacGymEnvManager] - WARNING : Headless: True (IGE_env_manager.py:424)
+[37m[3145 ms][IsaacGymEnvManager] - INFO : Headless mode. Viewer not created. (IGE_env_manager.py:434)
+[33m[3190 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 9 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[3379 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[3379 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+Process SpawnProcess-2:
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 98, in spawn_tmp_env_and_get_info
+    tmp_env = make_env_func_batched(cfg, env_config=None)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 350, in make_env_func_batched
+    env = BatchedVecEnv(env)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 155, in __init__
+    if not is_multiagent_env(env):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 44, in is_multiagent_env
+    is_multiagent, num_agents = get_multiagent_info(env)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 39, in get_multiagent_info
+    assert is_multiagent or num_agents == 1, f"Invalid configuration: {is_multiagent=} and {num_agents=}"
+AssertionError: Invalid configuration: is_multiagent=False and num_agents=6
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.46 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 7.61 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.95 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 5.52 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+Traceback (most recent call last):
+  File "train_aerialgym_custom_net.py", line 535, in <module>
+    except Exception as e:
+  File "train_aerialgym_custom_net.py", line 530, in main
+    print("Successfully registered quad_with_obstacles (DCE navigation task)")
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/train.py", line 37, in run_rl
+    status = runner.init()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner_serial.py", line 16, in init
+    status = super().init()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 542, in init
+    self.env_info = obtain_env_info_in_a_separate_process(self.cfg)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 127, in obtain_env_info_in_a_separate_process
+    env_info = q.get()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/multiprocessing/queues.py", line 97, in get
+    res = self._recv_bytes()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/multiprocessing/connection.py", line 216, in recv_bytes
+    buf = self._recv_bytes(maxlength)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/multiprocessing/connection.py", line 414, in _recv_bytes
+    buf = self._recv(4)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)

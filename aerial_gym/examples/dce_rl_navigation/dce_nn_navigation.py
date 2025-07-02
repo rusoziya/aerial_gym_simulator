@@ -3,7 +3,7 @@ import isaacgym
 
 # isort: on
 import torch
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym import (
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net import (
     parse_aerialgym_cfg,
 )
 from aerial_gym.utils import get_args
@@ -20,7 +20,10 @@ from PIL import Image
 
 def sample_command(args):
     use_warp = True
-    headless = args.headless
+    # Enable viewing by default for inference - user can override with --headless
+    headless = getattr(args, 'headless', False)  # Default to False (viewing enabled)
+    print(f"DCE Inference - Headless mode: {headless}")
+    
     # seg_frames = []
     # depth_frames = []
     # merged_image_frames = []
