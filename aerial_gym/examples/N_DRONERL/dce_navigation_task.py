@@ -10,8 +10,8 @@ import torch
 class DCE_RL_Navigation_Task(NavigationTask):
     def __init__(self, task_config, **kwargs):
         task_config.action_space_dim = 3
-        # task_config.curriculum.min_level = 36
-        task_config.curriculum.min_level = 36
+        task_config.curriculum.min_level = 30  # DCE curriculum starts from level 30
+        task_config.curriculum.max_level = 50
 
         # logger.critical("Hardcoding number of envs to 16 if it is greater than that.")
         # task_config.num_envs = 4 if task_config.num_envs > 16 else task_config.num_envs

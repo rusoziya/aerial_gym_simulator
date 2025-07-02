@@ -1,0 +1,34 @@
+{
+    "os": "Linux-6.8.0-60-generic-x86_64-with-glibc2.10",
+    "python": "3.8.19",
+    "heartbeatAt": "2025-07-02T12:04:03.227663",
+    "startedAt": "2025-07-02T12:04:02.526982",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 4080 Laptop GPU",
+    "gpu_count": 1,
+    "cpu_count": 20,
+    "cuda": null,
+    "args": [
+        "--env=quad_with_obstacles",
+        "--train_for_env_steps=100000000",
+        "--experiment=HIGH_CONFIG_128ENV_1",
+        "--async_rl=True",
+        "--use_env_info_cache=False",
+        "--normalize_input=True",
+        "--headless=False",
+        "--async_rl=False",
+        "--serial_mode=True"
+    ],
+    "state": "running",
+    "program": "train_aerialgym_custom_net.py",
+    "codePath": "aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net.py",
+    "git": {
+        "remote": "git@github.com:rusoziya/aerial_gym_simulator.git",
+        "commit": "7f68834735119b0b96b7f43bc6752d65d9292d8e"
+    },
+    "email": "ziya.ruso@gmail.com",
+    "root": "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator",
+    "host": "ziyar",
+    "username": "ziyar",
+    "executable": "/home/ziyar/miniforge3/envs/aerialgym/bin/python"
+}

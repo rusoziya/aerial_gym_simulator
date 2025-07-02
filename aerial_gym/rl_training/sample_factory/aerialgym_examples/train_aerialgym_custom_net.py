@@ -19,8 +19,8 @@
 #   * 10-12: robot body angular velocity
 #   * 13-16: robot actions (last action taken)
 #   * 17-80: VAE-encoded depth image latents (64 dimensions, pre-computed by DCE task)
-# - Curriculum: starts at level 36 (higher than base navigation task)
-# - 6 parallel environments (1 agent per environment) in 2x3 grid layout
+# - Curriculum: starts at level 30 and goes up to level 50 (custom range for progressive difficulty)
+# - 32 parallel environments (1 agent per environment) for maximum parallelization
 # - Uses LMF2 robot with velocity control
 # - Compatible with existing inference scripts: sf_inference_class.py, dce_nn_navigation.py
 #
@@ -70,7 +70,7 @@ class AerialGymVecEnv(gym.Env):
         import numpy as np
         base_action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(3,), dtype=np.float32)
         self.action_space = convert_space(base_action_space)
-        
+
         # Debug: Print action space info to verify it's 3D
         print(f"[AerialGymVecEnv] Forced action space shape: {self.action_space.shape}")
         print(f"[AerialGymVecEnv] is_multiagent: {self.is_multiagent}, num_agents: {self.num_agents}")
@@ -141,12 +141,18 @@ def make_aerialgym_env(
                 dce_config = base_config()
                 # Apply DCE-specific configuration changes
                 dce_config.action_space_dim = 3  # DCE uses 3D actions (not 4D)
-                dce_config.curriculum.min_level = 36  # DCE uses higher min curriculum level
+                dce_config.curriculum.min_level = 30  # DCE curriculum starts from level 30
+                dce_config.curriculum.max_level = 50  # DCE curriculum goes up to level 50
                 
-                # Handle headless parameter
+                # Handle headless parameter - force viewer for rollout workers when requested
                 if hasattr(cfg, 'headless') and cfg.headless is not None:
-                    dce_config.headless = cfg.headless
-                    print(f"[SUBPROCESS] Setting headless mode to: {dce_config.headless}")
+                    # If headless=False is explicitly requested, override for rollout workers too
+                    if cfg.headless == False:
+                        dce_config.headless = False
+                        print(f"[SUBPROCESS] FORCING viewer mode for rollout worker: headless={dce_config.headless}")
+                    else:
+                        dce_config.headless = cfg.headless
+                        print(f"[SUBPROCESS] Setting headless mode to: {dce_config.headless}")
                 else:
                     # Use DCE default (disabled headless for visualization)
                     print(f"[SUBPROCESS] Using DCE default headless setting: {dce_config.headless}")
@@ -167,8 +173,12 @@ def make_aerialgym_env(
                     print(f"[SUBPROCESS] Setting num_envs to {cfg.env_agents} based on env_agents={cfg.env_agents}")
                     print(f"[SUBPROCESS] Set SF_ENV_AGENTS={cfg.env_agents} environment variable")
                     print(f"[SUBPROCESS] DCE config batch_size: {getattr(cfg, 'batch_size', 'not set')}")
-                    if cfg.env_agents == 16:
-                        print(f"[SUBPROCESS] Using ORIGINAL DCE CONFIG (16 environments - maximum performance)")
+                    if cfg.env_agents == 128:
+                        print(f"[SUBPROCESS] Using MAXIMUM PARALLELIZATION DCE CONFIG (128 environments)")
+                    elif cfg.env_agents == 32:
+                        print(f"[SUBPROCESS] Using UPDATED DCE CONFIG (32 environments - high parallelization)")
+                    elif cfg.env_agents == 16:
+                        print(f"[SUBPROCESS] Using ORIGINAL DCE CONFIG (16 environments - high performance)")
                     elif cfg.env_agents == 6:
                         print(f"[SUBPROCESS] Using MEDIUM CONFIG (6 environments - reduced memory)")
                     elif cfg.env_agents == 4:
@@ -179,6 +189,17 @@ def make_aerialgym_env(
                         print(f"[SUBPROCESS] Using CUSTOM CONFIG ({cfg.env_agents} environments)")
                 else:
                     print(f"[SUBPROCESS] env_agents={getattr(cfg, 'env_agents', 'not set')}, using default num_envs")
+                
+                # CRITICAL FIX: Force headless setting for rollout workers based on Sample Factory configuration
+                if hasattr(cfg, 'headless') and cfg.headless is not None:
+                    dce_config.headless = cfg.headless
+                    print(f"[SUBPROCESS] FORCING headless={cfg.headless} for rollout worker")
+                    if not cfg.headless:
+                        print(f"[SUBPROCESS] FORCING viewer mode for rollout worker")
+                else:
+                    # Keep the default behavior from DCE task
+                    print(f"[SUBPROCESS] Using DCE task default headless setting")
+                
                 task_registry.register_task("quad_with_obstacles", DCE_RL_Navigation_Task, dce_config)
                 # Also register as "dce_navigation_task" for backward compatibility
                 task_registry.register_task("dce_navigation_task", DCE_RL_Navigation_Task, dce_config)
@@ -357,10 +378,10 @@ env_configs = dict(
         learning_rate=0.0003,  # Match original config (3e-4)
         lr_schedule="kl_adaptive_epoch",
         lr_schedule_kl_threshold=0.016,
-        # ORIGINAL CONFIG - Exact match to successful 1333.322 reward model
-        batch_size=2048,  # Match original successful config
-        num_batches_to_accumulate=2,  # Match original successful config
-        num_batches_per_epoch=8,  # Match original successful config (was 4)
+        # UPDATED CONFIG - 128 environments with optimized batch accumulation
+        batch_size=16384,  # 8x batch size for 128 environments (was 2048 for 16 envs)
+        num_batches_to_accumulate=1,  # Reduced accumulation for memory optimization
+        num_batches_per_epoch=8,  # Keep batches per epoch the same
         num_epochs=4,
         max_grad_norm=1.0,
         exploration_loss_coeff=0.001,  # Match original config
@@ -373,8 +394,8 @@ env_configs = dict(
         batched_sampling=True,  # Match original config
         num_workers=1,  # Match original config
         num_envs_per_worker=1,  # Match original config
-        # ORIGINAL CONFIG - 16 environments (3D action space for inference compatibility)
-        env_agents=16,  # Match original successful config (was 6)
+        # UPDATED CONFIG - 128 environments (3D action space for inference compatibility)
+        env_agents=128,  # Increased to 128 environments for maximum parallelization
         worker_num_splits=1,  # Match original config
         policy_workers_per_policy=1,  # Match original config
         nonlinearity="elu",  # Match original config
@@ -463,17 +484,46 @@ env_configs = dict(
 )
 
 # =============================================================================
-# ALTERNATIVE CONFIGURATIONS (commented out)
-# Current config above uses ORIGINAL DCE CONFIG (16 environments) for maximum performance
-# Uncomment and modify the env_agents and batch config above if needed for lower memory usage
+# DCE CONFIGURATION SCALING COMPARISON
+# Current config above uses MAXIMUM PARALLELIZATION DCE CONFIG (128 environments)
+# 
+# CONFIGURATION COMPARISON TABLE:
+# Config Name              | Envs | Batch Size | Accumulate | Effective Batch | Memory
+# -------------------------|------|------------|------------|-----------------|--------
+# ORIGINAL DCE (1333.322) | 16   | 2048       | 2          | 4096           | Low
+# UPDATED DCE              | 32   | 4096       | 2          | 8192           | Medium  
+# MAXIMUM DCE (Current)    | 128  | 16384      | 1          | 16384          | High
+# 
+# All configurations maintain the same core training parameters (3D actions, 81D obs, etc.)
 # =============================================================================
 #
-# CURRENT ACTIVE CONFIG (16 environments) - ORIGINAL DCE CONFIG:
-# env_agents=16              # 16 environments (matches original successful model)
+# CURRENT ACTIVE CONFIG (128 environments) - MAXIMUM PARALLELIZATION DCE CONFIG:
+# env_agents=128             # 128 environments (8x original for maximum parallelization)
+# batch_size=16384           # 8x batch size for 128 environments
+# num_batches_to_accumulate=1 # Reduced accumulation for memory optimization
+# num_batches_per_epoch=8    # Keep batches per epoch the same
+# Effective Batch Size=16384  # 16384 * 1 = 16384 (4x original 4096, memory optimized)
+#
+# ORIGINAL CONFIG (16 environments) - ORIGINAL DCE CONFIG (1333.322 reward):
+# env_agents=16              # 16 environments (original successful model)
 # batch_size=2048            # Original batch size
-# num_batches_to_accumulate=2 # Original accumulation
+# num_batches_to_accumulate=2 # Original accumulation  
 # num_batches_per_epoch=8    # Original batches per epoch
-# Effective Batch Size=4096   # 2048 * 2 = 4096 (matches original)
+# Effective Batch Size=4096   # 2048 * 2 = 4096 (original)
+# curriculum.min_level=36    # Original curriculum level
+# curriculum.max_level=50    # Original max level
+# action_space_dim=3         # 3D actions (x_vel, y_vel, yaw_rate)
+# observation_space_dim=81   # 17D basic state + 64D VAE latents
+# environment="quad_with_obstacles" # Forest environment with obstacles
+# robot="lmf2"              # LMF2 quadrotor with velocity control
+# controller="lmf2_velocity_control" # Velocity control
+#
+# PREVIOUS CONFIG (32 environments) - UPDATED DCE CONFIG:
+# env_agents=32              # 32 environments (2x original)
+# batch_size=4096            # 2x batch size for 32 environments
+# num_batches_to_accumulate=2 # Same accumulation as original
+# num_batches_per_epoch=8    # Same batches per epoch
+# Effective Batch Size=8192   # 4096 * 2 = 8192 (2x original 4096)
 #
 # MEDIUM CONFIG (6 environments) - Reduced Memory Usage:
 # env_agents=6
@@ -503,12 +553,16 @@ def register_aerialgym_custom_components():
         except:
             pass
     
-    # Use environment variable from shell script if set, otherwise default to 16 (original config)
+    # Use environment variable from shell script if set, otherwise default to 128 (maximum parallelization config)
     # This will be updated based on the actual env_agents parameter when env is created
-    current_env_agents = os.environ.get('SF_ENV_AGENTS', '16')  # Default to original DCE configuration
+    current_env_agents = os.environ.get('SF_ENV_AGENTS', '128')  # Default to maximum parallelization DCE configuration
     os.environ['SF_ENV_AGENTS'] = current_env_agents
-    if current_env_agents == '16':
-        print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (ORIGINAL DCE CONFIG - maximum performance)")
+    if current_env_agents == '128':
+        print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (MAXIMUM PARALLELIZATION DCE CONFIG)")
+    elif current_env_agents == '32':
+        print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (UPDATED DCE CONFIG - high parallelization)")
+    elif current_env_agents == '16':
+        print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (ORIGINAL DCE CONFIG - high performance)")
     elif current_env_agents == '6':
         print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (MEDIUM CONFIG - reduced memory)")
     elif current_env_agents == '4':
@@ -530,9 +584,12 @@ def register_aerialgym_custom_components():
         dce_config = base_config()
         # Apply DCE-specific configuration changes
         dce_config.action_space_dim = 3  # DCE uses 3D actions (not 4D)
-        dce_config.curriculum.min_level = 36  # DCE uses higher min curriculum level
+        dce_config.curriculum.min_level = 30  # DCE curriculum starts from level 30
+        dce_config.curriculum.max_level = 50  # DCE curriculum goes up to level 50
         
-        # Note: headless setting will be handled in DCE_RL_Navigation_Task constructor
+        # FORCE headless setting - let DCE task handle the default, no override here
+        # The headless setting will be properly handled in make_aerialgym_env function
+        print(f"[MAIN] DCE task will handle headless setting based on command line parameters")
         
         # CRITICAL FIX: Override action space to match inference expectations
         # Force environment to report 3D action space for inference compatibility

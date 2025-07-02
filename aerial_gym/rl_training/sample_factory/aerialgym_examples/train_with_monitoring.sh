@@ -29,10 +29,10 @@ while [[ $# -gt 0 ]]; do
         --help|-h)
             echo "Usage: $0 [EXPERIMENT_NAME] [--view]"
             echo ""
-            echo "This script uses the ORIGINAL DCE configuration:"
-            echo "  - 16 parallel environments"
-            echo "  - 2048 batch size"  
-            echo "  - Maximum performance (requires high VRAM)"
+            echo "This script uses the MAXIMUM PARALLELIZATION DCE configuration:"
+            echo "  - 128 parallel environments"
+            echo "  - 16384 batch size, 1 batch accumulation (memory optimized)"  
+            echo "  - Maximum parallelization (requires high VRAM - ~12-16GB)"
             echo ""
             echo "Arguments:"
             echo "  EXPERIMENT_NAME: Optional custom experiment name"
@@ -61,11 +61,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Original DCE Configuration (16 environments, maximum performance)
-CONFIG_NAME="Original DCE Configuration (16 environments, 2048 batch size)"
-ENV_AGENTS=16
-BATCH_SIZE=2048
-CONFIG_PREFIX="original_dce_config"
+# Maximum Parallelization DCE Configuration (128 environments, memory optimized)
+CONFIG_NAME="Maximum Parallelization DCE Configuration (128 environments, 16384 batch size, memory optimized)"
+ENV_AGENTS=128
+BATCH_SIZE=16384
+CONFIG_PREFIX="updated_dce_config"
 
 # Set experiment name - use provided name or auto-generate
 if [ -n "$EXPERIMENT_NAME" ]; then
@@ -160,8 +160,8 @@ if [ "$ENABLE_VIEWER" = false ]; then
     TRAIN_CMD="$TRAIN_CMD --headless=True"
     echo -e "${YELLOW}Training in headless mode for maximum performance${NC}"
 else
-    TRAIN_CMD="$TRAIN_CMD --headless=False"
-    echo -e "${GREEN}Training with visualization enabled${NC}"
+    TRAIN_CMD="$TRAIN_CMD --headless=False --async_rl=False --serial_mode=True"
+    echo -e "${GREEN}Training with visualization enabled (forcing sync mode for viewer compatibility)${NC}"
 fi
 
 echo -e "${YELLOW}Training command:${NC}"
@@ -170,7 +170,16 @@ echo ""
 
 # Export environment variables for the training process
 export SF_ENV_AGENTS=${ENV_AGENTS}
-echo "Set SF_ENV_AGENTS=${ENV_AGENTS} environment variable for all processes (ORIGINAL DCE CONFIG)"
+echo "Set SF_ENV_AGENTS=${ENV_AGENTS} environment variable for all processes (MAXIMUM PARALLELIZATION DCE CONFIG)"
+
+# Export headless setting for both main process and worker processes
+if [ "$ENABLE_VIEWER" = true ]; then
+    export SF_HEADLESS=false
+    echo "Set SF_HEADLESS=false environment variable for viewer mode"
+else
+    export SF_HEADLESS=true
+    echo "Set SF_HEADLESS=true environment variable for headless mode"
+fi
 
 # Run training with error handling
 if $TRAIN_CMD; then
