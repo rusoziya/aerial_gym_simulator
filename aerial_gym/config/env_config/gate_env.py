@@ -1,13 +1,14 @@
 from aerial_gym.config.asset_config.gate_asset_config import gate_asset_params
 from aerial_gym.config.asset_config.env_asset_config import (
-    tree_asset_params, 
-    TREE_SEMANTIC_ID, 
+    object_asset_params, 
+    OBJECT_SEMANTIC_ID, 
     WALL_SEMANTIC_ID,
     left_wall,
     right_wall,
     front_wall,
     back_wall,
-    bottom_wall
+    bottom_wall,
+    top_wall
 )
 import numpy as np
 
@@ -28,33 +29,33 @@ class GateEnvCfg:
         num_env_actions = 0  # No environment-controlled actions (gate is static)
         env_spacing = 10.0  # Space between parallel environments
         
-        # Simulation timing
-        num_physics_steps_per_env_step_mean = 1  # Steps between renders
-        num_physics_steps_per_env_step_std = 0   # No variation in timing
+        # MATCH ORIGINAL: Simulation timing and physics steps
+        num_physics_steps_per_env_step_mean = 10  # MATCH ORIGINAL: 10 steps between renders (was 1)
+        num_physics_steps_per_env_step_std = 0   # MATCH ORIGINAL: No variation in timing
         render_viewer_every_n_steps = 1  # Render every step for smooth visualization
         
-        # Collision and reset behavior
-        collision_force_threshold = 0.02  # Lower threshold for more sensitive collision detection [N]
+        # MATCH ORIGINAL: Collision and reset behavior
+        collision_force_threshold = 0.05  # MATCH ORIGINAL: 50mN threshold (was 0.02 = 20mN)
         reset_on_collision = True  # Reset environment when drone hits gate
         
-        # Ground and basic setup
-        create_ground_plane = True  # Create ground for visual reference
+        # MATCH ORIGINAL: Ground and basic setup
+        create_ground_plane = False  # MATCH ORIGINAL: No ground plane (was True)
         
-        # Observation and latency simulation
-        sample_timestep_for_latency = False  # No latency simulation for clean testing
-        perturb_observations = False  # No observation noise for clean testing
+        # MATCH ORIGINAL: Observation and latency simulation
+        sample_timestep_for_latency = True  # MATCH ORIGINAL: Enable latency simulation (was False)
+        perturb_observations = True  # MATCH ORIGINAL: Enable observation noise (was False)
         keep_same_env_for_num_episodes = 1  # Reset environments each episode
-        write_to_sim_at_every_timestep = False
+        write_to_sim_at_every_timestep = False  # MATCH ORIGINAL: Don't write every timestep
         
         # Rendering backend
-        use_warp = False  # Use Isaac Gym rendering for simplicity
+        use_warp = True  # MATCH ORIGINAL: Use Warp for consistent rendering and lighting
         
-        # Environment bounds - match the working example exactly
-        # Gate will be at center, with plenty of room to approach and exit
-        lower_bound_min = [-8.0, -8.0, 0.0]  # Ground level starts at Z=0 (like working example)
-        lower_bound_max = [-8.0, -8.0, 0.0]  # Fixed bounds (no randomization)
-        upper_bound_min = [8.0, 8.0, 8.0]    # Match working example bounds exactly
-        upper_bound_max = [8.0, 8.0, 8.0]    # Fixed bounds (no randomization)
+        # Environment bounds - 8x8x4 environment for focused navigation (4 unit radius)
+        # Gate will be at center, with adequate room to approach and exit
+        lower_bound_min = [-4.0, -4.0, 0.0]  # Ground level starts at Z=0
+        lower_bound_max = [-4.0, -4.0, 0.0]  # Fixed bounds (no randomization)
+        upper_bound_min = [4.0, 4.0, 4.0]    # 8x8x4 environment bounds  
+        upper_bound_max = [4.0, 4.0, 4.0]    # Fixed bounds (no randomization)
     
     class env_config:
         """
@@ -62,70 +63,70 @@ class GateEnvCfg:
         
         This environment includes:
         - gate: The main gate structure for flying through
-        - trees: Background trees for visual richness and depth perception
+        - objects: Random obstacles for visual richness and navigation challenge
         """
         
         # Asset inclusion configuration
         include_asset_type = {
             "gate": True,  # Include the gate asset
-            "trees": True,  # Include trees for background
+            "objects": True,  # Include random objects for obstacles
             "left_wall": True,  # Left boundary wall
             "right_wall": True,  # Right boundary wall
             "front_wall": True,  # Front boundary wall
             "back_wall": True,  # Back boundary wall
             "bottom_wall": True,  # Ground plane
-            # "top_wall": False,  # Keep top open for flying
+            "top_wall": True,  # Top wall to close the environment
         }
         
-        # Custom tree configuration for gate environment
-        class gate_tree_params(tree_asset_params):
-            num_assets = 5  # Add 5 trees for good background coverage
+        # Custom random object configuration for gate environment
+        class gate_object_params(object_asset_params):
+            num_assets = 3  # Balanced obstacle count for gate navigation (matches curriculum range)
             
-            # ENABLE COLLISION for trees so they appear in segmentation!
+            # ENABLE COLLISION for objects so they appear in segmentation!
             collision_mask = 0  # 0 = enable collision, 1 = disable collision
             
-            # Position trees behind the gate using specific coordinates (gate is rotated 90°)
-            # Trees should be at positive Y coordinates (behind gate from camera perspective)
-            # Environment bounds are typically [-8, 8] so we convert absolute coords to ratios
-            # Tree positions from working example: (-2.0, 3.0, 0.0), (0.0, 4.0, 0.0), (2.0, 3.0, 0.0), (-1.0, 5.0, 0.0), (1.0, 5.0, 0.0)
-            # Convert to ratios: position_ratio = (position + 8) / 16 for range [-8, 8]
+            # Position objects behind the gate using specific coordinates (gate is rotated 90°)
+            # Objects should be at positive Y coordinates (behind gate from camera perspective)
+            # Environment bounds are now [-4, 4] so we convert absolute coords to ratios
+            # Convert to ratios: position_ratio = (position + 4) / 8 for range [-4, 4]
+            # Objects positioned on obstacle side (positive Y) where drone shouldn't spawn
             
-            # For simplicity, position trees in a line behind the gate
+            # For 8x8 environment, position objects in a line behind the gate
             min_state_ratio = [
-                0.3, 0.7, 0.0,  # X: left side, Y: behind gate (positive Y), Z: on ground
-                0, -np.pi/6.0, -np.pi,  # Rotation
-                1.0,  # Scale
+                0.1, 0.65, 0.0,  # X: wider spread from left, Y: behind gate (positive Y), Z: on ground
+                0, -np.pi/3.0, -np.pi,  # More rotation variation
+                0.6,  # Smaller minimum scale 
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
             ]
             max_state_ratio = [
-                0.7, 0.8, 0.0,  # X: right side, Y: further behind gate, Z: on ground
-                0, np.pi/6.0, np.pi,  # Rotation
-                1.0,  # Scale
+                0.9, 0.95, 0.3,  # X: wider spread to right, Y: well behind gate, Z: higher elevation
+                0, np.pi/3.0, np.pi,  # More rotation variation
+                1.5,  # Larger maximum scale for more visual diversity
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
             ]
             
-            # Trees should stay in environment and be fixed
+            # Objects should stay in environment and be fixed
             keep_in_env = True
             fix_base_link = True
             collapse_fixed_joints = True
-            color = [70, 200, 100]  # Green trees
+            color = [100, 150, 200]  # Blue-gray objects
             
             # CRITICAL: Add the same segmentation properties as the gate!
-            semantic_id = TREE_SEMANTIC_ID  # Use the defined tree semantic ID
-            body_semantic_label = TREE_SEMANTIC_ID  # Body-level semantic labeling
-            link_semantic_label = TREE_SEMANTIC_ID  # Link-level semantic labeling
+            semantic_id = OBJECT_SEMANTIC_ID
+            body_semantic_label = OBJECT_SEMANTIC_ID  # Body-level semantic labeling
+            link_semantic_label = OBJECT_SEMANTIC_ID  # Link-level semantic labeling
             per_link_semantic = True  # Enable per-link semantic labeling (like gate)
-            semantic_masked_links = {}  # No masked links, all branches should be segmented
+            semantic_masked_links = {}  # No masked links, all parts should be segmented
             
             # Physical properties for proper collision detection (like gate)
-            disable_gravity = True  # Trees are fixed in place
-            density = 1000.0  # Realistic tree density for collision
+            disable_gravity = True  # Objects are fixed in place
+            density = 1000.0  # Realistic object density for collision
             
             # Add force sensor for collision detection (like gate)
             place_force_sensor = True  # Enable force sensor to detect collisions
-            force_sensor_parent_link = "branch_0"  # Attach to main trunk (first branch)
+            force_sensor_parent_link = "base_link"  # Attach to main object
         
-        # Custom wall configurations with collision and segmentation enabled
+        # MATCH ORIGINAL: Use same wall colors, heights, and positions as original environment
         class boundary_left_wall(left_wall):
             collision_mask = 0  # Enable collision detection
             semantic_id = WALL_SEMANTIC_ID
@@ -133,7 +134,22 @@ class GateEnvCfg:
             link_semantic_label = WALL_SEMANTIC_ID
             per_link_semantic = True
             place_force_sensor = True
-            color = [150, 150, 150]  # Gray walls
+            color = [100, 200, 210]  # MATCH ORIGINAL: Teal walls (was [150, 150, 150])
+            keep_in_env = True  # Keep in environment (reverted from False)
+            
+            # MATCH ORIGINAL: Full height walls like original environment
+            min_state_ratio = [
+                0.5, 1.0, 0.5,  # MATCH ORIGINAL: Position at Z=0.5 (was 0.4), full height
+                0.0, 0.0, 0.0,  # Orientation
+                1.0,            # MATCH ORIGINAL: Full scale (was 0.6)
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
+            max_state_ratio = [
+                0.5, 1.0, 0.5,  # Same position
+                0.0, 0.0, 0.0,  # Same orientation
+                1.0,            # Same full scale
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
             
         class boundary_right_wall(right_wall):
             collision_mask = 0  # Enable collision detection
@@ -142,7 +158,22 @@ class GateEnvCfg:
             link_semantic_label = WALL_SEMANTIC_ID
             per_link_semantic = True
             place_force_sensor = True
-            color = [150, 150, 150]  # Gray walls
+            color = [100, 200, 210]  # MATCH ORIGINAL: Teal walls (was [150, 150, 150])
+            keep_in_env = True  # Keep in environment (reverted from False)
+            
+            # MATCH ORIGINAL: Full height walls like original environment
+            min_state_ratio = [
+                0.5, 0.0, 0.5,  # MATCH ORIGINAL: Position at Z=0.5 (was 0.4), full height
+                0.0, 0.0, 0.0,  # Orientation
+                1.0,            # MATCH ORIGINAL: Full scale (was 0.6)
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
+            max_state_ratio = [
+                0.5, 0.0, 0.5,  # Same position
+                0.0, 0.0, 0.0,  # Same orientation
+                1.0,            # Same full scale
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
             
         class boundary_front_wall(front_wall):
             collision_mask = 0  # Enable collision detection
@@ -151,7 +182,22 @@ class GateEnvCfg:
             link_semantic_label = WALL_SEMANTIC_ID
             per_link_semantic = True
             place_force_sensor = True
-            color = [150, 150, 150]  # Gray walls
+            color = [100, 200, 210]  # MATCH ORIGINAL: Teal walls (was [150, 150, 150])
+            keep_in_env = True  # Keep in environment (reverted from False)
+            
+            # MATCH ORIGINAL: Full height walls like original environment
+            min_state_ratio = [
+                1.0, 0.5, 0.5,  # MATCH ORIGINAL: Position at Z=0.5 (was 0.4), full height
+                0.0, 0.0, 0.0,  # Orientation
+                1.0,            # MATCH ORIGINAL: Full scale (was 0.6)
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
+            max_state_ratio = [
+                1.0, 0.5, 0.5,  # Same position
+                0.0, 0.0, 0.0,  # Same orientation
+                1.0,            # Same full scale
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
             
         class boundary_back_wall(back_wall):
             collision_mask = 0  # Enable collision detection
@@ -160,7 +206,22 @@ class GateEnvCfg:
             link_semantic_label = WALL_SEMANTIC_ID
             per_link_semantic = True
             place_force_sensor = True
-            color = [150, 150, 150]  # Gray walls
+            color = [100, 200, 210]  # MATCH ORIGINAL: Teal walls (was [150, 150, 150])
+            keep_in_env = True  # Keep in environment (reverted from False)
+            
+            # MATCH ORIGINAL: Full height walls like original environment
+            min_state_ratio = [
+                0.0, 0.5, 0.5,  # MATCH ORIGINAL: Position at Z=0.5 (was 0.4), full height
+                0.0, 0.0, 0.0,  # Orientation
+                1.0,            # MATCH ORIGINAL: Full scale (was 0.6)
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
+            max_state_ratio = [
+                0.0, 0.5, 0.5,  # Same position
+                0.0, 0.0, 0.0,  # Same orientation
+                1.0,            # Same full scale
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
             
         class boundary_bottom_wall(bottom_wall):
             collision_mask = 0  # Enable collision detection (ground plane)
@@ -169,17 +230,43 @@ class GateEnvCfg:
             link_semantic_label = WALL_SEMANTIC_ID
             per_link_semantic = True
             place_force_sensor = True
-            color = [100, 80, 60]  # Brown ground
+            color = [100, 150, 150]  # MATCH ORIGINAL: Darker teal ground (was [100, 80, 60])
+            keep_in_env = True  # Keep in environment (reverted from False)
+        
+        class boundary_top_wall(top_wall):
+            collision_mask = 0  # Enable collision detection
+            semantic_id = WALL_SEMANTIC_ID
+            body_semantic_label = WALL_SEMANTIC_ID
+            link_semantic_label = WALL_SEMANTIC_ID
+            per_link_semantic = True
+            place_force_sensor = True
+            color = [100, 200, 210]  # MATCH ORIGINAL: Teal ceiling (was [120, 120, 120])
+            keep_in_env = True  # Keep in environment (reverted from False)
+            
+            # MATCH ORIGINAL: Keep top wall at full height like original environment
+            min_state_ratio = [
+                0.5, 0.5, 1.0,  # MATCH ORIGINAL: Position at Z=1.0 (full height)
+                0.0, 0.0, 0.0,  # Orientation
+                1.0,            # MATCH ORIGINAL: Full scale
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
+            max_state_ratio = [
+                0.5, 0.5, 1.0,  # Same position
+                0.0, 0.0, 0.0,  # Same orientation
+                1.0,            # Same full scale
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+            ]
         
         # Mapping of asset type names to their configuration classes
         asset_type_to_dict_map = {
             "gate": gate_asset_params,
-            "trees": gate_tree_params,
+            "objects": gate_object_params,
             "left_wall": boundary_left_wall,
             "right_wall": boundary_right_wall,
             "front_wall": boundary_front_wall,
             "back_wall": boundary_back_wall,
             "bottom_wall": boundary_bottom_wall,
+            "top_wall": boundary_top_wall,
         }
 
 
@@ -199,47 +286,45 @@ class GateEnvWithObstaclesCfg(GateEnvCfg):
     class env_config:
         # Import additional obstacle configurations if needed
         from aerial_gym.config.asset_config.env_asset_config import (
-            tree_asset_params,
             object_asset_params
         )
         
         # Include gate plus some obstacles
         include_asset_type = {
             "gate": True,
-            "trees": True,    # Add some trees around the gate
             "objects": False, # Could enable for even more challenge
         }
         
         # Configure obstacles to be sparse and not block the gate
-        class sparse_tree_params(tree_asset_params):
-            num_assets = 2  # Just a couple of trees
+        class sparse_object_params(object_asset_params):
+            num_assets = 2  # Just a couple of objects
             
-            # ENABLE COLLISION for trees so they appear in segmentation!
+            # ENABLE COLLISION for objects so they appear in segmentation!
             collision_mask = 0  # 0 = enable collision, 1 = disable collision
             
-            # Position trees away from center where gate is located
+            # Position objects away from center where gate is located
             min_state_ratio = [0.1, 0.1, 0.0, 0, -np.pi/6.0, -np.pi, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             max_state_ratio = [0.9, 0.9, 0.0, 0, np.pi/6.0, np.pi, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             
             # CRITICAL: Add the same segmentation properties as the gate!
-            semantic_id = TREE_SEMANTIC_ID  # Use the defined tree semantic ID
-            body_semantic_label = TREE_SEMANTIC_ID  # Body-level semantic labeling
-            link_semantic_label = TREE_SEMANTIC_ID  # Link-level semantic labeling
+            semantic_id = OBJECT_SEMANTIC_ID  # Use the defined object semantic ID
+            body_semantic_label = OBJECT_SEMANTIC_ID  # Body-level semantic labeling
+            link_semantic_label = OBJECT_SEMANTIC_ID  # Link-level semantic labeling
             per_link_semantic = True  # Enable per-link semantic labeling (like gate)
-            semantic_masked_links = {}  # No masked links, all branches should be segmented
+            semantic_masked_links = {}  # No masked links, all parts should be segmented
             
             # Physical properties for proper collision detection (like gate)
-            disable_gravity = True  # Trees are fixed in place
-            density = 1000.0  # Realistic tree density for collision
+            disable_gravity = True  # Objects are fixed in place
+            density = 1000.0  # Realistic object density for collision
             
             # Add force sensor for collision detection (like gate)
             place_force_sensor = True  # Enable force sensor to detect collisions
-            force_sensor_parent_link = "branch_0"  # Attach to main trunk (first branch)
+            force_sensor_parent_link = "base_link"  # Attach to main object
         
         # Asset mapping
         asset_type_to_dict_map = {
             "gate": gate_asset_params,
-            "trees": sparse_tree_params,
+            "objects": sparse_object_params,
         }
 
 

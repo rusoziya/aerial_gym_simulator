@@ -78,7 +78,7 @@ class GateAssetConfig:
         semantic_id = GATE_SEMANTIC_ID
         
         # Environment interaction
-        keep_in_env = True  # Gate stays within environment bounds
+        keep_in_env = True  # Gate stays in environment (reverted from False)
         
         # Sensor configuration for collision detection
         place_force_sensor = True  # Enable force sensor to detect collisions with drone
