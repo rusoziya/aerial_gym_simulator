@@ -18,19 +18,29 @@ from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuCo
 class X500Cfg:
 
     class init_config:
-        # init_state tensor is of the format [ratio_x, ratio_y, ratio_z, roll_radians, pitch_radians, yaw_radians, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
-        # Static camera position: (0.0, -3.0, 1.5) in world coordinates
-        # Converting to ratios for gate environment bounds: x∈[-8,8], y∈[-8,8], z∈[0,8]
-        # ratio_x = (0 - (-8)) / (8 - (-8)) = 8/16 = 0.5
-        # ratio_y = (-3 - (-8)) / (8 - (-8)) = 5/16 = 0.3125
-        # ratio_z = (1.5 - 0) / (8 - 0) = 1.5/8 = 0.1875
+        # CHALLENGING SPAWN POSITIONS for gate navigation task
+        # Gate is at center (0,0,0) = ratio (0.5, 0.5, 0.1875) in environment bounds [-8,8] x [-8,8] x [0,8]
+        # Target is in front of gate: ratio (0.85-0.94, 0.1-0.3, 0.3-0.7)
+        # 
+        # SPAWN STRATEGY: Force drone to start in difficult positions requiring navigation:
+        # - Behind gate (wrong side) at various distances and angles
+        # - Side positions (left/right of gate) requiring lateral navigation  
+        # - Different altitudes requiring 3D navigation
+        # - Random orientations (not facing gate) requiring exploration
+        # - Near environment edges requiring long-distance navigation
+        
+        # Environment bounds: x∈[-8,8], y∈[-8,8], z∈[0,8]
+        # Gate center: (0, 0, 0) → ratios (0.5, 0.5, 0.0)
+        # Target area: front of gate → ratios (0.85-0.94, 0.1-0.3, 0.3-0.7)
+        
         min_init_state = [
-            0.5,      # ratio_x: spawn at x=0 (static camera X position)
-            0.3125,   # ratio_y: spawn at y=-3 (static camera Y position)  
-            0.1875,   # ratio_z: spawn at z=1.5 (static camera Z position)
-            0,        # roll: no rotation
-            0,        # pitch: no rotation 
-            0,        # yaw: facing forward (same as static camera direction)
+            # CHALLENGING SPAWN AREA: Behind gate + sides + edges
+            0.1,      # ratio_x: spawn from x=-6.4 (far left/behind)
+            0.6,      # ratio_y: spawn from y=-1.6 (behind gate, wrong side)  
+            0.1,      # ratio_z: spawn from z=0.8 (near ground)
+            -np.pi/4, # roll: slight rotation
+            -np.pi/6, # pitch: slight tilt
+            -np.pi,   # yaw: facing random directions (not towards gate)
             1.0,
             0,        # vx: no initial velocity
             0,        # vy: no initial velocity
@@ -40,19 +50,20 @@ class X500Cfg:
             0,        # wz: no angular velocity
         ]
         max_init_state = [
-            0.5,      # same as min for fixed position
-            0.3125,   # same as min for fixed position
-            0.1875,   # same as min for fixed position
-            0,        # no rotation
-            0,        # no rotation
-            0,        # no rotation 
+            # DIVERSE CHALLENGING POSITIONS
+            0.9,      # ratio_x: spawn up to x=6.4 (far right/sides)
+            0.95,     # ratio_y: spawn up to y=6.4 (far behind gate - VERY CHALLENGING)
+            0.8,      # ratio_z: spawn up to z=6.4 (high altitude)
+            np.pi/4,  # roll: rotation range
+            np.pi/6,  # pitch: tilt range
+            np.pi,    # yaw: full rotation range (often facing away from gate)
             1.0,
-            0,        # no initial velocity
-            0,        # no initial velocity
-            0,        # no initial velocity
-            0,        # no angular velocity
-            0,        # no angular velocity
-            0,        # no angular velocity
+            0,        # vx: no initial velocity
+            0,        # vy: no initial velocity
+            0,        # vz: no initial velocity
+            0,        # wx: no angular velocity
+            0,        # wy: no angular velocity
+            0,        # wz: no angular velocity
         ]
 
     class sensor_config:

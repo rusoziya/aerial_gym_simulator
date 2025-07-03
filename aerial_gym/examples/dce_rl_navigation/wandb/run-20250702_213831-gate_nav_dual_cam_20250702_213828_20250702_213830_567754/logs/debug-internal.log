@@ -1,0 +1,79 @@
+2025-07-02 21:38:31,609 INFO    MainThread:727088 [internal.py:wandb_internal():90] W&B internal server running at pid: 727088, started at: 2025-07-02 21:38:31.608544
+2025-07-02 21:38:31,614 DEBUG   SenderThread:727088 [sender.py:send():236] send: header
+2025-07-02 21:38:31,614 INFO    WriterThread:727088 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/run-gate_nav_dual_cam_20250702_213828_20250702_213830_567754.wandb
+2025-07-02 21:38:31,670 DEBUG   SenderThread:727088 [sender.py:send():236] send: run
+2025-07-02 21:38:31,673 INFO    SenderThread:727088 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso-ucl/gate_navigation_dual_camera/gate_nav_dual_cam_20250702_213828_20250702_213830_567754
+2025-07-02 21:38:32,289 INFO    SenderThread:727088 [dir_watcher.py:__init__():216] watching files in: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files
+2025-07-02 21:38:32,289 INFO    SenderThread:727088 [sender.py:_start_run_threads():815] run started: gate_nav_dual_cam_20250702_213828_20250702_213830_567754 with start time 1751488711
+2025-07-02 21:38:32,289 DEBUG   SenderThread:727088 [sender.py:send():236] send: summary
+2025-07-02 21:38:32,289 INFO    SenderThread:727088 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-02 21:38:32,290 DEBUG   HandlerThread:727088 [handler.py:handle_request():140] handle_request: check_version
+2025-07-02 21:38:32,290 DEBUG   SenderThread:727088 [sender.py:send_request():250] send_request: check_version
+2025-07-02 21:38:32,338 DEBUG   HandlerThread:727088 [handler.py:handle_request():140] handle_request: run_start
+2025-07-02 21:38:32,354 DEBUG   HandlerThread:727088 [meta.py:__init__():35] meta init
+2025-07-02 21:38:32,354 DEBUG   HandlerThread:727088 [meta.py:__init__():49] meta init done
+2025-07-02 21:38:32,354 DEBUG   HandlerThread:727088 [meta.py:probe():209] probe
+2025-07-02 21:38:32,361 DEBUG   HandlerThread:727088 [meta.py:_setup_git():199] setup git
+2025-07-02 21:38:32,461 DEBUG   HandlerThread:727088 [meta.py:_setup_git():206] setup git done
+2025-07-02 21:38:32,461 DEBUG   HandlerThread:727088 [meta.py:_save_pip():53] save pip
+2025-07-02 21:38:32,462 DEBUG   HandlerThread:727088 [meta.py:_save_pip():67] save pip done
+2025-07-02 21:38:32,462 DEBUG   HandlerThread:727088 [meta.py:_save_conda():74] save conda
+2025-07-02 21:38:33,291 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/conda-environment.yaml
+2025-07-02 21:38:33,292 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/requirements.txt
+2025-07-02 21:38:33,292 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/wandb-summary.json
+2025-07-02 21:38:33,562 DEBUG   HandlerThread:727088 [meta.py:_save_conda():84] save conda done
+2025-07-02 21:38:33,562 DEBUG   HandlerThread:727088 [meta.py:probe():247] probe done
+2025-07-02 21:38:33,564 DEBUG   SenderThread:727088 [sender.py:send():236] send: files
+2025-07-02 21:38:33,564 INFO    SenderThread:727088 [sender.py:_save_file():952] saving file wandb-metadata.json with policy now
+2025-07-02 21:38:33,570 DEBUG   HandlerThread:727088 [handler.py:handle_request():140] handle_request: stop_status
+2025-07-02 21:38:33,570 DEBUG   SenderThread:727088 [sender.py:send_request():250] send_request: stop_status
+2025-07-02 21:38:33,580 INFO    HandlerThread:727088 [handler.py:handle_tbrecord():723] handling tbrecord: tbrecord {
+  log_dir: "./train_dir/gate_nav_dual_cam_20250702_213828/.summary/0"
+  save: true
+}
+
+2025-07-02 21:38:33,581 DEBUG   HandlerThread:727088 [config_util.py:dict_from_config_file():100] no default config file found in config-defaults.yaml
+2025-07-02 21:38:33,793 DEBUG   SenderThread:727088 [sender.py:send():236] send: telemetry
+2025-07-02 21:38:33,793 DEBUG   SenderThread:727088 [sender.py:send():236] send: config
+2025-07-02 21:38:33,794 DEBUG   SenderThread:727088 [sender.py:send():236] send: tbrecord
+2025-07-02 21:38:33,794 DEBUG   SenderThread:727088 [sender.py:send():236] send: files
+2025-07-02 21:38:33,794 INFO    SenderThread:727088 [sender.py:_save_file():952] saving file events.out.tfevents.1751488713.ziyar with policy live
+2025-07-02 21:38:34,127 INFO    Thread-12 :727088 [upload_job.py:push():138] Uploaded file /tmp/tmp3ar8x1m0wandb/p341yz9f-wandb-metadata.json
+2025-07-02 21:38:34,290 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/conda-environment.yaml
+2025-07-02 21:38:34,290 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/wandb-metadata.json
+2025-07-02 21:38:34,291 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/events.out.tfevents.1751488713.ziyar
+2025-07-02 21:38:34,291 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:36,291 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:38,292 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:40,292 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:42,293 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:44,294 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:46,294 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/events.out.tfevents.1751488713.ziyar
+2025-07-02 21:38:46,786 INFO    Thread-15 :727088 [upload_job.py:push():138] Uploaded file /tmp/tmp3ar8x1m0wandb/67vaccsj-events.out.tfevents.1751488713.ziyar
+2025-07-02 21:38:47,294 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:48,800 DEBUG   HandlerThread:727088 [handler.py:handle_request():140] handle_request: stop_status
+2025-07-02 21:38:48,800 DEBUG   SenderThread:727088 [sender.py:send_request():250] send_request: stop_status
+2025-07-02 21:38:49,295 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:51,296 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:53,297 INFO    Thread-8  :727088 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log
+2025-07-02 21:38:56,637 WARNING MainThread:727088 [internal.py:is_dead():387] Internal process exiting, parent pid 727012 disappeared
+2025-07-02 21:38:56,637 ERROR   MainThread:727088 [internal.py:wandb_internal():149] Internal process shutdown.
+2025-07-02 21:38:57,589 INFO    SenderThread:727088 [sender.py:finish():1114] shutting down sender
+2025-07-02 21:38:57,589 INFO    WriterThread:727088 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/run-gate_nav_dual_cam_20250702_213828_20250702_213830_567754.wandb
+2025-07-02 21:38:57,590 INFO    SenderThread:727088 [dir_watcher.py:finish():353] shutting down directory watcher
+2025-07-02 21:38:57,593 INFO    HandlerThread:727088 [handler.py:finish():806] shutting down handler
+2025-07-02 21:38:58,300 INFO    SenderThread:727088 [dir_watcher.py:finish():383] scan: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files
+2025-07-02 21:38:58,300 INFO    SenderThread:727088 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/conda-environment.yaml conda-environment.yaml
+2025-07-02 21:38:58,300 INFO    SenderThread:727088 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/requirements.txt requirements.txt
+2025-07-02 21:38:58,301 INFO    SenderThread:727088 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/events.out.tfevents.1751488713.ziyar events.out.tfevents.1751488713.ziyar
+2025-07-02 21:38:58,301 INFO    SenderThread:727088 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/wandb-summary.json wandb-summary.json
+2025-07-02 21:38:58,309 INFO    SenderThread:727088 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/config.yaml config.yaml
+2025-07-02 21:38:58,315 INFO    SenderThread:727088 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log output.log
+2025-07-02 21:38:58,324 INFO    SenderThread:727088 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/wandb-metadata.json wandb-metadata.json
+2025-07-02 21:38:58,344 INFO    SenderThread:727088 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-02 21:38:58,344 INFO    SenderThread:727088 [file_pusher.py:join():176] waiting for file pusher
+2025-07-02 21:38:58,911 INFO    Thread-16 :727088 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/conda-environment.yaml
+2025-07-02 21:38:58,912 INFO    Thread-19 :727088 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/config.yaml
+2025-07-02 21:38:58,912 INFO    Thread-17 :727088 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/requirements.txt
+2025-07-02 21:38:58,914 INFO    Thread-18 :727088 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/wandb-summary.json
+2025-07-02 21:38:59,113 INFO    Thread-20 :727088 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/wandb/run-20250702_213831-gate_nav_dual_cam_20250702_213828_20250702_213830_567754/files/output.log

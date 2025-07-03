@@ -1,0 +1,1110 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-03 12:17:38,641][53312] Queried available GPUs: 0
+[37m[1m[2025-07-03 12:17:38,641][53312] Environment var CUDA_VISIBLE_DEVICES is 0
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 3
+[SUBPROCESS] Target Sample Factory action space: 3D
+[SUBPROCESS] Setting num_envs to 4 based on env_agents=4
+[SUBPROCESS] Set SF_ENV_AGENTS=4 environment variable
+[SUBPROCESS] Config batch_size: 128
+[SUBPROCESS] Using MEDIUM CONFIG (4 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gif_exp10', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=4', '--obs_key=observations', '--batch_size=128', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+Not connected to PVD
++++ Using GPU PhysX
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[2294 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[2294 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[2294 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 4 (dce_navigation_task_gate.py:39)
+[37m[2294 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=4 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[2294 ms][base_task] - INFO : Setting seed: 3407623260 (base_task.py:38)
+[37m[2294 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[2295 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[2295 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[2295 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[2295 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[2295 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[2295 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[2295 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[2296 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[2296 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[2296 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[2296 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[2296 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[2296 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[2296 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+[37m[3473 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[3473 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[3702 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[3702 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[3702 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[3702 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[3703 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[3703 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[3703 ms][base_multirotor] - WARNING : Creating 4 multirotors. (base_multirotor.py:32)
+[37m[3703 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[3703 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[3703 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3703 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3708 ms][asset_loader] - INFO : Loading asset: tree_54.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3718 ms][asset_loader] - INFO : Loading asset: tree_42.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3728 ms][asset_loader] - INFO : Loading asset: tree_39.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3739 ms][asset_loader] - INFO : Loading asset: tree_70.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3749 ms][asset_loader] - INFO : Loading asset: tree_2.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3759 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3761 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3762 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3763 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3764 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3765 ms][asset_loader] - INFO : Loading asset: tree_69.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3775 ms][asset_loader] - INFO : Loading asset: tree_16.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3786 ms][asset_loader] - INFO : Loading asset: tree_17.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3796 ms][asset_loader] - INFO : Loading asset: tree_97.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3806 ms][asset_loader] - INFO : Loading asset: tree_30.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3816 ms][asset_loader] - INFO : Loading asset: tree_24.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3826 ms][asset_loader] - INFO : Loading asset: tree_99.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3837 ms][asset_loader] - INFO : Loading asset: tree_74.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3846 ms][asset_loader] - INFO : Loading asset: tree_95.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3856 ms][asset_loader] - INFO : Loading asset: tree_51.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3866 ms][asset_loader] - INFO : Loading asset: tree_86.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3876 ms][asset_loader] - INFO : Loading asset: tree_62.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3887 ms][asset_loader] - INFO : Loading asset: tree_57.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3897 ms][asset_loader] - INFO : Loading asset: tree_64.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3907 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[3915 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[3915 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[4350 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[4350 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[4350 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.46 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.43 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 12.36 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.66 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving DISABLED
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 4
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[37m[4384 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[4392 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[4392 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[4483 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[4483 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[4587 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 11 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4828 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4830 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[5506 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:483)
+[37m[5507 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:502)
+[37m[5526 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:519)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 12:17:44,415][53456] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (3,), float32), num_agents=4, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gif_exp10', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=4', '--obs_key=observations', '--batch_size=128', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+[33m[2025-07-03 12:17:45,465][53312] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-03 12:17:45,465][53312] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gif_exp10
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=128
+[36mnum_batches_per_epoch=4
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 128]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=128
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=4
+[36mheadless=False
+[36msave_gifs=False
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=3
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gif_exp10 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=4 --obs_key=observations --batch_size=128 --num_batches_to_accumulate=2 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=128 --rnn_num_layers=1 --encoder_mlp_layers 512 256 128 --gamma=0.98 --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gif_exp10', 'train_dir': './train_dir', 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 128, 'rollout': 32, 'gamma': 0.98, 'learning_rate': 0.0003, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 128], 'use_rnn': True, 'rnn_size': 128, 'rnn_num_layers': 1, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 4, 'headless': False, 'obs_key': 'observations'}
+[36mgit_hash=a54f99d681da80aa6215176cae93d2948a30ac42
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gif_exp10_20250703_121734_705964
+[36m[2025-07-03 12:17:45,465][53312] Saving configuration to ./train_dir/gif_exp10/config.json...
+[36m[2025-07-03 12:17:45,523][53312] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 12:17:45,524][53312] Rollout worker 0 uses device cuda:0
+[36m[2025-07-03 12:17:45,533][53312] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 12:17:45,533][53312] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-03 12:17:45,535][53312] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 12:17:45,536][53312] Starting seed is not provided
+[36m[2025-07-03 12:17:45,537][53312] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 12:17:45,537][53312] Initializing actor-critic model on device cuda:0
+[36m[2025-07-03 12:17:45,538][53312] RunningMeanStd input shape: (145,)
+[36m[2025-07-03 12:17:45,539][53312] RunningMeanStd input shape: (1,)
+[36m[2025-07-03 12:17:45,581][53312] Created Actor Critic model with architecture:
+[36m[2025-07-03 12:17:45,581][53312] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(128, 128)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=128, out_features=6, bias=True)
+[36m  )
+[36m)
+[36m[2025-07-03 12:17:46,073][53312] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-07-03 12:17:46,074][53312] No checkpoints found
+[36m[2025-07-03 12:17:46,075][53312] Did not load from checkpoint, starting from scratch!
+[36m[2025-07-03 12:17:46,075][53312] Initialized policy 0 weights for model version 0
+[36m[2025-07-03 12:17:46,075][53312] LearnerWorker_p0 finished initialization!
+[36m[2025-07-03 12:17:46,075][53312] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 12:17:46,079][53312] Inference worker 0-0 is ready!
+[37m[1m[2025-07-03 12:17:46,080][53312] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-07-03 12:17:46,080][53312] EnvRunner 0-0 uses policy 0
+[37m[13941 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[13941 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[13941 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 4 (dce_navigation_task_gate.py:39)
+[37m[13941 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=4 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[13941 ms][base_task] - INFO : Setting seed: 4012053042 (base_task.py:38)
+[37m[13942 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[13942 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[13943 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[13943 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[13943 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[13943 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[13943 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[13943 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 2.34 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.94 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 12.62 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 7.09 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving DISABLED
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 4
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[DEBUG] Set robot spawn positions: tensor([[-3.5863, -3.3822,  1.7380],
+        [-2.7816, -4.3898,  2.7113],
+        [ 1.2248, -5.3635,  3.4008],
+        [-0.5279, -3.0928,  1.6557]], device='cuda:0')
+[37m[13945 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[13945 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[13945 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[13945 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[13945 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[13945 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[13945 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[15127 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[15128 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[15360 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[15360 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[15360 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[15360 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[15360 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[15360 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[15360 ms][base_multirotor] - WARNING : Creating 4 multirotors. (base_multirotor.py:32)
+[37m[15360 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[15360 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[15360 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15361 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15366 ms][asset_loader] - INFO : Loading asset: tree_96.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15377 ms][asset_loader] - INFO : Loading asset: tree_10.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15387 ms][asset_loader] - INFO : Loading asset: tree_72.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15398 ms][asset_loader] - INFO : Loading asset: tree_50.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15408 ms][asset_loader] - INFO : Loading asset: tree_17.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15418 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15420 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15421 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15422 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15424 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15425 ms][asset_loader] - INFO : Loading asset: tree_87.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15434 ms][asset_loader] - INFO : Loading asset: tree_58.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15444 ms][asset_loader] - INFO : Loading asset: tree_83.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15455 ms][asset_loader] - INFO : Loading asset: tree_81.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15464 ms][asset_loader] - INFO : Loading asset: tree_35.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15475 ms][asset_loader] - INFO : Loading asset: tree_7.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15485 ms][asset_loader] - INFO : Loading asset: tree_98.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15495 ms][asset_loader] - INFO : Loading asset: tree_76.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15505 ms][asset_loader] - INFO : Loading asset: tree_19.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15515 ms][asset_loader] - INFO : Loading asset: tree_67.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15525 ms][asset_loader] - INFO : Loading asset: tree_70.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[15535 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[15542 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[15542 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[15569 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[15569 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[15569 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[15604 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[15612 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[15615 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[15709 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[15709 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[15803 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 11 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[16028 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[16030 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[16714 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:483)
+[37m[16714 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:502)
+[37m[16734 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:519)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 12:17:49,054][53312] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[DEBUG] Set robot spawn positions: tensor([[-3.3687, -5.1305,  2.9810],
+        [-3.8278, -4.6303,  2.5986],
+        [ 4.3148, -4.4202,  3.4115],
+        [ 2.8414, -4.7073,  2.3981]], device='cuda:0')
+[37m[17969 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.8900, -2.8869,  3.0454]], device='cuda:0')
+[37m[20559 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:17:53,210][53312] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 1.9. Samples: 8. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 12:17:53,211][53312] Avg episode reward: [(0, '-50.000')]
+[DEBUG] Set robot spawn positions: tensor([[ 2.2951, -5.3422,  1.8177]], device='cuda:0')
+[37m[24434 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[25230 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:17:57,769][53312] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 20.7. Samples: 180. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 12:17:57,770][53312] Avg episode reward: [(0, '-86.140')]
+[DEBUG] Set robot spawn positions: tensor([[ 2.4838, -2.7310,  1.4839]], device='cuda:0')
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py:1194: UserWarning: operator() profile_node %104 : int[] = prim::profile_ivalue(%102)
+ does not have profile information (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/jit/codegen/cuda/graph_fuser.cpp:105.)
+  return forward_call(*input, **kwargs)
+[DEBUG] Set robot spawn positions: tensor([[ 2.2420, -3.6481,  3.5720]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.6332, -4.2926,  2.8146]], device='cuda:0')
+[37m[28472 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[28645 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.7546, -4.9688,  3.5593]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.9491, -3.1210,  2.6400]], device='cuda:0')
+[37m[29987 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:18:02,769][53312] Fps is (10 sec: 53.6, 60 sec: 37.3, 300 sec: 37.3). Total num frames: 512. Throughput: 0: 47.2. Samples: 648. Policy #0 lag: (min: 6.0, avg: 6.0, max: 6.0)
+[36m[2025-07-03 12:18:02,776][53312] Avg episode reward: [(0, '-118.321')]
+[37m[31067 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.0864, -4.4932,  1.3556]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 3.1642, -5.2300,  2.8433]], device='cuda:0')
+[37m[1m[2025-07-03 12:18:06,080][53312] Heartbeat connected on Batcher_0
+[37m[1m[2025-07-03 12:18:06,080][53312] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-07-03 12:18:06,080][53312] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-07-03 12:18:06,080][53312] Heartbeat connected on RolloutWorker_w0
+[37m[34003 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[34584 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.6437, -5.2828,  1.2234]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.2989, -5.3119,  3.0194]], device='cuda:0')
+[37m[35460 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:18:07,748][53312] Fps is (10 sec: 102.6, 60 sec: 54.8, 300 sec: 54.8). Total num frames: 1024. Throughput: 0: 59.9. Samples: 1120. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:18:07,748][53312] Avg episode reward: [(0, '-148.280')]
+[37m[37249 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.7362, -2.9232,  2.2354]], device='cuda:0')
+[37m[38328 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:18:12,748][53312] Fps is (10 sec: 102.6, 60 sec: 64.8, 300 sec: 64.8). Total num frames: 1536. Throughput: 0: 58.1. Samples: 1376. Policy #0 lag: (min: 8.0, avg: 8.5, max: 24.0)
+[36m[2025-07-03 12:18:12,748][53312] Avg episode reward: [(0, '-154.086')]
+[DEBUG] Set robot spawn positions: tensor([[ 2.5371, -3.2349,  1.8723]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 1.5314, -2.9478,  2.1519]], device='cuda:0')
+[37m[42152 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[42397 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.7826, -2.9722,  1.4609]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.7566, -4.1547,  1.8974]], device='cuda:0')
+[37m[43476 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[45092 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.3979, -4.9808,  1.9655]], device='cuda:0')
+[36m[2025-07-03 12:18:17,748][53312] Fps is (10 sec: 51.2, 60 sec: 53.5, 300 sec: 53.5). Total num frames: 1536. Throughput: 0: 65.7. Samples: 1884. Policy #0 lag: (min: 8.0, avg: 8.5, max: 24.0)
+[36m[2025-07-03 12:18:17,748][53312] Avg episode reward: [(0, '-160.127')]
+[37m[46706 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.9964, -5.2192,  3.0411]], device='cuda:0')
+[37m[48292 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.2837, -2.6933,  2.6434]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.9085, -4.1945,  2.3884]], device='cuda:0')
+[37m[49775 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[50458 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:18:22,772][53312] Fps is (10 sec: 51.1, 60 sec: 60.7, 300 sec: 60.7). Total num frames: 2048. Throughput: 0: 71.2. Samples: 2400. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 12:18:22,772][53312] Avg episode reward: [(0, '-172.132')]
+[DEBUG] Set robot spawn positions: tensor([[ 2.4632, -3.7925,  1.7997]], device='cuda:0')
+[37m[51637 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.2555, -4.9058,  1.6854]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.5702, -3.0636,  2.9349],
+        [-3.4086, -4.4477,  3.4641]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.0614, -4.6200,  1.2961]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.9260, -4.4989,  1.5980]], device='cuda:0')
+[37m[55477 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[55573 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:18:27,925][53312] Fps is (10 sec: 100.6, 60 sec: 65.9, 300 sec: 65.9). Total num frames: 2560. Throughput: 0: 68.2. Samples: 2652. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:18:27,926][53312] Avg episode reward: [(0, '-177.346')]
+[37m[56571 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[56629 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.9461, -4.9955,  2.5254]], device='cuda:0')
+[36m[2025-07-03 12:18:32,734][53312] Fps is (10 sec: 102.8, 60 sec: 70.3, 300 sec: 70.3). Total num frames: 3072. Throughput: 0: 71.7. Samples: 3132. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:18:32,735][53312] Avg episode reward: [(0, '-174.307')]
+[37m[60789 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.2385, -4.9571,  3.4467]], device='cuda:0')
+[37m[63145 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.7690, -3.4671,  3.1104]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.2079, -5.3686,  1.9685]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 1.8655, -4.5147,  3.2041]], device='cuda:0')
+[37m[63625 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[63717 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[63773 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.7784, -4.9034,  3.3602]], device='cuda:0')
+[36m[2025-07-03 12:18:37,757][53312] Fps is (10 sec: 104.2, 60 sec: 73.6, 300 sec: 73.6). Total num frames: 3584. Throughput: 0: 81.7. Samples: 3648. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 12:18:37,757][53312] Avg episode reward: [(0, '-169.186')]
+[37m[66463 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.9172, -4.5011,  3.5041]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-0.4086, -5.2037,  2.5662]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-0.2330, -4.6420,  3.1706]], device='cuda:0')
+[37m[67970 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[68398 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[68795 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:18:42,757][53312] Fps is (10 sec: 102.2, 60 sec: 76.3, 300 sec: 76.3). Total num frames: 4096. Throughput: 0: 82.8. Samples: 3904. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:18:42,757][53312] Avg episode reward: [(0, '-170.668')]
+[DEBUG] Set robot spawn positions: tensor([[-2.6325, -5.3848,  2.2489]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.8464, -2.8423,  1.7270]], device='cuda:0')
+[37m[72398 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[73365 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.8851, -2.6984,  3.3342]], device='cuda:0')
+[37m[75172 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.9640, -4.4799,  3.0230]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 1.2066, -5.1964,  1.8235]], device='cuda:0')
+[36m[2025-07-03 12:18:47,738][53312] Fps is (10 sec: 51.3, 60 sec: 69.8, 300 sec: 69.8). Total num frames: 4096. Throughput: 0: 83.9. Samples: 4420. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:18:47,739][53312] Avg episode reward: [(0, '-172.140')]
+[37m[75811 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[77367 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.1538, -4.1736,  2.9962]], device='cuda:0')
+[37m[78297 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.0952, -5.3381,  3.0887]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.3883, -4.2086,  2.0401]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.2044, -4.6705,  1.8433]], device='cuda:0')
+[36m[2025-07-03 12:18:52,765][53312] Fps is (10 sec: 51.2, 60 sec: 77.4, 300 sec: 72.3). Total num frames: 4608. Throughput: 0: 84.7. Samples: 4932. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:18:52,766][53312] Avg episode reward: [(0, '-173.570')]
+[37m[80990 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[81048 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[81232 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.1083, -2.5822,  1.8924]], device='cuda:0')
+[37m[83243 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.2594, -3.3335,  1.7441]], device='cuda:0')
+[37m[84448 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.1521, -5.3854,  1.8199]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.1055, -4.0279,  1.3512]], device='cuda:0')
+[36m[2025-07-03 12:18:57,746][53312] Fps is (10 sec: 102.3, 60 sec: 85.4, 300 sec: 74.5). Total num frames: 5120. Throughput: 0: 84.7. Samples: 5188. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:18:57,746][53312] Avg episode reward: [(0, '-174.261')]
+[37m[85944 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[86867 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.4297, -4.2703,  2.4451]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.1592, -4.9728,  1.3031]], device='cuda:0')
+[37m[89175 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[89278 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.1300, -4.3611,  2.3248]], device='cuda:0')
+[37m[90381 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:02,756][53312] Fps is (10 sec: 102.5, 60 sec: 85.4, 300 sec: 76.4). Total num frames: 5632. Throughput: 0: 84.6. Samples: 5692. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:19:02,757][53312] Avg episode reward: [(0, '-174.332')]
+[DEBUG] Set robot spawn positions: tensor([[-2.4358, -4.2565,  2.0785]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.5950, -4.0176,  3.0696]], device='cuda:0')
+[37m[92390 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[93357 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.1008, -3.9459,  1.2661]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.4003, -3.0837,  1.9850]], device='cuda:0')
+[36m[2025-07-03 12:19:07,777][53312] Fps is (10 sec: 102.1, 60 sec: 85.3, 300 sec: 78.0). Total num frames: 6144. Throughput: 0: 84.1. Samples: 6184. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:19:07,778][53312] Avg episode reward: [(0, '-175.693')]
+[37m[96037 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[96243 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[97537 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.6151, -4.0876,  2.8042]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.9986, -4.1395,  3.5046]], device='cuda:0')
+[37m[99186 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:12,759][53312] Fps is (10 sec: 102.4, 60 sec: 85.3, 300 sec: 79.5). Total num frames: 6656. Throughput: 0: 84.6. Samples: 6444. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 12:19:12,760][53312] Avg episode reward: [(0, '-179.031')]
+[DEBUG] Set robot spawn positions: tensor([[-3.0395, -4.2761,  1.7468]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.1704, -4.1514,  2.3343]], device='cuda:0')
+[37m[101810 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[103401 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.3977, -3.9695,  3.0427]], device='cuda:0')
+[37m[104932 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:17,749][53312] Fps is (10 sec: 51.3, 60 sec: 85.3, 300 sec: 75.0). Total num frames: 6656. Throughput: 0: 84.8. Samples: 6948. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 12:19:17,749][53312] Avg episode reward: [(0, '-182.292')]
+[DEBUG] Set robot spawn positions: tensor([[-3.0979, -5.2635,  1.8710]], device='cuda:0')
+[37m[106448 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[107581 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 3.8669, -5.1879,  1.6521]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.8673, -5.3591,  3.4936]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.1450, -5.1488,  2.3089]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.7529, -3.3749,  3.0275]], device='cuda:0')
+[37m[109980 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[110037 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[110132 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:22,756][53312] Fps is (10 sec: 51.2, 60 sec: 85.4, 300 sec: 76.5). Total num frames: 7168. Throughput: 0: 84.8. Samples: 7464. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:19:22,756][53312] Avg episode reward: [(0, '-183.269')]
+[DEBUG] Set robot spawn positions: tensor([[ 2.0349, -4.2230,  1.3868]], device='cuda:0')
+[37m[113513 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 3.5126, -4.5196,  1.8650]], device='cuda:0')
+[37m[113819 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:27,759][53312] Fps is (10 sec: 102.3, 60 sec: 85.6, 300 sec: 77.8). Total num frames: 7680. Throughput: 0: 84.5. Samples: 7708. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 12:19:27,760][53312] Avg episode reward: [(0, '-184.734')]
+[DEBUG] Set robot spawn positions: tensor([[-2.5828, -3.8114,  2.1377]], device='cuda:0')
+[37m[117130 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.7879, -3.6980,  1.7816]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 3.9221, -3.2797,  3.0730]], device='cuda:0')
+[37m[117902 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[119587 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.5034, -4.6544,  2.9256]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 1.4248, -4.8027,  3.3386]], device='cuda:0')
+[36m[2025-07-03 12:19:32,754][53312] Fps is (10 sec: 102.4, 60 sec: 85.3, 300 sec: 79.0). Total num frames: 8192. Throughput: 0: 84.4. Samples: 8220. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:19:32,754][53312] Avg episode reward: [(0, '-187.003')]
+[37m[121109 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[121446 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.7458, -4.0014,  2.8950]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-0.3716, -4.2378,  1.8106]], device='cuda:0')
+[37m[123966 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[125566 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:37,746][53312] Fps is (10 sec: 102.5, 60 sec: 85.3, 300 sec: 80.1). Total num frames: 8704. Throughput: 0: 84.6. Samples: 8736. Policy #0 lag: (min: 6.0, avg: 6.0, max: 6.0)
+[36m[2025-07-03 12:19:37,746][53312] Avg episode reward: [(0, '-186.633')]
+[37m[1m[2025-07-03 12:19:37,791][53312] Saving ./train_dir/gif_exp10/checkpoint_p0/checkpoint_000000272_8704.pth...
+[DEBUG] Set robot spawn positions: tensor([[-2.0774, -4.5159,  2.5762]], device='cuda:0')
+[37m[126400 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.7290, -3.1166,  1.8022]], device='cuda:0')
+[37m[128536 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.9258, -4.2083,  2.6242]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-0.2154, -3.5577,  3.5673]], device='cuda:0')
+[36m[2025-07-03 12:19:42,758][53312] Fps is (10 sec: 51.2, 60 sec: 76.8, 300 sec: 76.5). Total num frames: 8704. Throughput: 0: 84.5. Samples: 8992. Policy #0 lag: (min: 6.0, avg: 6.0, max: 6.0)
+[36m[2025-07-03 12:19:42,758][53312] Avg episode reward: [(0, '-185.895')]
+[37m[131343 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[131655 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.1628, -3.3518,  2.7027]], device='cuda:0')
+[37m[133655 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[133710 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.4199, -2.5908,  2.2181]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.3385, -2.7640,  1.4866]], device='cuda:0')
+[37m[133940 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:47,746][53312] Fps is (10 sec: 51.2, 60 sec: 85.3, 300 sec: 77.6). Total num frames: 9216. Throughput: 0: 84.6. Samples: 9500. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:19:47,746][53312] Avg episode reward: [(0, '-184.264')]
+[DEBUG] Set robot spawn positions: tensor([[ 3.8888, -3.0897,  3.3109]], device='cuda:0')
+[37m[136076 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[137764 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 3.6853, -4.4785,  1.7803]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.3875, -3.1200,  3.4376]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.1119, -2.5780,  1.4386]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.2962, -4.5450,  2.5026]], device='cuda:0')
+[37m[138256 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[139176 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[139316 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:52,737][53312] Fps is (10 sec: 102.6, 60 sec: 85.4, 300 sec: 78.7). Total num frames: 9728. Throughput: 0: 85.1. Samples: 10012. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 12:19:52,737][53312] Avg episode reward: [(0, '-182.756')]
+[DEBUG] Set robot spawn positions: tensor([[ 3.3102, -3.1732,  2.0503]], device='cuda:0')
+[37m[141855 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 3.5854, -4.7928,  2.4129]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.9018, -3.8467,  1.4748]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.9760, -4.6756,  1.7910]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.0675, -4.6523,  3.1019]], device='cuda:0')
+[37m[144977 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[145233 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:19:57,759][53312] Fps is (10 sec: 102.3, 60 sec: 85.3, 300 sec: 79.6). Total num frames: 10240. Throughput: 0: 84.8. Samples: 10260. Policy #0 lag: (min: 2.0, avg: 2.0, max: 2.0)
+[36m[2025-07-03 12:19:57,759][53312] Avg episode reward: [(0, '-181.679')]
+[37m[145640 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[145697 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.4769, -2.7731,  1.2235]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-0.6971, -3.1582,  2.4352]], device='cuda:0')
+[37m[148011 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[148492 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.7758, -4.5278,  2.4393]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.9349, -2.6211,  3.5711]], device='cuda:0')
+[37m[150544 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:02,766][53312] Fps is (10 sec: 102.1, 60 sec: 85.3, 300 sec: 80.4). Total num frames: 10752. Throughput: 0: 84.5. Samples: 10752. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 12:20:02,766][53312] Avg episode reward: [(0, '-179.214')]
+[37m[151001 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.2988, -2.8603,  2.4301]], device='cuda:0')
+[37m[152483 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.0384, -4.7237,  2.1845]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.7991, -4.1453,  3.5883]], device='cuda:0')
+[37m[155441 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:07,756][53312] Fps is (10 sec: 102.4, 60 sec: 85.4, 300 sec: 81.2). Total num frames: 11264. Throughput: 0: 84.3. Samples: 11256. Policy #0 lag: (min: 12.0, avg: 12.5, max: 28.0)
+[36m[2025-07-03 12:20:07,757][53312] Avg episode reward: [(0, '-180.083')]
+[37m[155645 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[155888 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.4150, -3.0053,  3.1668]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.2629, -5.0931,  3.1894]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.5858, -4.4834,  2.6056]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.1248, -4.8917,  3.5064]], device='cuda:0')
+[37m[158026 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[158081 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[159538 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[159919 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.6089, -3.1664,  1.3888]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.2039, -2.8190,  2.8699]], device='cuda:0')
+[36m[2025-07-03 12:20:12,734][53312] Fps is (10 sec: 51.4, 60 sec: 76.8, 300 sec: 78.4). Total num frames: 11264. Throughput: 0: 84.3. Samples: 11500. Policy #0 lag: (min: 12.0, avg: 12.5, max: 28.0)
+[36m[2025-07-03 12:20:12,734][53312] Avg episode reward: [(0, '-182.113')]
+[37m[161431 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.4362, -4.6462,  2.5068]], device='cuda:0')
+[37m[162562 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.3592, -2.4724,  2.6304]], device='cuda:0')
+[37m[164320 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:17,737][53312] Fps is (10 sec: 51.3, 60 sec: 85.3, 300 sec: 79.2). Total num frames: 11776. Throughput: 0: 84.2. Samples: 12008. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 12:20:17,737][53312] Avg episode reward: [(0, '-181.958')]
+[DEBUG] Set robot spawn positions: tensor([[ 1.2803, -5.1626,  2.2177]], device='cuda:0')
+[37m[167737 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.9096, -5.3759,  3.0107]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 3.9612, -2.8076,  2.8257]], device='cuda:0')
+[37m[168513 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[168620 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.1686, -3.4240,  3.0365]], device='cuda:0')
+[36m[2025-07-03 12:20:22,748][53312] Fps is (10 sec: 102.3, 60 sec: 85.3, 300 sec: 80.0). Total num frames: 12288. Throughput: 0: 84.1. Samples: 12520. Policy #0 lag: (min: 14.0, avg: 14.0, max: 14.0)
+[36m[2025-07-03 12:20:22,748][53312] Avg episode reward: [(0, '-181.322')]
+[37m[171054 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.0319, -3.4645,  1.9103]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 1.0904, -4.9124,  1.8992],
+        [-2.4187, -3.1955,  1.6657]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-0.9707, -5.3009,  3.0068]], device='cuda:0')
+[37m[174439 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[174994 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[175405 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:27,774][53312] Fps is (10 sec: 102.0, 60 sec: 85.3, 300 sec: 80.6). Total num frames: 12800. Throughput: 0: 84.2. Samples: 12784. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:20:27,775][53312] Avg episode reward: [(0, '-179.507')]
+[DEBUG] Set robot spawn positions: tensor([[-3.2667, -3.3291,  1.5482]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.7634, -3.3609,  1.6273]], device='cuda:0')
+[37m[176827 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[177234 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:32,770][53312] Fps is (10 sec: 102.2, 60 sec: 85.3, 300 sec: 81.3). Total num frames: 13312. Throughput: 0: 84.1. Samples: 13288. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:20:32,770][53312] Avg episode reward: [(0, '-180.199')]
+[DEBUG] Set robot spawn positions: tensor([[-1.7865, -5.0521,  1.4522]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.4046, -4.0476,  1.5008]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.6711, -3.4820,  1.9041]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 3.8934, -2.8645,  2.1169]], device='cuda:0')
+[37m[183140 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[183233 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[183623 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[183886 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:37,767][53312] Fps is (10 sec: 102.5, 60 sec: 85.3, 300 sec: 81.9). Total num frames: 13824. Throughput: 0: 83.9. Samples: 13788. Policy #0 lag: (min: 2.0, avg: 2.0, max: 2.0)
+[36m[2025-07-03 12:20:37,767][53312] Avg episode reward: [(0, '-177.150')]
+[DEBUG] Set robot spawn positions: tensor([[-4.5956, -2.5932,  2.5333]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.1725, -3.5353,  2.8247]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 3.6005, -5.2256,  2.3345]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.0918, -3.0479,  3.2187]], device='cuda:0')
+[37m[188872 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[188971 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[189026 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[189792 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:42,764][53312] Fps is (10 sec: 51.2, 60 sec: 85.3, 300 sec: 79.6). Total num frames: 13824. Throughput: 0: 83.7. Samples: 14028. Policy #0 lag: (min: 2.0, avg: 2.0, max: 2.0)
+[36m[2025-07-03 12:20:42,765][53312] Avg episode reward: [(0, '-176.799')]
+[DEBUG] Set robot spawn positions: tensor([[ 3.2984, -3.6529,  1.3112]], device='cuda:0')
+[37m[192451 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.8633, -3.2508,  3.0977]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.4386, -5.2406,  2.5995]], device='cuda:0')
+[37m[195252 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[195352 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:47,762][53312] Fps is (10 sec: 51.2, 60 sec: 85.3, 300 sec: 80.2). Total num frames: 14336. Throughput: 0: 84.5. Samples: 14552. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 12:20:47,763][53312] Avg episode reward: [(0, '-179.011')]
+[DEBUG] Set robot spawn positions: tensor([[ 0.1240, -4.6485,  2.5233],
+        [-1.4456, -3.0662,  2.3684]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 1.5444, -3.1424,  1.5153]], device='cuda:0')
+[37m[196960 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[197034 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.7287, -4.0320,  2.3124]], device='cuda:0')
+[36m[2025-07-03 12:20:52,745][53312] Fps is (10 sec: 102.6, 60 sec: 85.3, 300 sec: 80.8). Total num frames: 14848. Throughput: 0: 84.5. Samples: 15056. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:20:52,745][53312] Avg episode reward: [(0, '-179.613')]
+[37m[201144 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.0520, -5.1948,  1.6866]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 1.9256, -3.5673,  2.6260]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.6428, -3.3312,  2.3063]], device='cuda:0')
+[37m[202600 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[203176 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[203272 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:20:57,755][53312] Fps is (10 sec: 102.5, 60 sec: 85.3, 300 sec: 81.4). Total num frames: 15360. Throughput: 0: 84.7. Samples: 15312. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:20:57,756][53312] Avg episode reward: [(0, '-182.916')]
+[DEBUG] Set robot spawn positions: tensor([[ 2.5370, -4.2277,  2.4586]], device='cuda:0')
+[37m[207025 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.9561, -2.7115,  2.7106]], device='cuda:0')
+[37m[209224 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.8862, -5.0274,  3.1756]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.7174, -3.7716,  2.7530]], device='cuda:0')
+[37m[210240 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[210521 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:02,743][53312] Fps is (10 sec: 102.4, 60 sec: 85.4, 300 sec: 81.9). Total num frames: 15872. Throughput: 0: 85.0. Samples: 15832. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:21:02,744][53312] Avg episode reward: [(0, '-183.193')]
+[DEBUG] Set robot spawn positions: tensor([[-3.4747, -3.9900,  1.6458]], device='cuda:0')
+[37m[212250 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.2416, -2.5326,  2.2682]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.0850, -3.6972,  1.9312]], device='cuda:0')
+[37m[214709 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[214910 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:07,746][53312] Fps is (10 sec: 51.2, 60 sec: 76.8, 300 sec: 79.9). Total num frames: 15872. Throughput: 0: 84.7. Samples: 16332. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:21:07,747][53312] Avg episode reward: [(0, '-182.260')]
+[DEBUG] Set robot spawn positions: tensor([[ 3.5765, -3.3207,  1.2090]], device='cuda:0')
+[37m[217309 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[217662 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[217726 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.5777, -2.8517,  2.3632]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.1857, -3.2625,  1.2226]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.7031, -4.0142,  1.6260]], device='cuda:0')
+[37m[218259 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.5278, -3.7067,  3.4775]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.4962, -4.1360,  2.5901]], device='cuda:0')
+[37m[220449 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:12,763][53312] Fps is (10 sec: 51.1, 60 sec: 85.3, 300 sec: 80.4). Total num frames: 16384. Throughput: 0: 84.5. Samples: 16584. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 12:21:12,763][53312] Avg episode reward: [(0, '-179.307')]
+[37m[220723 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.6079, -5.1853,  1.9834]], device='cuda:0')
+[37m[222909 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.2565, -2.7250,  1.9917]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.1884, -4.1854,  1.5888]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.0728, -4.3513,  2.0138]], device='cuda:0')
+[37m[224331 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[224710 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[225214 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:17,775][53312] Fps is (10 sec: 102.1, 60 sec: 85.3, 300 sec: 81.0). Total num frames: 16896. Throughput: 0: 84.9. Samples: 17108. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:21:17,776][53312] Avg episode reward: [(0, '-177.029')]
+[DEBUG] Set robot spawn positions: tensor([[-3.4027, -3.9580,  3.3150]], device='cuda:0')
+[37m[229104 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.9482, -5.2469,  1.5131]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.8383, -4.5073,  2.2565]], device='cuda:0')
+[37m[230516 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:22,741][53312] Fps is (10 sec: 102.6, 60 sec: 85.3, 300 sec: 81.5). Total num frames: 17408. Throughput: 0: 85.1. Samples: 17616. Policy #0 lag: (min: 6.0, avg: 6.0, max: 6.0)
+[36m[2025-07-03 12:21:22,741][53312] Avg episode reward: [(0, '-175.449')]
+[37m[231582 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[233678 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.3355, -2.7100,  1.7626]], device='cuda:0')
+[36m[2025-07-03 12:21:27,735][53312] Fps is (10 sec: 102.8, 60 sec: 85.4, 300 sec: 81.9). Total num frames: 17920. Throughput: 0: 85.7. Samples: 17880. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-03 12:21:27,735][53312] Avg episode reward: [(0, '-174.393')]
+[DEBUG] Set robot spawn positions: tensor([[-1.6871, -4.0593,  2.9284]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.1619, -2.4097,  2.4358]], device='cuda:0')
+[37m[236679 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[237201 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[238270 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.0985, -4.2894,  2.4832]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.6548, -4.7582,  2.4576]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.3864, -3.7528,  2.2683]], device='cuda:0')
+[37m[238327 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[239388 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.6905, -2.9303,  2.2760]], device='cuda:0')
+[36m[2025-07-03 12:21:32,758][53312] Fps is (10 sec: 102.2, 60 sec: 85.3, 300 sec: 82.4). Total num frames: 18432. Throughput: 0: 85.4. Samples: 18396. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:21:32,759][53312] Avg episode reward: [(0, '-167.210')]
+[37m[241138 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[241674 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.9159, -4.2996,  1.2834]], device='cuda:0')
+[37m[244143 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.5053, -2.5949,  2.2868]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.7430, -4.7801,  2.7415]], device='cuda:0')
+[37m[244556 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:37,747][53312] Fps is (10 sec: 102.3, 60 sec: 85.4, 300 sec: 82.8). Total num frames: 18944. Throughput: 0: 86.0. Samples: 18924. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:21:37,747][53312] Avg episode reward: [(0, '-166.775')]
+[37m[1m[2025-07-03 12:21:37,798][53312] Saving ./train_dir/gif_exp10/checkpoint_p0/checkpoint_000000592_18944.pth...
+[37m[245856 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.9767, -3.1696,  2.6339]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.2016, -2.9590,  2.0728],
+        [ 0.3385, -3.0246,  1.2996]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.9431, -2.9692,  2.8008]], device='cuda:0')
+[37m[248774 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[248838 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[250281 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.2954, -4.1335,  1.9672]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.5999, -4.5203,  2.1749]], device='cuda:0')
+[36m[2025-07-03 12:21:42,740][53312] Fps is (10 sec: 51.3, 60 sec: 85.4, 300 sec: 81.1). Total num frames: 18944. Throughput: 0: 86.0. Samples: 19180. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:21:42,740][53312] Avg episode reward: [(0, '-161.955')]
+[37m[251587 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.1084, -4.5102,  3.3024]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.8408, -2.4670,  2.7361]], device='cuda:0')
+[37m[255053 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[255416 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:47,771][53312] Fps is (10 sec: 51.1, 60 sec: 85.3, 300 sec: 81.5). Total num frames: 19456. Throughput: 0: 86.5. Samples: 19728. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-03 12:21:47,771][53312] Avg episode reward: [(0, '-161.160')]
+[DEBUG] Set robot spawn positions: tensor([[-4.6855, -3.1722,  3.0004]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.1186, -3.5927,  2.1494]], device='cuda:0')
+[37m[256678 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[257564 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-1.6609, -3.3500,  1.7916]], device='cuda:0')
+[37m[258656 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.4599, -4.4946,  2.9403]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 3.8121, -4.1915,  2.4819]], device='cuda:0')
+[37m[259893 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[260272 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:52,768][53312] Fps is (10 sec: 102.1, 60 sec: 85.3, 300 sec: 81.9). Total num frames: 19968. Throughput: 0: 88.0. Samples: 20296. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 12:21:52,769][53312] Avg episode reward: [(0, '-159.522')]
+[DEBUG] Set robot spawn positions: tensor([[ 1.5081, -4.9998,  3.4042]], device='cuda:0')
+[37m[263692 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 3.7991, -2.5822,  1.9076]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.7416, -3.5113,  2.2790]], device='cuda:0')
+[37m[264683 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:21:57,734][53312] Fps is (10 sec: 102.8, 60 sec: 85.4, 300 sec: 82.4). Total num frames: 20480. Throughput: 0: 88.9. Samples: 20580. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:21:57,734][53312] Avg episode reward: [(0, '-155.917')]
+[37m[265652 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.1307, -4.4027,  3.1187]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.5854, -2.6838,  1.4495]], device='cuda:0')
+[37m[266558 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[266721 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.8643, -4.8616,  3.5881]], device='cuda:0')
+[37m[268562 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.6836, -2.4029,  1.5199]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.7030, -2.8559,  1.9397]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.2835, -3.8463,  1.3092]], device='cuda:0')
+[36m[2025-07-03 12:22:02,768][53312] Fps is (10 sec: 102.4, 60 sec: 85.3, 300 sec: 82.7). Total num frames: 20992. Throughput: 0: 90.4. Samples: 21176. Policy #0 lag: (min: 12.0, avg: 12.5, max: 28.0)
+[36m[2025-07-03 12:22:02,769][53312] Avg episode reward: [(0, '-156.291')]
+[37m[270757 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[270849 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[271180 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-4.2189, -3.5948,  2.7416]], device='cuda:0')
+[37m[273697 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.7276, -2.9275,  1.5534]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.9732, -5.0636,  1.6387]], device='cuda:0')
+[37m[274823 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[274963 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:07,767][53312] Fps is (10 sec: 102.1, 60 sec: 93.8, 300 sec: 83.1). Total num frames: 21504. Throughput: 0: 92.2. Samples: 21768. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 12:22:07,767][53312] Avg episode reward: [(0, '-157.071')]
+[DEBUG] Set robot spawn positions: tensor([[-3.4605, -4.5965,  1.7295]], device='cuda:0')
+[37m[277416 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.3910, -3.4128,  2.4216]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 2.0369, -3.9122,  3.5908]], device='cuda:0')
+[37m[279045 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[279594 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.3181, -3.8524,  1.3167]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.2568, -2.4515,  1.3357]], device='cuda:0')
+[36m[2025-07-03 12:22:12,751][53312] Fps is (10 sec: 102.6, 60 sec: 93.9, 300 sec: 83.5). Total num frames: 22016. Throughput: 0: 92.4. Samples: 22040. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:22:12,751][53312] Avg episode reward: [(0, '-157.027')]
+[37m[281257 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[281542 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 3.6645, -4.5834,  1.3901]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.9656, -2.5880,  3.3132]], device='cuda:0')
+[37m[285194 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[285585 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:17,769][53312] Fps is (10 sec: 102.4, 60 sec: 93.9, 300 sec: 83.8). Total num frames: 22528. Throughput: 0: 93.0. Samples: 22580. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 12:22:17,770][53312] Avg episode reward: [(0, '-156.697')]
+[DEBUG] Set robot spawn positions: tensor([[-1.5719, -2.5062,  2.6509]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 3.9951, -4.9028,  2.4489]], device='cuda:0')
+[37m[286209 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[287622 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.1224, -5.3353,  3.0647]], device='cuda:0')
+[37m[288535 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.0719, -4.0395,  2.3459]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.0994, -3.8335,  2.7306],
+        [ 2.1748, -4.0275,  3.4855]], device='cuda:0')
+[36m[2025-07-03 12:22:22,750][53312] Fps is (10 sec: 102.4, 60 sec: 93.9, 300 sec: 84.2). Total num frames: 23040. Throughput: 0: 94.2. Samples: 23164. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-03 12:22:22,750][53312] Avg episode reward: [(0, '-158.460')]
+[37m[290933 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[291183 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.8732, -4.9688,  3.5350]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.8292, -3.1369,  2.2649]], device='cuda:0')
+[37m[292534 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[292659 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.1061, -5.3436,  3.1904]], device='cuda:0')
+[37m[294841 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:27,760][53312] Fps is (10 sec: 102.5, 60 sec: 93.8, 300 sec: 84.5). Total num frames: 23552. Throughput: 0: 95.1. Samples: 23460. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:22:27,760][53312] Avg episode reward: [(0, '-157.479')]
+[DEBUG] Set robot spawn positions: tensor([[ 4.2010, -3.9258,  2.3641]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.0641, -3.0967,  3.1922]], device='cuda:0')
+[37m[296241 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[296678 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 2.6354, -4.7935,  2.9095]], device='cuda:0')
+[37m[298082 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:32,742][53312] Fps is (10 sec: 102.5, 60 sec: 93.9, 300 sec: 84.8). Total num frames: 24064. Throughput: 0: 95.9. Samples: 24040. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:22:32,742][53312] Avg episode reward: [(0, '-156.725')]
+[37m[301982 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-3.7680, -4.6794,  2.4405]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.4625, -4.8641,  1.7520]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.5217, -4.2877,  1.7224]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-1.8439, -5.0134,  1.8219]], device='cuda:0')
+[37m[302872 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[302976 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[303162 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:37,752][53312] Fps is (10 sec: 102.5, 60 sec: 93.9, 300 sec: 85.1). Total num frames: 24576. Throughput: 0: 95.3. Samples: 24584. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:22:37,752][53312] Avg episode reward: [(0, '-154.092')]
+[DEBUG] Set robot spawn positions: tensor([[ 3.5476, -2.4869,  2.6063]], device='cuda:0')
+[37m[306952 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.7846, -2.5176,  2.2859]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.9742, -4.9311,  1.2356]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 4.7773, -4.8991,  2.7808]], device='cuda:0')
+[37m[308790 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[309026 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[309630 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:42,756][53312] Fps is (10 sec: 51.1, 60 sec: 93.8, 300 sec: 83.7). Total num frames: 24576. Throughput: 0: 94.8. Samples: 24848. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 12:22:42,756][53312] Avg episode reward: [(0, '-151.491')]
+[DEBUG] Set robot spawn positions: tensor([[ 3.1006, -3.8136,  2.1409]], device='cuda:0')
+[37m[312565 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 3.8000, -2.6829,  2.9691]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.5760, -3.4599,  1.5883]], device='cuda:0')
+[37m[314626 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:47,737][53312] Fps is (10 sec: 51.3, 60 sec: 93.9, 300 sec: 85.2). Total num frames: 25088. Throughput: 0: 93.6. Samples: 25384. Policy #0 lag: (min: 8.0, avg: 8.5, max: 24.0)
+[36m[2025-07-03 12:22:47,737][53312] Avg episode reward: [(0, '-152.055')]
+[37m[315880 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.4649, -2.6636,  3.2255]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.5605, -4.6068,  3.5509]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.0346, -3.7645,  1.8977]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.8122, -3.9844,  1.5045]], device='cuda:0')
+[37m[316536 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[316777 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[317240 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[317435 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.2809, -2.5634,  2.6857]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.0386, -3.0597,  2.1183]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.2886, -5.1307,  1.4042]], device='cuda:0')
+[36m[2025-07-03 12:22:52,744][53312] Fps is (10 sec: 102.5, 60 sec: 93.9, 300 sec: 86.8). Total num frames: 25600. Throughput: 0: 92.8. Samples: 25940. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 12:22:52,744][53312] Avg episode reward: [(0, '-150.371')]
+[37m[321122 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[321340 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[321623 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 0.8712, -3.8480,  1.8851]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-3.6177, -3.3778,  1.9720]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.8426, -4.1078,  2.0920]], device='cuda:0')
+[37m[325171 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[325260 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[325596 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:22:57,770][53312] Fps is (10 sec: 102.1, 60 sec: 93.8, 300 sec: 86.8). Total num frames: 26112. Throughput: 0: 91.9. Samples: 26176. Policy #0 lag: (min: 14.0, avg: 14.0, max: 14.0)
+[36m[2025-07-03 12:22:57,770][53312] Avg episode reward: [(0, '-144.328')]
+[DEBUG] Set robot spawn positions: tensor([[-4.1351, -3.6462,  2.9283]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[ 0.9189, -4.9489,  1.7087]], device='cuda:0')
+[37m[328385 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[329195 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.9374, -2.4811,  2.4861]], device='cuda:0')
+[36m[2025-07-03 12:23:02,750][53312] Fps is (10 sec: 102.3, 60 sec: 93.9, 300 sec: 86.8). Total num frames: 26624. Throughput: 0: 92.8. Samples: 26756. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 12:23:02,750][53312] Avg episode reward: [(0, '-143.972')]
+[37m[331055 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[331964 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 4.5069, -5.3728,  1.2109]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.3426, -2.5325,  2.8701]], device='cuda:0')
+[37m[333501 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-0.6019, -3.2563,  3.3629]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-4.7903, -4.6666,  2.3696]], device='cuda:0')
+[37m[335591 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 12:23:07,767][53312] Fps is (10 sec: 102.4, 60 sec: 93.9, 300 sec: 86.8). Total num frames: 27136. Throughput: 0: 93.1. Samples: 27356. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 12:23:07,768][53312] Avg episode reward: [(0, '-142.154')]
+[37m[335646 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[ 1.8734, -4.0526,  1.2921]], device='cuda:0')
+[37m[337591 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[338111 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.9248, -5.3991,  1.7397]], device='cuda:0')
+[37m[340094 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[340153 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[DEBUG] Set robot spawn positions: tensor([[-2.2603, -4.6360,  3.2828]], device='cuda:0')
+[DEBUG] Set robot spawn positions: tensor([[-2.8693, -3.8696,  2.0517]], device='cuda:0')
+[36m[2025-07-03 12:23:12,742][53312] Fps is (10 sec: 102.5, 60 sec: 93.9, 300 sec: 88.5). Total num frames: 27648. Throughput: 0: 92.9. Samples: 27640. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)

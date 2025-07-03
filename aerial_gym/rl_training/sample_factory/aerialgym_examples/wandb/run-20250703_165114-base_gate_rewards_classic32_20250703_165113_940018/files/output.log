@@ -1,0 +1,740 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-03 16:51:17,471][77651] Queried available GPUs: 0
+[37m[1m[2025-07-03 16:51:17,471][77651] Environment var CUDA_VISIBLE_DEVICES is 0
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[2072 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[2072 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[2072 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[2072 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[2072 ms][base_task] - INFO : Setting seed: 2330042451 (base_task.py:38)
+[37m[2072 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[2072 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[2072 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[2072 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[2072 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[2072 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[2072 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[2073 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[2074 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[2074 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[2074 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[2074 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[2074 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[2074 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[2074 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 3
+[SUBPROCESS] Target Sample Factory action space: 3D
+[SUBPROCESS] Setting num_envs to 16 based on env_agents=16
+[SUBPROCESS] Set SF_ENV_AGENTS=16 environment variable
+[SUBPROCESS] Config batch_size: 2048
+[SUBPROCESS] Using STANDARD CONFIG (16 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=base_gate_rewards_classic32', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+[37m[3166 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[3166 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[3382 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[3382 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[3382 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[3382 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[3382 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[3382 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[3382 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[3382 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[3382 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[3382 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3383 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3386 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3388 ms][asset_loader] - INFO : Loading asset: 1_x_1_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3389 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3390 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3391 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3392 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3393 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3394 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3395 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3396 ms][asset_loader] - INFO : Loading asset: 0_5_x_0_5_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3398 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[3808 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[3808 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[3808 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[3832 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[3841 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[3841 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[3948 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[3948 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[3986 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4202 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4203 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.37 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 9.38 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 12.14 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.14 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[37m[4864 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:473)
+[37m[4864 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:492)
+[37m[4935 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:509)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 16:51:22,629][77777] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (3,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-07-03 16:51:23,543][77651] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-03 16:51:23,544][77651] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=base_gate_rewards_classic32
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=2048
+[36mnum_batches_per_epoch=8
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 64]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=64
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=16
+[36mheadless=False
+[36msave_gifs=True
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=3
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=base_gate_rewards_classic32 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'base_gate_rewards_classic32', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 64], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 16, 'headless': False, 'save_gifs': True, 'obs_key': 'observations'}
+[36mgit_hash=a54f99d681da80aa6215176cae93d2948a30ac42
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=base_gate_rewards_classic32_20250703_165113_940018
+[36m[2025-07-03 16:51:23,544][77651] Saving configuration to ./train_dir/base_gate_rewards_classic32/config.json...
+[36m[2025-07-03 16:51:23,592][77651] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 16:51:23,592][77651] Rollout worker 0 uses device cuda:0
+[36m[2025-07-03 16:51:23,609][77651] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 16:51:23,609][77651] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-03 16:51:23,610][77651] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 16:51:23,611][77651] Starting seed is not provided
+[36m[2025-07-03 16:51:23,611][77651] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 16:51:23,611][77651] Initializing actor-critic model on device cuda:0
+[36m[2025-07-03 16:51:23,612][77651] RunningMeanStd input shape: (145,)
+[36m[2025-07-03 16:51:23,614][77651] RunningMeanStd input shape: (1,)
+[36m[2025-07-03 16:51:23,648][77651] Created Actor Critic model with architecture:
+[36m[2025-07-03 16:51:23,649][77651] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(64, 64)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=64, out_features=6, bias=True)
+[36m  )
+[36m)
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=base_gate_rewards_classic32', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.82 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.57 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 12.50 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.94 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[33m[12517 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[12517 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[13597 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[13597 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[13819 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[13819 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[13819 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[13819 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[13819 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[13819 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[13819 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[13819 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[13819 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[13819 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13820 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13824 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13826 ms][asset_loader] - INFO : Loading asset: 0_5_x_0_5_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13827 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13828 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13829 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13830 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13831 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13833 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13834 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13836 ms][asset_loader] - INFO : Loading asset: 1_x_1_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13837 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[13863 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[13863 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[13863 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[13885 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[13894 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[13895 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[14015 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[14015 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[14064 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[14278 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[14279 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[14938 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:473)
+[37m[14938 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:492)
+[37m[15011 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:509)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 16:51:26,778][77651] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[GIF] Episode 0 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0000_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0000_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0000_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0000_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0000_merged_dual_camera.gif
+[36m[2025-07-03 16:51:31,742][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 9.7. Samples: 48. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:51:31,743][77651] Avg episode reward: [(0, '-101.830')]
+[33m[20682 ms][IGE_viewer_control] - WARNING : Camera follow: True (IGE_viewer_control.py:217)
+[36m[2025-07-03 16:51:36,677][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 98.6. Samples: 976. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:51:36,677][77651] Avg episode reward: [(0, '-82.175')]
+[36m[2025-07-03 16:51:41,741][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 118.7. Samples: 1776. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:51:41,742][77651] Avg episode reward: [(0, '-77.411')]
+[37m[1m[2025-07-03 16:51:43,711][77651] Heartbeat connected on Batcher_0
+[37m[1m[2025-07-03 16:51:43,711][77651] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-07-03 16:51:43,711][77651] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-07-03 16:51:43,711][77651] Heartbeat connected on RolloutWorker_w0
+[36m[2025-07-03 16:51:46,701][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 157.4. Samples: 3136. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:51:46,701][77651] Avg episode reward: [(0, '-78.379')]
+[36m[2025-07-03 16:51:51,669][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 179.3. Samples: 4464. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:51:51,669][77651] Avg episode reward: [(0, '-77.514')]
+[36m[2025-07-03 16:51:56,697][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 169.5. Samples: 5072. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:51:56,697][77651] Avg episode reward: [(0, '-78.408')]
+[36m[2025-07-03 16:52:01,674][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 183.9. Samples: 6416. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:01,674][77651] Avg episode reward: [(0, '-78.158')]
+[36m[2025-07-03 16:52:06,670][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 196.1. Samples: 7824. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:06,670][77651] Avg episode reward: [(0, '-77.316')]
+[36m[2025-07-03 16:52:11,735][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 189.7. Samples: 8528. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:11,736][77651] Avg episode reward: [(0, '-78.708')]
+[33m[63883 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[63883 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:430: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:431: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:432: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
+[36m[2025-07-03 16:52:16,706][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 217.4. Samples: 9824. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:16,706][77651] Avg episode reward: [(0, '-77.065')]
+[36m[2025-07-03 16:52:21,684][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 228.2. Samples: 11248. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:21,684][77651] Avg episode reward: [(0, '-79.877')]
+[36m[2025-07-03 16:52:26,667][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 226.9. Samples: 11968. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:26,668][77651] Avg episode reward: [(0, '-78.426')]
+[36m[2025-07-03 16:52:31,722][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 226.7. Samples: 13344. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:31,722][77651] Avg episode reward: [(0, '-78.444')]
+[36m[2025-07-03 16:52:36,679][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 225.0. Samples: 14592. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:36,679][77651] Avg episode reward: [(0, '-78.050')]
+[GIF] Episode 100 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0001_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0001_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0001_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0001_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0001_merged_dual_camera.gif
+[36m[2025-07-03 16:52:41,677][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 226.9. Samples: 15280. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 16:52:41,677][77651] Avg episode reward: [(0, '-77.294')]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py:1194: UserWarning: operator() profile_node %104 : int[] = prim::profile_ivalue(%102)
+ does not have profile information (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/jit/codegen/cuda/graph_fuser.cpp:105.)
+  return forward_call(*input, **kwargs)
+[36m[2025-07-03 16:52:46,662][77651] Fps is (10 sec: 1641.2, 60 sec: 273.2, 300 sec: 205.1). Total num frames: 16384. Throughput: 0: 225.1. Samples: 16544. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:52:46,662][77651] Avg episode reward: [(0, '-77.739')]
+[36m[2025-07-03 16:52:51,705][77651] Fps is (10 sec: 1633.7, 60 sec: 272.9, 300 sec: 192.9). Total num frames: 16384. Throughput: 0: 226.0. Samples: 18000. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:52:51,705][77651] Avg episode reward: [(0, '-77.931')]
+[36m[2025-07-03 16:52:56,684][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 182.2). Total num frames: 16384. Throughput: 0: 226.7. Samples: 18720. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:52:56,684][77651] Avg episode reward: [(0, '-77.606')]
+[33m[107585 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[107585 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:53:01,664][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 172.7). Total num frames: 16384. Throughput: 0: 228.1. Samples: 20080. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:01,665][77651] Avg episode reward: [(0, '-76.735')]
+[36m[2025-07-03 16:53:06,684][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 164.0). Total num frames: 16384. Throughput: 0: 227.6. Samples: 21488. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:06,685][77651] Avg episode reward: [(0, '-77.564')]
+[36m[2025-07-03 16:53:11,692][77651] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 156.2). Total num frames: 16384. Throughput: 0: 225.7. Samples: 22128. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:11,693][77651] Avg episode reward: [(0, '-76.930')]
+[36m[2025-07-03 16:53:16,670][77651] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 149.1). Total num frames: 16384. Throughput: 0: 227.1. Samples: 23552. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:16,670][77651] Avg episode reward: [(0, '-77.168')]
+[37m[1m[2025-07-03 16:53:16,735][77651] Saving ./train_dir/base_gate_rewards_classic32/checkpoint_p0/checkpoint_000000032_16384.pth...
+[36m[2025-07-03 16:53:21,715][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 142.5). Total num frames: 16384. Throughput: 0: 233.1. Samples: 25088. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:21,715][77651] Avg episode reward: [(0, '-77.493')]
+[36m[2025-07-03 16:53:26,700][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 136.6). Total num frames: 16384. Throughput: 0: 231.7. Samples: 25712. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:26,700][77651] Avg episode reward: [(0, '-77.972')]
+[36m[2025-07-03 16:53:31,709][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 131.1). Total num frames: 16384. Throughput: 0: 235.8. Samples: 27168. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:31,709][77651] Avg episode reward: [(0, '-77.900')]
+[36m[2025-07-03 16:53:36,693][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 126.1). Total num frames: 16384. Throughput: 0: 235.4. Samples: 28592. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:36,693][77651] Avg episode reward: [(0, '-78.118')]
+[33m[150038 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[150038 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:53:41,675][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 121.5). Total num frames: 16384. Throughput: 0: 234.7. Samples: 29280. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:41,676][77651] Avg episode reward: [(0, '-77.291')]
+[GIF] Episode 200 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0002_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0002_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0002_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0002_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0002_merged_dual_camera.gif
+[36m[2025-07-03 16:53:46,671][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 117.1). Total num frames: 16384. Throughput: 0: 236.4. Samples: 30720. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:46,671][77651] Avg episode reward: [(0, '-77.564')]
+[36m[2025-07-03 16:53:51,703][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 113.1). Total num frames: 16384. Throughput: 0: 236.3. Samples: 32128. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 16:53:51,703][77651] Avg episode reward: [(0, '-77.279')]
+[36m[2025-07-03 16:53:56,687][77651] Fps is (10 sec: 1635.9, 60 sec: 273.1, 300 sec: 218.6). Total num frames: 32768. Throughput: 0: 237.2. Samples: 32800. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:53:56,687][77651] Avg episode reward: [(0, '-77.485')]
+[36m[2025-07-03 16:54:01,678][77651] Fps is (10 sec: 1642.5, 60 sec: 273.0, 300 sec: 211.5). Total num frames: 32768. Throughput: 0: 233.2. Samples: 34048. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:01,678][77651] Avg episode reward: [(0, '-76.437')]
+[36m[2025-07-03 16:54:06,688][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 204.9). Total num frames: 32768. Throughput: 0: 228.4. Samples: 35360. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:06,688][77651] Avg episode reward: [(0, '-76.948')]
+[36m[2025-07-03 16:54:11,710][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 198.7). Total num frames: 32768. Throughput: 0: 230.0. Samples: 36064. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:11,710][77651] Avg episode reward: [(0, '-77.021')]
+[36m[2025-07-03 16:54:16,678][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 192.9). Total num frames: 32768. Throughput: 0: 229.5. Samples: 37488. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:16,678][77651] Avg episode reward: [(0, '-78.393')]
+[36m[2025-07-03 16:54:21,708][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 187.3). Total num frames: 32768. Throughput: 0: 230.7. Samples: 38976. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:21,708][77651] Avg episode reward: [(0, '-76.905')]
+[33m[193939 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[193939 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:54:26,737][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 182.1). Total num frames: 32768. Throughput: 0: 229.7. Samples: 39632. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:26,737][77651] Avg episode reward: [(0, '-76.234')]
+[36m[2025-07-03 16:54:31,681][77651] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 177.2). Total num frames: 32768. Throughput: 0: 229.3. Samples: 41040. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:31,681][77651] Avg episode reward: [(0, '-77.542')]
+[36m[2025-07-03 16:54:36,723][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 172.5). Total num frames: 32768. Throughput: 0: 228.9. Samples: 42432. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:36,723][77651] Avg episode reward: [(0, '-78.033')]
+[36m[2025-07-03 16:54:41,732][77651] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 168.1). Total num frames: 32768. Throughput: 0: 230.2. Samples: 43168. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:41,733][77651] Avg episode reward: [(0, '-76.611')]
+[36m[2025-07-03 16:54:46,729][77651] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 163.9). Total num frames: 32768. Throughput: 0: 228.0. Samples: 44320. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:46,730][77651] Avg episode reward: [(0, '-76.910')]
+[36m[2025-07-03 16:54:51,714][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 159.9). Total num frames: 32768. Throughput: 0: 222.1. Samples: 45360. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:51,714][77651] Avg episode reward: [(0, '-76.741')]
+[36m[2025-07-03 16:54:56,678][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 156.1). Total num frames: 32768. Throughput: 0: 219.9. Samples: 45952. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:54:56,678][77651] Avg episode reward: [(0, '-76.952')]
+[GIF] Episode 300 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0003_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0003_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0003_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0003_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0003_merged_dual_camera.gif
+[36m[2025-07-03 16:55:01,695][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 152.5). Total num frames: 32768. Throughput: 0: 213.6. Samples: 47104. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:55:01,696][77651] Avg episode reward: [(0, '-79.053')]
+[36m[2025-07-03 16:55:06,672][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 149.0). Total num frames: 32768. Throughput: 0: 207.5. Samples: 48304. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 16:55:06,672][77651] Avg episode reward: [(0, '-77.899')]
+[36m[2025-07-03 16:55:11,685][77651] Fps is (10 sec: 1640.0, 60 sec: 273.2, 300 sec: 218.5). Total num frames: 49152. Throughput: 0: 206.5. Samples: 48912. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:11,686][77651] Avg episode reward: [(0, '-78.695')]
+[33m[244103 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[244103 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:55:16,680][77651] Fps is (10 sec: 1637.1, 60 sec: 273.1, 300 sec: 213.8). Total num frames: 49152. Throughput: 0: 200.5. Samples: 50064. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:16,680][77651] Avg episode reward: [(0, '-77.256')]
+[37m[1m[2025-07-03 16:55:16,745][77651] Saving ./train_dir/base_gate_rewards_classic32/checkpoint_p0/checkpoint_000000096_49152.pth...
+[36m[2025-07-03 16:55:21,699][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 209.2). Total num frames: 49152. Throughput: 0: 196.0. Samples: 51248. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:21,699][77651] Avg episode reward: [(0, '-75.217')]
+[36m[2025-07-03 16:55:26,721][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 204.8). Total num frames: 49152. Throughput: 0: 193.8. Samples: 51888. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:26,721][77651] Avg episode reward: [(0, '-76.447')]
+[36m[2025-07-03 16:55:31,689][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 200.7). Total num frames: 49152. Throughput: 0: 195.0. Samples: 53088. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:31,689][77651] Avg episode reward: [(0, '-77.012')]
+[36m[2025-07-03 16:55:36,729][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 196.6). Total num frames: 49152. Throughput: 0: 200.1. Samples: 54368. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:36,729][77651] Avg episode reward: [(0, '-76.436')]
+[36m[2025-07-03 16:55:41,703][77651] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 192.8). Total num frames: 49152. Throughput: 0: 200.8. Samples: 54992. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:41,703][77651] Avg episode reward: [(0, '-76.314')]
+[36m[2025-07-03 16:55:46,687][77651] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 189.1). Total num frames: 49152. Throughput: 0: 203.8. Samples: 56272. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:46,687][77651] Avg episode reward: [(0, '-75.747')]
+[36m[2025-07-03 16:55:51,700][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 185.5). Total num frames: 49152. Throughput: 0: 208.6. Samples: 57696. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:51,700][77651] Avg episode reward: [(0, '-76.355')]
+[36m[2025-07-03 16:55:56,667][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 182.1). Total num frames: 49152. Throughput: 0: 212.7. Samples: 58480. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:55:56,668][77651] Avg episode reward: [(0, '-76.245')]
+[36m[2025-07-03 16:56:01,703][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 178.8). Total num frames: 49152. Throughput: 0: 217.5. Samples: 59856. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:56:01,703][77651] Avg episode reward: [(0, '-74.801')]
+[33m[291391 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[291391 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:56:06,664][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 175.6). Total num frames: 49152. Throughput: 0: 221.7. Samples: 61216. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:56:06,664][77651] Avg episode reward: [(0, '-76.035')]
+[36m[2025-07-03 16:56:11,731][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 172.5). Total num frames: 49152. Throughput: 0: 223.2. Samples: 61936. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:56:11,731][77651] Avg episode reward: [(0, '-77.235')]
+[GIF] Episode 400 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0004_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0004_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0004_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0004_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0004_merged_dual_camera.gif
+[36m[2025-07-03 16:56:16,735][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 169.5). Total num frames: 49152. Throughput: 0: 224.8. Samples: 63216. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:56:16,735][77651] Avg episode reward: [(0, '-75.340')]
+[36m[2025-07-03 16:56:21,721][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 227.2. Samples: 64592. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:56:21,721][77651] Avg episode reward: [(0, '-76.567')]
+[36m[2025-07-03 16:56:26,712][77651] Fps is (10 sec: 1642.2, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 227.9. Samples: 65248. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:56:26,712][77651] Avg episode reward: [(0, '-74.991')]
+[36m[2025-07-03 16:56:31,692][77651] Fps is (10 sec: 1643.1, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 228.6. Samples: 66560. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:56:31,693][77651] Avg episode reward: [(0, '-77.072')]
+[36m[2025-07-03 16:56:36,730][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 226.0. Samples: 67872. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:56:36,730][77651] Avg episode reward: [(0, '-76.962')]
+[36m[2025-07-03 16:56:41,688][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 222.5. Samples: 68496. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:56:41,688][77651] Avg episode reward: [(0, '-75.858')]
+[36m[2025-07-03 16:56:46,723][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 220.7. Samples: 69792. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:56:46,723][77651] Avg episode reward: [(0, '-76.424')]
+[33m[339407 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[339407 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:56:51,718][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 219.1. Samples: 71088. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:56:51,718][77651] Avg episode reward: [(0, '-75.176')]
+[36m[2025-07-03 16:56:56,680][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 218.6. Samples: 71760. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:56:56,680][77651] Avg episode reward: [(0, '-74.969')]
+[36m[2025-07-03 16:57:01,713][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 219.5. Samples: 73088. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:01,713][77651] Avg episode reward: [(0, '-74.655')]
+[36m[2025-07-03 16:57:06,694][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 218.4. Samples: 74416. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:06,695][77651] Avg episode reward: [(0, '-75.813')]
+[36m[2025-07-03 16:57:11,719][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 217.6. Samples: 75040. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:11,719][77651] Avg episode reward: [(0, '-75.974')]
+[36m[2025-07-03 16:57:16,673][77651] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 219.1. Samples: 76416. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:16,673][77651] Avg episode reward: [(0, '-76.260')]
+[37m[1m[2025-07-03 16:57:16,739][77651] Saving ./train_dir/base_gate_rewards_classic32/checkpoint_p0/checkpoint_000000128_65536.pth...
+[36m[2025-07-03 16:57:21,723][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 218.0. Samples: 77680. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:21,723][77651] Avg episode reward: [(0, '-74.184')]
+[36m[2025-07-03 16:57:26,687][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 218.3. Samples: 78320. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:26,687][77651] Avg episode reward: [(0, '-76.089')]
+[36m[2025-07-03 16:57:31,677][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 219.2. Samples: 79648. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:31,677][77651] Avg episode reward: [(0, '-75.761')]
+[GIF] Episode 500 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0005_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0005_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0005_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0005_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0005_merged_dual_camera.gif
+[36m[2025-07-03 16:57:36,712][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 219.0. Samples: 80944. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 16:57:36,713][77651] Avg episode reward: [(0, '-74.724')]
+[33m[388104 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[388104 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:57:41,727][77651] Fps is (10 sec: 1630.3, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 219.2. Samples: 81632. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:57:41,727][77651] Avg episode reward: [(0, '-74.080')]
+[36m[2025-07-03 16:57:46,695][77651] Fps is (10 sec: 1641.3, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 217.7. Samples: 82880. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:57:46,695][77651] Avg episode reward: [(0, '-74.314')]
+[36m[2025-07-03 16:57:51,680][77651] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 218.0. Samples: 84224. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:57:51,680][77651] Avg episode reward: [(0, '-72.577')]
+[36m[2025-07-03 16:57:56,690][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 219.2. Samples: 84896. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:57:56,690][77651] Avg episode reward: [(0, '-75.721')]
+[36m[2025-07-03 16:58:01,685][77651] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 217.2. Samples: 86192. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:01,685][77651] Avg episode reward: [(0, '-73.068')]
+[36m[2025-07-03 16:58:06,711][77651] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 215.9. Samples: 87392. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:06,711][77651] Avg episode reward: [(0, '-75.413')]
+[36m[2025-07-03 16:58:11,712][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 215.0. Samples: 88000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:11,712][77651] Avg episode reward: [(0, '-75.707')]
+[36m[2025-07-03 16:58:16,665][77651] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 213.0. Samples: 89232. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:16,665][77651] Avg episode reward: [(0, '-74.902')]
+[36m[2025-07-03 16:58:21,763][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 210.3. Samples: 90416. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:21,763][77651] Avg episode reward: [(0, '-73.801')]
+[36m[2025-07-03 16:58:26,732][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 207.6. Samples: 90976. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:26,733][77651] Avg episode reward: [(0, '-72.077')]
+[36m[2025-07-03 16:58:31,744][77651] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 202.4. Samples: 92000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:31,745][77651] Avg episode reward: [(0, '-74.736')]
+[33m[442963 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[442964 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:58:36,670][77651] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 192.0. Samples: 92864. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:36,670][77651] Avg episode reward: [(0, '-73.655')]
+[36m[2025-07-03 16:58:41,741][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 187.5. Samples: 93344. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:41,742][77651] Avg episode reward: [(0, '-75.358')]
+[36m[2025-07-03 16:58:46,701][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 180.6. Samples: 94320. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:46,701][77651] Avg episode reward: [(0, '-73.453')]
+[36m[2025-07-03 16:58:51,679][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 180.4. Samples: 95504. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:51,680][77651] Avg episode reward: [(0, '-74.107')]
+[36m[2025-07-03 16:58:56,701][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 177.1. Samples: 95968. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:58:56,701][77651] Avg episode reward: [(0, '-74.116')]
+[GIF] Episode 600 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0006_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0006_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0006_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0006_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0006_merged_dual_camera.gif
+[36m[2025-07-03 16:59:01,705][77651] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 176.2. Samples: 97168. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:59:01,706][77651] Avg episode reward: [(0, '-74.233')]
+[36m[2025-07-03 16:59:06,715][77651] Fps is (10 sec: 1636.1, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 176.5. Samples: 98352. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:59:06,715][77651] Avg episode reward: [(0, '-75.306')]
+[36m[2025-07-03 16:59:11,668][77651] Fps is (10 sec: 1644.5, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 178.0. Samples: 98976. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:59:11,668][77651] Avg episode reward: [(0, '-71.659')]
+[36m[2025-07-03 16:59:16,710][77651] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 184.3. Samples: 100288. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:59:16,710][77651] Avg episode reward: [(0, '-73.395')]
+[37m[1m[2025-07-03 16:59:16,778][77651] Saving ./train_dir/base_gate_rewards_classic32/checkpoint_p0/checkpoint_000000192_98304.pth...
+[36m[2025-07-03 16:59:21,692][77651] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 193.3. Samples: 101568. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:59:21,693][77651] Avg episode reward: [(0, '-69.961')]
+[36m[2025-07-03 16:59:26,711][77651] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.1). Total num frames: 98304. Throughput: 0: 197.5. Samples: 102224. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:59:26,711][77651] Avg episode reward: [(0, '-72.739')]
+[33m[499714 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:420)
+[33m[499714 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:423)
+[36m[2025-07-03 16:59:31,709][77651] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 204.4. Samples: 103520. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 16:59:31,709][77651] Avg episode reward: [(0, '-71.819')]
+[37m[1m[2025-07-03 16:59:34,768][77651] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 77651], exiting...
+[37m[1m[2025-07-03 16:59:34,768][77651] Runner profile tree view:
+[37m[1mmain_loop: 491.1571
+[37m[1m[2025-07-03 16:59:34,768][77651] Collected {0: 98304}, FPS: 200.1

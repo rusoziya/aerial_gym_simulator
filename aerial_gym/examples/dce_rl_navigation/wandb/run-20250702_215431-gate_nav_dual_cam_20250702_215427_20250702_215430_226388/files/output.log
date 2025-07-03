@@ -1,0 +1,594 @@
+[36m[2025-07-02 21:54:34,166][734056] Queried available GPUs: 0
+[37m[1m[2025-07-02 21:54:34,166][734056] Environment var CUDA_VISIBLE_DEVICES is 0
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 3
+[SUBPROCESS] Target Sample Factory action space: 3D
+[SUBPROCESS] Setting num_envs to 128 based on env_agents=128
+[SUBPROCESS] Set SF_ENV_AGENTS=128 environment variable
+[SUBPROCESS] Config batch_size: 8192
+[SUBPROCESS] Using MAXIMUM PARALLELIZATION CONFIG (128 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_nav_dual_cam_20250702_215427', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=128', '--env_agents=128', '--obs_key=observations', '--batch_size=8192', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+Not connected to PVD
++++ Using GPU PhysX
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[2241 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - FORCED headless mode for Sample Factory training: True (dce_navigation_task_gate.py:21)
+[37m[2241 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Isaac Gym viewer conflicts prevented across all processes (dce_navigation_task_gate.py:22)
+[37m[2241 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 128 (dce_navigation_task_gate.py:32)
+[37m[2241 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=128 from environment - setting environment count. (dce_navigation_task_gate.py:38)
+[37m[2241 ms][base_task] - INFO : Setting seed: 3279678301 (base_task.py:38)
+[37m[2241 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[2241 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: x500, Controller Name: lee_position_control (navigation_task_gate.py:49)
+[37m[2241 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[2241 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[2241 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[2241 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[2241 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[2241 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[2243 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[2243 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[2243 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[31m[2243 ms][IsaacGymEnvManager] - CRITICAL : 
+[31m Setting graphics device to -1.
+[31m This is done because the simulation is run in headless mode and no Isaac Gym cameras are used.
+[31m No need to worry. The simulation and warp rendering will work as expected. (IGE_env_manager.py:112)
+[37m[2243 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: -1 (IGE_env_manager.py:119)
+[37m[2243 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[2243 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[2243 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+[37m[3148 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[3148 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[3369 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[3369 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[3369 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[3369 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[3370 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[3370 ms][BaseRobot] - INFO : Initializing controller lee_position_control (base_robot.py:29)
+[33m[3370 ms][base_multirotor] - WARNING : Creating 128 multirotors. (base_multirotor.py:32)
+[37m[3370 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[3370 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[3370 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3370 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3374 ms][asset_loader] - INFO : Loading asset: tree_77.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3384 ms][asset_loader] - INFO : Loading asset: tree_41.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3395 ms][asset_loader] - INFO : Loading asset: tree_51.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3405 ms][asset_loader] - INFO : Loading asset: tree_12.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3415 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3416 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3418 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3419 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3420 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3421 ms][asset_loader] - INFO : Loading asset: tree_66.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3431 ms][asset_loader] - INFO : Loading asset: tree_47.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3440 ms][asset_loader] - INFO : Loading asset: tree_68.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3450 ms][asset_loader] - INFO : Loading asset: tree_0.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3460 ms][asset_loader] - INFO : Loading asset: tree_60.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3470 ms][asset_loader] - INFO : Loading asset: tree_26.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3480 ms][asset_loader] - INFO : Loading asset: tree_24.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3490 ms][asset_loader] - INFO : Loading asset: tree_59.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3500 ms][asset_loader] - INFO : Loading asset: tree_58.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3510 ms][asset_loader] - INFO : Loading asset: tree_85.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3520 ms][asset_loader] - INFO : Loading asset: tree_43.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3530 ms][asset_loader] - INFO : Loading asset: tree_46.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3540 ms][asset_loader] - INFO : Loading asset: tree_89.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3550 ms][asset_loader] - INFO : Loading asset: tree_13.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3560 ms][asset_loader] - INFO : Loading asset: tree_83.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3570 ms][asset_loader] - INFO : Loading asset: tree_53.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3580 ms][asset_loader] - INFO : Loading asset: tree_67.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3590 ms][asset_loader] - INFO : Loading asset: tree_88.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3600 ms][asset_loader] - INFO : Loading asset: tree_23.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3610 ms][asset_loader] - INFO : Loading asset: tree_8.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3620 ms][asset_loader] - INFO : Loading asset: tree_35.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3630 ms][asset_loader] - INFO : Loading asset: tree_55.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3640 ms][asset_loader] - INFO : Loading asset: tree_44.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3650 ms][asset_loader] - INFO : Loading asset: tree_17.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3660 ms][asset_loader] - INFO : Loading asset: tree_93.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3669 ms][asset_loader] - INFO : Loading asset: tree_72.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3679 ms][asset_loader] - INFO : Loading asset: tree_29.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3689 ms][asset_loader] - INFO : Loading asset: tree_63.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3699 ms][asset_loader] - INFO : Loading asset: tree_97.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3709 ms][asset_loader] - INFO : Loading asset: tree_18.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3718 ms][asset_loader] - INFO : Loading asset: tree_69.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3728 ms][asset_loader] - INFO : Loading asset: tree_32.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3738 ms][asset_loader] - INFO : Loading asset: tree_6.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3748 ms][asset_loader] - INFO : Loading asset: tree_11.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3758 ms][asset_loader] - INFO : Loading asset: tree_98.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3768 ms][asset_loader] - INFO : Loading asset: tree_7.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3778 ms][asset_loader] - INFO : Loading asset: tree_15.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3788 ms][asset_loader] - INFO : Loading asset: tree_1.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3797 ms][asset_loader] - INFO : Loading asset: tree_99.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3807 ms][asset_loader] - INFO : Loading asset: tree_70.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3817 ms][asset_loader] - INFO : Loading asset: tree_56.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3826 ms][asset_loader] - INFO : Loading asset: tree_10.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3836 ms][asset_loader] - INFO : Loading asset: tree_87.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3846 ms][asset_loader] - INFO : Loading asset: tree_79.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3856 ms][asset_loader] - INFO : Loading asset: tree_16.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3866 ms][asset_loader] - INFO : Loading asset: tree_37.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3876 ms][asset_loader] - INFO : Loading asset: tree_91.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3886 ms][asset_loader] - INFO : Loading asset: tree_36.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3896 ms][asset_loader] - INFO : Loading asset: tree_9.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3906 ms][asset_loader] - INFO : Loading asset: tree_74.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3915 ms][asset_loader] - INFO : Loading asset: tree_50.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3925 ms][asset_loader] - INFO : Loading asset: tree_25.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4011 ms][asset_loader] - INFO : Loading asset: tree_57.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4023 ms][asset_loader] - INFO : Loading asset: tree_49.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4034 ms][asset_loader] - INFO : Loading asset: tree_76.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4044 ms][asset_loader] - INFO : Loading asset: tree_30.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4054 ms][asset_loader] - INFO : Loading asset: tree_80.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4064 ms][asset_loader] - INFO : Loading asset: tree_34.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4074 ms][asset_loader] - INFO : Loading asset: tree_61.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4084 ms][asset_loader] - INFO : Loading asset: tree_73.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4094 ms][asset_loader] - INFO : Loading asset: tree_65.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4103 ms][asset_loader] - INFO : Loading asset: tree_48.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4113 ms][asset_loader] - INFO : Loading asset: tree_31.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4123 ms][asset_loader] - INFO : Loading asset: tree_3.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4133 ms][asset_loader] - INFO : Loading asset: tree_52.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4143 ms][asset_loader] - INFO : Loading asset: tree_81.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4153 ms][asset_loader] - INFO : Loading asset: tree_20.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4163 ms][asset_loader] - INFO : Loading asset: tree_86.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4173 ms][asset_loader] - INFO : Loading asset: tree_33.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4183 ms][asset_loader] - INFO : Loading asset: tree_75.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4193 ms][asset_loader] - INFO : Loading asset: tree_22.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4203 ms][asset_loader] - INFO : Loading asset: tree_84.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4213 ms][asset_loader] - INFO : Loading asset: tree_45.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4223 ms][asset_loader] - INFO : Loading asset: tree_14.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4234 ms][asset_loader] - INFO : Loading asset: tree_62.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4244 ms][asset_loader] - INFO : Loading asset: tree_40.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4253 ms][asset_loader] - INFO : Loading asset: tree_42.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4263 ms][asset_loader] - INFO : Loading asset: tree_5.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4273 ms][asset_loader] - INFO : Loading asset: tree_19.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4283 ms][asset_loader] - INFO : Loading asset: tree_94.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4293 ms][asset_loader] - INFO : Loading asset: tree_96.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4302 ms][asset_loader] - INFO : Loading asset: tree_95.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4313 ms][asset_loader] - INFO : Loading asset: tree_64.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4323 ms][asset_loader] - INFO : Loading asset: tree_82.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4333 ms][asset_loader] - INFO : Loading asset: tree_28.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4343 ms][asset_loader] - INFO : Loading asset: tree_71.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4353 ms][asset_loader] - INFO : Loading asset: tree_38.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4363 ms][asset_loader] - INFO : Loading asset: tree_39.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4373 ms][asset_loader] - INFO : Loading asset: tree_92.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4383 ms][asset_loader] - INFO : Loading asset: tree_27.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4393 ms][asset_loader] - INFO : Loading asset: tree_78.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4403 ms][asset_loader] - INFO : Loading asset: tree_90.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4413 ms][asset_loader] - INFO : Loading asset: tree_54.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4423 ms][asset_loader] - INFO : Loading asset: tree_4.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+*** Can't create empty tensor
+[37m[4435 ms][asset_loader] - INFO : Loading asset: tree_2.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4445 ms][asset_loader] - INFO : Loading asset: tree_21.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4457 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[4457 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[4457 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[4867 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.6060000360012054,
+[33mInertia: tensor([[0.0217, 0.0000, 0.0000],
+[33m        [0.0000, 0.0217, 0.0000],
+[33m        [0.0000, 0.0000, 0.0401]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[4868 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[4868 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[5914 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[5947 ms][IsaacGymEnvManager] - WARNING : Headless: True (IGE_env_manager.py:424)
+[37m[5947 ms][IsaacGymEnvManager] - INFO : Headless mode. Viewer not created. (IGE_env_manager.py:434)
+WARNING: allocation matrix is not full rank. Rank: 3
+[33m[7749 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 11 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[7960 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[7961 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.61 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 9.37 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 12.49 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.43 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 128
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[37m[8745 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:452)
+[37m[8745 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:464)
+[37m[8745 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:475)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-02 21:54:43,151][734159] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (3,), float32), num_agents=128, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-07-02 21:54:44,169][734056] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-02 21:54:44,170][734056] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gate_nav_dual_cam_20250702_215427
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=128
+[36mbatch_size=8192
+[36mnum_batches_per_epoch=4
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 128]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=128
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=128
+[36mheadless=False
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=3
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gate_nav_dual_cam_20250702_215427 --headless=false --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=128 --env_agents=128 --obs_key=observations --batch_size=8192 --num_batches_to_accumulate=2 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=128 --rnn_num_layers=1 --encoder_mlp_layers 512 256 128 --gamma=0.98 --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gate_nav_dual_cam_20250702_215427', 'train_dir': './train_dir', 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 128, 'batch_size': 8192, 'rollout': 32, 'gamma': 0.98, 'learning_rate': 0.0003, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 128], 'use_rnn': True, 'rnn_size': 128, 'rnn_num_layers': 1, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory'], 'env_agents': 128, 'headless': False, 'obs_key': 'observations'}
+[36mgit_hash=a54f99d681da80aa6215176cae93d2948a30ac42
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gate_nav_dual_cam_20250702_215427_20250702_215430_226388
+[36m[2025-07-02 21:54:44,170][734056] Saving configuration to ./train_dir/gate_nav_dual_cam_20250702_215427/config.json...
+[36m[2025-07-02 21:54:44,214][734056] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-02 21:54:44,215][734056] Rollout worker 0 uses device cuda:0
+[36m[2025-07-02 21:54:44,661][734056] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-02 21:54:44,661][734056] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-02 21:54:44,662][734056] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-02 21:54:44,664][734056] Starting seed is not provided
+[36m[2025-07-02 21:54:44,664][734056] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-02 21:54:44,664][734056] Initializing actor-critic model on device cuda:0
+[36m[2025-07-02 21:54:44,664][734056] RunningMeanStd input shape: (145,)
+[36m[2025-07-02 21:54:44,665][734056] RunningMeanStd input shape: (1,)
+[36m[2025-07-02 21:54:44,706][734056] Created Actor Critic model with architecture:
+[36m[2025-07-02 21:54:44,706][734056] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(128, 128)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=128, out_features=6, bias=True)
+[36m  )
+[36m)
+[36m[2025-07-02 21:54:45,188][734056] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-07-02 21:54:45,188][734056] No checkpoints found
+[36m[2025-07-02 21:54:45,188][734056] Did not load from checkpoint, starting from scratch!
+[36m[2025-07-02 21:54:45,189][734056] Initialized policy 0 weights for model version 0
+[36m[2025-07-02 21:54:45,189][734056] LearnerWorker_p0 finished initialization!
+[36m[2025-07-02 21:54:45,189][734056] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-02 21:54:45,214][734056] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[37m[1m[2025-07-02 21:54:45,214][734056] Inference worker 0-0 is ready!
+[37m[1m[2025-07-02 21:54:45,214][734056] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-07-02 21:54:45,214][734056] EnvRunner 0-0 uses policy 0
+[37m[17320 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - FORCED headless mode for Sample Factory training: True (dce_navigation_task_gate.py:21)
+[37m[17321 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Isaac Gym viewer conflicts prevented across all processes (dce_navigation_task_gate.py:22)
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_nav_dual_cam_20250702_215427', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=128', '--env_agents=128', '--obs_key=observations', '--batch_size=8192', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+[37m[17323 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[17323 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[31m[17323 ms][IsaacGymEnvManager] - CRITICAL : 
+[31m Setting graphics device to -1.
+[31m This is done because the simulation is run in headless mode and no Isaac Gym cameras are used.
+[31m No need to worry. The simulation and warp rendering will work as expected. (IGE_env_manager.py:112)
+[37m[17323 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: -1 (IGE_env_manager.py:119)
+[37m[17324 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[17324 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[17324 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[18271 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[18271 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[18496 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[18497 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[18497 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[18497 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[18497 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[18497 ms][BaseRobot] - INFO : Initializing controller lee_position_control (base_robot.py:29)
+[33m[18497 ms][base_multirotor] - WARNING : Creating 128 multirotors. (base_multirotor.py:32)
+[37m[18497 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[18497 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[18498 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18498 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18503 ms][asset_loader] - INFO : Loading asset: tree_85.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18513 ms][asset_loader] - INFO : Loading asset: tree_42.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18524 ms][asset_loader] - INFO : Loading asset: tree_21.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18536 ms][asset_loader] - INFO : Loading asset: tree_97.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18546 ms][asset_loader] - INFO : Loading asset: tree_31.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18557 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18558 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18560 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18561 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18562 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18564 ms][asset_loader] - INFO : Loading asset: tree_1.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18574 ms][asset_loader] - INFO : Loading asset: tree_53.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18584 ms][asset_loader] - INFO : Loading asset: tree_45.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18594 ms][asset_loader] - INFO : Loading asset: tree_43.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18604 ms][asset_loader] - INFO : Loading asset: tree_44.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18614 ms][asset_loader] - INFO : Loading asset: tree_84.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18625 ms][asset_loader] - INFO : Loading asset: tree_3.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18636 ms][asset_loader] - INFO : Loading asset: tree_77.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18646 ms][asset_loader] - INFO : Loading asset: tree_40.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18656 ms][asset_loader] - INFO : Loading asset: tree_60.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18666 ms][asset_loader] - INFO : Loading asset: tree_52.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18676 ms][asset_loader] - INFO : Loading asset: tree_7.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18686 ms][asset_loader] - INFO : Loading asset: tree_76.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18696 ms][asset_loader] - INFO : Loading asset: tree_27.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18707 ms][asset_loader] - INFO : Loading asset: tree_38.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18717 ms][asset_loader] - INFO : Loading asset: tree_61.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18727 ms][asset_loader] - INFO : Loading asset: tree_39.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18737 ms][asset_loader] - INFO : Loading asset: tree_72.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18748 ms][asset_loader] - INFO : Loading asset: tree_20.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18772 ms][asset_loader] - INFO : Loading asset: tree_95.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18783 ms][asset_loader] - INFO : Loading asset: tree_69.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18792 ms][asset_loader] - INFO : Loading asset: tree_96.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18802 ms][asset_loader] - INFO : Loading asset: tree_34.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18925 ms][asset_loader] - INFO : Loading asset: tree_51.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18936 ms][asset_loader] - INFO : Loading asset: tree_47.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18947 ms][asset_loader] - INFO : Loading asset: tree_33.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18957 ms][asset_loader] - INFO : Loading asset: tree_2.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18967 ms][asset_loader] - INFO : Loading asset: tree_24.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18976 ms][asset_loader] - INFO : Loading asset: tree_30.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18986 ms][asset_loader] - INFO : Loading asset: tree_70.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[18996 ms][asset_loader] - INFO : Loading asset: tree_32.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19007 ms][asset_loader] - INFO : Loading asset: tree_68.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19017 ms][asset_loader] - INFO : Loading asset: tree_67.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19027 ms][asset_loader] - INFO : Loading asset: tree_79.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19037 ms][asset_loader] - INFO : Loading asset: tree_5.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19046 ms][asset_loader] - INFO : Loading asset: tree_81.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19066 ms][asset_loader] - INFO : Loading asset: tree_23.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19076 ms][asset_loader] - INFO : Loading asset: tree_18.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19086 ms][asset_loader] - INFO : Loading asset: tree_48.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19096 ms][asset_loader] - INFO : Loading asset: tree_15.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19107 ms][asset_loader] - INFO : Loading asset: tree_41.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19117 ms][asset_loader] - INFO : Loading asset: tree_91.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19127 ms][asset_loader] - INFO : Loading asset: tree_0.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19137 ms][asset_loader] - INFO : Loading asset: tree_28.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19148 ms][asset_loader] - INFO : Loading asset: tree_75.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19159 ms][asset_loader] - INFO : Loading asset: tree_26.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19169 ms][asset_loader] - INFO : Loading asset: tree_63.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19178 ms][asset_loader] - INFO : Loading asset: tree_93.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19188 ms][asset_loader] - INFO : Loading asset: tree_74.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19197 ms][asset_loader] - INFO : Loading asset: tree_92.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19207 ms][asset_loader] - INFO : Loading asset: tree_37.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19217 ms][asset_loader] - INFO : Loading asset: tree_55.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19227 ms][asset_loader] - INFO : Loading asset: tree_88.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19237 ms][asset_loader] - INFO : Loading asset: tree_9.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19247 ms][asset_loader] - INFO : Loading asset: tree_80.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19257 ms][asset_loader] - INFO : Loading asset: tree_78.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19267 ms][asset_loader] - INFO : Loading asset: tree_4.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19287 ms][asset_loader] - INFO : Loading asset: tree_82.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19297 ms][asset_loader] - INFO : Loading asset: tree_66.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19307 ms][asset_loader] - INFO : Loading asset: tree_8.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19317 ms][asset_loader] - INFO : Loading asset: tree_73.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19327 ms][asset_loader] - INFO : Loading asset: tree_16.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19337 ms][asset_loader] - INFO : Loading asset: tree_35.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19347 ms][asset_loader] - INFO : Loading asset: tree_87.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19356 ms][asset_loader] - INFO : Loading asset: tree_99.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19366 ms][asset_loader] - INFO : Loading asset: tree_90.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19376 ms][asset_loader] - INFO : Loading asset: tree_19.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19386 ms][asset_loader] - INFO : Loading asset: tree_57.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19395 ms][asset_loader] - INFO : Loading asset: tree_86.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19405 ms][asset_loader] - INFO : Loading asset: tree_14.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19416 ms][asset_loader] - INFO : Loading asset: tree_25.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19426 ms][asset_loader] - INFO : Loading asset: tree_64.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19436 ms][asset_loader] - INFO : Loading asset: tree_13.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19446 ms][asset_loader] - INFO : Loading asset: tree_59.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19457 ms][asset_loader] - INFO : Loading asset: tree_65.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19468 ms][asset_loader] - INFO : Loading asset: tree_6.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19479 ms][asset_loader] - INFO : Loading asset: tree_49.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19489 ms][asset_loader] - INFO : Loading asset: tree_36.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19499 ms][asset_loader] - INFO : Loading asset: tree_10.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19509 ms][asset_loader] - INFO : Loading asset: tree_98.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19519 ms][asset_loader] - INFO : Loading asset: tree_12.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19528 ms][asset_loader] - INFO : Loading asset: tree_62.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19538 ms][asset_loader] - INFO : Loading asset: tree_94.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19548 ms][asset_loader] - INFO : Loading asset: tree_89.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19558 ms][asset_loader] - INFO : Loading asset: tree_11.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19568 ms][asset_loader] - INFO : Loading asset: tree_46.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19578 ms][asset_loader] - INFO : Loading asset: tree_22.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19588 ms][asset_loader] - INFO : Loading asset: tree_29.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19598 ms][asset_loader] - INFO : Loading asset: tree_71.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19608 ms][asset_loader] - INFO : Loading asset: tree_17.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19618 ms][asset_loader] - INFO : Loading asset: tree_83.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19628 ms][asset_loader] - INFO : Loading asset: tree_54.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19638 ms][asset_loader] - INFO : Loading asset: tree_58.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19650 ms][asset_loader] - INFO : Loading asset: tree_50.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19660 ms][asset_loader] - INFO : Loading asset: tree_56.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[19672 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[19673 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[19673 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[19693 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.6060000360012054,
+[33mInertia: tensor([[0.0217, 0.0000, 0.0000],
+[33m        [0.0000, 0.0217, 0.0000],
+[33m        [0.0000, 0.0000, 0.0401]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[19693 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[19693 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+*** Can't create empty tensor
+[37m[20799 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[20825 ms][IsaacGymEnvManager] - WARNING : Headless: True (IGE_env_manager.py:424)

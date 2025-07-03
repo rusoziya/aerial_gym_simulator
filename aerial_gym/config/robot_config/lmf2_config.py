@@ -15,36 +15,45 @@ from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuCo
 class LMF2Cfg:
 
     class init_config:
-        # init_state tensor is of the format [ratio_x, ratio_y, ratio_z, roll_radians, pitch_radians, yaw_radians, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
+        # SPAWN NEAR STATIC CAMERA FACING GATE DIRECTLY
+        # Static camera at (0, -3.0, 1.0) behind gate, facing towards gate (yaw = 0)
+        # Gate is rotated 90° around Z-axis, so opening faces +X direction
+        # Environment bounds: [-4, 4] x [-4, 4] x [0, 4]
+        # Position conversion: ratio = (position + 4) / 8 for X,Y; ratio = position / 4 for Z
+        # 
+        # Static camera position (0, -3.0, 1.0) = ratios (0.5, 0.125, 0.25)
+        # Small variations: ±0.3m in X, ±0.2m in Y, ±0.2m in Z
+        # FACE GATE OPENING DIRECTLY: yaw = π/2 (facing +X towards gate opening) with NO variation
+        
         min_init_state = [
-            0.1,
-            0.15,
-            0.15,
-            0,  # -np.pi / 6,
-            0,  # -np.pi / 6,
-            -np.pi / 6,
+            0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
+            0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
+            0.2,    # ratio_z: Z = 0.8 → ratio = 0.8 / 4 = 0.2 (slightly below camera)
+            0,      # no roll
+            0,      # no pitch  
+            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
-            -0.2,
-            -0.2,
-            -0.2,
-            -0.2,
-            -0.2,
-            -0.2,
+            -0.1,   # very small initial velocity variation
+            -0.1,
+            -0.1,
+            -0.1,
+            -0.1,
+            -0.1,
         ]
         max_init_state = [
-            0.2,
-            0.85,
-            0.85,
-            0,  # np.pi / 6,
-            0,  # np.pi / 6,
-            np.pi / 6,
+            0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
+            0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
+            0.3,    # ratio_z: Z = 1.2 → ratio = 1.2 / 4 = 0.3 (slightly above camera)
+            0,      # no roll
+            0,      # no pitch
+            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
+            0.1,    # very small initial velocity variation
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
         ]
 
     class sensor_config:
@@ -90,14 +99,14 @@ class LMF2Cfg:
         per_link_semantic = False
 
         min_state_ratio = [
-            0.1,
-            0.1,
-            0.1,
-            0,
-            0,
-            -np.pi,
+            0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
+            0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
+            0.2,    # ratio_z: Z = 0.8 → ratio = 0.8 / 4 = 0.2 (slightly below camera)
+            0,      # no roll
+            0,      # no pitch
+            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
-            0,
+            0,      # no initial velocity
             0,
             0,
             0,
@@ -105,20 +114,20 @@ class LMF2Cfg:
             0,
         ]  # [ratio_x, ratio_y, ratio_z, roll_rad, pitch_rad, yaw_rad, 1.0, vx, vy, vz, wx, wy, wz]
         max_state_ratio = [
-            0.9,
-            0.9,
-            0.9,
-            0,
-            0,
-            np.pi,
+            0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
+            0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
+            0.3,    # ratio_z: Z = 1.2 → ratio = 1.2 / 4 = 0.3 (slightly above camera)
+            0,      # no roll
+            0,      # no pitch
+            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
+            0,      # no initial velocity
             0,
             0,
             0,
             0,
             0,
-            0,
-        ]  # [ratio_x, ratio_y, ratio_z, roll_rad, pitch_rad, yaw_rad, 1.0, vx, vy, vz, wx, wy, wz]
+        ]
 
         max_force_and_torque_disturbance = [
             0.1,

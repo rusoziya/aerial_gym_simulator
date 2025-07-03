@@ -1,0 +1,1161 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-03 13:14:24,390][76970] Queried available GPUs: 0
+[37m[1m[2025-07-03 13:14:24,390][76970] Environment var CUDA_VISIBLE_DEVICES is 0
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[2261 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[2261 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[2261 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 4 (dce_navigation_task_gate.py:39)
+[37m[2261 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=4 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[2261 ms][base_task] - INFO : Setting seed: 3204120235 (base_task.py:38)
+[37m[2262 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[2262 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[2262 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[2262 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[2262 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[2262 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[2262 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[2262 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[2263 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[2264 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[2264 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[2264 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[2264 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[2264 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[2264 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 3
+[SUBPROCESS] Target Sample Factory action space: 3D
+[SUBPROCESS] Setting num_envs to 4 based on env_agents=4
+[SUBPROCESS] Set SF_ENV_AGENTS=4 environment variable
+[SUBPROCESS] Config batch_size: 128
+[SUBPROCESS] Using MEDIUM CONFIG (4 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=base_gate_rewards_classic', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=4', '--obs_key=observations', '--batch_size=128', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+[37m[3337 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[3338 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[3545 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[3545 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[3545 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[3545 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[3545 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[3545 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[3545 ms][base_multirotor] - WARNING : Creating 4 multirotors. (base_multirotor.py:32)
+[37m[3545 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[3545 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[3545 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3545 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3549 ms][asset_loader] - INFO : Loading asset: tree_40.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3558 ms][asset_loader] - INFO : Loading asset: tree_67.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3566 ms][asset_loader] - INFO : Loading asset: tree_93.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3576 ms][asset_loader] - INFO : Loading asset: tree_90.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3584 ms][asset_loader] - INFO : Loading asset: tree_18.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3593 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3594 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3595 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3596 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3597 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3598 ms][asset_loader] - INFO : Loading asset: tree_78.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3607 ms][asset_loader] - INFO : Loading asset: tree_95.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3616 ms][asset_loader] - INFO : Loading asset: tree_70.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3625 ms][asset_loader] - INFO : Loading asset: tree_25.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3633 ms][asset_loader] - INFO : Loading asset: tree_23.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3643 ms][asset_loader] - INFO : Loading asset: tree_45.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3651 ms][asset_loader] - INFO : Loading asset: tree_81.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3660 ms][asset_loader] - INFO : Loading asset: tree_46.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3669 ms][asset_loader] - INFO : Loading asset: tree_14.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3678 ms][asset_loader] - INFO : Loading asset: tree_54.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3687 ms][asset_loader] - INFO : Loading asset: tree_24.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3695 ms][asset_loader] - INFO : Loading asset: tree_6.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3705 ms][asset_loader] - INFO : Loading asset: tree_94.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3713 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[3718 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[3718 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[4102 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[4102 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[4102 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[4133 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[4140 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[4140 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[4215 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[4215 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[4313 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 11 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4512 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4512 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[5129 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:462)
+[37m[5129 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:481)
+[37m[5146 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:498)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 13:14:29,773][77082] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (3,), float32), num_agents=4, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-07-03 13:14:30,537][76970] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-03 13:14:30,537][76970] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=base_gate_rewards_classic
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=128
+[36mnum_batches_per_epoch=4
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 128]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=128
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=4
+[36mheadless=False
+[36msave_gifs=False
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=3
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=base_gate_rewards_classic --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=4 --obs_key=observations --batch_size=128 --num_batches_to_accumulate=2 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=128 --rnn_num_layers=1 --encoder_mlp_layers 512 256 128 --gamma=0.98 --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'base_gate_rewards_classic', 'train_dir': './train_dir', 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 128, 'rollout': 32, 'gamma': 0.98, 'learning_rate': 0.0003, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 128], 'use_rnn': True, 'rnn_size': 128, 'rnn_num_layers': 1, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 4, 'headless': False, 'obs_key': 'observations'}
+[36mgit_hash=a54f99d681da80aa6215176cae93d2948a30ac42
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=base_gate_rewards_classic_20250703_131420_377828
+[36m[2025-07-03 13:14:30,538][76970] Saving configuration to ./train_dir/base_gate_rewards_classic/config.json...
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.44 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 7.60 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.29 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 5.48 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving DISABLED
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 4
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[36m[2025-07-03 13:14:30,577][76970] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 13:14:30,577][76970] Rollout worker 0 uses device cuda:0
+[36m[2025-07-03 13:14:30,581][76970] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 13:14:30,581][76970] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-03 13:14:30,582][76970] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 13:14:30,582][76970] Starting seed is not provided
+[36m[2025-07-03 13:14:30,582][76970] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 13:14:30,582][76970] Initializing actor-critic model on device cuda:0
+[36m[2025-07-03 13:14:30,583][76970] RunningMeanStd input shape: (145,)
+[36m[2025-07-03 13:14:30,583][76970] RunningMeanStd input shape: (1,)
+[36m[2025-07-03 13:14:30,609][76970] Created Actor Critic model with architecture:
+[36m[2025-07-03 13:14:30,609][76970] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(128, 128)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=128, out_features=6, bias=True)
+[36m  )
+[36m)
+[36m[2025-07-03 13:14:31,038][76970] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-07-03 13:14:31,039][76970] No checkpoints found
+[36m[2025-07-03 13:14:31,039][76970] Did not load from checkpoint, starting from scratch!
+[36m[2025-07-03 13:14:31,039][76970] Initialized policy 0 weights for model version 0
+[36m[2025-07-03 13:14:31,039][76970] LearnerWorker_p0 finished initialization!
+[36m[2025-07-03 13:14:31,039][76970] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 13:14:31,042][76970] Inference worker 0-0 is ready!
+[37m[1m[2025-07-03 13:14:31,042][76970] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-07-03 13:14:31,042][76970] EnvRunner 0-0 uses policy 0
+[37m[12652 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[12652 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[12652 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 4 (dce_navigation_task_gate.py:39)
+[37m[12652 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=4 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[12652 ms][base_task] - INFO : Setting seed: 3064434070 (base_task.py:38)
+[37m[12653 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[12653 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[12653 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[12653 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[12653 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[12653 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[12653 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[12653 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[12654 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[12654 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[12654 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[12654 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[12654 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[12654 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[12654 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[13656 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[13657 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[13872 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[13872 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[13872 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[13872 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[13872 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[13872 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[13872 ms][base_multirotor] - WARNING : Creating 4 multirotors. (base_multirotor.py:32)
+[37m[13872 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[13872 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[13872 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13873 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13877 ms][asset_loader] - INFO : Loading asset: tree_18.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13886 ms][asset_loader] - INFO : Loading asset: tree_4.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13894 ms][asset_loader] - INFO : Loading asset: tree_24.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13903 ms][asset_loader] - INFO : Loading asset: tree_15.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13911 ms][asset_loader] - INFO : Loading asset: tree_8.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13920 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13921 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13922 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13923 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13924 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13925 ms][asset_loader] - INFO : Loading asset: tree_31.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13934 ms][asset_loader] - INFO : Loading asset: tree_70.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13942 ms][asset_loader] - INFO : Loading asset: tree_84.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13951 ms][asset_loader] - INFO : Loading asset: tree_1.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13960 ms][asset_loader] - INFO : Loading asset: tree_25.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13969 ms][asset_loader] - INFO : Loading asset: tree_33.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13977 ms][asset_loader] - INFO : Loading asset: tree_64.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13986 ms][asset_loader] - INFO : Loading asset: tree_79.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13995 ms][asset_loader] - INFO : Loading asset: tree_85.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14004 ms][asset_loader] - INFO : Loading asset: tree_40.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14012 ms][asset_loader] - INFO : Loading asset: tree_86.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14021 ms][asset_loader] - INFO : Loading asset: tree_42.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14030 ms][asset_loader] - INFO : Loading asset: tree_57.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14039 ms][asset_loader] - INFO : Loading asset: tree_11.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14048 ms][asset_loader] - INFO : Loading asset: tree_58.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14057 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[14062 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[14062 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[14079 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[14079 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[14079 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[14110 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[14118 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[14118 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[14202 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[14202 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[14305 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 11 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[14503 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[14504 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[15119 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:462)
+[37m[15119 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:481)
+[37m[15137 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:498)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=base_gate_rewards_classic', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=4', '--obs_key=observations', '--batch_size=128', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.59 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 7.90 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 12.03 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.19 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving DISABLED
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 4
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[37m[16154 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:14:35,849][76970] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 13:14:38,578][76970] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 7.3. Samples: 20. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 13:14:38,578][76970] Avg episode reward: [(0, '-100.000')]
+[37m[21430 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[22189 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py:1194: UserWarning: operator() profile_node %104 : int[] = prim::profile_ivalue(%102)
+ does not have profile information (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/jit/codegen/cuda/graph_fuser.cpp:105.)
+  return forward_call(*input, **kwargs)
+[37m[24690 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[24996 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:14:43,560][76970] Fps is (10 sec: 66.4, 60 sec: 66.4, 300 sec: 66.4). Total num frames: 512. Throughput: 0: 70.0. Samples: 540. Policy #0 lag: (min: 0.0, avg: 0.0, max: 0.0)
+[36m[2025-07-03 13:14:43,560][76970] Avg episode reward: [(0, '-168.876')]
+[37m[26633 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[27659 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[28175 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:14:48,565][76970] Fps is (10 sec: 102.5, 60 sec: 80.5, 300 sec: 80.5). Total num frames: 1024. Throughput: 0: 66.7. Samples: 848. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 13:14:48,565][76970] Avg episode reward: [(0, '-162.927')]
+[37m[30551 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[31077 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[1m[2025-07-03 13:14:50,644][76970] Heartbeat connected on Batcher_0
+[37m[1m[2025-07-03 13:14:50,644][76970] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-07-03 13:14:50,644][76970] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-07-03 13:14:50,644][76970] Heartbeat connected on RolloutWorker_w0
+[37m[32982 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[33520 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:14:53,566][76970] Fps is (10 sec: 102.3, 60 sec: 86.7, 300 sec: 86.7). Total num frames: 1536. Throughput: 0: 80.2. Samples: 1420. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:14:53,566][76970] Avg episode reward: [(0, '-197.353')]
+[37m[35923 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[36042 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[37111 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[38784 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[39750 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:14:58,545][76970] Fps is (10 sec: 102.6, 60 sec: 90.2, 300 sec: 90.2). Total num frames: 2048. Throughput: 0: 89.0. Samples: 2020. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:14:58,545][76970] Avg episode reward: [(0, '-212.748')]
+[37m[40824 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[42344 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[43016 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[43555 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[44873 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:03,571][76970] Fps is (10 sec: 102.3, 60 sec: 92.3, 300 sec: 92.3). Total num frames: 2560. Throughput: 0: 83.7. Samples: 2320. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:15:03,571][76970] Avg episode reward: [(0, '-216.625')]
+[37m[48108 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[48307 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[48466 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[49409 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:08,544][76970] Fps is (10 sec: 51.2, 60 sec: 78.3, 300 sec: 78.3). Total num frames: 2560. Throughput: 0: 89.3. Samples: 2920. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:15:08,544][76970] Avg episode reward: [(0, '-215.693')]
+[37m[52971 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[53300 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[54453 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:13,557][76970] Fps is (10 sec: 51.3, 60 sec: 81.5, 300 sec: 81.5). Total num frames: 3072. Throughput: 0: 93.7. Samples: 3532. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:15:13,558][76970] Avg episode reward: [(0, '-224.601')]
+[37m[55418 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[56650 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[58445 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[58606 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[59758 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:18,570][76970] Fps is (10 sec: 102.1, 60 sec: 83.9, 300 sec: 83.9). Total num frames: 3584. Throughput: 0: 89.7. Samples: 3832. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:15:18,571][76970] Avg episode reward: [(0, '-228.024')]
+[37m[61748 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[61948 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[63902 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:23,572][76970] Fps is (10 sec: 102.3, 60 sec: 85.8, 300 sec: 85.8). Total num frames: 4096. Throughput: 0: 98.4. Samples: 4448. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 13:15:23,572][76970] Avg episode reward: [(0, '-230.620')]
+[37m[65746 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[66869 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[66990 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[67660 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[69262 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:28,572][76970] Fps is (10 sec: 102.4, 60 sec: 87.4, 300 sec: 87.4). Total num frames: 4608. Throughput: 0: 100.4. Samples: 5060. Policy #0 lag: (min: 8.0, avg: 8.5, max: 24.0)
+[36m[2025-07-03 13:15:28,573][76970] Avg episode reward: [(0, '-232.044')]
+[37m[70841 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[72869 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[72918 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[74231 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:33,567][76970] Fps is (10 sec: 102.4, 60 sec: 88.7, 300 sec: 88.7). Total num frames: 5120. Throughput: 0: 100.4. Samples: 5368. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:15:33,568][76970] Avg episode reward: [(0, '-232.738')]
+[37m[75505 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[76788 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[78453 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[78731 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[79048 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:38,540][76970] Fps is (10 sec: 102.7, 60 sec: 93.9, 300 sec: 89.8). Total num frames: 5632. Throughput: 0: 101.5. Samples: 5984. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 13:15:38,540][76970] Avg episode reward: [(0, '-237.672')]
+[37m[81761 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[82980 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[83393 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[83699 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:43,547][76970] Fps is (10 sec: 102.6, 60 sec: 93.9, 300 sec: 90.8). Total num frames: 6144. Throughput: 0: 101.4. Samples: 6584. Policy #0 lag: (min: 12.0, avg: 12.5, max: 28.0)
+[36m[2025-07-03 13:15:43,547][76970] Avg episode reward: [(0, '-232.244')]
+[37m[87360 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[87832 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[88101 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[88598 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:48,542][76970] Fps is (10 sec: 102.4, 60 sec: 93.9, 300 sec: 91.6). Total num frames: 6656. Throughput: 0: 101.5. Samples: 6884. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:15:48,542][76970] Avg episode reward: [(0, '-234.044')]
+[37m[92815 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[92940 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[93680 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[93966 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:53,572][76970] Fps is (10 sec: 102.1, 60 sec: 93.9, 300 sec: 92.2). Total num frames: 7168. Throughput: 0: 101.4. Samples: 7488. Policy #0 lag: (min: 6.0, avg: 6.0, max: 6.0)
+[36m[2025-07-03 13:15:53,572][76970] Avg episode reward: [(0, '-235.197')]
+[37m[96883 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[97524 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[98296 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[98578 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[99945 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:15:58,551][76970] Fps is (10 sec: 102.3, 60 sec: 93.9, 300 sec: 92.9). Total num frames: 7680. Throughput: 0: 101.3. Samples: 8088. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 13:15:58,551][76970] Avg episode reward: [(0, '-236.210')]
+[37m[101273 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[101358 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[102327 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:03,566][76970] Fps is (10 sec: 102.5, 60 sec: 93.9, 300 sec: 93.4). Total num frames: 8192. Throughput: 0: 101.2. Samples: 8384. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:16:03,566][76970] Avg episode reward: [(0, '-236.532')]
+[37m[105279 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[105656 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[106659 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[107059 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[110104 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:08,568][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 93.9). Total num frames: 8704. Throughput: 0: 101.1. Samples: 8996. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 13:16:08,568][76970] Avg episode reward: [(0, '-237.342')]
+[37m[110511 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[112401 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[112705 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:13,546][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 94.3). Total num frames: 9216. Throughput: 0: 101.0. Samples: 9604. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 13:16:13,546][76970] Avg episode reward: [(0, '-233.120')]
+[37m[115764 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[116466 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[117913 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[118265 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[119572 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:18,572][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 94.7). Total num frames: 9728. Throughput: 0: 101.0. Samples: 9912. Policy #0 lag: (min: 14.0, avg: 14.0, max: 14.0)
+[36m[2025-07-03 13:16:18,573][76970] Avg episode reward: [(0, '-231.002')]
+[37m[121172 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[121385 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[122575 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[124589 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:23,575][76970] Fps is (10 sec: 102.1, 60 sec: 102.4, 300 sec: 95.1). Total num frames: 10240. Throughput: 0: 100.7. Samples: 10520. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 13:16:23,576][76970] Avg episode reward: [(0, '-232.731')]
+[37m[1m[2025-07-03 13:16:23,620][76970] Saving ./train_dir/base_gate_rewards_classic/checkpoint_p0/checkpoint_000000320_10240.pth...
+[37m[125556 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[127048 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[128160 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[128440 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[130105 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:28,569][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 95.4). Total num frames: 10752. Throughput: 0: 100.8. Samples: 11120. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:16:28,569][76970] Avg episode reward: [(0, '-232.709')]
+[37m[131452 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[131807 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[133537 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[133622 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:33,561][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 95.7). Total num frames: 11264. Throughput: 0: 100.7. Samples: 11416. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:16:33,562][76970] Avg episode reward: [(0, '-232.167')]
+[37m[135757 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[136697 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[137845 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[138921 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:38,571][76970] Fps is (10 sec: 102.4, 60 sec: 102.3, 300 sec: 96.0). Total num frames: 11776. Throughput: 0: 100.7. Samples: 12020. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:16:38,572][76970] Avg episode reward: [(0, '-237.905')]
+[37m[140851 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[141877 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[143511 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[144424 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:43,572][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 96.2). Total num frames: 12288. Throughput: 0: 100.7. Samples: 12620. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:16:43,572][76970] Avg episode reward: [(0, '-234.961')]
+[37m[145456 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[146322 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[147154 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[149281 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:48,553][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 96.5). Total num frames: 12800. Throughput: 0: 100.6. Samples: 12908. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:16:48,553][76970] Avg episode reward: [(0, '-237.787')]
+[37m[150226 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[151846 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[152041 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[154378 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:53,544][76970] Fps is (10 sec: 102.7, 60 sec: 102.4, 300 sec: 96.7). Total num frames: 13312. Throughput: 0: 100.5. Samples: 13516. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 13:16:53,545][76970] Avg episode reward: [(0, '-230.708')]
+[37m[156055 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[156987 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[157587 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[157713 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[159681 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:16:58,561][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 96.9). Total num frames: 13824. Throughput: 0: 100.5. Samples: 14128. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:16:58,561][76970] Avg episode reward: [(0, '-229.355')]
+[37m[160617 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[161754 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[163997 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[165164 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:03,592][76970] Fps is (10 sec: 101.9, 60 sec: 102.4, 300 sec: 97.0). Total num frames: 14336. Throughput: 0: 100.3. Samples: 14428. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:17:03,592][76970] Avg episode reward: [(0, '-227.712')]
+[37m[165950 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[167757 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:08,579][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 97.2). Total num frames: 14848. Throughput: 0: 100.3. Samples: 15032. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 13:17:08,579][76970] Avg episode reward: [(0, '-227.300')]
+[37m[170204 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[170326 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[171317 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[171915 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[174199 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:13,551][76970] Fps is (10 sec: 102.8, 60 sec: 102.4, 300 sec: 97.4). Total num frames: 15360. Throughput: 0: 100.3. Samples: 15632. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:17:13,551][76970] Avg episode reward: [(0, '-225.062')]
+[37m[175472 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[175781 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[175866 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[179069 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[179119 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[179508 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[179634 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:18,570][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 97.5). Total num frames: 15872. Throughput: 0: 100.4. Samples: 15936. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:17:18,571][76970] Avg episode reward: [(0, '-217.214')]
+[37m[180777 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[182265 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[184251 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[185112 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[185161 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:23,585][76970] Fps is (10 sec: 102.0, 60 sec: 102.4, 300 sec: 97.7). Total num frames: 16384. Throughput: 0: 100.3. Samples: 16536. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-03 13:17:23,585][76970] Avg episode reward: [(0, '-214.716')]
+[37m[187466 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[187635 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[189467 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[190051 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:28,549][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 97.8). Total num frames: 16896. Throughput: 0: 100.6. Samples: 17144. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 13:17:28,549][76970] Avg episode reward: [(0, '-209.762')]
+[37m[192429 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[192787 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[193208 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:33,570][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 98.0). Total num frames: 17408. Throughput: 0: 100.8. Samples: 17448. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:17:33,571][76970] Avg episode reward: [(0, '-205.435')]
+[37m[195783 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[196146 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[198322 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[198593 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[199984 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:38,558][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 98.1). Total num frames: 17920. Throughput: 0: 100.9. Samples: 18056. Policy #0 lag: (min: 4.0, avg: 4.5, max: 20.0)
+[36m[2025-07-03 13:17:38,558][76970] Avg episode reward: [(0, '-204.810')]
+[37m[201158 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[201945 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[203251 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[204278 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:43,552][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 98.2). Total num frames: 18432. Throughput: 0: 101.0. Samples: 18672. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:17:43,552][76970] Avg episode reward: [(0, '-205.243')]
+[37m[206981 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[207568 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[207692 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[207779 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:48,552][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 98.3). Total num frames: 18944. Throughput: 0: 100.9. Samples: 18964. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 13:17:48,552][76970] Avg episode reward: [(0, '-203.089')]
+[37m[211138 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[211267 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[212897 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[213145 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[214497 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:53,571][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 98.4). Total num frames: 19456. Throughput: 0: 100.8. Samples: 19568. Policy #0 lag: (min: 12.0, avg: 12.5, max: 28.0)
+[36m[2025-07-03 13:17:53,571][76970] Avg episode reward: [(0, '-200.995')]
+[37m[215535 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[216903 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[218616 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[219835 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:17:58,560][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 98.5). Total num frames: 19968. Throughput: 0: 100.9. Samples: 20172. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:17:58,560][76970] Avg episode reward: [(0, '-197.742')]
+[37m[221388 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[223110 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[223737 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[224443 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:03,552][76970] Fps is (10 sec: 102.6, 60 sec: 102.5, 300 sec: 98.6). Total num frames: 20480. Throughput: 0: 101.1. Samples: 20484. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:18:03,552][76970] Avg episode reward: [(0, '-197.968')]
+[37m[226460 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[228931 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[229706 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:08,565][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 98.7). Total num frames: 20992. Throughput: 0: 101.2. Samples: 21088. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 13:18:08,565][76970] Avg episode reward: [(0, '-198.215')]
+[37m[230357 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[231610 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[234801 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[235150 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:13,576][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 98.8). Total num frames: 21504. Throughput: 0: 101.0. Samples: 21692. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:18:13,576][76970] Avg episode reward: [(0, '-201.733')]
+[37m[235352 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[236702 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[238904 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[240139 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:18,565][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 98.9). Total num frames: 22016. Throughput: 0: 101.3. Samples: 22004. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:18:18,565][76970] Avg episode reward: [(0, '-199.232')]
+[37m[240495 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[242493 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[244479 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:23,565][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 98.9). Total num frames: 22528. Throughput: 0: 101.1. Samples: 22608. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 13:18:23,565][76970] Avg episode reward: [(0, '-196.161')]
+[37m[1m[2025-07-03 13:18:23,605][76970] Saving ./train_dir/base_gate_rewards_classic/checkpoint_p0/checkpoint_000000704_22528.pth...
+[37m[245426 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[246217 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[246920 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[249172 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[249733 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[249784 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:28,542][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 99.0). Total num frames: 23040. Throughput: 0: 101.0. Samples: 23216. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:18:28,543][76970] Avg episode reward: [(0, '-194.730')]
+[37m[252636 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[254660 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[255004 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:33,542][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 99.1). Total num frames: 23552. Throughput: 0: 101.4. Samples: 23524. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:18:33,542][76970] Avg episode reward: [(0, '-190.465')]
+[37m[255552 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[258703 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[260021 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:38,557][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 99.1). Total num frames: 24064. Throughput: 0: 101.2. Samples: 24120. Policy #0 lag: (min: 0.0, avg: 0.5, max: 16.0)
+[36m[2025-07-03 13:18:38,557][76970] Avg episode reward: [(0, '-189.514')]
+[37m[260700 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[261304 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[263843 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[264672 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:43,545][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 99.2). Total num frames: 24576. Throughput: 0: 101.8. Samples: 24752. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:18:43,545][76970] Avg episode reward: [(0, '-189.006')]
+[37m[265781 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[266939 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[269144 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[269193 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:48,548][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 99.3). Total num frames: 25088. Throughput: 0: 101.7. Samples: 25060. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 13:18:48,548][76970] Avg episode reward: [(0, '-186.194')]
+[37m[271496 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[271811 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[273424 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[273931 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:53,564][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 99.3). Total num frames: 25600. Throughput: 0: 102.0. Samples: 25676. Policy #0 lag: (min: 12.0, avg: 12.5, max: 28.0)
+[36m[2025-07-03 13:18:53,565][76970] Avg episode reward: [(0, '-188.897')]
+[37m[277629 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[277678 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[277919 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[279446 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:18:58,572][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 99.4). Total num frames: 26112. Throughput: 0: 102.1. Samples: 26284. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:18:58,572][76970] Avg episode reward: [(0, '-188.015')]
+[37m[280860 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[282636 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[282687 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[283173 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[284643 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:03,556][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 99.5). Total num frames: 26624. Throughput: 0: 102.3. Samples: 26608. Policy #0 lag: (min: 2.0, avg: 2.0, max: 2.0)
+[36m[2025-07-03 13:19:03,557][76970] Avg episode reward: [(0, '-187.012')]
+[37m[285826 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[287122 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[288346 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[289541 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:08,564][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 99.5). Total num frames: 27136. Throughput: 0: 102.0. Samples: 27200. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:08,564][76970] Avg episode reward: [(0, '-187.200')]
+[37m[290750 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[293396 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[294228 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[295035 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:13,539][76970] Fps is (10 sec: 102.6, 60 sec: 102.5, 300 sec: 99.6). Total num frames: 27648. Throughput: 0: 102.5. Samples: 27828. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:13,539][76970] Avg episode reward: [(0, '-187.895')]
+[37m[296163 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[298342 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[298570 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[299153 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:18,541][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 99.6). Total num frames: 28160. Throughput: 0: 102.4. Samples: 28132. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:19:18,542][76970] Avg episode reward: [(0, '-187.280')]
+[37m[302298 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[303625 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[304440 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[304610 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:23,553][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 99.7). Total num frames: 28672. Throughput: 0: 102.6. Samples: 28736. Policy #0 lag: (min: 6.0, avg: 6.0, max: 6.0)
+[36m[2025-07-03 13:19:23,554][76970] Avg episode reward: [(0, '-186.314')]
+[37m[307449 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[309330 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[309614 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:28,562][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 99.7). Total num frames: 29184. Throughput: 0: 101.9. Samples: 29340. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:28,562][76970] Avg episode reward: [(0, '-184.894')]
+[37m[310186 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[310565 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[313992 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[314559 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:33,573][76970] Fps is (10 sec: 102.2, 60 sec: 102.3, 300 sec: 100.7). Total num frames: 29696. Throughput: 0: 102.0. Samples: 29652. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:33,574][76970] Avg episode reward: [(0, '-188.008')]
+[37m[315606 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[316288 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[316717 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[318621 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:38,559][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 100.7). Total num frames: 30208. Throughput: 0: 101.8. Samples: 30256. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:38,560][76970] Avg episode reward: [(0, '-189.458')]
+[37m[320730 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[322846 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[322968 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[323420 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:43,558][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 100.7). Total num frames: 30720. Throughput: 0: 102.0. Samples: 30872. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:43,558][76970] Avg episode reward: [(0, '-183.016')]
+[37m[325547 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[326767 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[328528 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[329562 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:48,548][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 100.7). Total num frames: 31232. Throughput: 0: 101.4. Samples: 31172. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 13:19:48,548][76970] Avg episode reward: [(0, '-178.647')]
+[37m[330579 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[331532 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[334203 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[334656 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:53,574][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 100.7). Total num frames: 31744. Throughput: 0: 101.8. Samples: 31784. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:53,575][76970] Avg episode reward: [(0, '-176.295')]
+[37m[335859 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[337021 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[339109 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[339839 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[340078 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:19:58,547][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 100.7). Total num frames: 32256. Throughput: 0: 101.6. Samples: 32400. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:19:58,548][76970] Avg episode reward: [(0, '-170.719')]
+[37m[341335 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[343813 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[344588 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:03,573][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 32768. Throughput: 0: 101.6. Samples: 32708. Policy #0 lag: (min: 6.0, avg: 6.0, max: 6.0)
+[36m[2025-07-03 13:20:03,573][76970] Avg episode reward: [(0, '-169.716')]
+[37m[345361 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[345679 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[346159 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[348255 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[349514 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:08,563][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 33280. Throughput: 0: 101.5. Samples: 33304. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 13:20:08,563][76970] Avg episode reward: [(0, '-163.764')]
+[37m[350528 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[351087 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[352108 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[354188 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:13,548][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 33792. Throughput: 0: 101.6. Samples: 33912. Policy #0 lag: (min: 4.0, avg: 4.5, max: 20.0)
+[36m[2025-07-03 13:20:13,549][76970] Avg episode reward: [(0, '-156.616')]
+[37m[356214 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[356894 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[357301 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[359099 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[360082 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:18,549][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 34304. Throughput: 0: 101.6. Samples: 34220. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 13:20:18,549][76970] Avg episode reward: [(0, '-150.703')]
+[37m[361610 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[362434 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[364489 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:23,577][76970] Fps is (10 sec: 102.1, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 34816. Throughput: 0: 101.5. Samples: 34824. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 13:20:23,577][76970] Avg episode reward: [(0, '-152.808')]
+[37m[1m[2025-07-03 13:20:23,622][76970] Saving ./train_dir/base_gate_rewards_classic/checkpoint_p0/checkpoint_000001088_34816.pth...
+[37m[365804 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[367235 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[368254 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[369320 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[370155 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:28,580][76970] Fps is (10 sec: 102.1, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 35328. Throughput: 0: 101.1. Samples: 35424. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:20:28,580][76970] Avg episode reward: [(0, '-149.229')]
+[37m[371365 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[371772 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[374080 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:33,543][76970] Fps is (10 sec: 102.7, 60 sec: 102.5, 300 sec: 102.4). Total num frames: 35840. Throughput: 0: 101.4. Samples: 35736. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 13:20:33,544][76970] Avg episode reward: [(0, '-148.825')]
+[37m[375524 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[376510 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[377078 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[379273 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:38,540][76970] Fps is (10 sec: 102.8, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 36352. Throughput: 0: 101.6. Samples: 36352. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:20:38,540][76970] Avg episode reward: [(0, '-150.909')]
+[37m[381410 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[381997 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[382398 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[384154 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:43,548][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 36864. Throughput: 0: 101.2. Samples: 36956. Policy #0 lag: (min: 9.0, avg: 9.0, max: 9.0)
+[36m[2025-07-03 13:20:43,548][76970] Avg episode reward: [(0, '-146.396')]
+[37m[385675 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[386742 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[388051 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[388135 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:48,543][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 37376. Throughput: 0: 101.3. Samples: 37264. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 13:20:48,543][76970] Avg episode reward: [(0, '-147.322')]
+[37m[391691 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[392505 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[392822 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[394233 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:53,560][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 37888. Throughput: 0: 101.2. Samples: 37860. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:20:53,561][76970] Avg episode reward: [(0, '-144.117')]
+[37m[395817 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[397311 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[398344 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[398429 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[399998 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:20:58,571][76970] Fps is (10 sec: 102.1, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 38400. Throughput: 0: 101.4. Samples: 38476. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:20:58,572][76970] Avg episode reward: [(0, '-139.793')]
+[37m[401778 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[402535 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[402892 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[403469 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:03,547][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 38912. Throughput: 0: 101.3. Samples: 38780. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:21:03,547][76970] Avg episode reward: [(0, '-134.836')]
+[37m[406108 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[406229 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[407295 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[409179 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:08,553][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 39424. Throughput: 0: 101.1. Samples: 39372. Policy #0 lag: (min: 2.0, avg: 2.0, max: 2.0)
+[36m[2025-07-03 13:21:08,553][76970] Avg episode reward: [(0, '-131.238')]
+[37m[411173 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[411464 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[413053 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[414729 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[414900 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:13,545][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 39936. Throughput: 0: 101.2. Samples: 39976. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 13:21:13,545][76970] Avg episode reward: [(0, '-128.987')]
+[37m[416156 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[418179 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:18,542][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 40448. Throughput: 0: 101.0. Samples: 40280. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:21:18,542][76970] Avg episode reward: [(0, '-128.382')]
+[37m[420700 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[420958 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[421939 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[424010 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:23,554][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 40960. Throughput: 0: 100.7. Samples: 40884. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:21:23,554][76970] Avg episode reward: [(0, '-127.190')]
+[37m[426609 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[427042 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[427091 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[428628 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:28,552][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 41472. Throughput: 0: 100.5. Samples: 41480. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:21:28,553][76970] Avg episode reward: [(0, '-128.027')]
+[37m[431479 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[432230 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[432280 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[433840 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:33,560][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 41984. Throughput: 0: 100.5. Samples: 41788. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 13:21:33,561][76970] Avg episode reward: [(0, '-124.466')]
+[37m[436131 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[436781 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[437384 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[437583 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:38,559][76970] Fps is (10 sec: 102.3, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 42496. Throughput: 0: 101.0. Samples: 42404. Policy #0 lag: (min: 1.0, avg: 1.0, max: 1.0)
+[36m[2025-07-03 13:21:38,559][76970] Avg episode reward: [(0, '-122.611')]
+[37m[441482 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[441643 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[442449 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[442846 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[444715 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:43,551][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 43008. Throughput: 0: 101.0. Samples: 43020. Policy #0 lag: (min: 8.0, avg: 8.5, max: 24.0)
+[36m[2025-07-03 13:21:43,551][76970] Avg episode reward: [(0, '-118.453')]
+[37m[445765 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[448532 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[448861 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[449909 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:48,554][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 43520. Throughput: 0: 101.3. Samples: 43340. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:21:48,554][76970] Avg episode reward: [(0, '-122.059')]
+[37m[450408 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[452260 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[453466 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[454916 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[455084 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:53,545][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 44032. Throughput: 0: 101.8. Samples: 43952. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:21:53,545][76970] Avg episode reward: [(0, '-118.029')]
+[37m[458010 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[458920 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[459159 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[459506 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:21:58,573][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 44544. Throughput: 0: 101.7. Samples: 44556. Policy #0 lag: (min: 8.0, avg: 8.5, max: 24.0)
+[36m[2025-07-03 13:21:58,573][76970] Avg episode reward: [(0, '-117.604')]
+[37m[461222 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[464273 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[464434 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:03,569][76970] Fps is (10 sec: 102.2, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 45056. Throughput: 0: 101.8. Samples: 44864. Policy #0 lag: (min: 3.0, avg: 3.0, max: 3.0)
+[36m[2025-07-03 13:22:03,569][76970] Avg episode reward: [(0, '-115.039')]
+[37m[465308 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[466355 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[467164 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[469452 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:08,552][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 45568. Throughput: 0: 102.0. Samples: 45476. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:08,552][76970] Avg episode reward: [(0, '-114.860')]
+[37m[470414 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[470723 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[470963 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[473271 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[474711 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:13,572][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 46080. Throughput: 0: 102.1. Samples: 46076. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:13,573][76970] Avg episode reward: [(0, '-115.677')]
+[37m[475392 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[475752 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[479352 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[479628 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:18,573][76970] Fps is (10 sec: 102.2, 60 sec: 102.3, 300 sec: 102.4). Total num frames: 46592. Throughput: 0: 101.9. Samples: 46376. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:18,574][76970] Avg episode reward: [(0, '-114.834')]
+[37m[480616 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[481641 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[484292 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[484496 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:23,554][76970] Fps is (10 sec: 102.6, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 47104. Throughput: 0: 102.1. Samples: 46996. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:23,555][76970] Avg episode reward: [(0, '-113.492')]
+[37m[485183 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[1m[2025-07-03 13:22:23,606][76970] Saving ./train_dir/base_gate_rewards_classic/checkpoint_p0/checkpoint_000001472_47104.pth...
+[37m[487027 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[488421 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[489442 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[489789 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:28,560][76970] Fps is (10 sec: 102.5, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 47616. Throughput: 0: 101.6. Samples: 47592. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:22:28,560][76970] Avg episode reward: [(0, '-111.491')]
+[37m[493172 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[493951 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:33,552][76970] Fps is (10 sec: 102.4, 60 sec: 102.4, 300 sec: 102.4). Total num frames: 48128. Throughput: 0: 101.2. Samples: 47896. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:33,553][76970] Avg episode reward: [(0, '-110.478')]
+[37m[495392 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[495744 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[495988 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[498121 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[499929 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:38,554][76970] Fps is (10 sec: 51.2, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 48128. Throughput: 0: 100.8. Samples: 48488. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:38,555][76970] Avg episode reward: [(0, '-105.627')]
+[37m[501371 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[501470 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[502785 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:43,548][76970] Fps is (10 sec: 51.2, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 48640. Throughput: 0: 100.5. Samples: 49076. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:43,548][76970] Avg episode reward: [(0, '-103.018')]
+[37m[505447 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[505864 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[506324 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[506832 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[510036 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:48,541][76970] Fps is (10 sec: 102.5, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 49152. Throughput: 0: 100.2. Samples: 49372. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:48,541][76970] Avg episode reward: [(0, '-101.892')]
+[37m[511690 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[512380 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[513069 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:53,568][76970] Fps is (10 sec: 102.2, 60 sec: 93.8, 300 sec: 100.7). Total num frames: 49664. Throughput: 0: 99.7. Samples: 49964. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:53,569][76970] Avg episode reward: [(0, '-100.277')]
+[37m[516326 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[516602 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[517763 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[518343 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:22:58,570][76970] Fps is (10 sec: 102.1, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 50176. Throughput: 0: 99.7. Samples: 50564. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:22:58,570][76970] Avg episode reward: [(0, '-97.815')]
+[37m[520232 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[520798 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[523138 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[523958 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[524553 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:23:03,539][76970] Fps is (10 sec: 102.7, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 50688. Throughput: 0: 99.6. Samples: 50856. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:23:03,539][76970] Avg episode reward: [(0, '-102.351')]
+[37m[526813 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[527435 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[528643 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:23:08,552][76970] Fps is (10 sec: 102.6, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 51200. Throughput: 0: 99.1. Samples: 51456. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:23:08,552][76970] Avg episode reward: [(0, '-101.017')]
+[37m[530216 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[530307 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[532267 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[533530 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[533654 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:23:13,540][76970] Fps is (10 sec: 102.4, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 51712. Throughput: 0: 99.2. Samples: 52052. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:23:13,540][76970] Avg episode reward: [(0, '-98.212')]
+[37m[536411 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[536838 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[538283 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[539313 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[539895 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:23:18,540][76970] Fps is (10 sec: 102.5, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 52224. Throughput: 0: 98.9. Samples: 52344. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:23:18,540][76970] Avg episode reward: [(0, '-95.116')]
+[37m[541120 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[543874 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[544898 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:23:23,549][76970] Fps is (10 sec: 102.3, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 52736. Throughput: 0: 98.8. Samples: 52932. Policy #0 lag: (min: 10.0, avg: 10.0, max: 10.0)
+[36m[2025-07-03 13:23:23,550][76970] Avg episode reward: [(0, '-94.986')]
+[37m[545374 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[546174 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[548673 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[548878 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:23:28,541][76970] Fps is (10 sec: 102.4, 60 sec: 93.9, 300 sec: 100.7). Total num frames: 53248. Throughput: 0: 99.1. Samples: 53536. Policy #0 lag: (min: 15.0, avg: 15.0, max: 15.0)
+[36m[2025-07-03 13:23:28,541][76970] Avg episode reward: [(0, '-92.087')]
+[37m[550312 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[550600 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[552516 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[553846 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[555101 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[36m[2025-07-03 13:23:33,563][76970] Fps is (10 sec: 102.3, 60 sec: 93.8, 300 sec: 100.7). Total num frames: 53760. Throughput: 0: 99.2. Samples: 53840. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-03 13:23:33,563][76970] Avg episode reward: [(0, '-91.315')]
+[37m[555509 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[558288 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)
+[37m[558529 ms][asset_manager] - INFO : Number of obstacles required in the environment by the                   code is lesser than the minimum number of obstacles that the environment configuration specifies. (asset_manager.py:53)

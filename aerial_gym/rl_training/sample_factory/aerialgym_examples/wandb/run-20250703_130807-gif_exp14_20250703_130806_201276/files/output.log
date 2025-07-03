@@ -1,0 +1,567 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-03 13:08:09,525][74428] Queried available GPUs: 0
+[37m[1m[2025-07-03 13:08:09,525][74428] Environment var CUDA_VISIBLE_DEVICES is 0
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 3
+[SUBPROCESS] Target Sample Factory action space: 3D
+[SUBPROCESS] Setting num_envs to 4 based on env_agents=4
+[SUBPROCESS] Set SF_ENV_AGENTS=4 environment variable
+[SUBPROCESS] Config batch_size: 128
+[SUBPROCESS] Using MEDIUM CONFIG (4 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gif_exp14', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=4', '--obs_key=observations', '--batch_size=128', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+Not connected to PVD
++++ Using GPU PhysX
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[1865 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[1865 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[1865 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 4 (dce_navigation_task_gate.py:39)
+[37m[1865 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=4 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[1865 ms][base_task] - INFO : Setting seed: 1561393628 (base_task.py:38)
+[37m[1865 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[1865 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[1865 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[1865 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[1865 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[1865 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[1865 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[1865 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[1866 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[1866 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[1866 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[1866 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[1866 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[1866 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[1866 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.37 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.16 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.59 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 5.60 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[37m[2864 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[2864 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[3070 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[3070 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[3070 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[3070 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[3070 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[3070 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[3070 ms][base_multirotor] - WARNING : Creating 4 multirotors. (base_multirotor.py:32)
+[37m[3070 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[3070 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[3070 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3070 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3074 ms][asset_loader] - INFO : Loading asset: tree_74.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3083 ms][asset_loader] - INFO : Loading asset: tree_69.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3091 ms][asset_loader] - INFO : Loading asset: tree_12.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3100 ms][asset_loader] - INFO : Loading asset: tree_86.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3109 ms][asset_loader] - INFO : Loading asset: tree_56.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3118 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3119 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3120 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3121 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3122 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3123 ms][asset_loader] - INFO : Loading asset: tree_42.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3132 ms][asset_loader] - INFO : Loading asset: tree_75.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3140 ms][asset_loader] - INFO : Loading asset: tree_5.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3149 ms][asset_loader] - INFO : Loading asset: tree_46.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3158 ms][asset_loader] - INFO : Loading asset: tree_51.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3167 ms][asset_loader] - INFO : Loading asset: tree_87.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3176 ms][asset_loader] - INFO : Loading asset: tree_58.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3185 ms][asset_loader] - INFO : Loading asset: tree_6.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3194 ms][asset_loader] - INFO : Loading asset: tree_9.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3203 ms][asset_loader] - INFO : Loading asset: tree_8.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3212 ms][asset_loader] - INFO : Loading asset: tree_92.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3221 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[3226 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[3226 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[3610 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[3610 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[3610 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[3641 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[3649 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[3649 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[3726 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[3727 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[3827 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 11 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4028 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4029 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[4648 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:462)
+[37m[4648 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:481)
+[AerialGymVecEnv] GIF saving DISABLED
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 4
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gif_exp14', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=4', '--obs_key=observations', '--batch_size=128', '--num_batches_to_accumulate=2', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=128', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '128', '--gamma=0.98', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000']
+[37m[4666 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:498)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 13:08:14,384][74544] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (3,), float32), num_agents=4, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-07-03 13:08:15,135][74428] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-03 13:08:15,135][74428] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gif_exp14
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=128
+[36mnum_batches_per_epoch=4
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 128]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=128
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=4
+[36mheadless=False
+[36msave_gifs=False
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=3
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gif_exp14 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=4 --obs_key=observations --batch_size=128 --num_batches_to_accumulate=2 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=128 --rnn_num_layers=1 --encoder_mlp_layers 512 256 128 --gamma=0.98 --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gif_exp14', 'train_dir': './train_dir', 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 128, 'rollout': 32, 'gamma': 0.98, 'learning_rate': 0.0003, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 128], 'use_rnn': True, 'rnn_size': 128, 'rnn_num_layers': 1, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 4, 'headless': False, 'obs_key': 'observations'}
+[36mgit_hash=a54f99d681da80aa6215176cae93d2948a30ac42
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gif_exp14_20250703_130806_201276
+[36m[2025-07-03 13:08:15,136][74428] Saving configuration to ./train_dir/gif_exp14/config.json...
+[36m[2025-07-03 13:08:15,180][74428] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 13:08:15,181][74428] Rollout worker 0 uses device cuda:0
+[36m[2025-07-03 13:08:15,186][74428] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 13:08:15,186][74428] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-03 13:08:15,187][74428] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 13:08:15,188][74428] Starting seed is not provided
+[36m[2025-07-03 13:08:15,188][74428] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 13:08:15,188][74428] Initializing actor-critic model on device cuda:0
+[36m[2025-07-03 13:08:15,189][74428] RunningMeanStd input shape: (145,)
+[36m[2025-07-03 13:08:15,190][74428] RunningMeanStd input shape: (1,)
+[36m[2025-07-03 13:08:15,219][74428] Created Actor Critic model with architecture:
+[36m[2025-07-03 13:08:15,219][74428] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(128, 128)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=128, out_features=6, bias=True)
+[36m  )
+[36m)
+[36m[2025-07-03 13:08:15,632][74428] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-07-03 13:08:15,633][74428] No checkpoints found
+[36m[2025-07-03 13:08:15,633][74428] Did not load from checkpoint, starting from scratch!
+[36m[2025-07-03 13:08:15,633][74428] Initialized policy 0 weights for model version 0
+[36m[2025-07-03 13:08:15,633][74428] LearnerWorker_p0 finished initialization!
+[36m[2025-07-03 13:08:15,633][74428] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 13:08:15,636][74428] Inference worker 0-0 is ready!
+[37m[1m[2025-07-03 13:08:15,636][74428] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-07-03 13:08:15,636][74428] EnvRunner 0-0 uses policy 0
+[37m[11610 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[11610 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[11610 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 4 (dce_navigation_task_gate.py:39)
+[37m[11610 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=4 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[11611 ms][base_task] - INFO : Setting seed: 1320977031 (base_task.py:38)
+[37m[11611 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[11611 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[11611 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[11611 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[11611 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[11611 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[11611 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[11611 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[11612 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.67 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.03 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.57 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 5.77 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving DISABLED
+[AerialGymVecEnv] Forced action space shape: (3,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 4
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (3,)
+[make_aerialgym_env] Action space: Box(-1.0, 1.0, (3,), float32)
+[37m[11612 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[11612 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[11612 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[11612 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[11612 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[11612 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[12623 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[12623 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[12828 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[12828 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[12828 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[12828 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[12828 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[12828 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[12828 ms][base_multirotor] - WARNING : Creating 4 multirotors. (base_multirotor.py:32)
+[37m[12828 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[12828 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[12828 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12829 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12835 ms][asset_loader] - INFO : Loading asset: tree_32.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12844 ms][asset_loader] - INFO : Loading asset: tree_72.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12866 ms][asset_loader] - INFO : Loading asset: tree_13.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12875 ms][asset_loader] - INFO : Loading asset: tree_1.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12884 ms][asset_loader] - INFO : Loading asset: tree_70.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12893 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12894 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12895 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12895 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12896 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12897 ms][asset_loader] - INFO : Loading asset: tree_46.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12906 ms][asset_loader] - INFO : Loading asset: tree_9.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12915 ms][asset_loader] - INFO : Loading asset: tree_26.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12923 ms][asset_loader] - INFO : Loading asset: tree_44.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12932 ms][asset_loader] - INFO : Loading asset: tree_3.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12941 ms][asset_loader] - INFO : Loading asset: tree_91.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12950 ms][asset_loader] - INFO : Loading asset: tree_2.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12959 ms][asset_loader] - INFO : Loading asset: tree_52.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12968 ms][asset_loader] - INFO : Loading asset: tree_62.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12976 ms][asset_loader] - INFO : Loading asset: tree_33.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12985 ms][asset_loader] - INFO : Loading asset: tree_85.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[12994 ms][asset_loader] - INFO : Loading asset: tree_81.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13003 ms][asset_loader] - INFO : Loading asset: tree_96.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13012 ms][asset_loader] - INFO : Loading asset: tree_73.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[13021 ms][env_manager] - INFO : Creating ground plane in Isaac Gym Simulation. (env_manager.py:172)
+[37m[13025 ms][env_manager] - INFO : [DONE] Creating ground plane in Isaac Gym Simulation (env_manager.py:174)
+[37m[13025 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[13042 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[13042 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[13042 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[13073 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[13081 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[13081 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[13165 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[13169 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[13261 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 11 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[13458 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[13459 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[14076 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:462)
+[37m[14076 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:481)
+[37m[14093 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:498)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[31m[1m[2025-07-03 13:08:19,159][74428] EvtLoop [Runner_EvtLoop, process=main process 74428] unhandled exception in slot='advance_rollouts' connected to emitter=Emitter(object_id='InferenceWorker_p0-w0', signal_name='advance0'), args=(0, 0)
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 241, in advance_rollouts
+    complete_rollouts, episodic_stats = runner.advance_rollouts(policy_id, self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 308, in advance_rollouts
+    self.last_obs, rewards, terminated, truncated, infos = self.vec_env.step(actions)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 222, in step
+    obs, rew, terminated, truncated, infos = self.env.step(action)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 141, in step
+    obs, rew, terminated, truncated, info = self.env.step(action)
+  File "train_aerialgym_custom_net_gate.py", line 326, in step
+    obs, rew, terminated, truncated, infos = self.env.step(dce_action)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 227, in step
+    self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 367, in compute_rewards_and_crashes
+    return compute_gate_reward(
+RuntimeError: The following operation failed in the TorchScript interpreter.
+Traceback of TorchScript (most recent call last):
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 677, in compute_gate_reward
+    pos_reward = exponential_reward_function(
+        parameter_dict["pos_reward_magnitude"],
+        parameter_dict["pos_reward_exponent"],
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ <--- HERE
+        dist,
+    )
+RuntimeError: KeyError: pos_reward_exponent
+[33m[2025-07-03 13:08:19,160][74428] Unhandled exception The following operation failed in the TorchScript interpreter.
+[33mTraceback of TorchScript (most recent call last):
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 677, in compute_gate_reward
+[33m    pos_reward = exponential_reward_function(
+[33m        parameter_dict["pos_reward_magnitude"],
+[33m        parameter_dict["pos_reward_exponent"],
+[33m        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ <--- HERE
+[33m        dist,
+[33m    )
+[33mRuntimeError: KeyError: pos_reward_exponent
+[33m in evt loop Runner_EvtLoop
+[31m[1m[2025-07-03 13:08:19,160][74428] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 241, in advance_rollouts
+    complete_rollouts, episodic_stats = runner.advance_rollouts(policy_id, self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 308, in advance_rollouts
+    self.last_obs, rewards, terminated, truncated, infos = self.vec_env.step(actions)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 222, in step
+    obs, rew, terminated, truncated, infos = self.env.step(action)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 141, in step
+    obs, rew, terminated, truncated, info = self.env.step(action)
+  File "train_aerialgym_custom_net_gate.py", line 326, in step
+    obs, rew, terminated, truncated, infos = self.env.step(dce_action)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 227, in step
+    self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 367, in compute_rewards_and_crashes
+    return compute_gate_reward(
+RuntimeError: The following operation failed in the TorchScript interpreter.
+Traceback of TorchScript (most recent call last):
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 677, in compute_gate_reward
+    pos_reward = exponential_reward_function(
+        parameter_dict["pos_reward_magnitude"],
+        parameter_dict["pos_reward_exponent"],
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ <--- HERE
+        dist,
+    )
+RuntimeError: KeyError: pos_reward_exponent
+[37m[1m[2025-07-03 13:08:19,160][74428] Runner profile tree view:
+[37m[1mmain_loop: 3.9728
+[37m[1m[2025-07-03 13:08:19,160][74428] Collected {0: 0}, FPS: 0.0

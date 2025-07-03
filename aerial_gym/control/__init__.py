@@ -33,6 +33,10 @@ from aerial_gym.config.controller_config.lmf2_controller_config import (
     control as lmf2_controller_config,
 )
 
+from aerial_gym.config.controller_config.x500_controller_config import (
+    control as x500_controller_config,
+)
+
 
 from aerial_gym.registry.controller_registry import controller_registry
 
@@ -99,4 +103,25 @@ controller_registry.register_controller(
 
 controller_registry.register_controller(
     "lmf2_acceleration_control", LeeAccelerationController, lmf2_controller_config
+)
+
+# X500-specific controller registrations with optimized gains
+controller_registry.register_controller(
+    "x500_position_control", LeePositionController, x500_controller_config
+)
+
+controller_registry.register_controller(
+    "x500_velocity_control", LeeVelocityController, x500_controller_config
+)
+
+controller_registry.register_controller(
+    "x500_attitude_control", LeeAttitudeController, x500_controller_config
+)
+
+controller_registry.register_controller(
+    "x500_rates_control", LeeRatesController, x500_controller_config
+)
+
+controller_registry.register_controller(
+    "x500_acceleration_control", LeeAccelerationController, x500_controller_config
 )
