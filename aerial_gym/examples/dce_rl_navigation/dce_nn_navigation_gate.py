@@ -32,10 +32,13 @@ def sample_command(args):
         "dce_navigation_task_gate", seed=42, use_warp=use_warp, headless=headless
     )
     print("Number of environments", rl_task.num_envs)
+    # UPDATED: 4D action space [x_vel, y_vel, z_vel, yaw_rate] for full gate navigation control
     command_actions = torch.zeros((rl_task.num_envs, rl_task.task_config.action_space_dim))
-    command_actions[:, 0] = 1.5  # Forward velocity
-    command_actions[:, 1] = 0.0  # Lateral velocity
-    command_actions[:, 2] = 0.0  # Yaw rate
+    command_actions[:, 0] = 1.0  # Forward velocity (X)
+    # command_actions[:, 0] = 1.5  # Forward velocity (X)
+    command_actions[:, 1] = 0.0  # Lateral velocity (Y)
+    command_actions[:, 2] = 0.0  # Vertical velocity (Z) - NEW
+    command_actions[:, 3] = 0.0  # Yaw rate
     nn_model = get_network(rl_task.num_envs)
     nn_model.eval()
     nn_model.reset(torch.arange(rl_task.num_envs))
@@ -47,7 +50,7 @@ def sample_command(args):
         obs["obs"] = obs["observations"]
         # print(obs["observations"].shape)  # Should be 145D for gate navigation
         action = nn_model.get_action(obs)
-        # print("Action", action, action.shape)
+        # print("Action", action, action.shape)  # Should be 4D for gate navigation
         action = torch.tensor(action).expand(rl_task.num_envs, -1)
         command_actions[:] = action
 
@@ -121,8 +124,8 @@ def get_network(num_envs):
     # register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg(evaluation=True)
     print("CFG is:", cfg)
-    # Update observation space for gate navigation: 145D (17D basic + 64D drone VAE + 64D static camera VAE)
-    nn_model = NN_Inference_Class(num_envs, 3, 145, cfg)  # 3D action, 145D observation
+    # UPDATED: 4D action space and 145D observation space for gate navigation with Z-axis control
+    nn_model = NN_Inference_Class(num_envs, 4, 145, cfg)  # 4D action, 145D observation
     return nn_model
 
 

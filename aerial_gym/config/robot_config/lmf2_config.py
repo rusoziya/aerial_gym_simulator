@@ -28,14 +28,14 @@ class LMF2Cfg:
         min_init_state = [
             0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
             0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
-            0.2,    # ratio_z: Z = 0.8 → ratio = 0.8 / 4 = 0.2 (slightly below camera)
+            0.35,   # ratio_z: Z = 1.4 → ratio = 1.4 / 4 = 0.35 (AT GATE LEVEL - INCREASED from 0.2)
             0,      # no roll
             0,      # no pitch  
             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
             -0.1,   # very small initial velocity variation
             -0.1,
-            -0.1,
+            0.1,    # POSITIVE initial Z-velocity to help gain altitude (CHANGED from -0.1)
             -0.1,
             -0.1,
             -0.1,
@@ -43,14 +43,14 @@ class LMF2Cfg:
         max_init_state = [
             0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
             0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
-            0.3,    # ratio_z: Z = 1.2 → ratio = 1.2 / 4 = 0.3 (slightly above camera)
+            0.4,    # ratio_z: Z = 1.6 → ratio = 1.6 / 4 = 0.4 (OPTIMAL GATE HEIGHT - INCREASED from 0.3)
             0,      # no roll
             0,      # no pitch
             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
             0.1,    # very small initial velocity variation
             0.1,
-            0.1,
+            0.2,    # POSITIVE initial Z-velocity to help gain altitude (CHANGED from 0.1)
             0.1,
             0.1,
             0.1,
@@ -101,14 +101,14 @@ class LMF2Cfg:
         min_state_ratio = [
             0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
             0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
-            0.2,    # ratio_z: Z = 0.8 → ratio = 0.8 / 4 = 0.2 (slightly below camera)
+            0.35,   # ratio_z: Z = 1.4 → ratio = 1.4 / 4 = 0.35 (AT GATE LEVEL - INCREASED from 0.2)
             0,      # no roll
             0,      # no pitch
             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
             0,      # no initial velocity
             0,
-            0,
+            0,      # no initial velocity
             0,
             0,
             0,
@@ -116,14 +116,14 @@ class LMF2Cfg:
         max_state_ratio = [
             0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
             0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
-            0.3,    # ratio_z: Z = 1.2 → ratio = 1.2 / 4 = 0.3 (slightly above camera)
+            0.4,    # ratio_z: Z = 1.6 → ratio = 1.6 / 4 = 0.4 (OPTIMAL GATE HEIGHT - INCREASED from 0.3)
             0,      # no roll
             0,      # no pitch
             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
             0,      # no initial velocity
             0,
-            0,
+            0,      # no initial velocity
             0,
             0,
             0,
@@ -178,7 +178,7 @@ class LMF2Cfg:
             motor_time_constant_increasing_max = 0.08
             motor_time_constant_decreasing_min = 0.005
             motor_time_constant_decreasing_max = 0.005
-            max_thrust = 10.0
+            max_thrust = 15.0
             min_thrust = 0.1
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.07

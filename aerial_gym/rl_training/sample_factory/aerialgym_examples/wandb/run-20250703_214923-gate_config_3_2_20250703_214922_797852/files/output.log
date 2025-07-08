@@ -1,0 +1,1306 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-03 21:49:27,347][113395] Queried available GPUs: 0
+[37m[1m[2025-07-03 21:49:27,348][113395] Environment var CUDA_VISIBLE_DEVICES is 0
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 4
+[SUBPROCESS] Target Sample Factory action space: 4D
+[SUBPROCESS] Setting num_envs to 16 based on env_agents=16
+[SUBPROCESS] Set SF_ENV_AGENTS=16 environment variable
+[SUBPROCESS] Config batch_size: 2048
+[SUBPROCESS] Using STANDARD CONFIG (16 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_3_2', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+[37m[2619 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[2619 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[2619 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[2619 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[2620 ms][base_task] - INFO : Setting seed: 4696421 (base_task.py:38)
+[37m[2620 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[2620 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[2620 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[2620 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[2620 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[2620 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[2620 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[2620 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[2622 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[2622 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[2622 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[2622 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[2622 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[2622 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[2622 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[3770 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[3770 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[4010 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[4010 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[4011 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[4011 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[4011 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[4011 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[4011 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[4011 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[4011 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[4011 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4012 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4017 ms][asset_loader] - INFO : Loading asset: 1_x_1_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4019 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4020 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4022 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4023 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4025 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4027 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4029 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4031 ms][asset_loader] - INFO : Loading asset: 0_5_x_0_5_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4032 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4035 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.63 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 9.21 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 13.47 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.77 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[33m[4478 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[4478 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[4478 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[4503 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[4513 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[4514 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[4660 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[4660 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[4700 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4929 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4931 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[5635 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:522)
+[37m[5635 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:541)
+[37m[5717 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:558)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 21:49:33,372][113515] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-07-03 21:49:34,549][113395] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-03 21:49:34,550][113395] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gate_config_3_2
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=2048
+[36mnum_batches_per_epoch=8
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 64]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=64
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=16
+[36mheadless=False
+[36msave_gifs=True
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=3
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gate_config_3_2 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gate_config_3_2', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 64], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 16, 'headless': False, 'save_gifs': True, 'obs_key': 'observations'}
+[36mgit_hash=0cfb8043f86f71fecc5b96bf9393310f6c956cd6
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gate_config_3_2_20250703_214922_797852
+[36m[2025-07-03 21:49:34,550][113395] Saving configuration to ./train_dir/gate_config_3_2/config.json...
+[36m[2025-07-03 21:49:34,717][113395] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 21:49:34,718][113395] Rollout worker 0 uses device cuda:0
+[36m[2025-07-03 21:49:34,741][113395] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 21:49:34,741][113395] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-03 21:49:34,743][113395] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 21:49:34,744][113395] Starting seed is not provided
+[36m[2025-07-03 21:49:34,745][113395] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-03 21:49:34,745][113395] Initializing actor-critic model on device cuda:0
+[36m[2025-07-03 21:49:34,746][113395] RunningMeanStd input shape: (145,)
+[36m[2025-07-03 21:49:34,747][113395] RunningMeanStd input shape: (1,)
+[36m[2025-07-03 21:49:34,793][113395] Created Actor Critic model with architecture:
+[36m[2025-07-03 21:49:34,794][113395] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(64, 64)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+[36m  )
+[36m)
+[36m[2025-07-03 21:49:35,312][113395] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-07-03 21:49:35,313][113395] No checkpoints found
+[36m[2025-07-03 21:49:35,313][113395] Did not load from checkpoint, starting from scratch!
+[36m[2025-07-03 21:49:35,313][113395] Initialized policy 0 weights for model version 0
+[36m[2025-07-03 21:49:35,313][113395] LearnerWorker_p0 finished initialization!
+[36m[2025-07-03 21:49:35,314][113395] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-03 21:49:35,324][113395] Inference worker 0-0 is ready!
+[37m[1m[2025-07-03 21:49:35,324][113395] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-07-03 21:49:35,324][113395] EnvRunner 0-0 uses policy 0
+[37m[15372 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[15372 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[15372 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[15372 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[15373 ms][base_task] - INFO : Setting seed: 762340085 (base_task.py:38)
+[37m[15373 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[15373 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_position_control (navigation_task_gate.py:49)
+[37m[15374 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[15374 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[15374 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[15374 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[15374 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[15374 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_3_2', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 2.49 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 11.66 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 14.62 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 7.43 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[37m[15376 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[15376 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[15376 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[15376 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[15376 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[15376 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[15376 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[16578 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[16578 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[16844 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[16845 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[16845 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[16845 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[16845 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[16845 ms][BaseRobot] - INFO : Initializing controller lmf2_position_control (base_robot.py:29)
+[33m[16845 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[16845 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[16845 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[16845 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16846 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16852 ms][asset_loader] - INFO : Loading asset: 1_x_1_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16854 ms][asset_loader] - INFO : Loading asset: 0_5_x_0_5_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16856 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16858 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16860 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16862 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16863 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16865 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16866 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16868 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16870 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[16899 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[16899 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[16899 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[16924 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[16936 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[16936 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[17053 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[17054 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[17105 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[17344 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[17345 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[18058 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:522)
+[37m[18058 ms][navigation_task_gate] - INFO : Static camera properties: 480x270, FOV: 87.0° (navigation_task_gate.py:541)
+[37m[18139 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete (navigation_task_gate.py:558)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-03 21:49:38,256][113395] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[GIF] Episode 0 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0000_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0000_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0000_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0000_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0000_merged_dual_camera.gif
+[36m[2025-07-03 21:49:41,421][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 0.0. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:49:41,422][113395] Avg episode reward: [(0, '-100.000')]
+[33m[23187 ms][IGE_viewer_control] - WARNING : Camera follow: True (IGE_viewer_control.py:217)
+[33m[25430 ms][IGE_viewer_control] - WARNING : Camera follow: False (IGE_viewer_control.py:217)
+[36m[2025-07-03 21:49:46,293][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 21.9. Samples: 176. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:49:46,293][113395] Avg episode reward: [(0, '-41.034')]
+[36m[2025-07-03 21:49:51,334][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 58.7. Samples: 768. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:49:51,335][113395] Avg episode reward: [(0, '10.060')]
+[37m[1m[2025-07-03 21:49:54,948][113395] Heartbeat connected on Batcher_0
+[37m[1m[2025-07-03 21:49:54,949][113395] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-07-03 21:49:54,949][113395] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-07-03 21:49:54,949][113395] Heartbeat connected on RolloutWorker_w0
+[36m[2025-07-03 21:49:56,277][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 63.0. Samples: 1136. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:49:56,278][113395] Avg episode reward: [(0, '44.679')]
+[36m[2025-07-03 21:50:01,259][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 80.7. Samples: 1856. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:01,260][113395] Avg episode reward: [(0, '35.608')]
+[36m[2025-07-03 21:50:06,346][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 88.9. Samples: 2496. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:06,346][113395] Avg episode reward: [(0, '34.815')]
+[36m[2025-07-03 21:50:11,288][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 86.2. Samples: 2848. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:11,288][113395] Avg episode reward: [(0, '41.874')]
+[36m[2025-07-03 21:50:16,324][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 92.9. Samples: 3536. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:16,324][113395] Avg episode reward: [(0, '45.631')]
+[36m[2025-07-03 21:50:21,351][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 102.8. Samples: 4432. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:21,352][113395] Avg episode reward: [(0, '41.407')]
+[36m[2025-07-03 21:50:26,330][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 109.7. Samples: 4928. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:26,330][113395] Avg episode reward: [(0, '38.029')]
+[36m[2025-07-03 21:50:31,270][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 125.9. Samples: 5840. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:31,270][113395] Avg episode reward: [(0, '34.837')]
+[36m[2025-07-03 21:50:36,318][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 134.8. Samples: 6832. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:36,319][113395] Avg episode reward: [(0, '39.711')]
+[36m[2025-07-03 21:50:41,269][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 137.3. Samples: 7312. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:41,269][113395] Avg episode reward: [(0, '39.555')]
+[36m[2025-07-03 21:50:46,294][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 142.1. Samples: 8256. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:46,294][113395] Avg episode reward: [(0, '47.146')]
+[36m[2025-07-03 21:50:51,298][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 151.3. Samples: 9296. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:51,298][113395] Avg episode reward: [(0, '45.646')]
+[36m[2025-07-03 21:50:56,317][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 154.2. Samples: 9792. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:50:56,318][113395] Avg episode reward: [(0, '47.962')]
+[36m[2025-07-03 21:51:01,304][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 157.6. Samples: 10624. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:51:01,305][113395] Avg episode reward: [(0, '46.547')]
+[33m[105887 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[105887 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:479: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:480: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:481: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
+[36m[2025-07-03 21:51:06,345][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 157.5. Samples: 11520. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:51:06,345][113395] Avg episode reward: [(0, '39.104')]
+[36m[2025-07-03 21:51:11,273][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 155.9. Samples: 11936. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:51:11,273][113395] Avg episode reward: [(0, '36.203')]
+[36m[2025-07-03 21:51:16,300][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 155.6. Samples: 12848. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:51:16,300][113395] Avg episode reward: [(0, '42.635')]
+[36m[2025-07-03 21:51:21,380][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 156.9. Samples: 13904. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:51:21,380][113395] Avg episode reward: [(0, '45.878')]
+[36m[2025-07-03 21:51:26,334][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 155.5. Samples: 14320. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:51:26,334][113395] Avg episode reward: [(0, '42.363')]
+[37m[1m[2025-07-03 21:51:26,465][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000000_0.pth...
+[36m[2025-07-03 21:51:31,260][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 155.1. Samples: 15232. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-03 21:51:31,260][113395] Avg episode reward: [(0, '45.556')]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py:1194: UserWarning: operator() profile_node %104 : int[] = prim::profile_ivalue(%102)
+ does not have profile information (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/jit/codegen/cuda/graph_fuser.cpp:105.)
+  return forward_call(*input, **kwargs)
+[36m[2025-07-03 21:51:37,094][113395] Fps is (10 sec: 1522.6, 60 sec: 269.6, 300 sec: 137.9). Total num frames: 16384. Throughput: 0: 152.3. Samples: 16272. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:51:37,094][113395] Avg episode reward: [(0, '48.416')]
+[36m[2025-07-03 21:51:41,312][113395] Fps is (10 sec: 1629.9, 60 sec: 272.9, 300 sec: 133.1). Total num frames: 16384. Throughput: 0: 152.6. Samples: 16656. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:51:41,312][113395] Avg episode reward: [(0, '43.718')]
+[36m[2025-07-03 21:51:46,326][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 127.9). Total num frames: 16384. Throughput: 0: 154.9. Samples: 17600. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:51:46,326][113395] Avg episode reward: [(0, '36.896')]
+[GIF] Episode 100 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0001_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0001_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0001_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0001_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0001_merged_dual_camera.gif
+[36m[2025-07-03 21:51:51,283][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 123.2). Total num frames: 16384. Throughput: 0: 155.6. Samples: 18512. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:51:51,284][113395] Avg episode reward: [(0, '36.461')]
+[36m[2025-07-03 21:51:56,290][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 118.7). Total num frames: 16384. Throughput: 0: 156.0. Samples: 18960. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:51:56,290][113395] Avg episode reward: [(0, '37.235')]
+[36m[2025-07-03 21:52:01,310][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 114.5). Total num frames: 16384. Throughput: 0: 158.2. Samples: 19968. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:01,310][113395] Avg episode reward: [(0, '39.860')]
+[36m[2025-07-03 21:52:06,309][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 110.7). Total num frames: 16384. Throughput: 0: 154.2. Samples: 20832. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:06,309][113395] Avg episode reward: [(0, '37.650')]
+[36m[2025-07-03 21:52:11,316][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 107.0). Total num frames: 16384. Throughput: 0: 157.2. Samples: 21392. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:11,316][113395] Avg episode reward: [(0, '38.748')]
+[36m[2025-07-03 21:52:16,303][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 103.7). Total num frames: 16384. Throughput: 0: 158.8. Samples: 22384. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:16,303][113395] Avg episode reward: [(0, '43.419')]
+[33m[181207 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[181207 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 21:52:21,262][113395] Fps is (10 sec: 0.0, 60 sec: 273.6, 300 sec: 100.5). Total num frames: 16384. Throughput: 0: 159.0. Samples: 23296. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:21,263][113395] Avg episode reward: [(0, '34.739')]
+[36m[2025-07-03 21:52:26,332][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 97.5). Total num frames: 16384. Throughput: 0: 160.3. Samples: 23872. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:26,333][113395] Avg episode reward: [(0, '40.279')]
+[36m[2025-07-03 21:52:31,317][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 94.7). Total num frames: 16384. Throughput: 0: 159.0. Samples: 24752. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:31,318][113395] Avg episode reward: [(0, '40.481')]
+[36m[2025-07-03 21:52:36,283][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 92.0). Total num frames: 16384. Throughput: 0: 159.3. Samples: 25680. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:36,283][113395] Avg episode reward: [(0, '42.574')]
+[36m[2025-07-03 21:52:41,325][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 89.5). Total num frames: 16384. Throughput: 0: 159.2. Samples: 26128. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:41,326][113395] Avg episode reward: [(0, '36.393')]
+[36m[2025-07-03 21:52:46,337][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 87.1). Total num frames: 16384. Throughput: 0: 158.5. Samples: 27104. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:46,337][113395] Avg episode reward: [(0, '43.432')]
+[36m[2025-07-03 21:52:51,353][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 84.8). Total num frames: 16384. Throughput: 0: 160.6. Samples: 28064. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:51,354][113395] Avg episode reward: [(0, '44.088')]
+[36m[2025-07-03 21:52:56,311][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 82.7). Total num frames: 16384. Throughput: 0: 157.9. Samples: 28496. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:52:56,311][113395] Avg episode reward: [(0, '34.860')]
+[36m[2025-07-03 21:53:01,270][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 80.7). Total num frames: 16384. Throughput: 0: 156.9. Samples: 29440. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:53:01,270][113395] Avg episode reward: [(0, '37.729')]
+[36m[2025-07-03 21:53:06,327][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 78.7). Total num frames: 16384. Throughput: 0: 155.2. Samples: 30288. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:53:06,327][113395] Avg episode reward: [(0, '49.123')]
+[36m[2025-07-03 21:53:11,267][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 76.9). Total num frames: 16384. Throughput: 0: 153.1. Samples: 30752. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:53:11,267][113395] Avg episode reward: [(0, '39.887')]
+[36m[2025-07-03 21:53:16,260][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 75.2). Total num frames: 16384. Throughput: 0: 153.8. Samples: 31664. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-03 21:53:16,260][113395] Avg episode reward: [(0, '35.237')]
+[36m[2025-07-03 21:53:21,461][113395] Fps is (10 sec: 1607.2, 60 sec: 272.2, 300 sec: 146.8). Total num frames: 32768. Throughput: 0: 155.5. Samples: 32704. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:21,462][113395] Avg episode reward: [(0, '38.237')]
+[36m[2025-07-03 21:53:26,341][113395] Fps is (10 sec: 1625.3, 60 sec: 273.0, 300 sec: 143.7). Total num frames: 32768. Throughput: 0: 155.0. Samples: 33104. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:26,341][113395] Avg episode reward: [(0, '44.348')]
+[37m[1m[2025-07-03 21:53:26,352][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000064_32768.pth...
+[36m[2025-07-03 21:53:31,357][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 140.6). Total num frames: 32768. Throughput: 0: 155.0. Samples: 34080. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:31,357][113395] Avg episode reward: [(0, '55.186')]
+[36m[2025-07-03 21:53:36,267][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 137.7). Total num frames: 32768. Throughput: 0: 153.5. Samples: 34960. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:36,268][113395] Avg episode reward: [(0, '59.417')]
+[33m[259585 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[259586 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 21:53:41,283][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 134.8). Total num frames: 32768. Throughput: 0: 153.3. Samples: 35392. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:41,283][113395] Avg episode reward: [(0, '48.877')]
+[36m[2025-07-03 21:53:46,316][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 132.1). Total num frames: 32768. Throughput: 0: 154.5. Samples: 36400. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:46,317][113395] Avg episode reward: [(0, '49.209')]
+[GIF] Episode 200 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0002_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0002_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0002_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0002_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0002_merged_dual_camera.gif
+[36m[2025-07-03 21:53:51,291][113395] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 129.5). Total num frames: 32768. Throughput: 0: 156.9. Samples: 37344. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:51,291][113395] Avg episode reward: [(0, '58.603')]
+[36m[2025-07-03 21:53:56,269][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 127.0). Total num frames: 32768. Throughput: 0: 157.2. Samples: 37824. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:53:56,269][113395] Avg episode reward: [(0, '54.106')]
+[36m[2025-07-03 21:54:01,337][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 124.6). Total num frames: 32768. Throughput: 0: 156.9. Samples: 38736. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:01,337][113395] Avg episode reward: [(0, '53.298')]
+[36m[2025-07-03 21:54:06,390][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 122.2). Total num frames: 32768. Throughput: 0: 157.0. Samples: 39760. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:06,390][113395] Avg episode reward: [(0, '58.246')]
+[36m[2025-07-03 21:54:11,341][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 120.0). Total num frames: 32768. Throughput: 0: 157.9. Samples: 40208. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:11,341][113395] Avg episode reward: [(0, '58.558')]
+[36m[2025-07-03 21:54:16,273][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 117.9). Total num frames: 32768. Throughput: 0: 158.9. Samples: 41216. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:16,273][113395] Avg episode reward: [(0, '62.761')]
+[36m[2025-07-03 21:54:21,330][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 115.8). Total num frames: 32768. Throughput: 0: 158.7. Samples: 42112. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:21,331][113395] Avg episode reward: [(0, '56.925')]
+[36m[2025-07-03 21:54:26,345][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 113.7). Total num frames: 32768. Throughput: 0: 158.4. Samples: 42528. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:26,345][113395] Avg episode reward: [(0, '60.678')]
+[36m[2025-07-03 21:54:31,329][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.8). Total num frames: 32768. Throughput: 0: 159.2. Samples: 43568. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:31,329][113395] Avg episode reward: [(0, '52.188')]
+[36m[2025-07-03 21:54:36,312][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 32768. Throughput: 0: 158.5. Samples: 44480. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:36,312][113395] Avg episode reward: [(0, '45.332')]
+[36m[2025-07-03 21:54:41,343][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 32768. Throughput: 0: 159.0. Samples: 44992. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:41,343][113395] Avg episode reward: [(0, '56.339')]
+[36m[2025-07-03 21:54:46,258][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 32768. Throughput: 0: 159.9. Samples: 45920. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:46,258][113395] Avg episode reward: [(0, '52.523')]
+[36m[2025-07-03 21:54:51,327][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 32768. Throughput: 0: 158.8. Samples: 46896. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:51,327][113395] Avg episode reward: [(0, '54.557')]
+[36m[2025-07-03 21:54:56,331][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 32768. Throughput: 0: 160.0. Samples: 47408. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:54:56,331][113395] Avg episode reward: [(0, '48.070')]
+[33m[336752 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[336752 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 21:55:01,338][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 32768. Throughput: 0: 156.2. Samples: 48256. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:01,338][113395] Avg episode reward: [(0, '49.778')]
+[36m[2025-07-03 21:55:06,274][113395] Fps is (10 sec: 1647.8, 60 sec: 273.6, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 154.9. Samples: 49072. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:06,274][113395] Avg episode reward: [(0, '52.191')]
+[36m[2025-07-03 21:55:11,263][113395] Fps is (10 sec: 1650.7, 60 sec: 273.4, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 157.8. Samples: 49616. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:11,264][113395] Avg episode reward: [(0, '59.526')]
+[36m[2025-07-03 21:55:16,343][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 156.0. Samples: 50592. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:16,343][113395] Avg episode reward: [(0, '66.014')]
+[36m[2025-07-03 21:55:21,324][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 155.0. Samples: 51456. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:21,324][113395] Avg episode reward: [(0, '68.523')]
+[36m[2025-07-03 21:55:26,264][113395] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 154.2. Samples: 51920. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:26,264][113395] Avg episode reward: [(0, '74.032')]
+[37m[1m[2025-07-03 21:55:26,350][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000096_49152.pth...
+[36m[2025-07-03 21:55:31,333][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 154.8. Samples: 52896. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:31,333][113395] Avg episode reward: [(0, '65.729')]
+[36m[2025-07-03 21:55:36,266][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 157.4. Samples: 53968. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:36,266][113395] Avg episode reward: [(0, '69.409')]
+[36m[2025-07-03 21:55:41,320][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 156.5. Samples: 54448. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:41,320][113395] Avg episode reward: [(0, '70.208')]
+[36m[2025-07-03 21:55:46,325][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 158.6. Samples: 55392. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:46,326][113395] Avg episode reward: [(0, '63.023')]
+[GIF] Episode 300 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0003_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0003_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0003_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0003_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0003_merged_dual_camera.gif
+[36m[2025-07-03 21:55:51,350][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 162.6. Samples: 56400. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:51,350][113395] Avg episode reward: [(0, '74.636')]
+[36m[2025-07-03 21:55:56,269][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 161.0. Samples: 56864. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:55:56,269][113395] Avg episode reward: [(0, '81.590')]
+[36m[2025-07-03 21:56:01,325][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 160.4. Samples: 57808. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:01,326][113395] Avg episode reward: [(0, '75.120')]
+[36m[2025-07-03 21:56:06,259][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 163.8. Samples: 58816. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:06,259][113395] Avg episode reward: [(0, '69.286')]
+[36m[2025-07-03 21:56:11,350][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 163.2. Samples: 59280. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:11,350][113395] Avg episode reward: [(0, '67.863')]
+[33m[415880 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[415880 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 21:56:16,284][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 164.1. Samples: 60272. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:16,284][113395] Avg episode reward: [(0, '74.913')]
+[36m[2025-07-03 21:56:21,281][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 160.3. Samples: 61184. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:21,282][113395] Avg episode reward: [(0, '72.101')]
+[36m[2025-07-03 21:56:26,301][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 160.1. Samples: 61648. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:26,301][113395] Avg episode reward: [(0, '73.215')]
+[36m[2025-07-03 21:56:31,308][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.4). Total num frames: 49152. Throughput: 0: 158.3. Samples: 62512. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:31,308][113395] Avg episode reward: [(0, '66.848')]
+[36m[2025-07-03 21:56:36,257][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 49152. Throughput: 0: 158.5. Samples: 63520. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:36,258][113395] Avg episode reward: [(0, '67.585')]
+[36m[2025-07-03 21:56:41,261][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 49152. Throughput: 0: 159.7. Samples: 64048. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:41,262][113395] Avg episode reward: [(0, '70.338')]
+[36m[2025-07-03 21:56:46,271][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 49152. Throughput: 0: 159.5. Samples: 64976. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:46,271][113395] Avg episode reward: [(0, '67.971')]
+[36m[2025-07-03 21:56:51,290][113395] Fps is (10 sec: 1633.8, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 157.8. Samples: 65920. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:51,290][113395] Avg episode reward: [(0, '81.749')]
+[36m[2025-07-03 21:56:56,274][113395] Fps is (10 sec: 1637.8, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 158.1. Samples: 66384. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:56:56,274][113395] Avg episode reward: [(0, '94.781')]
+[36m[2025-07-03 21:57:01,260][113395] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 156.9. Samples: 67328. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:01,260][113395] Avg episode reward: [(0, '93.784')]
+[36m[2025-07-03 21:57:06,259][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 156.5. Samples: 68224. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:06,259][113395] Avg episode reward: [(0, '84.230')]
+[36m[2025-07-03 21:57:11,299][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 157.2. Samples: 68720. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:11,299][113395] Avg episode reward: [(0, '82.978')]
+[36m[2025-07-03 21:57:16,375][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 161.2. Samples: 69776. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:16,376][113395] Avg episode reward: [(0, '94.158')]
+[36m[2025-07-03 21:57:21,345][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 160.0. Samples: 70736. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:21,345][113395] Avg episode reward: [(0, '99.496')]
+[36m[2025-07-03 21:57:26,274][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 158.9. Samples: 71200. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:26,275][113395] Avg episode reward: [(0, '94.261')]
+[37m[1m[2025-07-03 21:57:26,361][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000128_65536.pth...
+[36m[2025-07-03 21:57:31,289][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 158.2. Samples: 72096. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:31,290][113395] Avg episode reward: [(0, '85.318')]
+[36m[2025-07-03 21:57:36,331][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 160.2. Samples: 73136. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:36,331][113395] Avg episode reward: [(0, '89.610')]
+[33m[498248 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[498248 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 21:57:41,342][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 160.5. Samples: 73616. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:41,342][113395] Avg episode reward: [(0, '94.020')]
+[36m[2025-07-03 21:57:46,297][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 160.2. Samples: 74544. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:46,297][113395] Avg episode reward: [(0, '87.986')]
+[36m[2025-07-03 21:57:51,264][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 161.8. Samples: 75504. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:51,264][113395] Avg episode reward: [(0, '93.311')]
+[36m[2025-07-03 21:57:56,269][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 161.2. Samples: 75968. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:57:56,270][113395] Avg episode reward: [(0, '89.032')]
+[GIF] Episode 400 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0004_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0004_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0004_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0004_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0004_merged_dual_camera.gif
+[36m[2025-07-03 21:58:01,278][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 158.9. Samples: 76912. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:58:01,278][113395] Avg episode reward: [(0, '80.016')]
+[36m[2025-07-03 21:58:06,289][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 158.1. Samples: 77840. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:58:06,289][113395] Avg episode reward: [(0, '90.524')]
+[36m[2025-07-03 21:58:11,296][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 159.6. Samples: 78384. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:58:11,296][113395] Avg episode reward: [(0, '98.476')]
+[36m[2025-07-03 21:58:16,285][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 65536. Throughput: 0: 160.7. Samples: 79328. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:58:16,285][113395] Avg episode reward: [(0, '95.431')]
+[36m[2025-07-03 21:58:21,293][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 65536. Throughput: 0: 159.4. Samples: 80304. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:58:21,293][113395] Avg episode reward: [(0, '88.752')]
+[36m[2025-07-03 21:58:26,268][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 65536. Throughput: 0: 158.8. Samples: 80752. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 21:58:26,268][113395] Avg episode reward: [(0, '88.293')]
+[36m[2025-07-03 21:58:31,277][113395] Fps is (10 sec: 1641.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.7. Samples: 81728. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:58:31,277][113395] Avg episode reward: [(0, '85.375')]
+[36m[2025-07-03 21:58:36,307][113395] Fps is (10 sec: 1632.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.8. Samples: 82704. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:58:36,307][113395] Avg episode reward: [(0, '103.710')]
+[36m[2025-07-03 21:58:41,321][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 160.2. Samples: 83184. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:58:41,321][113395] Avg episode reward: [(0, '109.060')]
+[36m[2025-07-03 21:58:46,315][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.9. Samples: 84112. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:58:46,316][113395] Avg episode reward: [(0, '108.198')]
+[36m[2025-07-03 21:58:51,339][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 163.7. Samples: 85216. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:58:51,339][113395] Avg episode reward: [(0, '110.808')]
+[36m[2025-07-03 21:58:56,336][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 160.9. Samples: 85632. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:58:56,336][113395] Avg episode reward: [(0, '111.385')]
+[36m[2025-07-03 21:59:01,294][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.7). Total num frames: 81920. Throughput: 0: 159.3. Samples: 86496. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:01,295][113395] Avg episode reward: [(0, '114.378')]
+[33m[584351 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[584351 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 21:59:06,315][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.6. Samples: 87488. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:06,315][113395] Avg episode reward: [(0, '113.342')]
+[36m[2025-07-03 21:59:11,334][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.4. Samples: 87936. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:11,335][113395] Avg episode reward: [(0, '110.826')]
+[36m[2025-07-03 21:59:16,318][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.5. Samples: 88912. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:16,318][113395] Avg episode reward: [(0, '106.818')]
+[36m[2025-07-03 21:59:21,272][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 81920. Throughput: 0: 159.4. Samples: 89872. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:21,273][113395] Avg episode reward: [(0, '103.767')]
+[36m[2025-07-03 21:59:26,308][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.0. Samples: 90336. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:26,308][113395] Avg episode reward: [(0, '110.645')]
+[37m[1m[2025-07-03 21:59:26,450][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000160_81920.pth...
+[36m[2025-07-03 21:59:31,293][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 159.0. Samples: 91264. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:31,294][113395] Avg episode reward: [(0, '112.338')]
+[36m[2025-07-03 21:59:36,268][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 81920. Throughput: 0: 158.5. Samples: 92336. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:36,268][113395] Avg episode reward: [(0, '109.614')]
+[36m[2025-07-03 21:59:41,304][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 160.5. Samples: 92848. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:41,304][113395] Avg episode reward: [(0, '112.418')]
+[36m[2025-07-03 21:59:46,295][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 163.6. Samples: 93856. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:46,295][113395] Avg episode reward: [(0, '113.110')]
+[36m[2025-07-03 21:59:51,362][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 162.3. Samples: 94800. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:51,363][113395] Avg episode reward: [(0, '109.114')]
+[36m[2025-07-03 21:59:56,257][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 81920. Throughput: 0: 163.1. Samples: 95264. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 21:59:56,258][113395] Avg episode reward: [(0, '102.373')]
+[36m[2025-07-03 22:00:01,357][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.0). Total num frames: 81920. Throughput: 0: 161.3. Samples: 96176. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 22:00:01,357][113395] Avg episode reward: [(0, '106.428')]
+[36m[2025-07-03 22:00:06,281][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 81920. Throughput: 0: 160.0. Samples: 97072. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 22:00:06,281][113395] Avg episode reward: [(0, '109.094')]
+[36m[2025-07-03 22:00:11,343][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 81920. Throughput: 0: 158.1. Samples: 97456. Policy #0 lag: (min: 27.0, avg: 27.0, max: 27.0)
+[36m[2025-07-03 22:00:11,344][113395] Avg episode reward: [(0, '109.368')]
+[36m[2025-07-03 22:00:16,283][113395] Fps is (10 sec: 1638.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 157.2. Samples: 98336. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:16,283][113395] Avg episode reward: [(0, '107.898')]
+[GIF] Episode 500 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0005_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0005_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0005_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0005_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0005_merged_dual_camera.gif
+[36m[2025-07-03 22:00:21,285][113395] Fps is (10 sec: 1647.9, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 155.0. Samples: 99312. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:21,285][113395] Avg episode reward: [(0, '124.197')]
+[36m[2025-07-03 22:00:26,276][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 155.1. Samples: 99824. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:26,277][113395] Avg episode reward: [(0, '133.574')]
+[36m[2025-07-03 22:00:31,332][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 153.5. Samples: 100768. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:31,332][113395] Avg episode reward: [(0, '127.840')]
+[33m[675118 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[675118 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 22:00:36,291][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 153.5. Samples: 101696. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:36,291][113395] Avg episode reward: [(0, '126.020')]
+[36m[2025-07-03 22:00:41,299][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 152.7. Samples: 102144. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:41,299][113395] Avg episode reward: [(0, '129.206')]
+[36m[2025-07-03 22:00:46,269][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 98304. Throughput: 0: 152.5. Samples: 103024. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:46,269][113395] Avg episode reward: [(0, '129.647')]
+[36m[2025-07-03 22:00:51,295][113395] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 153.2. Samples: 103968. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:51,295][113395] Avg episode reward: [(0, '127.537')]
+[36m[2025-07-03 22:00:56,329][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 155.8. Samples: 104464. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:00:56,329][113395] Avg episode reward: [(0, '123.526')]
+[36m[2025-07-03 22:01:01,328][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 157.0. Samples: 105408. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:01,329][113395] Avg episode reward: [(0, '115.114')]
+[36m[2025-07-03 22:01:06,302][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 155.7. Samples: 106320. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:06,303][113395] Avg episode reward: [(0, '122.933')]
+[36m[2025-07-03 22:01:11,271][113395] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 156.8. Samples: 106880. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:11,271][113395] Avg episode reward: [(0, '127.247')]
+[36m[2025-07-03 22:01:16,282][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 157.7. Samples: 107856. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:16,282][113395] Avg episode reward: [(0, '128.536')]
+[36m[2025-07-03 22:01:21,298][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 158.2. Samples: 108816. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:21,298][113395] Avg episode reward: [(0, '123.039')]
+[36m[2025-07-03 22:01:26,288][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 159.0. Samples: 109296. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:26,288][113395] Avg episode reward: [(0, '127.853')]
+[37m[1m[2025-07-03 22:01:26,372][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000192_98304.pth...
+[36m[2025-07-03 22:01:26,377][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000000_0.pth
+[36m[2025-07-03 22:01:31,362][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 159.3. Samples: 110208. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:31,362][113395] Avg episode reward: [(0, '124.235')]
+[36m[2025-07-03 22:01:36,312][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 157.5. Samples: 111056. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:36,313][113395] Avg episode reward: [(0, '125.016')]
+[36m[2025-07-03 22:01:41,289][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 156.6. Samples: 111504. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:41,289][113395] Avg episode reward: [(0, '130.357')]
+[36m[2025-07-03 22:01:46,307][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 98304. Throughput: 0: 157.2. Samples: 112480. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:46,307][113395] Avg episode reward: [(0, '125.667')]
+[36m[2025-07-03 22:01:51,292][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 98304. Throughput: 0: 158.3. Samples: 113440. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:51,292][113395] Avg episode reward: [(0, '121.904')]
+[36m[2025-07-03 22:01:56,273][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 98304. Throughput: 0: 156.8. Samples: 113936. Policy #0 lag: (min: 7.0, avg: 7.0, max: 7.0)
+[36m[2025-07-03 22:01:56,273][113395] Avg episode reward: [(0, '123.923')]
+[36m[2025-07-03 22:02:01,271][113395] Fps is (10 sec: 1641.8, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 155.1. Samples: 114832. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:01,271][113395] Avg episode reward: [(0, '133.262')]
+[37m[1m[2025-07-03 22:02:01,353][113395] Saving new best policy, reward=133.262!
+[36m[2025-07-03 22:02:06,331][113395] Fps is (10 sec: 1628.9, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 155.6. Samples: 115824. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:06,331][113395] Avg episode reward: [(0, '143.929')]
+[37m[1m[2025-07-03 22:02:06,426][113395] Saving new best policy, reward=143.929!
+[36m[2025-07-03 22:02:11,315][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.7). Total num frames: 114688. Throughput: 0: 155.3. Samples: 116288. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:11,316][113395] Avg episode reward: [(0, '154.215')]
+[37m[1m[2025-07-03 22:02:11,445][113395] Saving new best policy, reward=154.215!
+[33m[773128 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[773128 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 22:02:16,259][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 114688. Throughput: 0: 156.4. Samples: 117232. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:16,259][113395] Avg episode reward: [(0, '145.590')]
+[36m[2025-07-03 22:02:21,336][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 157.8. Samples: 118160. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:21,336][113395] Avg episode reward: [(0, '139.495')]
+[36m[2025-07-03 22:02:26,334][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 157.0. Samples: 118576. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:26,335][113395] Avg episode reward: [(0, '154.416')]
+[37m[1m[2025-07-03 22:02:26,470][113395] Saving new best policy, reward=154.416!
+[36m[2025-07-03 22:02:31,385][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 156.9. Samples: 119552. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:31,385][113395] Avg episode reward: [(0, '148.961')]
+[36m[2025-07-03 22:02:36,315][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 156.4. Samples: 120480. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:36,316][113395] Avg episode reward: [(0, '152.501')]
+[36m[2025-07-03 22:02:41,331][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 155.2. Samples: 120928. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:41,332][113395] Avg episode reward: [(0, '158.236')]
+[37m[1m[2025-07-03 22:02:41,409][113395] Saving new best policy, reward=158.236!
+[36m[2025-07-03 22:02:46,273][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 157.1. Samples: 121904. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:46,273][113395] Avg episode reward: [(0, '146.128')]
+[36m[2025-07-03 22:02:51,386][113395] Fps is (10 sec: 0.0, 60 sec: 272.6, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 155.5. Samples: 122832. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:51,386][113395] Avg episode reward: [(0, '143.960')]
+[GIF] Episode 600 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0006_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0006_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0006_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0006_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0006_merged_dual_camera.gif
+[36m[2025-07-03 22:02:56,307][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 155.0. Samples: 123264. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:02:56,308][113395] Avg episode reward: [(0, '151.716')]
+[36m[2025-07-03 22:03:01,333][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 155.5. Samples: 124240. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:01,333][113395] Avg episode reward: [(0, '139.993')]
+[36m[2025-07-03 22:03:06,266][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 157.8. Samples: 125248. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:06,266][113395] Avg episode reward: [(0, '149.929')]
+[36m[2025-07-03 22:03:11,267][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 159.5. Samples: 125744. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:11,267][113395] Avg episode reward: [(0, '161.951')]
+[37m[1m[2025-07-03 22:03:11,348][113395] Saving new best policy, reward=161.951!
+[36m[2025-07-03 22:03:16,359][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 159.4. Samples: 126720. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:16,359][113395] Avg episode reward: [(0, '147.392')]
+[36m[2025-07-03 22:03:21,282][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 159.0. Samples: 127632. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:21,283][113395] Avg episode reward: [(0, '153.108')]
+[36m[2025-07-03 22:03:26,288][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 114688. Throughput: 0: 160.2. Samples: 128128. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:26,288][113395] Avg episode reward: [(0, '156.703')]
+[37m[1m[2025-07-03 22:03:26,400][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000224_114688.pth...
+[36m[2025-07-03 22:03:26,405][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000064_32768.pth
+[36m[2025-07-03 22:03:31,288][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 114688. Throughput: 0: 157.8. Samples: 129008. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:31,288][113395] Avg episode reward: [(0, '161.622')]
+[36m[2025-07-03 22:03:36,339][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 114688. Throughput: 0: 158.7. Samples: 129968. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:36,340][113395] Avg episode reward: [(0, '159.318')]
+[36m[2025-07-03 22:03:41,280][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 114688. Throughput: 0: 158.7. Samples: 130400. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:03:41,281][113395] Avg episode reward: [(0, '154.571')]
+[36m[2025-07-03 22:03:46,313][113395] Fps is (10 sec: 1642.8, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 156.2. Samples: 131264. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:03:46,313][113395] Avg episode reward: [(0, '160.034')]
+[36m[2025-07-03 22:03:51,378][113395] Fps is (10 sec: 1622.6, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 153.9. Samples: 132192. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:03:51,378][113395] Avg episode reward: [(0, '173.753')]
+[37m[1m[2025-07-03 22:03:51,475][113395] Saving new best policy, reward=173.753!
+[36m[2025-07-03 22:03:56,273][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 153.2. Samples: 132640. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:03:56,274][113395] Avg episode reward: [(0, '190.634')]
+[37m[1m[2025-07-03 22:03:56,407][113395] Saving new best policy, reward=190.634!
+[36m[2025-07-03 22:04:01,292][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 155.6. Samples: 133712. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:01,293][113395] Avg episode reward: [(0, '189.090')]
+[33m[881407 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[881407 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 22:04:06,265][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.7). Total num frames: 131072. Throughput: 0: 158.3. Samples: 134752. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:06,265][113395] Avg episode reward: [(0, '192.592')]
+[37m[1m[2025-07-03 22:04:06,385][113395] Saving new best policy, reward=192.592!
+[36m[2025-07-03 22:04:11,385][113395] Fps is (10 sec: 0.0, 60 sec: 272.5, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 158.2. Samples: 135264. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:11,385][113395] Avg episode reward: [(0, '185.513')]
+[36m[2025-07-03 22:04:16,371][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 158.3. Samples: 136144. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:16,372][113395] Avg episode reward: [(0, '177.353')]
+[36m[2025-07-03 22:04:21,360][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 158.5. Samples: 137104. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:21,361][113395] Avg episode reward: [(0, '195.407')]
+[37m[1m[2025-07-03 22:04:21,465][113395] Saving new best policy, reward=195.407!
+[36m[2025-07-03 22:04:26,267][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 159.7. Samples: 137584. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:26,268][113395] Avg episode reward: [(0, '193.753')]
+[36m[2025-07-03 22:04:31,262][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 163.0. Samples: 138592. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:31,262][113395] Avg episode reward: [(0, '188.516')]
+[36m[2025-07-03 22:04:36,316][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 164.8. Samples: 139600. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:36,316][113395] Avg episode reward: [(0, '188.006')]
+[36m[2025-07-03 22:04:41,299][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 166.3. Samples: 140128. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:41,299][113395] Avg episode reward: [(0, '193.228')]
+[36m[2025-07-03 22:04:46,323][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 161.3. Samples: 140976. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:46,323][113395] Avg episode reward: [(0, '191.076')]
+[36m[2025-07-03 22:04:51,309][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 157.4. Samples: 141840. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:51,310][113395] Avg episode reward: [(0, '195.864')]
+[37m[1m[2025-07-03 22:04:51,405][113395] Saving new best policy, reward=195.864!
+[36m[2025-07-03 22:04:56,282][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 131072. Throughput: 0: 156.8. Samples: 142304. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:04:56,282][113395] Avg episode reward: [(0, '199.578')]
+[37m[1m[2025-07-03 22:04:56,363][113395] Saving new best policy, reward=199.578!
+[36m[2025-07-03 22:05:01,257][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 159.3. Samples: 143296. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:05:01,257][113395] Avg episode reward: [(0, '191.874')]
+[36m[2025-07-03 22:05:06,363][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 158.2. Samples: 144224. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:05:06,363][113395] Avg episode reward: [(0, '187.197')]
+[36m[2025-07-03 22:05:11,332][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 131072. Throughput: 0: 157.3. Samples: 144672. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:05:11,332][113395] Avg episode reward: [(0, '180.624')]
+[36m[2025-07-03 22:05:16,330][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 131072. Throughput: 0: 156.9. Samples: 145664. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:05:16,330][113395] Avg episode reward: [(0, '191.138')]
+[36m[2025-07-03 22:05:21,323][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 131072. Throughput: 0: 158.6. Samples: 146736. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-03 22:05:21,324][113395] Avg episode reward: [(0, '206.465')]
+[37m[1m[2025-07-03 22:05:21,414][113395] Saving new best policy, reward=206.465!
+[36m[2025-07-03 22:05:26,288][113395] Fps is (10 sec: 1645.3, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 156.8. Samples: 147184. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:05:26,289][113395] Avg episode reward: [(0, '206.033')]
+[37m[1m[2025-07-03 22:05:26,368][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000288_147456.pth...
+[36m[2025-07-03 22:05:26,373][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000096_49152.pth
+[36m[2025-07-03 22:05:31,257][113395] Fps is (10 sec: 1649.3, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 157.4. Samples: 148048. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:05:31,257][113395] Avg episode reward: [(0, '213.789')]
+[37m[1m[2025-07-03 22:05:31,363][113395] Saving new best policy, reward=213.789!
+[36m[2025-07-03 22:05:36,318][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 160.7. Samples: 149072. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:05:36,318][113395] Avg episode reward: [(0, '229.250')]
+[37m[1m[2025-07-03 22:05:36,401][113395] Saving new best policy, reward=229.250!
+[36m[2025-07-03 22:05:41,331][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 160.5. Samples: 149536. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:05:41,331][113395] Avg episode reward: [(0, '242.896')]
+[37m[1m[2025-07-03 22:05:41,472][113395] Saving new best policy, reward=242.896!
+[36m[2025-07-03 22:05:46,291][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 158.8. Samples: 150448. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:05:46,291][113395] Avg episode reward: [(0, '240.203')]
+[36m[2025-07-03 22:05:51,312][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 161.2. Samples: 151472. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:05:51,312][113395] Avg episode reward: [(0, '238.941')]
+[36m[2025-07-03 22:05:56,291][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 161.6. Samples: 151936. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:05:56,292][113395] Avg episode reward: [(0, '240.090')]
+[GIF] Episode 700 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0007_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0007_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0007_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0007_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0007_merged_dual_camera.gif
+[36m[2025-07-03 22:06:01,286][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 159.4. Samples: 152832. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:01,286][113395] Avg episode reward: [(0, '240.644')]
+[36m[2025-07-03 22:06:06,339][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 155.0. Samples: 153712. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:06,339][113395] Avg episode reward: [(0, '232.945')]
+[33m[1010527 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[1010527 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 22:06:11,333][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 154.2. Samples: 154128. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:11,333][113395] Avg episode reward: [(0, '228.274')]
+[36m[2025-07-03 22:06:16,269][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 156.0. Samples: 155072. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:16,270][113395] Avg episode reward: [(0, '232.697')]
+[36m[2025-07-03 22:06:21,284][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 155.9. Samples: 156080. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:21,284][113395] Avg episode reward: [(0, '238.567')]
+[36m[2025-07-03 22:06:26,309][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 155.5. Samples: 156528. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:26,309][113395] Avg episode reward: [(0, '257.132')]
+[37m[1m[2025-07-03 22:06:26,417][113395] Saving new best policy, reward=257.132!
+[36m[2025-07-03 22:06:31,263][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 156.5. Samples: 157488. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:31,263][113395] Avg episode reward: [(0, '261.195')]
+[37m[1m[2025-07-03 22:06:31,378][113395] Saving new best policy, reward=261.195!
+[36m[2025-07-03 22:06:36,272][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 153.0. Samples: 158352. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:36,272][113395] Avg episode reward: [(0, '258.386')]
+[36m[2025-07-03 22:06:41,275][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 154.4. Samples: 158880. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:41,275][113395] Avg episode reward: [(0, '253.013')]
+[36m[2025-07-03 22:06:46,301][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 158.2. Samples: 159952. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:46,301][113395] Avg episode reward: [(0, '243.106')]
+[36m[2025-07-03 22:06:51,355][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 158.9. Samples: 160864. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:51,356][113395] Avg episode reward: [(0, '237.827')]
+[36m[2025-07-03 22:06:56,287][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 147456. Throughput: 0: 160.2. Samples: 161328. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:06:56,287][113395] Avg episode reward: [(0, '227.785')]
+[36m[2025-07-03 22:07:01,330][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 147456. Throughput: 0: 160.1. Samples: 162288. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:07:01,330][113395] Avg episode reward: [(0, '226.961')]
+[36m[2025-07-03 22:07:06,326][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 147456. Throughput: 0: 162.7. Samples: 163408. Policy #0 lag: (min: 23.0, avg: 23.0, max: 23.0)
+[36m[2025-07-03 22:07:06,327][113395] Avg episode reward: [(0, '224.968')]
+[36m[2025-07-03 22:07:11,361][113395] Fps is (10 sec: 1633.3, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 163.0. Samples: 163872. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:11,362][113395] Avg episode reward: [(0, '249.775')]
+[36m[2025-07-03 22:07:16,275][113395] Fps is (10 sec: 1646.9, 60 sec: 273.0, 300 sec: 166.7). Total num frames: 163840. Throughput: 0: 162.1. Samples: 164784. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:16,275][113395] Avg episode reward: [(0, '267.014')]
+[37m[1m[2025-07-03 22:07:16,349][113395] Saving new best policy, reward=267.014!
+[36m[2025-07-03 22:07:21,343][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 166.1. Samples: 165840. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:21,343][113395] Avg episode reward: [(0, '281.635')]
+[37m[1m[2025-07-03 22:07:21,432][113395] Saving new best policy, reward=281.635!
+[36m[2025-07-03 22:07:26,273][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 163840. Throughput: 0: 164.6. Samples: 166288. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:26,273][113395] Avg episode reward: [(0, '306.860')]
+[37m[1m[2025-07-03 22:07:26,365][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000320_163840.pth...
+[36m[2025-07-03 22:07:26,383][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000128_65536.pth
+[37m[1m[2025-07-03 22:07:26,384][113395] Saving new best policy, reward=306.860!
+[36m[2025-07-03 22:07:31,337][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 162.4. Samples: 167264. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:31,338][113395] Avg episode reward: [(0, '304.106')]
+[36m[2025-07-03 22:07:36,324][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 162.2. Samples: 168160. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:36,324][113395] Avg episode reward: [(0, '305.529')]
+[36m[2025-07-03 22:07:41,365][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 161.9. Samples: 168624. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:41,366][113395] Avg episode reward: [(0, '291.883')]
+[36m[2025-07-03 22:07:46,277][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 163840. Throughput: 0: 162.7. Samples: 169600. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:46,277][113395] Avg episode reward: [(0, '306.875')]
+[37m[1m[2025-07-03 22:07:46,382][113395] Saving new best policy, reward=306.875!
+[36m[2025-07-03 22:07:51,307][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 158.6. Samples: 170544. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:51,307][113395] Avg episode reward: [(0, '318.154')]
+[37m[1m[2025-07-03 22:07:51,385][113395] Saving new best policy, reward=318.154!
+[36m[2025-07-03 22:07:56,320][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 159.4. Samples: 171040. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:07:56,321][113395] Avg episode reward: [(0, '333.269')]
+[37m[1m[2025-07-03 22:07:56,410][113395] Saving new best policy, reward=333.269!
+[36m[2025-07-03 22:08:01,340][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 161.9. Samples: 172080. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:01,341][113395] Avg episode reward: [(0, '338.108')]
+[37m[1m[2025-07-03 22:08:01,343][113395] Saving new best policy, reward=338.108!
+[36m[2025-07-03 22:08:06,277][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 160.2. Samples: 173040. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:06,277][113395] Avg episode reward: [(0, '351.021')]
+[37m[1m[2025-07-03 22:08:06,384][113395] Saving new best policy, reward=351.021!
+[36m[2025-07-03 22:08:11,309][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 161.3. Samples: 173552. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:11,310][113395] Avg episode reward: [(0, '346.174')]
+[36m[2025-07-03 22:08:16,303][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 162.6. Samples: 174576. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:16,304][113395] Avg episode reward: [(0, '356.012')]
+[37m[1m[2025-07-03 22:08:16,387][113395] Saving new best policy, reward=356.012!
+[36m[2025-07-03 22:08:21,367][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 164.1. Samples: 175552. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:21,368][113395] Avg episode reward: [(0, '341.002')]
+[36m[2025-07-03 22:08:26,328][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 164.4. Samples: 176016. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:26,329][113395] Avg episode reward: [(0, '340.756')]
+[36m[2025-07-03 22:08:31,270][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 163840. Throughput: 0: 162.2. Samples: 176896. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:31,271][113395] Avg episode reward: [(0, '319.759')]
+[36m[2025-07-03 22:08:36,304][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 165.3. Samples: 177984. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:36,305][113395] Avg episode reward: [(0, '316.626')]
+[36m[2025-07-03 22:08:41,287][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 163840. Throughput: 0: 163.3. Samples: 178384. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:41,287][113395] Avg episode reward: [(0, '317.588')]
+[36m[2025-07-03 22:08:46,292][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 163840. Throughput: 0: 160.5. Samples: 179296. Policy #0 lag: (min: 20.0, avg: 20.0, max: 20.0)
+[36m[2025-07-03 22:08:46,292][113395] Avg episode reward: [(0, '319.079')]
+[36m[2025-07-03 22:08:51,258][113395] Fps is (10 sec: 1643.2, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 159.7. Samples: 180224. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:08:51,258][113395] Avg episode reward: [(0, '310.394')]
+[36m[2025-07-03 22:08:56,326][113395] Fps is (10 sec: 1632.8, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 157.1. Samples: 180624. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:08:56,327][113395] Avg episode reward: [(0, '318.886')]
+[33m[1178605 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:469)
+[33m[1178605 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:472)
+[36m[2025-07-03 22:09:01,262][113395] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 156.2. Samples: 181600. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:01,262][113395] Avg episode reward: [(0, '358.859')]
+[37m[1m[2025-07-03 22:09:01,363][113395] Saving new best policy, reward=358.859!
+[36m[2025-07-03 22:09:06,321][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.7). Total num frames: 180224. Throughput: 0: 155.2. Samples: 182528. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:06,321][113395] Avg episode reward: [(0, '387.257')]
+[37m[1m[2025-07-03 22:09:06,420][113395] Saving new best policy, reward=387.257!
+[36m[2025-07-03 22:09:11,293][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.7). Total num frames: 180224. Throughput: 0: 154.8. Samples: 182976. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:11,294][113395] Avg episode reward: [(0, '413.590')]
+[37m[1m[2025-07-03 22:09:11,441][113395] Saving new best policy, reward=413.590!
+[36m[2025-07-03 22:09:16,265][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 180224. Throughput: 0: 156.5. Samples: 183936. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:16,265][113395] Avg episode reward: [(0, '455.774')]
+[37m[1m[2025-07-03 22:09:16,349][113395] Saving new best policy, reward=455.774!
+[36m[2025-07-03 22:09:21,347][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 155.6. Samples: 184992. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:21,348][113395] Avg episode reward: [(0, '482.033')]
+[37m[1m[2025-07-03 22:09:21,448][113395] Saving new best policy, reward=482.033!
+[36m[2025-07-03 22:09:26,385][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.5). Total num frames: 180224. Throughput: 0: 156.5. Samples: 185440. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:26,385][113395] Avg episode reward: [(0, '515.125')]
+[37m[1m[2025-07-03 22:09:26,585][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000352_180224.pth...
+[36m[2025-07-03 22:09:26,590][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000160_81920.pth
+[37m[1m[2025-07-03 22:09:26,591][113395] Saving new best policy, reward=515.125!
+[36m[2025-07-03 22:09:31,304][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 156.0. Samples: 186320. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:31,305][113395] Avg episode reward: [(0, '548.133')]
+[37m[1m[2025-07-03 22:09:31,400][113395] Saving new best policy, reward=548.133!
+[36m[2025-07-03 22:09:36,287][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 157.4. Samples: 187312. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:36,287][113395] Avg episode reward: [(0, '558.423')]
+[37m[1m[2025-07-03 22:09:36,409][113395] Saving new best policy, reward=558.423!
+[36m[2025-07-03 22:09:41,336][113395] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 158.5. Samples: 187760. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:41,337][113395] Avg episode reward: [(0, '598.107')]
+[37m[1m[2025-07-03 22:09:41,439][113395] Saving new best policy, reward=598.107!
+[36m[2025-07-03 22:09:46,306][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 159.8. Samples: 188800. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:46,306][113395] Avg episode reward: [(0, '623.307')]
+[37m[1m[2025-07-03 22:09:46,419][113395] Saving new best policy, reward=623.307!
+[36m[2025-07-03 22:09:51,326][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 161.8. Samples: 189808. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:51,327][113395] Avg episode reward: [(0, '666.984')]
+[37m[1m[2025-07-03 22:09:51,418][113395] Saving new best policy, reward=666.984!
+[36m[2025-07-03 22:09:56,355][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 160.8. Samples: 190224. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:09:56,355][113395] Avg episode reward: [(0, '620.916')]
+[36m[2025-07-03 22:10:01,274][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 180224. Throughput: 0: 161.4. Samples: 191200. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:01,274][113395] Avg episode reward: [(0, '649.363')]
+[36m[2025-07-03 22:10:06,302][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 160.2. Samples: 192192. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:06,302][113395] Avg episode reward: [(0, '624.742')]
+[36m[2025-07-03 22:10:11,289][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 180224. Throughput: 0: 161.4. Samples: 192688. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:11,289][113395] Avg episode reward: [(0, '627.907')]
+[36m[2025-07-03 22:10:16,258][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 180224. Throughput: 0: 163.7. Samples: 193680. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:16,259][113395] Avg episode reward: [(0, '597.803')]
+[36m[2025-07-03 22:10:21,348][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 180224. Throughput: 0: 161.2. Samples: 194576. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:21,348][113395] Avg episode reward: [(0, '576.200')]
+[36m[2025-07-03 22:10:26,263][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 180224. Throughput: 0: 163.1. Samples: 195088. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:26,263][113395] Avg episode reward: [(0, '591.090')]
+[36m[2025-07-03 22:10:31,325][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 180224. Throughput: 0: 162.8. Samples: 196128. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:31,325][113395] Avg episode reward: [(0, '580.390')]
+[36m[2025-07-03 22:10:36,294][113395] Fps is (10 sec: 1633.3, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 163.0. Samples: 197136. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:36,295][113395] Avg episode reward: [(0, '575.800')]
+[36m[2025-07-03 22:10:41,351][113395] Fps is (10 sec: 1634.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 163.9. Samples: 197600. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:41,352][113395] Avg episode reward: [(0, '609.223')]
+[36m[2025-07-03 22:10:46,309][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 162.7. Samples: 198528. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:46,309][113395] Avg episode reward: [(0, '618.298')]
+[36m[2025-07-03 22:10:51,322][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 165.6. Samples: 199648. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:51,322][113395] Avg episode reward: [(0, '630.685')]
+[36m[2025-07-03 22:10:56,290][113395] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 166.4. Samples: 200176. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:10:56,290][113395] Avg episode reward: [(0, '767.490')]
+[37m[1m[2025-07-03 22:10:56,402][113395] Saving new best policy, reward=767.490!
+[36m[2025-07-03 22:11:01,303][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 164.8. Samples: 201104. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:01,303][113395] Avg episode reward: [(0, '850.281')]
+[37m[1m[2025-07-03 22:11:01,396][113395] Saving new best policy, reward=850.281!
+[36m[2025-07-03 22:11:06,297][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 166.9. Samples: 202080. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:06,297][113395] Avg episode reward: [(0, '981.548')]
+[37m[1m[2025-07-03 22:11:06,432][113395] Saving new best policy, reward=981.548!
+[36m[2025-07-03 22:11:11,366][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 165.3. Samples: 202544. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:11,366][113395] Avg episode reward: [(0, '992.008')]
+[37m[1m[2025-07-03 22:11:11,369][113395] Saving new best policy, reward=992.008!
+[36m[2025-07-03 22:11:16,296][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 163.7. Samples: 203488. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:16,296][113395] Avg episode reward: [(0, '1061.774')]
+[37m[1m[2025-07-03 22:11:16,397][113395] Saving new best policy, reward=1061.774!
+[36m[2025-07-03 22:11:21,299][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 162.5. Samples: 204448. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:21,299][113395] Avg episode reward: [(0, '1196.861')]
+[37m[1m[2025-07-03 22:11:21,374][113395] Saving new best policy, reward=1196.861!
+[36m[2025-07-03 22:11:26,298][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 162.7. Samples: 204912. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:26,298][113395] Avg episode reward: [(0, '1282.144')]
+[37m[1m[2025-07-03 22:11:26,405][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000384_196608.pth...
+[36m[2025-07-03 22:11:26,412][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000192_98304.pth
+[37m[1m[2025-07-03 22:11:26,413][113395] Saving new best policy, reward=1282.144!
+[36m[2025-07-03 22:11:31,278][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 164.0. Samples: 205904. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:31,278][113395] Avg episode reward: [(0, '1377.318')]
+[37m[1m[2025-07-03 22:11:31,383][113395] Saving new best policy, reward=1377.318!
+[36m[2025-07-03 22:11:36,301][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 161.1. Samples: 206896. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:36,302][113395] Avg episode reward: [(0, '1401.232')]
+[37m[1m[2025-07-03 22:11:36,435][113395] Saving new best policy, reward=1401.232!
+[36m[2025-07-03 22:11:41,272][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 159.0. Samples: 207328. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:41,272][113395] Avg episode reward: [(0, '1440.926')]
+[37m[1m[2025-07-03 22:11:41,352][113395] Saving new best policy, reward=1440.926!
+[36m[2025-07-03 22:11:46,312][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 160.7. Samples: 208336. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:46,312][113395] Avg episode reward: [(0, '1508.326')]
+[37m[1m[2025-07-03 22:11:46,394][113395] Saving new best policy, reward=1508.326!
+[36m[2025-07-03 22:11:51,283][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 161.8. Samples: 209360. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:51,283][113395] Avg episode reward: [(0, '1549.049')]
+[37m[1m[2025-07-03 22:11:51,364][113395] Saving new best policy, reward=1549.049!
+[36m[2025-07-03 22:11:56,301][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 162.0. Samples: 209824. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:11:56,301][113395] Avg episode reward: [(0, '1669.372')]
+[37m[1m[2025-07-03 22:11:56,427][113395] Saving new best policy, reward=1669.372!
+[36m[2025-07-03 22:12:01,270][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 196608. Throughput: 0: 163.3. Samples: 210832. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:01,271][113395] Avg episode reward: [(0, '1641.683')]
+[GIF] Episode 800 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0008_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0008_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0008_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0008_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0008_merged_dual_camera.gif
+[36m[2025-07-03 22:12:06,340][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 196608. Throughput: 0: 163.1. Samples: 211792. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:06,341][113395] Avg episode reward: [(0, '1608.688')]
+[36m[2025-07-03 22:12:11,331][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 196608. Throughput: 0: 163.4. Samples: 212272. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:11,331][113395] Avg episode reward: [(0, '1608.772')]
+[36m[2025-07-03 22:12:16,296][113395] Fps is (10 sec: 1645.6, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 163.5. Samples: 213264. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:16,296][113395] Avg episode reward: [(0, '1648.672')]
+[36m[2025-07-03 22:12:21,315][113395] Fps is (10 sec: 1641.1, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 163.5. Samples: 214256. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:21,315][113395] Avg episode reward: [(0, '1658.321')]
+[36m[2025-07-03 22:12:26,306][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 164.1. Samples: 214720. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:26,306][113395] Avg episode reward: [(0, '1731.278')]
+[37m[1m[2025-07-03 22:12:26,474][113395] Saving new best policy, reward=1731.278!
+[36m[2025-07-03 22:12:31,363][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 159.1. Samples: 215504. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:31,364][113395] Avg episode reward: [(0, '1763.204')]
+[37m[1m[2025-07-03 22:12:31,476][113395] Saving new best policy, reward=1763.204!
+[36m[2025-07-03 22:12:36,308][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 151.4. Samples: 216176. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:36,308][113395] Avg episode reward: [(0, '1904.549')]
+[37m[1m[2025-07-03 22:12:36,452][113395] Saving new best policy, reward=1904.549!
+[36m[2025-07-03 22:12:41,347][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 148.5. Samples: 216512. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:41,347][113395] Avg episode reward: [(0, '1952.696')]
+[37m[1m[2025-07-03 22:12:41,515][113395] Saving new best policy, reward=1952.696!
+[36m[2025-07-03 22:12:46,447][113395] Fps is (10 sec: 0.0, 60 sec: 272.5, 300 sec: 166.5). Total num frames: 212992. Throughput: 0: 142.0. Samples: 217248. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:46,448][113395] Avg episode reward: [(0, '1905.048')]
+[36m[2025-07-03 22:12:51,277][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 136.7. Samples: 217936. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:51,277][113395] Avg episode reward: [(0, '1915.652')]
+[36m[2025-07-03 22:12:56,268][113395] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 212992. Throughput: 0: 133.5. Samples: 218272. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:12:56,268][113395] Avg episode reward: [(0, '2107.772')]
+[37m[1m[2025-07-03 22:12:56,415][113395] Saving new best policy, reward=2107.772!
+[36m[2025-07-03 22:13:01,304][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 126.6. Samples: 218960. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:01,304][113395] Avg episode reward: [(0, '2235.193')]
+[37m[1m[2025-07-03 22:13:01,456][113395] Saving new best policy, reward=2235.193!
+[36m[2025-07-03 22:13:06,352][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 120.8. Samples: 219696. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:06,353][113395] Avg episode reward: [(0, '2235.193')]
+[36m[2025-07-03 22:13:11,272][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 117.4. Samples: 220000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:11,272][113395] Avg episode reward: [(0, '2239.509')]
+[37m[1m[2025-07-03 22:13:11,392][113395] Saving new best policy, reward=2239.509!
+[36m[2025-07-03 22:13:16,303][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 212992. Throughput: 0: 114.6. Samples: 220656. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:16,304][113395] Avg episode reward: [(0, '2430.543')]
+[37m[1m[2025-07-03 22:13:16,410][113395] Saving new best policy, reward=2430.543!
+[36m[2025-07-03 22:13:21,289][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 115.2. Samples: 221360. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:21,289][113395] Avg episode reward: [(0, '2560.278')]
+[37m[1m[2025-07-03 22:13:21,414][113395] Saving new best policy, reward=2560.278!
+[36m[2025-07-03 22:13:26,347][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 115.6. Samples: 221712. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:26,348][113395] Avg episode reward: [(0, '2574.071')]
+[37m[1m[2025-07-03 22:13:26,473][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000416_212992.pth...
+[36m[2025-07-03 22:13:26,478][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000224_114688.pth
+[37m[1m[2025-07-03 22:13:26,479][113395] Saving new best policy, reward=2574.071!
+[36m[2025-07-03 22:13:31,351][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 116.5. Samples: 222480. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:31,352][113395] Avg episode reward: [(0, '2607.909')]
+[37m[1m[2025-07-03 22:13:31,454][113395] Saving new best policy, reward=2607.909!
+[36m[2025-07-03 22:13:36,259][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 121.3. Samples: 223392. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:36,259][113395] Avg episode reward: [(0, '2702.886')]
+[37m[1m[2025-07-03 22:13:36,388][113395] Saving new best policy, reward=2702.886!
+[36m[2025-07-03 22:13:41,295][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 212992. Throughput: 0: 124.4. Samples: 223872. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:41,296][113395] Avg episode reward: [(0, '2746.333')]
+[37m[1m[2025-07-03 22:13:41,407][113395] Saving new best policy, reward=2746.333!
+[36m[2025-07-03 22:13:46,311][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 212992. Throughput: 0: 132.2. Samples: 224912. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:46,311][113395] Avg episode reward: [(0, '2942.597')]
+[37m[1m[2025-07-03 22:13:46,409][113395] Saving new best policy, reward=2942.597!
+[36m[2025-07-03 22:13:51,292][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 212992. Throughput: 0: 136.4. Samples: 225824. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:51,293][113395] Avg episode reward: [(0, '3001.247')]
+[37m[1m[2025-07-03 22:13:51,412][113395] Saving new best policy, reward=3001.247!
+[36m[2025-07-03 22:13:56,372][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.0). Total num frames: 212992. Throughput: 0: 139.1. Samples: 226272. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:13:56,372][113395] Avg episode reward: [(0, '2981.347')]
+[36m[2025-07-03 22:14:01,309][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 212992. Throughput: 0: 146.1. Samples: 227232. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:01,309][113395] Avg episode reward: [(0, '3089.344')]
+[37m[1m[2025-07-03 22:14:01,437][113395] Saving new best policy, reward=3089.344!
+[36m[2025-07-03 22:14:06,410][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.0). Total num frames: 212992. Throughput: 0: 150.7. Samples: 228160. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:06,410][113395] Avg episode reward: [(0, '3121.232')]
+[37m[1m[2025-07-03 22:14:06,542][113395] Saving new best policy, reward=3121.232!
+[36m[2025-07-03 22:14:11,268][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 111.1). Total num frames: 212992. Throughput: 0: 153.2. Samples: 228592. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:11,268][113395] Avg episode reward: [(0, '3173.104')]
+[37m[1m[2025-07-03 22:14:11,392][113395] Saving new best policy, reward=3173.104!
+[36m[2025-07-03 22:14:16,287][113395] Fps is (10 sec: 1658.7, 60 sec: 273.1, 300 sec: 166.7). Total num frames: 229376. Throughput: 0: 156.7. Samples: 229520. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:16,287][113395] Avg episode reward: [(0, '3287.356')]
+[37m[1m[2025-07-03 22:14:16,369][113395] Saving new best policy, reward=3287.356!
+[36m[2025-07-03 22:14:21,309][113395] Fps is (10 sec: 1631.6, 60 sec: 273.0, 300 sec: 166.7). Total num frames: 229376. Throughput: 0: 157.7. Samples: 230496. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:21,310][113395] Avg episode reward: [(0, '3365.408')]
+[37m[1m[2025-07-03 22:14:21,411][113395] Saving new best policy, reward=3365.408!
+[36m[2025-07-03 22:14:26,301][113395] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 158.6. Samples: 231008. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:26,302][113395] Avg episode reward: [(0, '3365.408')]
+[36m[2025-07-03 22:14:31,357][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 157.4. Samples: 232000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:31,357][113395] Avg episode reward: [(0, '3539.698')]
+[37m[1m[2025-07-03 22:14:31,481][113395] Saving new best policy, reward=3539.698!
+[36m[2025-07-03 22:14:36,995][113395] Fps is (10 sec: 0.0, 60 sec: 269.8, 300 sec: 166.2). Total num frames: 229376. Throughput: 0: 143.9. Samples: 232400. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:36,995][113395] Avg episode reward: [(0, '3677.646')]
+[37m[1m[2025-07-03 22:14:37,156][113395] Saving new best policy, reward=3677.646!
+[36m[2025-07-03 22:14:41,290][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 147.5. Samples: 232896. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:41,290][113395] Avg episode reward: [(0, '3842.379')]
+[37m[1m[2025-07-03 22:14:41,440][113395] Saving new best policy, reward=3842.379!
+[36m[2025-07-03 22:14:46,393][113395] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 144.4. Samples: 233744. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:46,394][113395] Avg episode reward: [(0, '3835.474')]
+[36m[2025-07-03 22:14:51,330][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 143.2. Samples: 234592. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:51,330][113395] Avg episode reward: [(0, '3737.896')]
+[36m[2025-07-03 22:14:56,400][113395] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.5). Total num frames: 229376. Throughput: 0: 142.2. Samples: 235008. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:14:56,401][113395] Avg episode reward: [(0, '3831.077')]
+[36m[2025-07-03 22:15:01,303][113395] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 134.0. Samples: 235552. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:15:01,303][113395] Avg episode reward: [(0, '3918.552')]
+[37m[1m[2025-07-03 22:15:01,415][113395] Saving new best policy, reward=3918.552!
+[36m[2025-07-03 22:15:06,321][113395] Fps is (10 sec: 0.0, 60 sec: 273.5, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 132.6. Samples: 236464. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:15:06,322][113395] Avg episode reward: [(0, '3931.308')]
+[37m[1m[2025-07-03 22:15:06,447][113395] Saving new best policy, reward=3931.308!
+[36m[2025-07-03 22:15:11,287][113395] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 135.9. Samples: 237120. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:15:11,287][113395] Avg episode reward: [(0, '3961.739')]
+[37m[1m[2025-07-03 22:15:11,410][113395] Saving new best policy, reward=3961.739!
+[36m[2025-07-03 22:15:16,313][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 141.6. Samples: 238368. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:15:16,314][113395] Avg episode reward: [(0, '3936.020')]
+[36m[2025-07-03 22:15:21,317][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 163.5. Samples: 239648. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:15:21,317][113395] Avg episode reward: [(0, '3936.141')]
+[36m[2025-07-03 22:15:26,319][113395] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 229376. Throughput: 0: 164.5. Samples: 240304. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-03 22:15:26,319][113395] Avg episode reward: [(0, '3992.540')]
+[37m[1m[2025-07-03 22:15:26,409][113395] Saving ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000448_229376.pth...
+[36m[2025-07-03 22:15:26,414][113395] Removing ./train_dir/gate_config_3_2/checkpoint_p0/checkpoint_000000288_147456.pth

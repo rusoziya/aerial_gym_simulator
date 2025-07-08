@@ -18,15 +18,26 @@ class control:
     max_inclination_angle_rad = np.pi / 3.0
     max_yaw_rate = np.pi / 3.0
 
-    K_pos_tensor_max = [2.0, 2.0, 1.0]  # used for lee_position_control only
-    K_pos_tensor_min = [2.0, 2.0, 1.0]  # used for lee_position_control only
+    K_pos_tensor_max = [2.0, 2.0, 2.5]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
+    K_pos_tensor_min = [2.0, 2.0, 2.5]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
+    # K_pos_tensor_max = [2.0, 2.0, 1.0]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
+    # K_pos_tensor_min = [2.0, 2.0, 1.0]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
 
     K_vel_tensor_max = [
         3.3,
         3.3,
-        1.3,
+        4.0,  # INCREASED Z from 1.3 to 4.0 for stronger altitude damping
     ]  # used for lee_position_control, lee_velocity_control only
-    K_vel_tensor_min = [2.7, 2.7, 1.7]
+
+
+    # K_vel_tensor_max = [
+    #     3.3,
+    #     3.3,
+    #     1.3,  # INCREASED Z from 1.3 to 4.0 for stronger altitude damping
+    # ]  # used for lee_position_control, lee_velocity_control only
+
+    K_vel_tensor_min = [2.7, 2.7, 3.5]  # INCREASED Z from 1.7 to 3.5 for stronger altitude dampingg
+    # K_vel_tensor_min = [2.7, 2.7, 1.7]  # INCREASED Z from 1.7 to 3.5 for stronger altitude damping
 
     K_rot_tensor_max = [
         1.85,

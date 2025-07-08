@@ -1,0 +1,1887 @@
+diff --git a/aerial_gym/config/controller_config/lmf2_controller_config.py b/aerial_gym/config/controller_config/lmf2_controller_config.py
+index eadd798..c0c85dc 100644
+--- a/aerial_gym/config/controller_config/lmf2_controller_config.py
++++ b/aerial_gym/config/controller_config/lmf2_controller_config.py
+@@ -18,15 +18,26 @@ class control:
+     max_inclination_angle_rad = np.pi / 3.0
+     max_yaw_rate = np.pi / 3.0
+ 
+-    K_pos_tensor_max = [2.0, 2.0, 1.0]  # used for lee_position_control only
+-    K_pos_tensor_min = [2.0, 2.0, 1.0]  # used for lee_position_control only
++    K_pos_tensor_max = [2.0, 2.0, 2.5]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
++    K_pos_tensor_min = [2.0, 2.0, 2.5]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
++    # K_pos_tensor_max = [2.0, 2.0, 1.0]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
++    # K_pos_tensor_min = [2.0, 2.0, 1.0]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
+ 
+     K_vel_tensor_max = [
+         3.3,
+         3.3,
+-        1.3,
++        4.0,  # INCREASED Z from 1.3 to 4.0 for stronger altitude damping
+     ]  # used for lee_position_control, lee_velocity_control only
+-    K_vel_tensor_min = [2.7, 2.7, 1.7]
++
++
++    # K_vel_tensor_max = [
++    #     3.3,
++    #     3.3,
++    #     1.3,  # INCREASED Z from 1.3 to 4.0 for stronger altitude damping
++    # ]  # used for lee_position_control, lee_velocity_control only
++
++    K_vel_tensor_min = [2.7, 2.7, 3.5]  # INCREASED Z from 1.7 to 3.5 for stronger altitude dampingg
++    # K_vel_tensor_min = [2.7, 2.7, 1.7]  # INCREASED Z from 1.7 to 3.5 for stronger altitude damping
+ 
+     K_rot_tensor_max = [
+         1.85,
+diff --git a/aerial_gym/config/robot_config/lmf2_config.py b/aerial_gym/config/robot_config/lmf2_config.py
+index e94179a..bd844d2 100644
+--- a/aerial_gym/config/robot_config/lmf2_config.py
++++ b/aerial_gym/config/robot_config/lmf2_config.py
+@@ -28,14 +28,14 @@ class LMF2Cfg:
+         min_init_state = [
+             0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
+             0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
+-            0.2,    # ratio_z: Z = 0.8 → ratio = 0.8 / 4 = 0.2 (slightly below camera)
++            0.35,   # ratio_z: Z = 1.4 → ratio = 1.4 / 4 = 0.35 (AT GATE LEVEL - INCREASED from 0.2)
+             0,      # no roll
+             0,      # no pitch  
+             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+             1.0,
+             -0.1,   # very small initial velocity variation
+             -0.1,
+-            -0.1,
++            0.1,    # POSITIVE initial Z-velocity to help gain altitude (CHANGED from -0.1)
+             -0.1,
+             -0.1,
+             -0.1,
+@@ -43,14 +43,14 @@ class LMF2Cfg:
+         max_init_state = [
+             0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
+             0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
+-            0.3,    # ratio_z: Z = 1.2 → ratio = 1.2 / 4 = 0.3 (slightly above camera)
++            0.4,    # ratio_z: Z = 1.6 → ratio = 1.6 / 4 = 0.4 (OPTIMAL GATE HEIGHT - INCREASED from 0.3)
+             0,      # no roll
+             0,      # no pitch
+             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+             1.0,
+             0.1,    # very small initial velocity variation
+             0.1,
+-            0.1,
++            0.2,    # POSITIVE initial Z-velocity to help gain altitude (CHANGED from 0.1)
+             0.1,
+             0.1,
+             0.1,
+@@ -101,14 +101,14 @@ class LMF2Cfg:
+         min_state_ratio = [
+             0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
+             0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
+-            0.2,    # ratio_z: Z = 0.8 → ratio = 0.8 / 4 = 0.2 (slightly below camera)
++            0.35,   # ratio_z: Z = 1.4 → ratio = 1.4 / 4 = 0.35 (AT GATE LEVEL - INCREASED from 0.2)
+             0,      # no roll
+             0,      # no pitch
+             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+             1.0,
+             0,      # no initial velocity
+             0,
+-            0,
++            0,      # no initial velocity
+             0,
+             0,
+             0,
+@@ -116,14 +116,14 @@ class LMF2Cfg:
+         max_state_ratio = [
+             0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
+             0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
+-            0.3,    # ratio_z: Z = 1.2 → ratio = 1.2 / 4 = 0.3 (slightly above camera)
++            0.4,    # ratio_z: Z = 1.6 → ratio = 1.6 / 4 = 0.4 (OPTIMAL GATE HEIGHT - INCREASED from 0.3)
+             0,      # no roll
+             0,      # no pitch
+             np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+             1.0,
+             0,      # no initial velocity
+             0,
+-            0,
++            0,      # no initial velocity
+             0,
+             0,
+             0,
+@@ -178,7 +178,7 @@ class LMF2Cfg:
+             motor_time_constant_increasing_max = 0.08
+             motor_time_constant_decreasing_min = 0.005
+             motor_time_constant_decreasing_max = 0.005
+-            max_thrust = 10.0
++            max_thrust = 15.0
+             min_thrust = 0.1
+             max_thrust_rate = 100000.0
+             thrust_to_torque_ratio = 0.07
+diff --git a/aerial_gym/config/task_config/navigation_task_config_gate.py b/aerial_gym/config/task_config/navigation_task_config_gate.py
+index 349d1f2..ef27130 100644
+--- a/aerial_gym/config/task_config/navigation_task_config_gate.py
++++ b/aerial_gym/config/task_config/navigation_task_config_gate.py
+@@ -18,8 +18,8 @@ class task_config:
+     # Both cameras now share the same VAE model to reduce GPU memory usage by ~50%
+     observation_space_dim = 17 + 64 + 64  # Enhanced with static camera VAE latents
+     privileged_observation_space_dim = 0
+-    action_space_dim = 3  # Keep 3D action space for compatibility with existing inference
+-    episode_len_steps = 300  # Longer episodes needed for challenging spawn positions and navigation
++    action_space_dim = 4  # UPDATED: 4D action space [x_vel, y_vel, z_vel, yaw_rate] for full gate navigation control
++    episode_len_steps = 100  # REDUCED: Faster episodes for quicker training feedback and evaluation
+ 
+     return_state_before_reset = (
+         False  # False as usually state is returned for next episode after reset
+@@ -29,10 +29,16 @@ class task_config:
+     # Target positions (goals) - keep targets on front side of gate
+     # Front side (positive Y) where obstacles are, forcing gate navigation
+     # Obstacles at Y = [+2.0, +3.2], so targets should be beyond Y = +3.6
+-    target_min_ratio = [0.2, 0.95, 0.3]  # Y=0.95 -> Y=+3.6 (beyond obstacles)
+-    target_max_ratio = [0.8, 0.99, 0.7]  # Y=0.99 -> Y=+3.92 (well beyond obstacles)
++    # FIXED: Target Z-range within gate flyable zone (0.2-2.2m → ratios 0.05-0.55)
++    target_min_ratio = [0.2, 0.95, 0.35]  # Y=0.95 -> Y=+3.6 (beyond obstacles), Z=0.35 -> Z=1.4m (gate level)
++    target_max_ratio = [0.8, 0.99, 0.45]  # Y=0.99 -> Y=+3.92 (well beyond obstacles), Z=0.45 -> Z=1.8m (within gate)
+     
+-    # GATE ORIENTATION ANALYSIS (CRITICAL) - UPDATED FOR 8x8x4 ENVIRONMENT:
++    # GATE DIMENSIONS ANALYSIS (from gate.urdf):
++    # - Gate opening: 2.5m wide (Y = ±1.25m) × 2.3m tall (Z = 0.1m to 2.4m)
++    # - Usable flight space: Z = 0.2m to 2.2m (safe margins from gate structure)
++    # - Environment bounds: [-4,4] x [-4,4] x [0,4] = 8m × 8m × 4m
++    # 
++    # GATE ORIENTATION (CRITICAL) - UPDATED FOR 8x8x4 ENVIRONMENT:
+     # Gate rotated 90° around Z-axis, so opening faces Y-direction
+     # Original: posts at ±Y, opening along X → After rotation: posts at ±X, opening along Y
+     # 
+@@ -47,7 +53,8 @@ class task_config:
+     # - Y ratio 0.5 → Y = 0.0 (AT gate center)
+     # - Y ratio 0.75 → Y = +2.0 (obstacle start)  
+     # - Y ratio 1.0 → Y = +4.0 (far in front)
+-    # Gate-specific reward parameters - STRONG base rewards + gate-specific bonuses
++    
++    # Enhanced reward parameters for gate navigation with 4D action space
+     reward_parameters = {
+         # BASE NAVIGATION REWARDS (Strong penalties to prevent crashes)
+         "pos_reward_magnitude": 5.0,  # Match base navigation
+@@ -59,32 +66,56 @@ class task_config:
+         # Action smoothness penalties (match base navigation)
+         "x_action_diff_penalty_magnitude": 0.8,
+         "x_action_diff_penalty_exponent": 3.333,
+-        "z_action_diff_penalty_magnitude": 0.8,  # Strong vertical smoothness penalty
+-        "z_action_diff_penalty_exponent": 5.0,
+-        "yawrate_action_diff_penalty_magnitude": 0.8,
+-        "yawrate_action_diff_penalty_exponent": 3.33,
++        "y_action_diff_penalty_magnitude": 0.8,  # Y-axis smoothness penalty  
++        "y_action_diff_penalty_exponent": 3.333,
++        # "z_action_diff_penalty_magnitude": 0.8,  # REDUCED from 0.8 to allow necessary altitude adjustments
++        # "z_action_diff_penalty_exponent": 5.0,  # REDUCED from 3.333 for gentler Z-smoothness
++        "z_action_diff_penalty_magnitude": 0.4,  # REDUCED from 0.8 to allow necessary altitude adjustments
++        "z_action_diff_penalty_exponent": 2.0,  # REDUCED from 3.333 for gentler Z-smoothness
++
++        # "yawrate_action_diff_penalty_magnitude": 0.8,
++        # "yawrate_action_diff_penalty_exponent": 3.33,
++        "yawrate_action_diff_penalty_magnitude": 0.5,  # REDUCED from 0.8 for less restrictive yaw control
++        "yawrate_action_diff_penalty_exponent": 2.5,  # REDUCED from 3.33 for less restrictive yaw control
+         
+         # Action magnitude penalties (match base navigation for crash prevention)
+         "x_absolute_action_penalty_magnitude": 0.1,
+         "x_absolute_action_penalty_exponent": 0.3,
+-        "z_absolute_action_penalty_magnitude": 1.5,  # Strong vertical movement penalty
+-        "z_absolute_action_penalty_exponent": 1.0,
+-        "yawrate_absolute_action_penalty_magnitude": 1.5,
+-        "yawrate_absolute_action_penalty_exponent": 2.0,
++        "y_absolute_action_penalty_magnitude": 0.1,  # Y-axis action penalty
++        "y_absolute_action_penalty_exponent": 0.3,
++        # "z_absolute_action_penalty_magnitude": 1.5,  # Strong vertical movement penalty
++        # "z_absolute_action_penalty_exponent": 1.0,
++        # "z_absolute_action_penalty_magnitude": 0.1,  # REDUCED from 0.1 to allow necessary Z-movements
++        # "z_absolute_action_penalty_exponent": 0.3,   # REDUCED from 0.3 for even gentler Z-penalty
++        "z_absolute_action_penalty_magnitude": 0.05,  # REDUCED from 0.1 to allow necessary Z-movements
++        "z_absolute_action_penalty_exponent": 0.2,   # REDUCED from 0.3 for even gentler Z-penalty
++        # "yawrate_absolute_action_penalty_magnitude": 1.5,
++        # "yawrate_absolute_action_penalty_exponent": 2.0,
++        "yawrate_absolute_action_penalty_magnitude": 1.0,  # REDUCED from 1.5 for less restrictive yaw control
++        "yawrate_absolute_action_penalty_exponent": 1.5,  # REDUCED from 2.0 for less restrictive yaw control
+         
+         # CRITICAL: Strong collision penalty to prevent ground crashes
+         "collision_penalty": -100.0,  # Match base navigation - STRONG penalty for any collision
+         
+         # GATE-SPECIFIC REWARDS (Additive bonuses on top of base rewards)
+-        "gate_approach_reward_magnitude": 2.0,  # Reward for approaching the gate
+-        "gate_alignment_reward_magnitude": 1.0,  # Reward for aligning with gate opening
++        "gate_approach_reward_magnitude": 5.0,  # Reward for approaching the gate
++        # "gate_approach_reward_magnitude": 2.0,  # Reward for approaching the gate
++        "gate_alignment_reward_magnitude": 2.0,  # Reward for aligning with gate opening
++        # "gate_alignment_reward_magnitude": 1.0,  # Reward for aligning with gate opening
+         "gate_passage_reward_magnitude": 10.0,  # Large reward for successfully passing through gate
+-        "gate_center_bonus_magnitude": 3.0,  # Bonus for being centered in gate opening
+-        "gate_center_passage_bonus_magnitude": 15.0,  # Large bonus for passing through center of gate
+-        "camera_facing_reward_magnitude": 3.0,  # NEW: Reward for drone camera facing towards gate
++        "gate_center_bonus_magnitude": 5.0,  # Bonus for being centered in gate opening
++        # "gate_center_passage_bonus_magnitude": 15.0,  # Large bonus for passing through center of gate
++        "gate_center_passage_bonus_magnitude": 50.0,  # Large bonus for passing through center of gate
++        # "camera_facing_reward_magnitude": 5.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
++        "camera_facing_reward_magnitude": 5.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
++
++        
++        # NEW: Altitude maintenance reward to encourage proper gate-level flying
++        "altitude_maintenance_reward_magnitude": 2.0,  # Reward for staying at gate height (1.2-1.8m)
++        "altitude_maintenance_reward_exponent": 2.0,   # Exponential reward for being at optimal altitude
+         
+         # Gate collision penalty (separate from general collision for specificity)
+-        "gate_collision_penalty": -20.0,  # Additional penalty for hitting gate specifically
++        "gate_collision_penalty": -50.0,  # Additional penalty for hitting gate specifically
+     }
+ 
+     # Shared VAE configuration for both drone and static cameras (Memory-Optimized)
+@@ -120,100 +151,115 @@ class task_config:
+ 
+     # Static camera curriculum positioning based on difficulty level
+     class static_camera_curriculum:
++        """Progressive static camera positioning to increase difficulty"""
+         @staticmethod
+         def get_camera_position_and_orientation(level, gate_position, env_bounds):
+             """
+             Get static camera position and orientation based on curriculum level.
+             
+-            Level 1-5: Camera directly behind gate, perfect view
+-            Level 6-10: Camera slightly offset, still good view
+-            Level 11-15: Camera more offset, angled view
+-            Level 16-20: Camera at challenging angles, partial view
++            Args:
++                level: Current curriculum level (3-20)
++                gate_position: Gate position in world coordinates
++                env_bounds: Environment bounds [min_x, max_x, min_y, max_y, min_z, max_z]
++            
++            Returns:
++                position: [x, y, z] camera position
++                orientation: [x, y, z, w] quaternion orientation (looking at gate)
+             """
+-            level = max(1, min(20, level))  # Clamp to valid range
+-            
+-            # Gate is at center (0,0,0), environment bounds are [-4,4] x [-4,4] x [0,4]
+-            gate_x, gate_y, gate_z = gate_position
+-            
+-            if level <= 5:
+-                # Easy: Camera directly behind gate, perfect alignment
+-                camera_x = gate_x
+-                camera_y = gate_y - 3.0  # 3.0m behind gate (scaled for smaller environment)
+-                camera_z = gate_z + 1.0  # 1.0m above ground
+-                # Look directly at gate center
+-                target_x, target_y, target_z = gate_x, gate_y, gate_z + 0.8
+-                
+-            elif level <= 10:
+-                # Medium: Camera slightly offset horizontally
+-                offset_factor = (level - 5) / 5.0  # 0.0 to 1.0
+-                camera_x = gate_x + offset_factor * 1.0  # Offset up to 1m (scaled for smaller env)
+-                camera_y = gate_y - 3.0
+-                camera_z = gate_z + 1.0
+-                # Still look at gate center
+-                target_x, target_y, target_z = gate_x, gate_y, gate_z + 0.8
+-                
+-            elif level <= 15:
+-                # Medium: Side angle and varying height
+-                angle_factor = (level - 10) / 5.0  # 0.0 to 1.0
+-                camera_x = gate_x + 2.0 * angle_factor  # Side position up to 2m (scaled for smaller env)
+-                camera_y = gate_y - 2.0  # 2m behind gate (scaled for smaller env)
+-                camera_z = gate_z + 1.0 + angle_factor * 1.0  # Height varies from 1m to 2m
+-                # Look at gate center
+-                target_x, target_y, target_z = gate_position
+-            else:
+-                # Hard: Extreme angles and positions (level 16-20)
+-                extreme_factor = (level - 15) / 5.0  # 0.0 to 1.0
+-                camera_x = gate_x + 3.0 * extreme_factor * (1 if level % 2 == 0 else -1)  # Alternate sides
+-                camera_y = gate_y - 2.5 - extreme_factor * 1.0  # Further back, up to 3.5m
+-                camera_z = gate_z + 2.0 + extreme_factor * 1.0  # Higher camera, up to 3m
+-                # Look at gate center
+-                target_x, target_y, target_z = gate_position
++            # Normalize level to [0, 1] range
++            level_progress = (level - 3) / (20 - 3)  # 0.0 at level 3, 1.0 at level 20
++            
++            # Environment dimensions
++            env_width_x = env_bounds[1] - env_bounds[0]  # 8m
++            env_width_y = env_bounds[3] - env_bounds[2]  # 8m
++            env_height_z = env_bounds[5] - env_bounds[4]  # 4m
++            
++            # Camera height progression: start low, increase with difficulty
++            camera_height = 1.0 + level_progress * 1.5  # 1.0m to 2.5m
++            
++            # Camera distance from gate: start close, move further with difficulty  
++            base_distance = 3.0  # meters behind gate
++            distance_variation = level_progress * 1.5  # up to 1.5m further
++            camera_distance = base_distance + distance_variation
++            
++            # Camera lateral offset: start centered, add offset with difficulty
++            max_lateral_offset = 1.5  # maximum lateral displacement
++            lateral_offset = (level_progress - 0.5) * max_lateral_offset  # -0.75m to +0.75m
++            
++            # Position camera behind gate (negative Y direction)
++            camera_x = gate_position[0] + lateral_offset
++            camera_y = gate_position[1] - camera_distance  # Behind gate
++            camera_z = camera_height
++            
++            # Ensure camera stays within environment bounds with margin
++            margin = 0.5
++            camera_x = max(env_bounds[0] + margin, min(env_bounds[1] - margin, camera_x))
++            camera_y = max(env_bounds[2] + margin, min(env_bounds[3] - margin, camera_y))
++            camera_z = max(env_bounds[4] + margin, min(env_bounds[5] - margin, camera_z))
++            
++            position = [camera_x, camera_y, camera_z]
+             
+-            # Ensure camera stays within environment bounds
+-            env_min_x, env_min_y, env_min_z = env_bounds[0]  # [-4, -4, 0]
+-            env_max_x, env_max_y, env_max_z = env_bounds[1]  # [4, 4, 4]
++            # Calculate orientation to look at gate center
++            import torch
++            camera_pos = torch.tensor(position, dtype=torch.float32)
++            gate_pos = torch.tensor(gate_position, dtype=torch.float32)
+             
+-            camera_x = max(env_min_x + 0.5, min(env_max_x - 0.5, camera_x))
+-            camera_y = max(env_min_y + 0.5, min(env_max_y - 0.5, camera_y))
+-            camera_z = max(env_min_z + 0.5, min(env_max_z - 0.5, camera_z))
++            # Forward direction (camera to gate)
++            forward = gate_pos - camera_pos
++            forward = forward / torch.norm(forward)
+             
+-            return (camera_x, camera_y, camera_z), (target_x, target_y, target_z)
++            # Up direction
++            up = torch.tensor([0.0, 0.0, 1.0], dtype=torch.float32)
++            
++            # Right direction (cross product)
++            right = torch.cross(forward, up)
++            right = right / torch.norm(right)
++            
++            # Recalculate up to ensure orthogonality
++            up = torch.cross(right, forward)
++            
++            # Create rotation matrix
++            rotation_matrix = torch.stack([right, -forward, up], dim=1)
++            
++            # Convert to quaternion (simplified - looking along negative Y)
++            # For a camera looking in +Y direction (towards gate), we need rotation
++            # This is a simplified quaternion for looking towards +Y
++            if forward[1] > 0:  # Looking towards positive Y (towards gate)
++                # Look at gate center
++                orientation = [0.0, 0.0, 0.0, 1.0]  # Identity quaternion
++            else:
++                # Look towards gate (negative Y to positive Y)
++                orientation = [0.0, 0.0, 1.0, 0.0]  # 180° around Z-axis
++            
++            return position, orientation
+ 
+-    # Gate-specific action transformation function for LMF2
++    # UPDATED: 4D Action transformation for gate navigation with Z-axis control
+     @staticmethod
+-    def action_transformation_function(action):
++    @torch.jit.script
++    def action_transformation_4d_gate_navigation(actions):
++        # type: (Tensor) -> Tensor
+         """
+-        Transform actions for LMF2 robot with gate navigation.
+-        Input: 3D action [forward_inclination, lateral_inclination, yaw_rate]
+-        Output: 4D velocity command [vx, vy, vz, yaw_rate]
+-        Based on proven LMF2 DCE navigation transformation.
++        Transform 4D actions with Z-axis control within gate height limits.
++        Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
++        Output: [x_vel, y_vel, z_vel, yaw_rate] in real units
++        
++        Gate navigation constraints:
++        - X,Y velocity: ±1.0 m/s (REDUCED from 2.0 for more precise control)
++        - Z velocity: ±1.0 m/s (constrained by gate height 0.2-2.2m)
++        - Yaw rate: ±60°/s (±1.047 rad/s)
+         """
+-        clamped_action = torch.clamp(action, -1.0, 1.0)
+-        max_speed = 2.0  # [m/s] - reasonable speed for gate navigation
+-        max_yaw_rate = torch.pi / 3  # [rad/s] - 60 degrees per second
+-        max_inclination_angle = torch.pi / 4  # [rad] - 45 degree max inclination
+-
+-        # Use forward bias for gate navigation (add 1.0 to forward action)
+-        clamped_action[:, 0] += 1.0
+-
+-        processed_action = torch.zeros(
+-            (clamped_action.shape[0], 4), device=clamped_action.device, requires_grad=False
+-        )
++        transformed_actions = torch.zeros_like(actions)
+         
+-        # LMF2-style inclination-based control for gate navigation
+-        processed_action[:, 0] = (
+-            clamped_action[:, 0]
+-            * torch.cos(max_inclination_angle * clamped_action[:, 1])
+-            * max_speed
+-            / 2.0
+-        )
+-        processed_action[:, 1] = 0.0  # No Y velocity for LMF2
+-        processed_action[:, 2] = (
+-            clamped_action[:, 0]
+-            * torch.sin(max_inclination_angle * clamped_action[:, 1])
+-            * max_speed
+-            / 2.0
+-        )
+-        processed_action[:, 3] = clamped_action[:, 2] * max_yaw_rate
++        # X,Y velocity: ±1.0 m/s (REDUCED for more precise gate navigation)
++        transformed_actions[:, 0] = actions[:, 0] * 1.0  # x_vel
++        transformed_actions[:, 1] = actions[:, 1] * 1.0  # y_vel
++        
++        # Z velocity: ±1.0 m/s (constrained by gate height 0.2-2.2m)
++        transformed_actions[:, 2] = actions[:, 2] * 1.0  # z_vel
+         
+-        return processed_action
++        # Yaw rate: ±60°/s (±1.047 rad/s)
++        transformed_actions[:, 3] = actions[:, 3] * 1.047  # yaw_rate (60 degrees/sec)
++        
++        return transformed_actions
++
++    action_transformation_function = action_transformation_4d_gate_navigation
+diff --git a/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py b/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py
+index 5dd2ce9..e8e3ed7 100644
+--- a/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py
++++ b/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py
+@@ -9,7 +9,7 @@ import torch
+ 
+ class DCE_RL_Navigation_Task_Gate(NavigationTaskGate):
+     def __init__(self, task_config, **kwargs):
+-        task_config.action_space_dim = 3  # Keep 3D action space for DCE gate navigation
++        task_config.action_space_dim = 4  # UPDATED: 4D action space [x_vel, y_vel, z_vel, yaw_rate] for full gate navigation control
+         task_config.curriculum.min_level = 3  # Gate task starts from level 3 (matches gate environment obstacles)
+         task_config.curriculum.max_level = 20  # Gate task goes up to level 20
+         
+@@ -65,9 +65,8 @@ class DCE_RL_Navigation_Task_Gate(NavigationTaskGate):
+         self.task_obs["observations"][:, 6] = 0.0
+         self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
+         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
+-        self.task_obs["observations"][:, 13:16] = self.obs_dict["robot_actions"][:, :3]  # Only first 3 actions (3D control)
+-        # CRITICAL: Override gate information to prevent privilege leaks - set to zero instead of gate_passed
+-        self.task_obs["observations"][:, 16] = 0.0  # Remove privileged gate information
++        # UPDATED: Handle 4D actions [x_vel, y_vel, z_vel, yaw_rate] instead of 3D
++        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # All 4 actions now
+         
+         # Enhanced observation space with dual VAE latents (145D total)
+         self.task_obs["observations"][:, 17:81] = self.image_latents  # Drone camera VAE (64D)
+diff --git a/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py b/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py
+index ce90a9a..d706533 100644
+--- a/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py
++++ b/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py
+@@ -32,10 +32,13 @@ def sample_command(args):
+         "dce_navigation_task_gate", seed=42, use_warp=use_warp, headless=headless
+     )
+     print("Number of environments", rl_task.num_envs)
++    # UPDATED: 4D action space [x_vel, y_vel, z_vel, yaw_rate] for full gate navigation control
+     command_actions = torch.zeros((rl_task.num_envs, rl_task.task_config.action_space_dim))
+-    command_actions[:, 0] = 1.5  # Forward velocity
+-    command_actions[:, 1] = 0.0  # Lateral velocity
+-    command_actions[:, 2] = 0.0  # Yaw rate
++    command_actions[:, 0] = 1.0  # Forward velocity (X)
++    # command_actions[:, 0] = 1.5  # Forward velocity (X)
++    command_actions[:, 1] = 0.0  # Lateral velocity (Y)
++    command_actions[:, 2] = 0.0  # Vertical velocity (Z) - NEW
++    command_actions[:, 3] = 0.0  # Yaw rate
+     nn_model = get_network(rl_task.num_envs)
+     nn_model.eval()
+     nn_model.reset(torch.arange(rl_task.num_envs))
+@@ -47,7 +50,7 @@ def sample_command(args):
+         obs["obs"] = obs["observations"]
+         # print(obs["observations"].shape)  # Should be 145D for gate navigation
+         action = nn_model.get_action(obs)
+-        # print("Action", action, action.shape)
++        # print("Action", action, action.shape)  # Should be 4D for gate navigation
+         action = torch.tensor(action).expand(rl_task.num_envs, -1)
+         command_actions[:] = action
+ 
+@@ -121,8 +124,8 @@ def get_network(num_envs):
+     # register_aerialgym_custom_components()
+     cfg = parse_aerialgym_cfg(evaluation=True)
+     print("CFG is:", cfg)
+-    # Update observation space for gate navigation: 145D (17D basic + 64D drone VAE + 64D static camera VAE)
+-    nn_model = NN_Inference_Class(num_envs, 3, 145, cfg)  # 3D action, 145D observation
++    # UPDATED: 4D action space and 145D observation space for gate navigation with Z-axis control
++    nn_model = NN_Inference_Class(num_envs, 4, 145, cfg)  # 4D action, 145D observation
+     return nn_model
+ 
+ 
+diff --git a/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py b/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py
+index 7918aba..7c74e29 100644
+--- a/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py
++++ b/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py
+@@ -1,101 +1,222 @@
+-import time
+-from collections import deque
+-from typing import Dict, Tuple
++"""
++Sample Factory inference class for DCE navigation with gate environment - FIXED for 4D action compatibility
++This class provides trained model inference for DCE navigation tasks with gate navigation.
+ 
+-import numpy as np
++The class is specifically designed to interface with trained Sample Factory models and:
++- Uses 4D action space matching the training configuration [x_vel, y_vel, z_vel, yaw_rate]
++- Processes 145D observations (17D basic state + 64D drone VAE + 64D static camera VAE)
++- Directly interfaces with Sample Factory trained models for gate navigation
++- Supports both inference and evaluation with dual camera setup
++
++Architecture compatibility:
++- Inference action output: 4D Sample Factory model output [x_vel, y_vel, z_vel, yaw_rate]
++- DCE Task input: 4D action space directly compatible
++- No action transformation needed - direct pass-through
++"""
++
++import time
++import copy
++from typing import Dict, Any
+ import torch
+-from torch import Tensor
++import torch.nn as nn
++import numpy as np
+ 
+-from sample_factory.algo.utils.gymnasium_utils import convert_space
+-from sample_factory.algo.learning.learner import Learner
+-from sample_factory.algo.sampling.batched_sampling import preprocess_actions
+-from sample_factory.algo.utils.action_distributions import argmax_actions
+-from sample_factory.algo.utils.env_info import EnvInfo
+-from sample_factory.algo.utils.misc import ExperimentStatus
+-from sample_factory.algo.utils.rl_utils import prepare_and_normalize_obs
+-from sample_factory.algo.utils.tensor_utils import unsqueeze_tensor
+-from sample_factory.cfg.arguments import load_from_checkpoint
+ from sample_factory.model.actor_critic import create_actor_critic
+ from sample_factory.model.model_utils import get_rnn_size
+-from sample_factory.utils.attr_dict import AttrDict
+-from sample_factory.utils.typing import Config, StatusCode
+-from gymnasium import spaces
+-
+-from torch import nn
++from sample_factory.utils.utils import AttrDict
+ 
+ 
+-class NN_Inference_Class(nn.Module):
+-    def __init__(self, num_envs, num_actions, num_obs, cfg: Config) -> None:
+-        super().__init__()
+-        self.cfg = load_from_checkpoint(cfg)
+-        self.cfg.num_envs = num_envs
+-        self.num_actions = num_actions
+-        self.num_obs = num_obs
+-        self.num_agents = num_envs
+-        self.observation_space = spaces.Dict(
+-            dict(
+-                obs=convert_space(
+-                    spaces.Box(np.ones(self.num_obs) * -np.Inf, np.ones(self.num_obs) * np.Inf)
+-                )
+-            )
+-        )
+-        self.action_space = convert_space(
+-            spaces.Box(np.ones(self.num_actions) * -1.0, np.ones(self.num_actions) * 1.0)
+-        )
+-        self.init_env_info()
+-        self.actor_critic = create_actor_critic(self.cfg, self.observation_space, self.action_space)
+-        self.actor_critic.eval()
+-        self.device = torch.device("cpu" if self.cfg.device == "cpu" else "cuda")
+-        self.actor_critic.model_to_device(self.device)
+-        print("Model:\n\n", self.actor_critic)
+-        # Load policy into model
+-        policy_id = self.cfg.policy_index
+-        name_prefix = dict(latest="checkpoint", best="best")[self.cfg.load_checkpoint_kind]
+-        checkpoints = Learner.get_checkpoints(
+-            Learner.checkpoint_dir(self.cfg, policy_id), f"{name_prefix}_*"
+-        )
+-        checkpoint_dict = Learner.load_checkpoint(checkpoints, self.device)
+-        self.actor_critic.load_state_dict(checkpoint_dict["model"])
+-        self.rnn_states = torch.zeros(
+-            [self.num_agents, get_rnn_size(self.cfg)],
+-            dtype=torch.float32,
+-            device=self.device,
+-        )
++class NN_Inference_Class:
++    def __init__(self, cfg: Dict[str, Any], device: str):
++        """
++        Initialize the inference class with Sample Factory configuration.
++        
++        Args:
++            cfg: Sample Factory configuration dictionary 
++            device: Device to run inference on (e.g., 'cuda:0', 'cpu')
++        """
++        self.device = device
++        
++        # Store Sample Factory config
++        self.cfg = AttrDict(cfg) if isinstance(cfg, dict) else cfg
++        
++        # CRITICAL: Action space configuration for gate navigation
++        # The trained model expects 4D action output to match DCE task input
++        # Action space: [x_vel, y_vel, z_vel, yaw_rate] ∈ [-1, 1]^4
++        self.action_space_dim = 4
++        print(f"[NN_Inference_Class] Configured for 4D action space (gate navigation with Z-axis control)")
++        
++        # Observation space configuration (145D for gate navigation)
++        # 17D basic state + 64D drone VAE + 64D static camera VAE = 145D total
++        self.obs_space_dim = 145
++        print(f"[NN_Inference_Class] Configured for {self.obs_space_dim}D observation space (dual camera gate navigation)")
++        
++        # Model initialization placeholder
++        self.model = None
++        self.rnn_states = None
++        self.is_model_loaded = False
++        
++        print(f"[NN_Inference_Class] Initialized for inference with device: {device}")
+ 
+-    def init_env_info(self):
+-        self.env_info = EnvInfo(
+-            obs_space=self.observation_space,
+-            action_space=self.action_space,
+-            num_agents=self.num_agents,
+-            gpu_actions=self.cfg.env_gpu_actions,
+-            gpu_observations=self.cfg.env_gpu_observations,
+-            action_splits=None,
+-            all_discrete=None,
+-            frameskip=self.cfg.env_frameskip,
+-        )
++    def load_model(self, model_path: str):
++        """
++        Load a trained Sample Factory model for inference.
++        
++        Args:
++            model_path: Path to the trained model checkpoint file
++        """
++        try:
++            print(f"[NN_Inference_Class] Loading model from: {model_path}")
++            
++            # Define action and observation spaces for model creation
++            import gymnasium as gym
++            action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.action_space_dim,), dtype=np.float32)
++            obs_space = gym.spaces.Dict({
++                'obs': gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.obs_space_dim,), dtype=np.float32)
++            })
++            
++            # Create the actor-critic model 
++            self.model = create_actor_critic(self.cfg, obs_space, action_space)
++            
++            # Load the trained weights
++            checkpoint = torch.load(model_path, map_location=self.device)
++            
++            # Handle different checkpoint formats
++            if 'model' in checkpoint:
++                state_dict = checkpoint['model']
++            elif 'state_dict' in checkpoint:
++                state_dict = checkpoint['state_dict']
++            else:
++                state_dict = checkpoint
++            
++            # Load the state dict into the model
++            self.model.load_state_dict(state_dict)
++            
++            # Move model to device and set to evaluation mode
++            self.model.to(self.device)
++            self.model.eval()
++            
++            # Initialize RNN states
++            rnn_size = get_rnn_size(self.cfg)
++            self.rnn_states = torch.zeros(1, rnn_size, dtype=torch.float32, device=self.device)
++            
++            self.is_model_loaded = True
++            print(f"[NN_Inference_Class] Model loaded successfully")
++            print(f"[NN_Inference_Class] Model action output dimension: {self.action_space_dim}D")
++            print(f"[NN_Inference_Class] Model observation input dimension: {self.obs_space_dim}D")
++            
++        except Exception as e:
++            print(f"[NN_Inference_Class] Error loading model: {e}")
++            self.is_model_loaded = False
++            raise
+ 
+-    def reset(self, env_ids):
+-        self.rnn_states[env_ids] = 0.0
++    def get_action(self, observation: np.ndarray) -> np.ndarray:
++        """
++        Get action from the loaded model given an observation.
++        
++        Args:
++            observation: Observation array of shape (obs_space_dim,)
++            
++        Returns:
++            Action array of shape (action_space_dim,)
++        """
++        if not self.is_model_loaded:
++            raise RuntimeError("Model not loaded. Call load_model() first.")
++        
++        try:
++            # Convert observation to tensor and add batch dimension
++            obs_tensor = torch.from_numpy(observation).float().to(self.device).unsqueeze(0)
++            
++            # Create observation dictionary format expected by Sample Factory
++            obs_dict = {'obs': obs_tensor}
++            
++            # Get action from model (no gradient computation needed for inference)
++            with torch.no_grad():
++                model_output = self.model(obs_dict, self.rnn_states)
++                action_logits = model_output['action_logits']
++                
++                # Sample action from the policy distribution
++                action_distribution = self.model.action_parameterization(action_logits)
++                action = action_distribution.sample()
++                
++                # Update RNN states for next step
++                self.rnn_states = model_output['new_rnn_states']
++            
++            # Convert action tensor to numpy array and remove batch dimension
++            action_np = action.cpu().numpy().squeeze(0)
++            
++            # Ensure correct action dimensionality
++            assert action_np.shape == (self.action_space_dim,), f"Expected {self.action_space_dim}D action, got {action_np.shape}"
++            
++            return action_np
++            
++        except Exception as e:
++            print(f"[NN_Inference_Class] Error during inference: {e}")
++            raise
+ 
+-    def get_action(self, obs, get_np=False, get_robot_zero=False):
++    def get_action_deterministic(self, observation: np.ndarray) -> np.ndarray:
++        """
++        Get deterministic action from the loaded model (using mean of distribution).
++        
++        Args:
++            observation: Observation array of shape (obs_space_dim,)
++            
++        Returns:
++            Action array of shape (action_space_dim,)
++        """
++        if not self.is_model_loaded:
++            raise RuntimeError("Model not loaded. Call load_model() first.")
++        
++        try:
++            # Convert observation to tensor and add batch dimension
++            obs_tensor = torch.from_numpy(observation).float().to(self.device).unsqueeze(0)
++            
++            # Create observation dictionary format expected by Sample Factory
++            obs_dict = {'obs': obs_tensor}
++            
++            # Get deterministic action from model
+         with torch.no_grad():
+-            # put obs to device
+-            processed_obs = prepare_and_normalize_obs(self.actor_critic, obs)
+-            policy_outputs = self.actor_critic(processed_obs, self.rnn_states)
+-            # sample actions from the distribution by default
+-            actions = policy_outputs["actions"]
+-            if self.cfg.eval_deterministic:
+-                action_distribution = self.actor_critic.action_distribution()
+-                actions = argmax_actions(action_distribution)
++                model_output = self.model(obs_dict, self.rnn_states)
++                action_logits = model_output['action_logits']
++                
++                # Get deterministic action (mean of distribution)
++                action_distribution = self.model.action_parameterization(action_logits)
++                if hasattr(action_distribution, 'mode'):
++                    action = action_distribution.mode()
++                else:
++                    # For distributions without mode, use mean
++                    action = action_distribution.mean
++                
++                # Update RNN states for next step
++                self.rnn_states = model_output['new_rnn_states']
++            
++            # Convert action tensor to numpy array and remove batch dimension
++            action_np = action.cpu().numpy().squeeze(0)
++            
++            # Ensure correct action dimensionality
++            assert action_np.shape == (self.action_space_dim,), f"Expected {self.action_space_dim}D action, got {action_np.shape}"
++            
++            return action_np
++            
++        except Exception as e:
++            print(f"[NN_Inference_Class] Error during deterministic inference: {e}")
++            raise
+ 
+-            # actions shape should be [num_agents, num_actions] even if it's [1, 1]
+-            if actions.ndim == 1:
+-                actions = unsqueeze_tensor(actions, dim=-1)
+-            actions = preprocess_actions(self.env_info, actions)
++    def reset_rnn_states(self):
++        """Reset RNN states (useful when starting a new episode)."""
++        if self.is_model_loaded:
++            rnn_size = get_rnn_size(self.cfg)
++            self.rnn_states = torch.zeros(1, rnn_size, dtype=torch.float32, device=self.device)
+ 
+-            self.rnn_states = policy_outputs["new_rnn_states"]
+-        if get_robot_zero:
+-            actions = actions[0]
+-        if get_np:
+-            return actions.cpu().numpy()
+-        return actions 
+\ No newline at end of file
++    def get_model_info(self) -> Dict[str, Any]:
++        """Get information about the loaded model."""
++        if not self.is_model_loaded:
++            return {"model_loaded": False}
++        
++        return {
++            "model_loaded": True,
++            "action_space_dim": self.action_space_dim,
++            "obs_space_dim": self.obs_space_dim,
++            "device": str(self.device),
++            "rnn_size": get_rnn_size(self.cfg),
++        } 
+\ No newline at end of file
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth.gif
+deleted file mode 100644
+index 2f43e80..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_seg.gif
+deleted file mode 100644
+index 33ecf0d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera.gif
+deleted file mode 100644
+index cadb179..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth.gif
+deleted file mode 100644
+index 7a47063..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_seg.gif
+deleted file mode 100644
+index 9f1c5c4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif
+index bdb930c..34c0db7 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif
+index 1668aac..de7e430 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera.gif
+index 182df08..a7643f5 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif
+index 8303f3a..8047124 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif
+index 7bc0549..953f7b2 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth.gif
+deleted file mode 100644
+index 2b48ea7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_seg.gif
+deleted file mode 100644
+index 7a226f5..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera.gif
+deleted file mode 100644
+index 4d41d94..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth.gif
+deleted file mode 100644
+index 3689b1b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_seg.gif
+deleted file mode 100644
+index 15a757d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth.gif
+deleted file mode 100644
+index 08a48e7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_seg.gif
+deleted file mode 100644
+index ff2329e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera.gif
+deleted file mode 100644
+index 4cba6f7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth.gif
+deleted file mode 100644
+index 4aac878..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_seg.gif
+deleted file mode 100644
+index ed394f3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth.gif
+deleted file mode 100644
+index a4cf10a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_seg.gif
+deleted file mode 100644
+index 1bc7892..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera.gif
+deleted file mode 100644
+index 6574228..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth.gif
+deleted file mode 100644
+index a25005b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_seg.gif
+deleted file mode 100644
+index 7b891b7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth.gif
+deleted file mode 100644
+index c12c9aa..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_seg.gif
+deleted file mode 100644
+index b30fab8..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera.gif
+deleted file mode 100644
+index 9e58a12..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth.gif
+deleted file mode 100644
+index abb1ad5..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_seg.gif
+deleted file mode 100644
+index c3225da..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth.gif
+deleted file mode 100644
+index 4e9978c..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_seg.gif
+deleted file mode 100644
+index 382ca1f..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera.gif
+deleted file mode 100644
+index 8640163..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth.gif
+deleted file mode 100644
+index d268ecb..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_seg.gif
+deleted file mode 100644
+index 7adf575..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth.gif
+deleted file mode 100644
+index cf23174..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_seg.gif
+deleted file mode 100644
+index 96c43ce..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera.gif
+deleted file mode 100644
+index 0c62cf2..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth.gif
+deleted file mode 100644
+index fb3d80f..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_seg.gif
+deleted file mode 100644
+index 53aeddf..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth.gif
+deleted file mode 100644
+index cd6993f..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_seg.gif
+deleted file mode 100644
+index ee6ff99..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera.gif
+deleted file mode 100644
+index 3611fbc..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth.gif
+deleted file mode 100644
+index 60b3f6a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_seg.gif
+deleted file mode 100644
+index be7acb8..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth.gif
+deleted file mode 100644
+index c3b5b28..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_seg.gif
+deleted file mode 100644
+index 58ae98a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera.gif
+deleted file mode 100644
+index 6eaa28b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth.gif
+deleted file mode 100644
+index e7f3c7a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_seg.gif
+deleted file mode 100644
+index 6843f20..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth.gif
+deleted file mode 100644
+index 4a528a8..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_seg.gif
+deleted file mode 100644
+index c8a7ee5..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera.gif
+deleted file mode 100644
+index 75c753f..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth.gif
+deleted file mode 100644
+index dad832f..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_seg.gif
+deleted file mode 100644
+index 8539711..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth.gif
+deleted file mode 100644
+index 759d9ba..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_seg.gif
+deleted file mode 100644
+index 0e9c15d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera.gif
+deleted file mode 100644
+index 3f8eb27..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth.gif
+deleted file mode 100644
+index dbdbc14..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_seg.gif
+deleted file mode 100644
+index 9d992c4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth.gif
+deleted file mode 100644
+index 87370e7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_seg.gif
+deleted file mode 100644
+index d855c70..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera.gif
+deleted file mode 100644
+index 835135a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth.gif
+deleted file mode 100644
+index 2a0bc70..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_seg.gif
+deleted file mode 100644
+index 18f510b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth.gif
+deleted file mode 100644
+index 12dfc59..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_seg.gif
+deleted file mode 100644
+index e01f2b7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera.gif
+deleted file mode 100644
+index 45c3f4c..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth.gif
+deleted file mode 100644
+index 363a8f2..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_seg.gif
+deleted file mode 100644
+index 5a8976e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth.gif
+deleted file mode 100644
+index 401acf3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_seg.gif
+deleted file mode 100644
+index 22b97f7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera.gif
+deleted file mode 100644
+index 3f934a3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth.gif
+deleted file mode 100644
+index c06cc26..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_seg.gif
+deleted file mode 100644
+index a72c7a6..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth.gif
+deleted file mode 100644
+index 31a2baa..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_seg.gif
+deleted file mode 100644
+index 4dbbd1c..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera.gif
+deleted file mode 100644
+index 44b0045..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth.gif
+deleted file mode 100644
+index 58b247f..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_seg.gif
+deleted file mode 100644
+index 9cbb1f3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth.gif
+deleted file mode 100644
+index c64fe5e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_seg.gif
+deleted file mode 100644
+index 20590ad..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera.gif
+deleted file mode 100644
+index 107e381..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth.gif
+deleted file mode 100644
+index 7a551ff..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_seg.gif
+deleted file mode 100644
+index f8b5c4e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth.gif
+deleted file mode 100644
+index 9b895db..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_seg.gif
+deleted file mode 100644
+index 0425afe..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera.gif
+deleted file mode 100644
+index 3db5249..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth.gif
+deleted file mode 100644
+index 431c3c7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_seg.gif
+deleted file mode 100644
+index 79f0f8b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth.gif
+deleted file mode 100644
+index ead4841..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_seg.gif
+deleted file mode 100644
+index 21181ce..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera.gif
+deleted file mode 100644
+index bbe2fa3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth.gif
+deleted file mode 100644
+index 1a0b42b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_seg.gif
+deleted file mode 100644
+index 3b045fd..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth.gif
+deleted file mode 100644
+index 35f7cca..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_seg.gif
+deleted file mode 100644
+index e6d7eec..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera.gif
+deleted file mode 100644
+index 2ed14ab..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth.gif
+deleted file mode 100644
+index d40342a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_seg.gif
+deleted file mode 100644
+index a1bdf27..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth.gif
+deleted file mode 100644
+index 5355925..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_seg.gif
+deleted file mode 100644
+index a667830..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera.gif
+deleted file mode 100644
+index 35dd35b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth.gif
+deleted file mode 100644
+index 61a3486..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_seg.gif
+deleted file mode 100644
+index 1967162..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth.gif
+deleted file mode 100644
+index 03e1196..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_seg.gif
+deleted file mode 100644
+index 6be2a28..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera.gif
+deleted file mode 100644
+index ecf8353..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth.gif
+deleted file mode 100644
+index 650129e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_seg.gif
+deleted file mode 100644
+index 40783b4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_depth.gif
+deleted file mode 100644
+index ac9361d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_seg.gif
+deleted file mode 100644
+index defdbff..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_merged_dual_camera.gif
+deleted file mode 100644
+index 8c1ccbb..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_static_depth.gif
+deleted file mode 100644
+index bfa9495..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_static_seg.gif
+deleted file mode 100644
+index b2ee9b8..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_drone_depth.gif
+deleted file mode 100644
+index 89f909e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_drone_seg.gif
+deleted file mode 100644
+index d2e379c..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_merged_dual_camera.gif
+deleted file mode 100644
+index 8800e43..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_static_depth.gif
+deleted file mode 100644
+index 4430acd..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_static_seg.gif
+deleted file mode 100644
+index 1d1f336..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0023_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_drone_depth.gif
+deleted file mode 100644
+index 14bcfec..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_drone_seg.gif
+deleted file mode 100644
+index 2ce1dab..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_merged_dual_camera.gif
+deleted file mode 100644
+index a05c78e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_static_depth.gif
+deleted file mode 100644
+index fe1cba0..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_static_seg.gif
+deleted file mode 100644
+index 334f9c3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0024_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_drone_depth.gif
+deleted file mode 100644
+index d8fe595..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_drone_seg.gif
+deleted file mode 100644
+index cacf313..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_merged_dual_camera.gif
+deleted file mode 100644
+index a49c4b8..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_static_depth.gif
+deleted file mode 100644
+index 83779e1..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_static_seg.gif
+deleted file mode 100644
+index 326c8bb..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0025_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_drone_depth.gif
+deleted file mode 100644
+index 609d9cc..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_drone_seg.gif
+deleted file mode 100644
+index ef91c56..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_merged_dual_camera.gif
+deleted file mode 100644
+index bfd1d65..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_static_depth.gif
+deleted file mode 100644
+index dd3f1df..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_static_seg.gif
+deleted file mode 100644
+index 7f67448..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0026_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_drone_depth.gif
+deleted file mode 100644
+index cc90c52..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_drone_seg.gif
+deleted file mode 100644
+index 4d80374..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_merged_dual_camera.gif
+deleted file mode 100644
+index db21960..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_static_depth.gif
+deleted file mode 100644
+index bc0ec18..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_static_seg.gif
+deleted file mode 100644
+index 0b5dc58..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0027_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py b/aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py
+index ac7e38b..a3a8e66 100644
+--- a/aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py
++++ b/aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py
+@@ -1,30 +1,31 @@
+ # Training script for DCE navigation task - FIXED for inference compatibility
+-# This script has been fixed to use 3D action space matching existing inference scripts
++# This script has been fixed to use 4D action space matching existing inference scripts
+ # 
+ # ARCHITECTURE CHANGES (to match inference expectations):
+-# - Single input processing: Uses only "obs" (81D) instead of multi-input ("image_obs" + "observations")
++# - Single input processing: Uses only "obs" (145D) instead of multi-input ("image_obs" + "observations")
+ # - Disabled ConvNet encoder: VAE latents are pre-computed by DCE task, no raw image processing in Sample Factory
+-# - 3D action space: Trains with 3D actions directly matching inference script expectations
+-# - Simplified pipeline: obs (81D) -> MLP encoder -> 64D -> RNN -> 3D actions (compatible with sf_inference_class.py)
++# - 4D action space: Trains with 4D actions directly matching inference script expectations
++# - Simplified pipeline: obs (145D) -> MLP encoder -> 128D -> RNN -> 4D actions (compatible with sf_inference_class_gate.py)
+ #
+-# DCE Navigation Task Specifics:
+-# - Action space: 3D Sample Factory output directly matching DCE task input (x_vel, y_vel, yaw_rate)
+-# - SOLUTION FOR INFERENCE COMPATIBILITY: Train with 3D actions directly
+-#   * Training and inference both use 3D action space to avoid shape mismatch
+-#   * This ensures trained models have 3D action output compatible with inference scripts
+-# - Observation space: 81D total = 17D basic state + 64D VAE-encoded image latents
++# DCE Gate Navigation Task Specifics:
++# - Action space: 4D Sample Factory output directly matching DCE task input (x_vel, y_vel, z_vel, yaw_rate)
++# - SOLUTION FOR INFERENCE COMPATIBILITY: Train with 4D actions directly
++#   * Training and inference both use 4D action space to avoid shape mismatch
++#   * This ensures trained models have 4D action output compatible with inference scripts
++# - Observation space: 145D total = 17D basic state + 64D drone VAE + 64D static camera VAE
+ #   * 0-3: normalized vector to target + distance to target / 5.0
+ #   * 4-6: euler angles (roll, pitch, 0.0)  
+ #   * 7-9: robot body linear velocity
+ #   * 10-12: robot body angular velocity
+-#   * 13-16: robot actions (last action taken)
+-#   * 17-80: VAE-encoded depth image latents (64 dimensions, pre-computed by DCE task)
+-# - Curriculum: starts at level 30 and goes up to level 50 (custom range for progressive difficulty)
+-# - 32 parallel environments (1 agent per environment) for maximum parallelization
+-# - Uses LMF2 robot with velocity control
+-# - Compatible with existing inference scripts: sf_inference_class.py, dce_nn_navigation.py
++#   * 13-16: robot actions (last action taken - now 4D)
++#   * 17-80: VAE-encoded drone depth image latents (64 dimensions, pre-computed by DCE task)
++#   * 81-144: VAE-encoded static camera depth image latents (64 dimensions, pre-computed by DCE task)
++# - Curriculum: starts at level 3 and goes up to level 20 (custom range for progressive difficulty)
++# - 128 parallel environments (1 agent per environment) for maximum parallelization
++# - Uses LMF2 robot with position control and Z-axis control enabled
++# - Compatible with existing inference scripts: sf_inference_class_gate.py, dce_nn_navigation_gate.py
+ #
+-# Environment is registered as "quad_with_obstacles" to match original config.json
++# Environment is registered as "quad_with_obstacles_gate" for gate navigation
+ 
+ # this is here just to guarantee that isaacgym is imported before PyTorch
+ # isort: off
+@@ -62,7 +63,7 @@ class AerialGymVecEnv(gym.Env):
+     """
+     Wrapper for isaacgym environments to make them compatible with the sample factory.
+     Modified to match old 1333 model architecture - single input processing.
+-    Enhanced with dual camera GIF saving functionality.
++    Enhanced with dual camera GIF saving functionality and 4D action space for gate navigation.
+     """
+ 
+     def __init__(self, aerialgym_env, obs_key, save_gifs=False):
+@@ -88,13 +89,13 @@ class AerialGymVecEnv(gym.Env):
+             print(f"[AerialGymVecEnv] GIF saving DISABLED")
+         
+         self.step_count = 0
+-        # CRITICAL FIX: Force action space to exactly match inference expectations (3D)
+-        # The inference script expects 3D actions, so train with 3D to avoid shape mismatch
++        # CRITICAL FIX: Force action space to exactly match inference expectations (4D for gate navigation)
++        # The inference script expects 4D actions [x_vel, y_vel, z_vel, yaw_rate], so train with 4D to avoid shape mismatch
+         import numpy as np
+-        base_action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(3,), dtype=np.float32)
++        base_action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)  # UPDATED: 4D action space
+         self.action_space = convert_space(base_action_space)
+ 
+-        # Debug: Print action space info to verify it's 3D
++        # Debug: Print action space info to verify it's 4D
+         print(f"[AerialGymVecEnv] Forced action space shape: {self.action_space.shape}")
+         print(f"[AerialGymVecEnv] is_multiagent: {self.is_multiagent}, num_agents: {self.num_agents}")
+ 
+@@ -102,7 +103,7 @@ class AerialGymVecEnv(gym.Env):
+         # This handles both standard DCE navigation (81D) and gate navigation (145D)
+         if obs_key == "obs":
+             # Get the actual observation space dimension from the task configuration
+-            task_obs_dim = getattr(self.env.task_config, 'observation_space_dim', 81)  # Default to 81D
++            task_obs_dim = getattr(self.env.task_config, 'observation_space_dim', 145)  # Default to 145D for gate navigation
+             print(f"[AerialGymVecEnv] Detected observation space: {task_obs_dim}D")
+             
+             if task_obs_dim == 145:
+@@ -320,8 +321,8 @@ class AerialGymVecEnv(gym.Env):
+         return transformed_obs, infos
+ 
+     def step(self, action) -> Tuple[Dict[str, Tensor], Tensor, Tensor, Tensor, Dict]:
+-        # FIXED: Direct 3D action pass-through for DCE task
+-        # Sample Factory now provides 3D actions directly matching DCE task expectations (x_vel, y_vel, yaw_rate)
++        # FIXED: Direct 4D action pass-through for DCE gate navigation task
++        # Sample Factory now provides 4D actions directly matching DCE task expectations (x_vel, y_vel, z_vel, yaw_rate)
+         dce_action = action
+             
+         obs, rew, terminated, truncated, infos = self.env.step(dce_action)
+@@ -397,13 +398,13 @@ def make_aerialgym_env(
+                     backup_name = "dce_navigation_task_gate"
+                 else:
+                     # Register standard DCE navigation task  
+-                from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
+-                from aerial_gym.config.task_config.navigation_task_config import task_config
+-                
+-                # Get config the same way as original DCE script  
+-                base_config = task_registry.get_task_config("navigation_task")
++                    from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
++                    from aerial_gym.config.task_config.navigation_task_config import task_config
++                    
++                    # Get config the same way as original DCE script  
++                    base_config = task_registry.get_task_config("navigation_task")
+                     config = base_config()
+-                # Apply DCE-specific configuration changes
++                    # Apply DCE-specific configuration changes
+                     config.action_space_dim = 3  # DCE uses 3D actions (not 4D)
+                     config.curriculum.min_level = 3  # Gate curriculum starts from level 3 (matches environment obstacles)
+                     config.curriculum.max_level = 20  # Gate curriculum goes up to level 20 (manageable obstacle count)
+@@ -418,9 +419,12 @@ def make_aerialgym_env(
+                 
+                 # CRITICAL FIX: Override action space to match inference expectations
+                 if hasattr(config, 'sample_factory_action_space_dim'):
+-                    config.sample_factory_action_space_dim = 3
++                    if full_task_name == "quad_with_obstacles_gate":
++                        config.sample_factory_action_space_dim = 4  # 4D for gate navigation
++                    else:
++                        config.sample_factory_action_space_dim = 3  # 3D for standard navigation
+                 print(f"[SUBPROCESS] Task action_space_dim: {config.action_space_dim}")
+-                print(f"[SUBPROCESS] Target Sample Factory action space: 3D")
++                print(f"[SUBPROCESS] Target Sample Factory action space: {config.action_space_dim}D")
+                 
+                 # CRITICAL: Set environment count in subprocess based on env_agents
+                 if hasattr(cfg, 'env_agents') and cfg.env_agents > 0:
+@@ -458,19 +462,24 @@ def make_aerialgym_env(
+     # Get save_gifs parameter from config
+     save_gifs = getattr(cfg, 'save_gifs', False)
+ 
+-    # Create the environment and force 3D action space for inference compatibility
++    # Create the environment and force correct action space for inference compatibility
+     env = AerialGymVecEnv(task_registry.make_task(task_name=full_task_name), "obs", save_gifs=save_gifs)
+     
+-    # CRITICAL FIX: Force action space to exactly 3D to match inference expectations
+-    # Override action space again after environment creation to ensure it sticks
++    # CRITICAL FIX: Force action space to exactly match inference expectations
++    # Override action space after environment creation to ensure it sticks
+     import gymnasium as gym
+     import numpy as np
+-    forced_action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(3,), dtype=np.float32)
++    if full_task_name == "quad_with_obstacles_gate":
++        forced_action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)  # 4D for gate navigation
++        expected_dims = "4D"
++    else:
++        forced_action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(3,), dtype=np.float32)  # 3D for standard navigation
++        expected_dims = "3D"
+     env.action_space = convert_space(forced_action_space)
+     
+-    # Debug: Verify action space is 3D
++    # Debug: Verify action space dimensions
+     print(f"[make_aerialgym_env] Final action space shape: {env.action_space.shape}")
+-    print(f"[make_aerialgym_env] Action space: {env.action_space}")
++    print(f"[make_aerialgym_env] Expected {expected_dims} action space: {env.action_space}")
+     
+     return env
+ 
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log
+index a4cf606..06880c0 120000
+--- a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log
++++ b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log
+@@ -1 +1 @@
+-run-20250702_102345-HIGH_CONFIG_16ENV_2_20250701_203333_331994/logs/debug-internal.log
+\ No newline at end of file
++run-20250704_073111-gate_config_3_static_cam_fixed_1_20250704_073110_526971/logs/debug-internal.log
+\ No newline at end of file
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log
+index 8863d8a..2407cfc 120000
+--- a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log
++++ b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log
+@@ -1 +1 @@
+-run-20250702_102345-HIGH_CONFIG_16ENV_2_20250701_203333_331994/logs/debug.log
+\ No newline at end of file
++run-20250704_073111-gate_config_3_static_cam_fixed_1_20250704_073110_526971/logs/debug.log
+\ No newline at end of file
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run
+index 4c72de2..f2dcb3d 120000
+--- a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run
++++ b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run
+@@ -1 +1 @@
+-run-20250702_102345-HIGH_CONFIG_16ENV_2_20250701_203333_331994
+\ No newline at end of file
++run-20250704_073111-gate_config_3_static_cam_fixed_1_20250704_073110_526971
+\ No newline at end of file
+diff --git a/aerial_gym/task/navigation_task_gate/navigation_task_gate.py b/aerial_gym/task/navigation_task_gate/navigation_task_gate.py
+index 6dca6f8..21f7b93 100644
+--- a/aerial_gym/task/navigation_task_gate/navigation_task_gate.py
++++ b/aerial_gym/task/navigation_task_gate/navigation_task_gate.py
+@@ -155,7 +155,7 @@ class NavigationTaskGate(BaseTask):
+                 ),
+             }
+         )
+-        self.action_space = Box(low=-1.0, high=1.0, shape=(3,), dtype=np.float32)  # 3D action space
++        self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)  # 4D action space
+         self.action_transformation_function = self.task_config.action_transformation_function
+ 
+         self.num_envs = self.sim_env.num_envs
+@@ -188,7 +188,7 @@ class NavigationTaskGate(BaseTask):
+     def close(self):
+         try:
+             if hasattr(self.sim_env, 'delete_env'):
+-        self.sim_env.delete_env()
++                self.sim_env.delete_env()
+             elif hasattr(self.sim_env, 'close'):
+                 self.sim_env.close()
+             else:
+@@ -223,13 +223,23 @@ class NavigationTaskGate(BaseTask):
+         return self.sim_env.render()
+ 
+     def step(self, actions):
+-        # Transform 3D actions to 4D velocity commands for X500
++        # UPDATED: Transform 4D actions to 4D velocity commands for X500 robot with Z-axis control
++        # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
++        # Output: [x_vel, y_vel, z_vel, yaw_rate] in real units
++        
++        # Apply action transformation function from task config (4D -> 4D)
+         transformed_action = self.action_transformation_function(actions)
+         logger.debug(f"raw_action: {actions[0]}, transformed action: {transformed_action[0]}")
++        
++        # Pass 4D velocity commands directly to simulation environment
+         self.sim_env.step(actions=transformed_action)
+ 
+-        # Compute rewards including gate-specific rewards
+-        self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
++        # This step must be done since the reset is done after the reward is calculated.
++        # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
++        # This is important for the RL agent to get the correct state after the reset.
++        self.rewards[:], self.terminations[:], camera_gate_alignment = self.compute_rewards_and_crashes(self.obs_dict)
++
++        # logger.info(f"Curricluum Level: {self.curriculum_level}")
+ 
+         if self.task_config.return_state_before_reset == True:
+             return_tuple = self.get_return_tuple()
+@@ -240,29 +250,55 @@ class NavigationTaskGate(BaseTask):
+             torch.zeros_like(self.truncations),
+         )
+ 
+-        # Gate-specific success criteria
+-        successes = self.truncations * self.gate_passed
++        # successes are are the sum of the environments which are to be truncated and have reached the target within a distance threshold
++        successes = self.truncations * (
++            torch.norm(self.target_position - self.obs_dict["robot_position"], dim=1) < 1.0
++        )
+         successes = torch.where(self.terminations > 0, torch.zeros_like(successes), successes)
+         timeouts = torch.where(
+             self.truncations > 0, torch.logical_not(successes), torch.zeros_like(successes)
+         )
+         timeouts = torch.where(
+             self.terminations > 0, torch.zeros_like(timeouts), timeouts
+-        )
++        )  # timeouts are not counted if there is a crash
+ 
+         self.infos["successes"] = successes
+         self.infos["timeouts"] = timeouts
+         self.infos["crashes"] = self.terminations
+-        self.infos["gate_passed"] = self.gate_passed.clone()
+         
+-        # Add camera alignment debugging information
+-        if hasattr(self, 'camera_alignment_debug'):
+-            self.infos["camera_alignment/mean_alignment"] = torch.mean(self.camera_alignment_debug).cpu()
+-            self.infos["camera_alignment/perfect_count"] = torch.sum(self.camera_alignment_debug > 0.966).float().cpu()  # 0°-15°
+-            self.infos["camera_alignment/excellent_count"] = torch.sum((self.camera_alignment_debug > 0.866) & (self.camera_alignment_debug <= 0.966)).float().cpu()  # 15°-30°
+-            self.infos["camera_alignment/good_count"] = torch.sum((self.camera_alignment_debug > 0.5) & (self.camera_alignment_debug <= 0.866)).float().cpu()  # 30°-60°
+-            self.infos["camera_alignment/poor_count"] = torch.sum(self.camera_alignment_debug < 0.0).float().cpu()  # 90°+
+-            self.infos["camera_alignment/severely_misaligned_count"] = torch.sum(self.camera_alignment_debug <= -0.707).float().cpu()  # 135°-180°
++        # Add gate navigation specific info to wandb tracking
++        # Calculate gate navigation metrics from current state
++        robot_position = self.obs_dict["robot_position"]
++        gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
++        
++        # Check if robot has passed gate (crossed Y = 0 plane with proper alignment)
++        gate_passed_current = (
++            (robot_position[:, 1] > self.gate_position[:, 1]) &  # In front of gate
++            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &  # Within gate width
++            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)  # Within gate height
++        )
++        
++        # Gate alignment: check if robot is roughly aligned with gate opening
++        gate_alignment = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
++        
++        # Camera alignment angle in degrees (convert from dot product)
++        alignment_angle_deg = torch.acos(torch.clamp(camera_gate_alignment, -1.0, 1.0)) * 180.0 / 3.14159
++        
++        # Camera alignment category based on angle
++        alignment_category = torch.zeros_like(alignment_angle_deg)
++        alignment_category[alignment_angle_deg <= 15] = 5  # Perfect
++        alignment_category[(alignment_angle_deg > 15) & (alignment_angle_deg <= 30)] = 4  # Excellent
++        alignment_category[(alignment_angle_deg > 30) & (alignment_angle_deg <= 60)] = 3  # Good
++        alignment_category[(alignment_angle_deg > 60) & (alignment_angle_deg <= 90)] = 2  # Moderate
++        alignment_category[(alignment_angle_deg > 90) & (alignment_angle_deg <= 135)] = 1  # Poor
++        alignment_category[alignment_angle_deg > 135] = 0  # Severely misaligned
++        
++        self.infos["gate/passed"] = gate_passed_current.float()
++        self.infos["gate/distance"] = gate_distance
++        self.infos["gate/alignment"] = gate_alignment.float()
++        self.infos["camera/facing_alignment"] = camera_gate_alignment
++        self.infos["camera/alignment_angle_deg"] = alignment_angle_deg
++        self.infos["camera/alignment_category"] = alignment_category
+         
+         # Add continuous curriculum tracking for wandb
+         self.infos["curriculum/current_level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
+@@ -272,17 +308,16 @@ class NavigationTaskGate(BaseTask):
+         self.check_and_update_curriculum_level(
+             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
+         )
+-        
++        # rendering happens at the post-reward calculation step since the newer measurement is required to be
++        # sent to the RL algorithm as an observation and it helps if the camera image is updated then
+         reset_envs = self.sim_env.post_reward_calculation_step()
+         if len(reset_envs) > 0:
+             self.reset_idx(reset_envs)
+         self.num_task_steps += 1
+-        
+-        # Process both drone and static camera observations
++        # do stuff with the image observations here
+         self.process_image_observation()
+         self.process_static_camera_observation()
+         self.post_image_reward_addition()
+-        
+         if self.task_config.return_state_before_reset == False:
+             return_tuple = self.get_return_tuple()
+         return return_tuple
+@@ -351,8 +386,8 @@ class NavigationTaskGate(BaseTask):
+         self.task_obs["observations"][:, 6] = 0.0
+         self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
+         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
+-        self.task_obs["observations"][:, 13:16] = self.obs_dict["robot_actions"][:, :3]  # Only 3D actions
+-        self.task_obs["observations"][:, 16] = self.gate_passed.float()  # Gate passage status
++        # UPDATED: Handle 4D actions [x_vel, y_vel, z_vel, yaw_rate] instead of 3D
++        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # All 4 actions now
+         
+         # Drone camera VAE latents (64D)
+         if self.task_config.vae_config.use_vae:
+@@ -382,8 +417,8 @@ class NavigationTaskGate(BaseTask):
+             self.pos_error_vehicle_frame,
+             self.pos_error_vehicle_frame_prev,
+             obs_dict["crashes"],
+-            obs_dict["robot_actions"][:, :3],  # Only 3D actions
+-            obs_dict["robot_prev_actions"][:, :3],  # Only 3D actions
++            obs_dict["robot_actions"],
++            obs_dict["robot_prev_actions"],
+             robot_position,
+             robot_vehicle_orientation,
+             self.gate_position,
+@@ -395,7 +430,7 @@ class NavigationTaskGate(BaseTask):
+         # Store camera alignment for debugging
+         self.camera_alignment_debug = camera_gate_alignment
+         
+-        return rewards, crashes
++        return rewards, crashes, camera_gate_alignment
+ 
+     def check_and_update_curriculum_level(self, successes, crashes, timeouts):
+         """Update curriculum level and static camera positioning."""
+@@ -478,12 +513,12 @@ class StaticCameraManager:
+         
+         # Gate position (center of environment)
+         self.gate_position = [0.0, 0.0, 0.0]
+-        self.env_bounds = [[-6.0, -6.0, 0.0], [6.0, 6.0, 6.0]]
++        self.env_bounds = [[-4.0, -4.0, 0.0], [4.0, 4.0, 4.0]]  # Updated for gate_env bounds
+         
+         self._setup_static_camera()
+     
+     def _setup_static_camera(self):
+-        """Setup static camera using Isaac Gym native camera API."""
++        """Setup static camera using Isaac Gym native camera API with D455 specifications."""
+         logger.info("Setting up static camera for gate navigation...")
+         
+         # Check if simulation is running in headless mode
+@@ -494,7 +529,7 @@ class StaticCameraManager:
+             return
+         
+         try:
+-            # Camera properties (D455 depth camera specifications)
++            # Camera properties (D455 depth camera specifications - match working example)
+             camera_props = gymapi.CameraProperties()
+             camera_props.width = 480  # D455 depth resolution width
+             camera_props.height = 270  # D455 depth resolution height
+@@ -503,7 +538,8 @@ class StaticCameraManager:
+             camera_props.far_plane = 20.0  # D455 maximum range
+             camera_props.enable_tensors = True  # Enable GPU tensor access
+             
+-            logger.info(f"Static camera properties: {camera_props.width}x{camera_props.height}, FOV: {camera_props.horizontal_fov}°")
++            logger.info(f"Static camera properties (D455 specs): {camera_props.width}x{camera_props.height}, FOV: {camera_props.horizontal_fov}°")
++            logger.info(f"Static camera depth range: {camera_props.near_plane}m - {camera_props.far_plane}m")
+         
+             # Create camera sensor in each environment
+             self.camera_handles = []
+@@ -511,16 +547,25 @@ class StaticCameraManager:
+                 cam_handle = self.gym.create_camera_sensor(env_handle, camera_props)
+                 if cam_handle >= 0:  # Valid camera handle
+                     self.camera_handles.append(cam_handle)
++                    logger.info(f"Created static camera sensor {i} in environment {i}")
+                 else:
+                     logger.warning(f"Failed to create camera for environment {i}, handle: {cam_handle}")
+                     self.camera_setup_success = False
+                     self.use_synthetic_camera = True
+                     return
+             
+-            # Initial camera positioning (will be updated by curriculum)
+-            self.update_camera_positions(self.task_config.curriculum.min_level, torch.arange(len(self.env_handles)))
++            # FIXED POSITIONING: Position camera to face the gate directly (match working example)
++            # Gate is positioned at ground level (Z=0), camera at 1.5m height looking at gate center
++            camera_pos = gymapi.Vec3(0.0, -3.0, 1.5)  # 3m behind gate, at gate center height
++            camera_target = gymapi.Vec3(0.0, 0.0, 1.5)  # Look directly at gate center
++            
++            # Set camera transform for each environment using fixed positioning
++            for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
++                # Use Isaac Gym's camera look_at functionality (match working example)
++                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
++                logger.info(f"Set static camera {i} to look from ({camera_pos.x}, {camera_pos.y}, {camera_pos.z}) toward ({camera_target.x}, {camera_target.y}, {camera_target.z})")
+             
+-            logger.info("✓ Static camera setup complete")
++            logger.info("✓ Static camera setup complete with fixed positioning")
+             self.camera_setup_success = True
+             self.use_synthetic_camera = False
+             
+@@ -539,29 +584,8 @@ class StaticCameraManager:
+         if not self.camera_setup_success:
+             return
+         
+-        try:
+-            # Get camera position and target from curriculum
+-            camera_pos, camera_target = self.task_config.static_camera_curriculum.get_camera_position_and_orientation(
+-                curriculum_level, self.gate_position, self.env_bounds
+-            )
+-            
+-            # Set camera transform for each environment
+-            camera_pos_gym = gymapi.Vec3(camera_pos[0], camera_pos[1], camera_pos[2])
+-            camera_target_gym = gymapi.Vec3(camera_target[0], camera_target[1], camera_target[2])
+-            
+-            for env_id in env_ids:
+-                if env_id < len(self.camera_handles):
+-                    self.gym.set_camera_location(
+-                        self.camera_handles[env_id], 
+-                        self.env_handles[env_id], 
+-                        camera_pos_gym, 
+-                        camera_target_gym
+-                    )
+-            
+-            logger.debug(f"Updated static camera to level {curriculum_level}: pos={camera_pos}, target={camera_target}")
+-            
+-        except Exception as e:
+-            logger.debug(f"Camera position update error: {e}")
++        # FIXED POSITIONING: Camera position is now fixed during setup, no dynamic repositioning needed
++        logger.debug(f"Static camera uses fixed positioning - curriculum level {curriculum_level} noted but position unchanged")
+     
+     def capture_images(self):
+         """Capture depth and segmentation images from static camera."""
+@@ -597,13 +621,15 @@ class StaticCameraManager:
+             # End access to image tensors
+             self.gym.end_access_image_tensors(self.sim)
+             
+-            # Process depth for VAE (same as drone camera processing)
++            # Process depth for VAE (match working example processing)
+             if depth_img is not None:
++                # Convert to DCE format for consistency with robot camera processing
++                # Static camera gives raw depth values, need to normalize to [0,1] for DCE processing
+                 depth_normalized = depth_img.copy()
+-                depth_normalized[depth_normalized == -np.inf] = 20.0
+-                depth_normalized = np.abs(depth_normalized)
+-                depth_normalized = np.clip(depth_normalized, 0.4, 20.0)
+-                # Normalize to [0,1] range for VAE
++                depth_normalized[depth_normalized == -np.inf] = 20.0  # Use far_plane value
++                depth_normalized = np.abs(depth_normalized)  # Handle negative depths
++                depth_normalized = np.clip(depth_normalized, 0.4, 20.0)  # Clip to camera range
++                # Normalize to [0,1] range like DCE navigation expects
+                 depth_normalized = (depth_normalized - 0.4) / (20.0 - 0.4)
+                 depth_img = depth_normalized.astype(np.float32)
+             
+@@ -869,7 +895,29 @@ def compute_gate_reward(
+     # Update gate passed status
+     gate_passed = gate_passed | just_passed_gate
+ 
+-    # Combined reward - NOW INCLUDING CAMERA FACING REWARD
++    # NEW: Altitude maintenance reward to encourage optimal gate-level flying
++    optimal_altitude_min = 1.4  # meters
++    optimal_altitude_max = 1.6  # meters  
++    current_altitude = robot_position[:, 2]
++    
++    # Calculate distance from optimal altitude range
++    altitude_error = torch.zeros_like(current_altitude)
++    # Below optimal range
++    below_range_mask = current_altitude < optimal_altitude_min
++    altitude_error[below_range_mask] = optimal_altitude_min - current_altitude[below_range_mask]
++    # Above optimal range  
++    above_range_mask = current_altitude > optimal_altitude_max
++    altitude_error[above_range_mask] = current_altitude[above_range_mask] - optimal_altitude_max
++    # Within optimal range - no error
++    
++    # Exponential reward for being at optimal altitude
++    altitude_maintenance_reward = exponential_reward_function(
++        parameter_dict["altitude_maintenance_reward_magnitude"],
++        parameter_dict["altitude_maintenance_reward_exponent"],
++        altitude_error,
++    )
++
++    # Combined reward - NOW INCLUDING CAMERA FACING REWARD AND ALTITUDE MAINTENANCE
+     reward = (
+         MULTIPLICATION_FACTOR_REWARD
+         * (
+@@ -882,7 +930,8 @@ def compute_gate_reward(
+             + gate_passage_reward
+             + gate_center_bonus
+             + gate_center_passage_bonus
+-            + camera_facing_reward  # NEW: Camera facing reward
++            + camera_facing_reward  # Camera facing reward
++            + altitude_maintenance_reward  # NEW: Altitude maintenance reward
+         )
+         + total_action_penalty
+     )
