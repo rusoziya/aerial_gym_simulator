@@ -22,7 +22,7 @@
 #   * 81-144: VAE-encoded static camera depth image latents (64 dimensions, pre-computed by DCE task)
 # - Curriculum: starts at level 3 and goes up to level 20 (custom range for progressive difficulty)
 # - 128 parallel environments (1 agent per environment) for maximum parallelization
-# - Uses LMF2 robot with position control and Z-axis control enabled
+# - Uses LMF2 robot with VELOCITY CONTROL for direct responsive control
 # - Compatible with existing inference scripts: sf_inference_class_gate.py, dce_nn_navigation_gate.py
 #
 # Environment is registered as "quad_with_obstacles_gate" for gate navigation
@@ -746,8 +746,8 @@ env_configs = dict(
         # Gate Navigation Task Configuration
         # Enhanced observation space: 145D (17D basic + 64D drone VAE + 64D static camera VAE)
         # X500 robot with D455 camera flying through static gate with static camera
-        adaptive_stddev=True,  # Can use adaptive_stddev with 3D actions
-        action_space_dim=3,  # 3D action space for gate navigation (forward, lateral, yaw rate)
+        adaptive_stddev=True,  # Can use adaptive_stddev with 4D actions
+        action_space_dim=4,  # 4D action space for VELOCITY CONTROLLER (x_vel, y_vel, z_vel, yaw_rate)
         
         # Gate Navigation Training Configuration
         train_for_env_steps=100000000,  # 100M steps for comprehensive gate navigation learning

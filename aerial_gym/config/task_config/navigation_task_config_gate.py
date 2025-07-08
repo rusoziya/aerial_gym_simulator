@@ -7,7 +7,7 @@ class task_config:
     sim_name = "base_sim"
     env_name = "gate_env"  # Use gate environment instead of env_with_obstacles
     robot_name = "lmf2"  # Use proven LMF2 robot
-    controller_name = "lmf2_position_control"  # Use proven LMF2 controller
+    controller_name = "lmf2_velocity_control"  # CHANGED: Switch to velocity controller for more direct control
     args = {}
     num_envs = 16  # Standard configuration for gate navigation training
     use_warp = True
@@ -18,7 +18,7 @@ class task_config:
     # Both cameras now share the same VAE model to reduce GPU memory usage by ~50%
     observation_space_dim = 17 + 64 + 64  # Enhanced with static camera VAE latents
     privileged_observation_space_dim = 0
-    action_space_dim = 4  # UPDATED: 4D action space [x_vel, y_vel, z_vel, yaw_rate] for full gate navigation control
+    action_space_dim = 4  # 4D action space [x_vel, y_vel, z_vel, yaw_rate] for velocity control
     episode_len_steps = 100  # REDUCED: Faster episodes for quicker training feedback and evaluation
 
     return_state_before_reset = (
@@ -233,33 +233,33 @@ class task_config:
             
             return position, orientation
 
-    # UPDATED: 4D Action transformation for gate navigation with Z-axis control
+    # VELOCITY CONTROLLER: 4D Action transformation for direct velocity control
     @staticmethod
     @torch.jit.script
-    def action_transformation_4d_gate_navigation(actions):
+    def action_transformation_4d_velocity_control(actions):
         # type: (Tensor) -> Tensor
         """
-        Transform 4D actions with Z-axis control within gate height limits.
+        Transform 4D actions for VELOCITY CONTROLLER - conservative scaling for stability.
         Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
         Output: [x_vel, y_vel, z_vel, yaw_rate] in real units
         
-        Gate navigation constraints:
-        - X,Y velocity: ±1.0 m/s (REDUCED from 2.0 for more precise control)
-        - Z velocity: ±1.0 m/s (constrained by gate height 0.2-2.2m)
-        - Yaw rate: ±60°/s (±1.047 rad/s)
+        Conservative velocity controller constraints for improved stability:
+        - X,Y velocity: ±0.6 m/s (CONSERVATIVE scaling for velocity controller stability)
+        - Z velocity: ±0.4 m/s (REDUCED for smooth altitude control without position feedback)
+        - Yaw rate: ±28.6°/s (±0.5 rad/s) (CONSERVATIVE for smooth yaw without position correction)
         """
         transformed_actions = torch.zeros_like(actions)
         
-        # X,Y velocity: ±1.0 m/s (REDUCED for more precise gate navigation)
-        transformed_actions[:, 0] = actions[:, 0] * 1.0  # x_vel
-        transformed_actions[:, 1] = actions[:, 1] * 1.0  # y_vel
+        # X,Y velocity: ±0.6 m/s (CONSERVATIVE for velocity controller stability)
+        transformed_actions[:, 0] = actions[:, 0] * 0.6  # x_vel
+        transformed_actions[:, 1] = actions[:, 1] * 0.6  # y_vel
         
-        # Z velocity: ±1.0 m/s (constrained by gate height 0.2-2.2m)
-        transformed_actions[:, 2] = actions[:, 2] * 1.0  # z_vel
+        # Z velocity: ±0.4 m/s (REDUCED for smooth altitude control)
+        transformed_actions[:, 2] = actions[:, 2] * 0.4  # z_vel
         
-        # Yaw rate: ±60°/s (±1.047 rad/s)
-        transformed_actions[:, 3] = actions[:, 3] * 1.047  # yaw_rate (60 degrees/sec)
+        # Yaw rate: ±28.6°/s (±0.5 rad/s) (CONSERVATIVE for smooth yaw control)
+        transformed_actions[:, 3] = actions[:, 3] * 0.5  # yaw_rate (28.6 degrees/sec)
         
         return transformed_actions
 
-    action_transformation_function = action_transformation_4d_gate_navigation
+    action_transformation_function = action_transformation_4d_velocity_control
