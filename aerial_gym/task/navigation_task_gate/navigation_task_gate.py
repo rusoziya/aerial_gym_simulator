@@ -155,7 +155,7 @@ class NavigationTaskGate(BaseTask):
                 ),
             }
         )
-        self.action_space = Box(low=-1.0, high=1.0, shape=(3,), dtype=np.float32)  # 3D action space
+        self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)  # 4D action space
         self.action_transformation_function = self.task_config.action_transformation_function
 
         self.num_envs = self.sim_env.num_envs
@@ -188,7 +188,7 @@ class NavigationTaskGate(BaseTask):
     def close(self):
         try:
             if hasattr(self.sim_env, 'delete_env'):
-        self.sim_env.delete_env()
+                self.sim_env.delete_env()
             elif hasattr(self.sim_env, 'close'):
                 self.sim_env.close()
             else:
@@ -223,13 +223,23 @@ class NavigationTaskGate(BaseTask):
         return self.sim_env.render()
 
     def step(self, actions):
-        # Transform 3D actions to 4D velocity commands for X500
+        # UPDATED: Transform 4D actions to 4D velocity commands for X500 robot with Z-axis control
+        # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
+        # Output: [x_vel, y_vel, z_vel, yaw_rate] in real units
+        
+        # Apply action transformation function from task config (4D -> 4D)
         transformed_action = self.action_transformation_function(actions)
         logger.debug(f"raw_action: {actions[0]}, transformed action: {transformed_action[0]}")
+        
+        # Pass 4D velocity commands directly to simulation environment
         self.sim_env.step(actions=transformed_action)
 
-        # Compute rewards including gate-specific rewards
-        self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
+        # This step must be done since the reset is done after the reward is calculated.
+        # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
+        # This is important for the RL agent to get the correct state after the reset.
+        self.rewards[:], self.terminations[:], camera_gate_alignment = self.compute_rewards_and_crashes(self.obs_dict)
+
+        # logger.info(f"Curricluum Level: {self.curriculum_level}")
 
         if self.task_config.return_state_before_reset == True:
             return_tuple = self.get_return_tuple()
@@ -240,29 +250,55 @@ class NavigationTaskGate(BaseTask):
             torch.zeros_like(self.truncations),
         )
 
-        # Gate-specific success criteria
-        successes = self.truncations * self.gate_passed
+        # successes are are the sum of the environments which are to be truncated and have reached the target within a distance threshold
+        successes = self.truncations * (
+            torch.norm(self.target_position - self.obs_dict["robot_position"], dim=1) < 1.0
+        )
         successes = torch.where(self.terminations > 0, torch.zeros_like(successes), successes)
         timeouts = torch.where(
             self.truncations > 0, torch.logical_not(successes), torch.zeros_like(successes)
         )
         timeouts = torch.where(
             self.terminations > 0, torch.zeros_like(timeouts), timeouts
-        )
+        )  # timeouts are not counted if there is a crash
 
         self.infos["successes"] = successes
         self.infos["timeouts"] = timeouts
         self.infos["crashes"] = self.terminations
-        self.infos["gate_passed"] = self.gate_passed.clone()
         
-        # Add camera alignment debugging information
-        if hasattr(self, 'camera_alignment_debug'):
-            self.infos["camera_alignment/mean_alignment"] = torch.mean(self.camera_alignment_debug).cpu()
-            self.infos["camera_alignment/perfect_count"] = torch.sum(self.camera_alignment_debug > 0.966).float().cpu()  # 0°-15°
-            self.infos["camera_alignment/excellent_count"] = torch.sum((self.camera_alignment_debug > 0.866) & (self.camera_alignment_debug <= 0.966)).float().cpu()  # 15°-30°
-            self.infos["camera_alignment/good_count"] = torch.sum((self.camera_alignment_debug > 0.5) & (self.camera_alignment_debug <= 0.866)).float().cpu()  # 30°-60°
-            self.infos["camera_alignment/poor_count"] = torch.sum(self.camera_alignment_debug < 0.0).float().cpu()  # 90°+
-            self.infos["camera_alignment/severely_misaligned_count"] = torch.sum(self.camera_alignment_debug <= -0.707).float().cpu()  # 135°-180°
+        # Add gate navigation specific info to wandb tracking
+        # Calculate gate navigation metrics from current state
+        robot_position = self.obs_dict["robot_position"]
+        gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
+        
+        # Check if robot has passed gate (crossed Y = 0 plane with proper alignment)
+        gate_passed_current = (
+            (robot_position[:, 1] > self.gate_position[:, 1]) &  # In front of gate
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &  # Within gate width
+            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)  # Within gate height
+        )
+        
+        # Gate alignment: check if robot is roughly aligned with gate opening
+        gate_alignment = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
+        
+        # Camera alignment angle in degrees (convert from dot product)
+        alignment_angle_deg = torch.acos(torch.clamp(camera_gate_alignment, -1.0, 1.0)) * 180.0 / 3.14159
+        
+        # Camera alignment category based on angle
+        alignment_category = torch.zeros_like(alignment_angle_deg)
+        alignment_category[alignment_angle_deg <= 15] = 5  # Perfect
+        alignment_category[(alignment_angle_deg > 15) & (alignment_angle_deg <= 30)] = 4  # Excellent
+        alignment_category[(alignment_angle_deg > 30) & (alignment_angle_deg <= 60)] = 3  # Good
+        alignment_category[(alignment_angle_deg > 60) & (alignment_angle_deg <= 90)] = 2  # Moderate
+        alignment_category[(alignment_angle_deg > 90) & (alignment_angle_deg <= 135)] = 1  # Poor
+        alignment_category[alignment_angle_deg > 135] = 0  # Severely misaligned
+        
+        self.infos["gate/passed"] = gate_passed_current.float()
+        self.infos["gate/distance"] = gate_distance
+        self.infos["gate/alignment"] = gate_alignment.float()
+        self.infos["camera/facing_alignment"] = camera_gate_alignment
+        self.infos["camera/alignment_angle_deg"] = alignment_angle_deg
+        self.infos["camera/alignment_category"] = alignment_category
         
         # Add continuous curriculum tracking for wandb
         self.infos["curriculum/current_level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
@@ -272,17 +308,16 @@ class NavigationTaskGate(BaseTask):
         self.check_and_update_curriculum_level(
             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
         )
-        
+        # rendering happens at the post-reward calculation step since the newer measurement is required to be
+        # sent to the RL algorithm as an observation and it helps if the camera image is updated then
         reset_envs = self.sim_env.post_reward_calculation_step()
         if len(reset_envs) > 0:
             self.reset_idx(reset_envs)
         self.num_task_steps += 1
-        
-        # Process both drone and static camera observations
+        # do stuff with the image observations here
         self.process_image_observation()
         self.process_static_camera_observation()
         self.post_image_reward_addition()
-        
         if self.task_config.return_state_before_reset == False:
             return_tuple = self.get_return_tuple()
         return return_tuple
@@ -351,8 +386,8 @@ class NavigationTaskGate(BaseTask):
         self.task_obs["observations"][:, 6] = 0.0
         self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
-        self.task_obs["observations"][:, 13:16] = self.obs_dict["robot_actions"][:, :3]  # Only 3D actions
-        self.task_obs["observations"][:, 16] = self.gate_passed.float()  # Gate passage status
+        # UPDATED: Handle 4D actions [x_vel, y_vel, z_vel, yaw_rate] instead of 3D
+        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # All 4 actions now
         
         # Drone camera VAE latents (64D)
         if self.task_config.vae_config.use_vae:
@@ -382,8 +417,8 @@ class NavigationTaskGate(BaseTask):
             self.pos_error_vehicle_frame,
             self.pos_error_vehicle_frame_prev,
             obs_dict["crashes"],
-            obs_dict["robot_actions"][:, :3],  # Only 3D actions
-            obs_dict["robot_prev_actions"][:, :3],  # Only 3D actions
+            obs_dict["robot_actions"],
+            obs_dict["robot_prev_actions"],
             robot_position,
             robot_vehicle_orientation,
             self.gate_position,
@@ -395,7 +430,7 @@ class NavigationTaskGate(BaseTask):
         # Store camera alignment for debugging
         self.camera_alignment_debug = camera_gate_alignment
         
-        return rewards, crashes
+        return rewards, crashes, camera_gate_alignment
 
     def check_and_update_curriculum_level(self, successes, crashes, timeouts):
         """Update curriculum level and static camera positioning."""
@@ -478,12 +513,12 @@ class StaticCameraManager:
         
         # Gate position (center of environment)
         self.gate_position = [0.0, 0.0, 0.0]
-        self.env_bounds = [[-6.0, -6.0, 0.0], [6.0, 6.0, 6.0]]
+        self.env_bounds = [[-4.0, -4.0, 0.0], [4.0, 4.0, 4.0]]  # Updated for gate_env bounds
         
         self._setup_static_camera()
     
     def _setup_static_camera(self):
-        """Setup static camera using Isaac Gym native camera API."""
+        """Setup static camera using Isaac Gym native camera API with D455 specifications."""
         logger.info("Setting up static camera for gate navigation...")
         
         # Check if simulation is running in headless mode
@@ -494,7 +529,7 @@ class StaticCameraManager:
             return
         
         try:
-            # Camera properties (D455 depth camera specifications)
+            # Camera properties (D455 depth camera specifications - match working example)
             camera_props = gymapi.CameraProperties()
             camera_props.width = 480  # D455 depth resolution width
             camera_props.height = 270  # D455 depth resolution height
@@ -503,7 +538,8 @@ class StaticCameraManager:
             camera_props.far_plane = 20.0  # D455 maximum range
             camera_props.enable_tensors = True  # Enable GPU tensor access
             
-            logger.info(f"Static camera properties: {camera_props.width}x{camera_props.height}, FOV: {camera_props.horizontal_fov}°")
+            logger.info(f"Static camera properties (D455 specs): {camera_props.width}x{camera_props.height}, FOV: {camera_props.horizontal_fov}°")
+            logger.info(f"Static camera depth range: {camera_props.near_plane}m - {camera_props.far_plane}m")
         
             # Create camera sensor in each environment
             self.camera_handles = []
@@ -511,16 +547,25 @@ class StaticCameraManager:
                 cam_handle = self.gym.create_camera_sensor(env_handle, camera_props)
                 if cam_handle >= 0:  # Valid camera handle
                     self.camera_handles.append(cam_handle)
+                    logger.info(f"Created static camera sensor {i} in environment {i}")
                 else:
                     logger.warning(f"Failed to create camera for environment {i}, handle: {cam_handle}")
                     self.camera_setup_success = False
                     self.use_synthetic_camera = True
                     return
             
-            # Initial camera positioning (will be updated by curriculum)
-            self.update_camera_positions(self.task_config.curriculum.min_level, torch.arange(len(self.env_handles)))
+            # FIXED POSITIONING: Position camera to face the gate directly (match working example)
+            # Gate is positioned at ground level (Z=0), camera at 1.5m height looking at gate center
+            camera_pos = gymapi.Vec3(0.0, -3.0, 1.5)  # 3m behind gate, at gate center height
+            camera_target = gymapi.Vec3(0.0, 0.0, 1.5)  # Look directly at gate center
             
-            logger.info("✓ Static camera setup complete")
+            # Set camera transform for each environment using fixed positioning
+            for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
+                # Use Isaac Gym's camera look_at functionality (match working example)
+                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
+                logger.info(f"Set static camera {i} to look from ({camera_pos.x}, {camera_pos.y}, {camera_pos.z}) toward ({camera_target.x}, {camera_target.y}, {camera_target.z})")
+            
+            logger.info("✓ Static camera setup complete with fixed positioning")
             self.camera_setup_success = True
             self.use_synthetic_camera = False
             
@@ -539,29 +584,8 @@ class StaticCameraManager:
         if not self.camera_setup_success:
             return
         
-        try:
-            # Get camera position and target from curriculum
-            camera_pos, camera_target = self.task_config.static_camera_curriculum.get_camera_position_and_orientation(
-                curriculum_level, self.gate_position, self.env_bounds
-            )
-            
-            # Set camera transform for each environment
-            camera_pos_gym = gymapi.Vec3(camera_pos[0], camera_pos[1], camera_pos[2])
-            camera_target_gym = gymapi.Vec3(camera_target[0], camera_target[1], camera_target[2])
-            
-            for env_id in env_ids:
-                if env_id < len(self.camera_handles):
-                    self.gym.set_camera_location(
-                        self.camera_handles[env_id], 
-                        self.env_handles[env_id], 
-                        camera_pos_gym, 
-                        camera_target_gym
-                    )
-            
-            logger.debug(f"Updated static camera to level {curriculum_level}: pos={camera_pos}, target={camera_target}")
-            
-        except Exception as e:
-            logger.debug(f"Camera position update error: {e}")
+        # FIXED POSITIONING: Camera position is now fixed during setup, no dynamic repositioning needed
+        logger.debug(f"Static camera uses fixed positioning - curriculum level {curriculum_level} noted but position unchanged")
     
     def capture_images(self):
         """Capture depth and segmentation images from static camera."""
@@ -597,13 +621,15 @@ class StaticCameraManager:
             # End access to image tensors
             self.gym.end_access_image_tensors(self.sim)
             
-            # Process depth for VAE (same as drone camera processing)
+            # Process depth for VAE (match working example processing)
             if depth_img is not None:
+                # Convert to DCE format for consistency with robot camera processing
+                # Static camera gives raw depth values, need to normalize to [0,1] for DCE processing
                 depth_normalized = depth_img.copy()
-                depth_normalized[depth_normalized == -np.inf] = 20.0
-                depth_normalized = np.abs(depth_normalized)
-                depth_normalized = np.clip(depth_normalized, 0.4, 20.0)
-                # Normalize to [0,1] range for VAE
+                depth_normalized[depth_normalized == -np.inf] = 20.0  # Use far_plane value
+                depth_normalized = np.abs(depth_normalized)  # Handle negative depths
+                depth_normalized = np.clip(depth_normalized, 0.4, 20.0)  # Clip to camera range
+                # Normalize to [0,1] range like DCE navigation expects
                 depth_normalized = (depth_normalized - 0.4) / (20.0 - 0.4)
                 depth_img = depth_normalized.astype(np.float32)
             
@@ -869,7 +895,29 @@ def compute_gate_reward(
     # Update gate passed status
     gate_passed = gate_passed | just_passed_gate
 
-    # Combined reward - NOW INCLUDING CAMERA FACING REWARD
+    # NEW: Altitude maintenance reward to encourage optimal gate-level flying
+    optimal_altitude_min = 1.4  # meters
+    optimal_altitude_max = 1.6  # meters  
+    current_altitude = robot_position[:, 2]
+    
+    # Calculate distance from optimal altitude range
+    altitude_error = torch.zeros_like(current_altitude)
+    # Below optimal range
+    below_range_mask = current_altitude < optimal_altitude_min
+    altitude_error[below_range_mask] = optimal_altitude_min - current_altitude[below_range_mask]
+    # Above optimal range  
+    above_range_mask = current_altitude > optimal_altitude_max
+    altitude_error[above_range_mask] = current_altitude[above_range_mask] - optimal_altitude_max
+    # Within optimal range - no error
+    
+    # Exponential reward for being at optimal altitude
+    altitude_maintenance_reward = exponential_reward_function(
+        parameter_dict["altitude_maintenance_reward_magnitude"],
+        parameter_dict["altitude_maintenance_reward_exponent"],
+        altitude_error,
+    )
+
+    # Combined reward - NOW INCLUDING CAMERA FACING REWARD AND ALTITUDE MAINTENANCE
     reward = (
         MULTIPLICATION_FACTOR_REWARD
         * (
@@ -882,7 +930,8 @@ def compute_gate_reward(
             + gate_passage_reward
             + gate_center_bonus
             + gate_center_passage_bonus
-            + camera_facing_reward  # NEW: Camera facing reward
+            + camera_facing_reward  # Camera facing reward
+            + altitude_maintenance_reward  # NEW: Altitude maintenance reward
         )
         + total_action_penalty
     )

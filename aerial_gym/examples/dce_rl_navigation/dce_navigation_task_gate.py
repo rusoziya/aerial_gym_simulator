@@ -9,7 +9,7 @@ import torch
 
 class DCE_RL_Navigation_Task_Gate(NavigationTaskGate):
     def __init__(self, task_config, **kwargs):
-        task_config.action_space_dim = 3  # Keep 3D action space for DCE gate navigation
+        task_config.action_space_dim = 4  # UPDATED: 4D action space [x_vel, y_vel, z_vel, yaw_rate] for full gate navigation control
         task_config.curriculum.min_level = 3  # Gate task starts from level 3 (matches gate environment obstacles)
         task_config.curriculum.max_level = 20  # Gate task goes up to level 20
         
@@ -65,9 +65,8 @@ class DCE_RL_Navigation_Task_Gate(NavigationTaskGate):
         self.task_obs["observations"][:, 6] = 0.0
         self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
-        self.task_obs["observations"][:, 13:16] = self.obs_dict["robot_actions"][:, :3]  # Only first 3 actions (3D control)
-        # CRITICAL: Override gate information to prevent privilege leaks - set to zero instead of gate_passed
-        self.task_obs["observations"][:, 16] = 0.0  # Remove privileged gate information
+        # UPDATED: Handle 4D actions [x_vel, y_vel, z_vel, yaw_rate] instead of 3D
+        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # All 4 actions now
         
         # Enhanced observation space with dual VAE latents (145D total)
         self.task_obs["observations"][:, 17:81] = self.image_latents  # Drone camera VAE (64D)

@@ -1,0 +1,5 @@
+datetime,gpu_id,gpu_name,memory_used_mb,memory_total_mb,memory_free_mb,memory_used_percent,gpu_utilization,temperature,power_draw
+2025-07-03T22:22:46.164978,0,NVIDIA GeForce RTX 4080 Laptop GPU,5620,12282,6383,45.76,0,48,3.94
+2025-07-03T22:22:56.190731,0,NVIDIA GeForce RTX 4080 Laptop GPU,6171,12282,5832,50.24,3,49,18.75
+2025-07-03T22:23:06.227759,0,NVIDIA GeForce RTX 4080 Laptop GPU,11301,12282,702,92.01,0,50,21.5
+2025-07-03T22:23:16.265746,0,NVIDIA GeForce RTX 4080 Laptop GPU,11301,12282,702,92.01,0,50,18.76
