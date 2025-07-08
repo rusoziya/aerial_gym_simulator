@@ -223,9 +223,9 @@ class NavigationTaskGate(BaseTask):
         return self.sim_env.render()
 
     def step(self, actions):
-        # UPDATED: Transform 4D actions to 4D velocity commands for X500 robot with Z-axis control
+        # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
         # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
-        # Output: [x_vel, y_vel, z_vel, yaw_rate] in real units
+        # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
         
         # Apply action transformation function from task config (4D -> 4D)
         transformed_action = self.action_transformation_function(actions)
@@ -386,7 +386,7 @@ class NavigationTaskGate(BaseTask):
         self.task_obs["observations"][:, 6] = 0.0
         self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
-        # UPDATED: Handle 4D actions [x_vel, y_vel, z_vel, yaw_rate] instead of 3D
+        # 4D actions [x_vel, y_vel, z_vel, yaw_rate] for velocity controller
         self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # All 4 actions now
         
         # Drone camera VAE latents (64D)

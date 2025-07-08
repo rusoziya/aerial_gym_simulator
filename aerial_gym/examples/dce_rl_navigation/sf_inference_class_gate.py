@@ -1,17 +1,18 @@
 """
 Sample Factory inference class for DCE navigation with gate environment - FIXED for 4D action compatibility
-This class provides trained model inference for DCE navigation tasks with gate navigation.
+This class provides trained model inference for DCE navigation tasks with gate navigation using velocity control.
 
 The class is specifically designed to interface with trained Sample Factory models and:
 - Uses 4D action space matching the training configuration [x_vel, y_vel, z_vel, yaw_rate]
 - Processes 145D observations (17D basic state + 64D drone VAE + 64D static camera VAE)
 - Directly interfaces with Sample Factory trained models for gate navigation
 - Supports both inference and evaluation with dual camera setup
+- Compatible with velocity controller for direct responsive control
 
 Architecture compatibility:
 - Inference action output: 4D Sample Factory model output [x_vel, y_vel, z_vel, yaw_rate]
-- DCE Task input: 4D action space directly compatible
-- No action transformation needed - direct pass-through
+- DCE Task input: 4D action space directly compatible with velocity controller
+- No action transformation needed - direct pass-through to velocity commands
 """
 
 import time
@@ -175,7 +176,7 @@ class NN_Inference_Class:
             obs_dict = {'obs': obs_tensor}
             
             # Get deterministic action from model
-        with torch.no_grad():
+            with torch.no_grad():
                 model_output = self.model(obs_dict, self.rnn_states)
                 action_logits = model_output['action_logits']
                 
