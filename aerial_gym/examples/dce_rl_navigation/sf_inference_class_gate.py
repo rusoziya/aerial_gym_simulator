@@ -1,18 +1,23 @@
 """
-Sample Factory inference class for DCE navigation with gate environment - FIXED for 4D action compatibility
+Sample Factory inference class for DCE navigation with gate environment - FULL NAVIGATION
 This class provides trained model inference for DCE navigation tasks with gate navigation using velocity control.
+
+RESTORED: Full navigation with target guidance enabled
+- Includes explicit target direction and distance observations (4D)
+- Tests navigation to gate center using both visual information AND target guidance
+- Observation space: 145D (4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE)
 
 The class is specifically designed to interface with trained Sample Factory models and:
 - Uses 4D action space matching the training configuration [x_vel, y_vel, z_vel, yaw_rate]
-- Processes 145D observations (17D basic state + 64D drone VAE + 64D static camera VAE)
+- Processes 145D observations (4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE)
 - Directly interfaces with Sample Factory trained models for gate navigation
 - Supports both inference and evaluation with dual camera setup
 - Compatible with velocity controller for direct responsive control
 
 Architecture compatibility:
 - Inference action output: 4D Sample Factory model output [x_vel, y_vel, z_vel, yaw_rate]
-- DCE Task input: 4D action space directly compatible with velocity controller
-- No action transformation needed - direct pass-through to velocity commands
+- Observation input: 145D tensor (restored with target guidance)
+- Action scaling: Conservative velocity limits for improved stability
 """
 
 import time
@@ -48,7 +53,7 @@ class NN_Inference_Class:
         print(f"[NN_Inference_Class] Configured for 4D action space (gate navigation with Z-axis control)")
         
         # Observation space configuration (145D for gate navigation)
-        # 17D basic state + 64D drone VAE + 64D static camera VAE = 145D total
+        # 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE = 145D total
         self.obs_space_dim = 145
         print(f"[NN_Inference_Class] Configured for {self.obs_space_dim}D observation space (dual camera gate navigation)")
         
@@ -176,7 +181,7 @@ class NN_Inference_Class:
             obs_dict = {'obs': obs_tensor}
             
             # Get deterministic action from model
-            with torch.no_grad():
+        with torch.no_grad():
                 model_output = self.model(obs_dict, self.rnn_states)
                 action_logits = model_output['action_logits']
                 

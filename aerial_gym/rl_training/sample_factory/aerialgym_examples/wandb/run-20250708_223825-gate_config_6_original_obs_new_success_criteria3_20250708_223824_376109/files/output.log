@@ -1,0 +1,1457 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-08 22:38:28,653][335244] Queried available GPUs: 0
+[37m[1m[2025-07-08 22:38:28,654][335244] Environment var CUDA_VISIBLE_DEVICES is 0
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[2598 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[2598 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[2598 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[2598 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[2598 ms][base_task] - INFO : Setting seed: 2855559594 (base_task.py:38)
+[37m[2599 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[2599 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task_gate.py:49)
+[37m[2599 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[2599 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[2599 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[2599 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[2599 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[2599 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[2601 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[2601 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[2601 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[2601 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[2601 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[2601 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[2601 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[3778 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[3778 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[4015 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[4015 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[4015 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[4016 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[4016 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[4016 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[4016 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[4016 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[4016 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[4016 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4016 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4021 ms][asset_loader] - INFO : Loading asset: 0_5_x_0_5_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4023 ms][asset_loader] - INFO : Loading asset: 1_x_1_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4024 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4026 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4027 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4028 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4030 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4032 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4033 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4035 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[4037 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 4
+[SUBPROCESS] Target Sample Factory action space: 4D
+[SUBPROCESS] Setting num_envs to 16 based on env_agents=16
+[SUBPROCESS] Set SF_ENV_AGENTS=16 environment variable
+[SUBPROCESS] Config batch_size: 2048
+[SUBPROCESS] Using STANDARD CONFIG (16 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_6_original_obs_new_success_criteria3', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 2.13 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 9.30 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 13.37 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.87 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 4D target + 13D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[33m[4526 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[4526 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[4526 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[4551 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[4561 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[4561 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[4677 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[4677 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[4725 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4949 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4951 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[5669 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:619)
+[37m[5669 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:638)
+[37m[5669 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:639)
+[37m[5676 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:647)
+[37m[5681 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:647)
+[37m[5687 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:647)
+[37m[5692 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:647)
+[37m[5697 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:647)
+[37m[5702 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:647)
+[37m[5707 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:647)
+[37m[5712 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:647)
+[37m[5717 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:647)
+[37m[5722 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:647)
+[37m[5727 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:647)
+[37m[5732 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:647)
+[37m[5737 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:647)
+[37m[5742 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:647)
+[37m[5748 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:647)
+[37m[5753 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:647)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[5753 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:665)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-08 22:38:34,733][335354] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-07-08 22:38:35,910][335244] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-08 22:38:35,911][335244] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gate_config_6_original_obs_new_success_criteria3
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=2048
+[36mnum_batches_per_epoch=8
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 64]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=64
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=16
+[36mheadless=False
+[36msave_gifs=True
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=4
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gate_config_6_original_obs_new_success_criteria3 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gate_config_6_original_obs_new_success_criteria3', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 64], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 16, 'headless': False, 'save_gifs': True, 'obs_key': 'observations'}
+[36mgit_hash=c49d68cbd738bd355c67ea2b29d9fbf86008c5cf
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gate_config_6_original_obs_new_success_criteria3_20250708_223824_376109
+[36m[2025-07-08 22:38:35,912][335244] Saving configuration to ./train_dir/gate_config_6_original_obs_new_success_criteria3/config.json...
+[36m[2025-07-08 22:38:35,986][335244] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-08 22:38:35,986][335244] Rollout worker 0 uses device cuda:0
+[36m[2025-07-08 22:38:36,017][335244] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-08 22:38:36,017][335244] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-08 22:38:36,019][335244] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-08 22:38:36,021][335244] Starting seed is not provided
+[36m[2025-07-08 22:38:36,021][335244] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-08 22:38:36,021][335244] Initializing actor-critic model on device cuda:0
+[36m[2025-07-08 22:38:36,023][335244] RunningMeanStd input shape: (145,)
+[36m[2025-07-08 22:38:36,024][335244] RunningMeanStd input shape: (1,)
+[36m[2025-07-08 22:38:36,065][335244] Created Actor Critic model with architecture:
+[36m[2025-07-08 22:38:36,066][335244] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(64, 64)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+[36m  )
+[36m)
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_6_original_obs_new_success_criteria3', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 2.45 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 9.30 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 13.42 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 7.36 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 4D target + 13D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[36m[2025-07-08 22:38:36,584][335244] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-07-08 22:38:36,585][335244] No checkpoints found
+[36m[2025-07-08 22:38:36,585][335244] Did not load from checkpoint, starting from scratch!
+[36m[2025-07-08 22:38:36,586][335244] Initialized policy 0 weights for model version 0
+[36m[2025-07-08 22:38:36,586][335244] LearnerWorker_p0 finished initialization!
+[36m[2025-07-08 22:38:36,586][335244] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-08 22:38:36,596][335244] Inference worker 0-0 is ready!
+[37m[1m[2025-07-08 22:38:36,596][335244] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-07-08 22:38:36,597][335244] EnvRunner 0-0 uses policy 0
+[37m[15024 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[15024 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[15024 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[15024 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[15025 ms][base_task] - INFO : Setting seed: 3581508558 (base_task.py:38)
+[37m[15025 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:48)
+[37m[15025 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task_gate.py:49)
+[37m[15025 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[15025 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[15025 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[15025 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[15025 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[15025 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[15027 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[15027 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[15028 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[15028 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[15028 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[15028 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[15028 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[16214 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[16216 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[16453 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[16453 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[16453 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[16453 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[16453 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[16453 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[16453 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[16454 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[16454 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[16454 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16454 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16460 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16462 ms][asset_loader] - INFO : Loading asset: 1_x_1_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16463 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16466 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16468 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16469 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16471 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16472 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16474 ms][asset_loader] - INFO : Loading asset: 0_5_x_0_5_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16475 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[16477 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[16501 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[16501 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[16501 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[16525 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[16535 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[16536 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[16639 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[16639 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[16680 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[16912 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[16914 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[17622 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:619)
+[37m[17622 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:638)
+[37m[17622 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:639)
+[37m[17628 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:647)
+[37m[17634 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:647)
+[37m[17639 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:647)
+[37m[17644 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:647)
+[37m[17649 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:647)
+[37m[17654 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:647)
+[37m[17659 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:647)
+[37m[17663 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:647)
+[37m[17668 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:647)
+[37m[17674 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:647)
+[37m[17678 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:647)
+[37m[17683 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:647)
+[37m[17688 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:647)
+[37m[17693 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:647)
+[37m[17698 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:647)
+[37m[17703 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:647)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:663)
+[37m[17704 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:665)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-08 22:38:39,467][335244] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[GIF] Episode 0 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0000_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0000_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0000_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0000_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0000_merged_dual_camera.gif
+[36m[2025-07-08 22:38:42,835][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 0.0. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:38:42,835][335244] Avg episode reward: [(0, '-100.000')]
+[36m[2025-07-08 22:38:47,756][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 25.1. Samples: 208. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:38:47,756][335244] Avg episode reward: [(0, '-92.608')]
+[36m[2025-07-08 22:38:52,729][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 60.3. Samples: 800. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:38:52,729][335244] Avg episode reward: [(0, '-53.947')]
+[37m[1m[2025-07-08 22:38:56,271][335244] Heartbeat connected on Batcher_0
+[37m[1m[2025-07-08 22:38:56,271][335244] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-07-08 22:38:56,272][335244] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-07-08 22:38:56,272][335244] Heartbeat connected on RolloutWorker_w0
+[36m[2025-07-08 22:38:57,600][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 62.6. Samples: 1136. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:38:57,601][335244] Avg episode reward: [(0, '-26.069')]
+[36m[2025-07-08 22:39:02,632][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 79.4. Samples: 1840. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:02,632][335244] Avg episode reward: [(0, '-10.149')]
+[36m[2025-07-08 22:39:07,621][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 89.8. Samples: 2528. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:07,622][335244] Avg episode reward: [(0, '-0.329')]
+[36m[2025-07-08 22:39:12,691][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 86.7. Samples: 2880. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:12,692][335244] Avg episode reward: [(0, '15.588')]
+[36m[2025-07-08 22:39:17,648][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.9. Samples: 3584. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:17,649][335244] Avg episode reward: [(0, '29.341')]
+[36m[2025-07-08 22:39:22,678][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 100.0. Samples: 4320. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:22,678][335244] Avg episode reward: [(0, '30.302')]
+[36m[2025-07-08 22:39:27,664][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 105.3. Samples: 4720. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:27,665][335244] Avg episode reward: [(0, '26.906')]
+[36m[2025-07-08 22:39:32,638][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 116.2. Samples: 5424. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:32,639][335244] Avg episode reward: [(0, '26.722')]
+[36m[2025-07-08 22:39:37,724][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 119.1. Samples: 6160. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:37,724][335244] Avg episode reward: [(0, '26.740')]
+[36m[2025-07-08 22:39:42,647][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 119.7. Samples: 6528. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:42,647][335244] Avg episode reward: [(0, '25.250')]
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:39:47,649][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 120.5. Samples: 7264. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:47,650][335244] Avg episode reward: [(0, '27.977')]
+[36m[2025-07-08 22:39:52,643][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 133.3. Samples: 8528. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:52,643][335244] Avg episode reward: [(0, '32.796')]
+[36m[2025-07-08 22:39:57,592][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 140.4. Samples: 9184. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:39:57,592][335244] Avg episode reward: [(0, '28.474')]
+[36m[2025-07-08 22:40:02,592][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 151.7. Samples: 10400. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:40:02,592][335244] Avg episode reward: [(0, '26.715')]
+[36m[2025-07-08 22:40:07,593][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 163.2. Samples: 11648. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:40:07,593][335244] Avg episode reward: [(0, '28.690')]
+[36m[2025-07-08 22:40:12,593][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 169.2. Samples: 12320. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:40:12,593][335244] Avg episode reward: [(0, '34.008')]
+[36m[2025-07-08 22:40:17,650][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 181.3. Samples: 13584. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:40:17,650][335244] Avg episode reward: [(0, '31.047')]
+[36m[2025-07-08 22:40:22,632][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 193.8. Samples: 14864. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:40:22,632][335244] Avg episode reward: [(0, '26.614')]
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:40:27,662][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 198.7. Samples: 15472. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-08 22:40:27,663][335244] Avg episode reward: [(0, '27.849')]
+[37m[1m[2025-07-08 22:40:27,667][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000000_0.pth...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py:1194: UserWarning: operator() profile_node %104 : int[] = prim::profile_ivalue(%102)
+ does not have profile information (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/jit/codegen/cuda/graph_fuser.cpp:105.)
+  return forward_call(*input, **kwargs)
+[36m[2025-07-08 22:40:32,606][335244] Fps is (10 sec: 1642.5, 60 sec: 273.2, 300 sec: 144.8). Total num frames: 16384. Throughput: 0: 207.1. Samples: 16576. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:40:32,607][335244] Avg episode reward: [(0, '32.487')]
+[36m[2025-07-08 22:40:37,667][335244] Fps is (10 sec: 1637.6, 60 sec: 273.3, 300 sec: 138.6). Total num frames: 16384. Throughput: 0: 204.3. Samples: 17728. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:40:37,668][335244] Avg episode reward: [(0, '38.530')]
+[36m[2025-07-08 22:40:42,594][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 133.1). Total num frames: 16384. Throughput: 0: 204.4. Samples: 18384. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:40:42,595][335244] Avg episode reward: [(0, '42.317')]
+[36m[2025-07-08 22:40:47,665][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 127.8). Total num frames: 16384. Throughput: 0: 204.8. Samples: 19632. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:40:47,666][335244] Avg episode reward: [(0, '44.505')]
+[36m[2025-07-08 22:40:52,616][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 123.1). Total num frames: 16384. Throughput: 0: 203.6. Samples: 20816. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:40:52,617][335244] Avg episode reward: [(0, '40.276')]
+[36m[2025-07-08 22:40:57,673][335244] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 118.5). Total num frames: 16384. Throughput: 0: 200.9. Samples: 21376. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:40:57,673][335244] Avg episode reward: [(0, '41.123')]
+[36m[2025-07-08 22:41:02,645][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 114.4). Total num frames: 16384. Throughput: 0: 198.8. Samples: 22528. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:02,646][335244] Avg episode reward: [(0, '44.512')]
+[36m[2025-07-08 22:41:07,629][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 110.6). Total num frames: 16384. Throughput: 0: 196.6. Samples: 23712. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:07,629][335244] Avg episode reward: [(0, '45.513')]
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:41:12,644][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 107.0). Total num frames: 16384. Throughput: 0: 196.7. Samples: 24320. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:12,644][335244] Avg episode reward: [(0, '41.683')]
+[36m[2025-07-08 22:41:17,613][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 103.6). Total num frames: 16384. Throughput: 0: 198.4. Samples: 25504. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:17,613][335244] Avg episode reward: [(0, '39.028')]
+[36m[2025-07-08 22:41:22,607][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 100.4). Total num frames: 16384. Throughput: 0: 201.2. Samples: 26768. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:22,607][335244] Avg episode reward: [(0, '35.548')]
+[36m[2025-07-08 22:41:27,641][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 97.4). Total num frames: 16384. Throughput: 0: 200.3. Samples: 27408. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:27,641][335244] Avg episode reward: [(0, '38.904')]
+[36m[2025-07-08 22:41:32,596][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 94.6). Total num frames: 16384. Throughput: 0: 199.8. Samples: 28608. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:32,596][335244] Avg episode reward: [(0, '39.248')]
+[36m[2025-07-08 22:41:37,664][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 91.9). Total num frames: 16384. Throughput: 0: 199.6. Samples: 29808. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:37,664][335244] Avg episode reward: [(0, '38.984')]
+[36m[2025-07-08 22:41:42,631][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 89.4). Total num frames: 16384. Throughput: 0: 199.7. Samples: 30352. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:42,631][335244] Avg episode reward: [(0, '37.958')]
+[36m[2025-07-08 22:41:47,641][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 87.1). Total num frames: 16384. Throughput: 0: 200.9. Samples: 31568. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:41:47,642][335244] Avg episode reward: [(0, '36.422')]
+[CURRICULUM UPDATE] ✅ Evaluating curriculum after 1025 instances:
+[CURRICULUM UPDATE]   Success rate: 0.000
+[CURRICULUM UPDATE]   Crash rate: 1.000
+[CURRICULUM UPDATE]   Timeout rate: 0.000
+[CURRICULUM UPDATE]   Current level: 3
+[CURRICULUM UPDATE]   Thresholds: increase>0.750, decrease<0.500
+[CURRICULUM UPDATE] ⬇️ LEVEL DECREASED: 3 → 2 (success rate 0.000 < 0.500)
+[CURRICULUM UPDATE] 🎯 FINAL STATE:
+[CURRICULUM UPDATE]   Level: 3 (range: 3-20)
+[CURRICULUM UPDATE]   Progress: 0.000
+[CURRICULUM UPDATE]   Total obstacles in env: 10 (fixed: 7 + curriculum: 3)
+[CURRICULUM UPDATE] 📷 Updating static camera positions for level 3
+[CURRICULUM UPDATE] 📷 Static camera positions updated successfully
+[CURRICULUM UPDATE] 🏗️ Environment obstacles expected to spawn: 3 curriculum objects
+[CURRICULUM UPDATE] 🏗️ Asset manager will receive total count: 10
+[CURRICULUM UPDATE] 🔄 Resetting counters for next evaluation period (was 1025 instances)
+[33m[207050 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:545)
+[33m[207050 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 1.0
+[33mTimeout Rate: 0.0 (navigation_task_gate.py:548)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:574: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:575: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:576: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
+[36m[2025-07-08 22:41:52,595][335244] Fps is (10 sec: 1644.4, 60 sec: 273.2, 300 sec: 169.7). Total num frames: 32768. Throughput: 0: 202.1. Samples: 32800. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:41:52,595][335244] Avg episode reward: [(0, '32.594')]
+[36m[2025-07-08 22:41:57,645][335244] Fps is (10 sec: 1637.8, 60 sec: 273.2, 300 sec: 165.3). Total num frames: 32768. Throughput: 0: 200.9. Samples: 33360. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:41:57,645][335244] Avg episode reward: [(0, '36.260')]
+[36m[2025-07-08 22:42:02,610][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 161.3). Total num frames: 32768. Throughput: 0: 201.6. Samples: 34576. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:02,611][335244] Avg episode reward: [(0, '51.095')]
+[36m[2025-07-08 22:42:07,660][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 157.4). Total num frames: 32768. Throughput: 0: 199.2. Samples: 35744. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:07,661][335244] Avg episode reward: [(0, '59.481')]
+[36m[2025-07-08 22:42:12,633][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 153.7). Total num frames: 32768. Throughput: 0: 198.1. Samples: 36320. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:12,633][335244] Avg episode reward: [(0, '72.608')]
+[36m[2025-07-08 22:42:17,631][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 150.2). Total num frames: 32768. Throughput: 0: 198.6. Samples: 37552. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:17,631][335244] Avg episode reward: [(0, '79.262')]
+[36m[2025-07-08 22:42:22,608][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 146.8). Total num frames: 32768. Throughput: 0: 200.1. Samples: 38800. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:22,608][335244] Avg episode reward: [(0, '67.759')]
+[36m[2025-07-08 22:42:27,640][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 143.6). Total num frames: 32768. Throughput: 0: 203.7. Samples: 39520. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:27,640][335244] Avg episode reward: [(0, '69.238')]
+[37m[1m[2025-07-08 22:42:27,759][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000064_32768.pth...
+[36m[2025-07-08 22:42:32,646][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 140.5). Total num frames: 32768. Throughput: 0: 203.4. Samples: 40720. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:32,647][335244] Avg episode reward: [(0, '65.131')]
+[36m[2025-07-08 22:42:37,598][335244] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 137.6). Total num frames: 32768. Throughput: 0: 203.4. Samples: 41952. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:37,599][335244] Avg episode reward: [(0, '72.808')]
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 1.000
+[CURRICULUM DEBUG]   Timeout rate: 0.000
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:42:42,625][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 134.8). Total num frames: 32768. Throughput: 0: 205.6. Samples: 42608. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:42,626][335244] Avg episode reward: [(0, '78.868')]
+[36m[2025-07-08 22:42:47,626][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 132.0). Total num frames: 32768. Throughput: 0: 203.3. Samples: 43728. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:47,627][335244] Avg episode reward: [(0, '79.070')]
+[36m[2025-07-08 22:42:52,663][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 129.4). Total num frames: 32768. Throughput: 0: 204.1. Samples: 44928. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:52,663][335244] Avg episode reward: [(0, '83.207')]
+[36m[2025-07-08 22:42:57,645][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 126.9). Total num frames: 32768. Throughput: 0: 205.1. Samples: 45552. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:42:57,645][335244] Avg episode reward: [(0, '73.251')]
+[36m[2025-07-08 22:43:02,656][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 124.5). Total num frames: 32768. Throughput: 0: 204.0. Samples: 46736. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:43:02,656][335244] Avg episode reward: [(0, '75.255')]
+[36m[2025-07-08 22:43:07,610][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 122.2). Total num frames: 32768. Throughput: 0: 202.7. Samples: 47920. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:43:07,611][335244] Avg episode reward: [(0, '71.733')]
+[36m[2025-07-08 22:43:12,597][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 120.0). Total num frames: 32768. Throughput: 0: 200.0. Samples: 48512. Policy #0 lag: (min: 12.0, avg: 12.0, max: 12.0)
+[36m[2025-07-08 22:43:12,597][335244] Avg episode reward: [(0, '69.012')]
+[36m[2025-07-08 22:43:17,656][335244] Fps is (10 sec: 1631.0, 60 sec: 273.0, 300 sec: 176.7). Total num frames: 49152. Throughput: 0: 200.5. Samples: 49744. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:17,656][335244] Avg episode reward: [(0, '74.007')]
+[36m[2025-07-08 22:43:22,594][335244] Fps is (10 sec: 1638.8, 60 sec: 273.1, 300 sec: 173.6). Total num frames: 49152. Throughput: 0: 201.6. Samples: 51024. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:22,595][335244] Avg episode reward: [(0, '93.209')]
+[36m[2025-07-08 22:43:27,617][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 170.6). Total num frames: 49152. Throughput: 0: 200.2. Samples: 51616. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:27,617][335244] Avg episode reward: [(0, '101.407')]
+[36m[2025-07-08 22:43:32,608][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 167.7). Total num frames: 49152. Throughput: 0: 201.3. Samples: 52784. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:32,608][335244] Avg episode reward: [(0, '122.427')]
+[36m[2025-07-08 22:43:37,627][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 202.5. Samples: 54032. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:37,628][335244] Avg episode reward: [(0, '137.194')]
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.982
+[CURRICULUM DEBUG]   Timeout rate: 0.018
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:43:42,675][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 201.5. Samples: 54624. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:42,675][335244] Avg episode reward: [(0, '149.616')]
+[36m[2025-07-08 22:43:47,593][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 200.5. Samples: 55744. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:47,594][335244] Avg episode reward: [(0, '150.109')]
+[36m[2025-07-08 22:43:52,636][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 200.4. Samples: 56944. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:52,636][335244] Avg episode reward: [(0, '144.412')]
+[36m[2025-07-08 22:43:57,661][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 200.6. Samples: 57552. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:43:57,662][335244] Avg episode reward: [(0, '143.493')]
+[36m[2025-07-08 22:44:02,592][335244] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 198.7. Samples: 58672. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:44:02,592][335244] Avg episode reward: [(0, '131.050')]
+[GIF] Episode 100 terminated - saving GIFs (every 100 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0001_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0001_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0001_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0001_static_seg.gif
+[GIF] Saved merged dual camera: ./gif_episodes/episode_0001_merged_dual_camera.gif
+[36m[2025-07-08 22:44:07,611][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 195.1. Samples: 59808. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:44:07,611][335244] Avg episode reward: [(0, '127.153')]
+[36m[2025-07-08 22:44:12,651][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 195.4. Samples: 60416. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:44:12,652][335244] Avg episode reward: [(0, '127.855')]
+[36m[2025-07-08 22:44:17,592][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 197.0. Samples: 61648. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:44:17,592][335244] Avg episode reward: [(0, '123.108')]
+[36m[2025-07-08 22:44:22,616][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 194.5. Samples: 62784. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:44:22,616][335244] Avg episode reward: [(0, '112.150')]
+[36m[2025-07-08 22:44:27,630][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 49152. Throughput: 0: 196.1. Samples: 63440. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:44:27,631][335244] Avg episode reward: [(0, '107.050')]
+[37m[1m[2025-07-08 22:44:27,708][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000096_49152.pth...
+[36m[2025-07-08 22:44:32,648][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 49152. Throughput: 0: 197.1. Samples: 64624. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:44:32,648][335244] Avg episode reward: [(0, '102.737')]
+[36m[2025-07-08 22:44:37,676][335244] Fps is (10 sec: 1631.0, 60 sec: 272.8, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 196.4. Samples: 65792. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:44:37,676][335244] Avg episode reward: [(0, '107.696')]
+[36m[2025-07-08 22:44:42,653][335244] Fps is (10 sec: 1637.5, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 193.8. Samples: 66272. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:44:42,653][335244] Avg episode reward: [(0, '106.735')]
+[36m[2025-07-08 22:44:47,669][335244] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 195.6. Samples: 67488. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:44:47,669][335244] Avg episode reward: [(0, '129.418')]
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.969
+[CURRICULUM DEBUG]   Timeout rate: 0.031
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.969
+[CURRICULUM DEBUG]   Timeout rate: 0.031
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.969
+[CURRICULUM DEBUG]   Timeout rate: 0.031
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.969
+[CURRICULUM DEBUG]   Timeout rate: 0.031
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.969
+[CURRICULUM DEBUG]   Timeout rate: 0.031
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.969
+[CURRICULUM DEBUG]   Timeout rate: 0.031
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.969
+[CURRICULUM DEBUG]   Timeout rate: 0.031
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:44:52,640][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 195.4. Samples: 68608. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:44:52,640][335244] Avg episode reward: [(0, '159.204')]
+[36m[2025-07-08 22:44:57,661][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 195.2. Samples: 69200. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:44:57,661][335244] Avg episode reward: [(0, '168.192')]
+[36m[2025-07-08 22:45:02,600][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 192.7. Samples: 70320. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:02,601][335244] Avg episode reward: [(0, '187.720')]
+[36m[2025-07-08 22:45:07,639][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 65536. Throughput: 0: 195.5. Samples: 71584. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:07,639][335244] Avg episode reward: [(0, '212.631')]
+[36m[2025-07-08 22:45:12,609][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 194.9. Samples: 72208. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:12,609][335244] Avg episode reward: [(0, '233.205')]
+[36m[2025-07-08 22:45:17,632][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 193.1. Samples: 73312. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:17,632][335244] Avg episode reward: [(0, '235.948')]
+[36m[2025-07-08 22:45:22,605][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 65536. Throughput: 0: 196.2. Samples: 74608. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:22,606][335244] Avg episode reward: [(0, '245.691')]
+[36m[2025-07-08 22:45:27,625][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 201.0. Samples: 75312. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:27,625][335244] Avg episode reward: [(0, '253.462')]
+[36m[2025-07-08 22:45:32,651][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 201.0. Samples: 76528. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:32,652][335244] Avg episode reward: [(0, '258.369')]
+[36m[2025-07-08 22:45:37,631][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 203.4. Samples: 77760. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:37,631][335244] Avg episode reward: [(0, '269.867')]
+[36m[2025-07-08 22:45:42,610][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 203.2. Samples: 78336. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:42,611][335244] Avg episode reward: [(0, '269.952')]
+[36m[2025-07-08 22:45:47,641][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 205.7. Samples: 79584. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:47,641][335244] Avg episode reward: [(0, '289.176')]
+[36m[2025-07-08 22:45:52,618][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 203.8. Samples: 80752. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:52,618][335244] Avg episode reward: [(0, '291.629')]
+[36m[2025-07-08 22:45:57,595][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 65536. Throughput: 0: 202.7. Samples: 81328. Policy #0 lag: (min: 11.0, avg: 11.0, max: 11.0)
+[36m[2025-07-08 22:45:57,595][335244] Avg episode reward: [(0, '303.366')]
+[36m[2025-07-08 22:46:02,592][335244] Fps is (10 sec: 1642.7, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 204.6. Samples: 82512. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:02,592][335244] Avg episode reward: [(0, '302.017')]
+[36m[2025-07-08 22:46:07,629][335244] Fps is (10 sec: 1632.9, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 201.1. Samples: 83664. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:07,629][335244] Avg episode reward: [(0, '304.982')]
+[36m[2025-07-08 22:46:12,640][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 198.3. Samples: 84240. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:12,640][335244] Avg episode reward: [(0, '298.942')]
+[36m[2025-07-08 22:46:17,628][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 201.7. Samples: 85600. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:17,628][335244] Avg episode reward: [(0, '306.375')]
+[36m[2025-07-08 22:46:22,649][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 200.1. Samples: 86768. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:22,649][335244] Avg episode reward: [(0, '320.796')]
+[36m[2025-07-08 22:46:27,644][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 201.5. Samples: 87408. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:27,644][335244] Avg episode reward: [(0, '311.322')]
+[37m[1m[2025-07-08 22:46:27,726][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000160_81920.pth...
+[36m[2025-07-08 22:46:32,622][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 199.9. Samples: 88576. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:32,623][335244] Avg episode reward: [(0, '311.384')]
+[36m[2025-07-08 22:46:37,673][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 81920. Throughput: 0: 198.9. Samples: 89712. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:37,674][335244] Avg episode reward: [(0, '325.797')]
+[CURRICULUM DEBUG] Current stats after 1024 instances:
+[CURRICULUM DEBUG]   Success rate: 0.000 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.863
+[CURRICULUM DEBUG]   Timeout rate: 0.137
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM UPDATE] ✅ Evaluating curriculum after 1024 instances:
+[CURRICULUM UPDATE]   Success rate: 0.000
+[CURRICULUM UPDATE]   Crash rate: 0.863
+[CURRICULUM UPDATE]   Timeout rate: 0.137
+[CURRICULUM UPDATE]   Current level: 3
+[CURRICULUM UPDATE]   Thresholds: increase>0.750, decrease<0.500
+[CURRICULUM UPDATE] ⬇️ LEVEL DECREASED: 3 → 2 (success rate 0.000 < 0.500)
+[CURRICULUM UPDATE] 🎯 FINAL STATE:
+[CURRICULUM UPDATE]   Level: 3 (range: 3-20)
+[CURRICULUM UPDATE]   Progress: 0.000
+[CURRICULUM UPDATE]   Total obstacles in env: 10 (fixed: 7 + curriculum: 3)
+[CURRICULUM UPDATE] 📷 Updating static camera positions for level 3
+[CURRICULUM UPDATE] 📷 Static camera positions updated successfully
+[CURRICULUM UPDATE] 🏗️ Environment obstacles expected to spawn: 3 curriculum objects
+[CURRICULUM UPDATE] 🏗️ Asset manager will receive total count: 10
+[CURRICULUM UPDATE] 🔄 Resetting counters for next evaluation period (was 1024 instances)
+[33m[497823 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.0 (navigation_task_gate.py:545)
+[33m[497823 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.0
+[33mCrash Rate: 0.86328125
+[33mTimeout Rate: 0.13671875 (navigation_task_gate.py:548)
+[36m[2025-07-08 22:46:42,649][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.2). Total num frames: 81920. Throughput: 0: 199.2. Samples: 90304. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:42,649][335244] Avg episode reward: [(0, '329.357')]
+[36m[2025-07-08 22:46:47,603][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 200.8. Samples: 91552. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:47,603][335244] Avg episode reward: [(0, '338.722')]
+[36m[2025-07-08 22:46:52,630][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 202.0. Samples: 92752. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:52,630][335244] Avg episode reward: [(0, '346.115')]
+[36m[2025-07-08 22:46:57,596][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 202.5. Samples: 93344. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:46:57,596][335244] Avg episode reward: [(0, '367.026')]
+[36m[2025-07-08 22:47:02,653][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 200.8. Samples: 94640. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:47:02,653][335244] Avg episode reward: [(0, '369.466')]
+[36m[2025-07-08 22:47:07,609][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 203.9. Samples: 95936. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:47:07,609][335244] Avg episode reward: [(0, '371.612')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:47:12,597][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 202.9. Samples: 96528. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:47:12,597][335244] Avg episode reward: [(0, '376.921')]
+[36m[2025-07-08 22:47:17,665][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 81920. Throughput: 0: 201.8. Samples: 97664. Policy #0 lag: (min: 13.0, avg: 13.0, max: 13.0)
+[36m[2025-07-08 22:47:17,665][335244] Avg episode reward: [(0, '374.584')]
+[36m[2025-07-08 22:47:22,647][335244] Fps is (10 sec: 1630.3, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 201.0. Samples: 98752. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:22,647][335244] Avg episode reward: [(0, '383.890')]
+[36m[2025-07-08 22:47:27,636][335244] Fps is (10 sec: 1643.2, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 200.9. Samples: 99344. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:27,636][335244] Avg episode reward: [(0, '388.278')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:47:32,649][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 98304. Throughput: 0: 201.7. Samples: 100640. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:32,650][335244] Avg episode reward: [(0, '392.098')]
+[36m[2025-07-08 22:47:37,635][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.1). Total num frames: 98304. Throughput: 0: 200.2. Samples: 101760. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:37,635][335244] Avg episode reward: [(0, '401.484')]
+[36m[2025-07-08 22:47:42,687][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 98304. Throughput: 0: 200.1. Samples: 102368. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:42,688][335244] Avg episode reward: [(0, '391.182')]
+[36m[2025-07-08 22:47:47,648][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 198.4. Samples: 103568. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:47,648][335244] Avg episode reward: [(0, '372.640')]
+[36m[2025-07-08 22:47:52,637][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 196.5. Samples: 104784. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:52,637][335244] Avg episode reward: [(0, '367.771')]
+[36m[2025-07-08 22:47:57,621][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 195.4. Samples: 105328. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:47:57,622][335244] Avg episode reward: [(0, '365.320')]
+[36m[2025-07-08 22:48:02,610][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 195.1. Samples: 106432. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:02,611][335244] Avg episode reward: [(0, '371.275')]
+[36m[2025-07-08 22:48:07,599][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 98304. Throughput: 0: 197.5. Samples: 107632. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:07,599][335244] Avg episode reward: [(0, '381.507')]
+[36m[2025-07-08 22:48:12,689][335244] Fps is (10 sec: 0.0, 60 sec: 272.6, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 198.2. Samples: 108272. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:12,689][335244] Avg episode reward: [(0, '366.837')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:48:17,661][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 195.1. Samples: 109424. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:17,661][335244] Avg episode reward: [(0, '365.062')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:48:22,665][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 195.1. Samples: 110544. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:22,665][335244] Avg episode reward: [(0, '365.092')]
+[36m[2025-07-08 22:48:27,596][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 193.5. Samples: 111056. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:27,597][335244] Avg episode reward: [(0, '366.286')]
+[37m[1m[2025-07-08 22:48:27,704][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000192_98304.pth...
+[36m[2025-07-08 22:48:32,616][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 195.7. Samples: 112368. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:32,616][335244] Avg episode reward: [(0, '372.611')]
+[36m[2025-07-08 22:48:37,653][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 98304. Throughput: 0: 196.2. Samples: 113616. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:37,653][335244] Avg episode reward: [(0, '372.187')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:48:42,624][335244] Fps is (10 sec: 1637.0, 60 sec: 273.4, 300 sec: 222.1). Total num frames: 114688. Throughput: 0: 197.0. Samples: 114192. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:42,624][335244] Avg episode reward: [(0, '392.586')]
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 256 instances:
+[CURRICULUM DEBUG]   Success rate: 0.020 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.180
+[CURRICULUM DEBUG]   Timeout rate: 0.801
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[37m[1m[2025-07-08 22:48:42,695][335244] Saving new best policy, reward=392.586!
+[36m[2025-07-08 22:48:47,627][335244] Fps is (10 sec: 1642.6, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 201.2. Samples: 115488. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:47,628][335244] Avg episode reward: [(0, '374.679')]
+[36m[2025-07-08 22:48:52,606][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 202.3. Samples: 116736. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:52,607][335244] Avg episode reward: [(0, '368.580')]
+[36m[2025-07-08 22:48:57,593][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 201.7. Samples: 117328. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:48:57,593][335244] Avg episode reward: [(0, '353.477')]
+[36m[2025-07-08 22:49:02,618][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 201.4. Samples: 118480. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:02,619][335244] Avg episode reward: [(0, '370.220')]
+[36m[2025-07-08 22:49:07,618][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 203.2. Samples: 119680. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:07,619][335244] Avg episode reward: [(0, '379.223')]
+[36m[2025-07-08 22:49:12,648][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 222.1). Total num frames: 114688. Throughput: 0: 204.2. Samples: 120256. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:12,648][335244] Avg episode reward: [(0, '377.940')]
+[36m[2025-07-08 22:49:17,603][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 202.7. Samples: 121488. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:17,604][335244] Avg episode reward: [(0, '367.817')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:49:22,600][335244] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 202.9. Samples: 122736. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:22,600][335244] Avg episode reward: [(0, '400.488')]
+[37m[1m[2025-07-08 22:49:22,667][335244] Saving new best policy, reward=400.488!
+[36m[2025-07-08 22:49:27,605][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 114688. Throughput: 0: 203.8. Samples: 123360. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:27,606][335244] Avg episode reward: [(0, '404.456')]
+[37m[1m[2025-07-08 22:49:27,710][335244] Saving new best policy, reward=404.456!
+[36m[2025-07-08 22:49:32,617][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.7). Total num frames: 114688. Throughput: 0: 201.6. Samples: 124560. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:32,617][335244] Avg episode reward: [(0, '394.018')]
+[36m[2025-07-08 22:49:37,610][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 200.9. Samples: 125776. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:37,610][335244] Avg episode reward: [(0, '389.293')]
+[36m[2025-07-08 22:49:42,610][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 114688. Throughput: 0: 201.2. Samples: 126384. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:42,610][335244] Avg episode reward: [(0, '389.584')]
+[36m[2025-07-08 22:49:47,607][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 201.6. Samples: 127552. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:47,608][335244] Avg episode reward: [(0, '396.626')]
+[36m[2025-07-08 22:49:52,623][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 199.8. Samples: 128672. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:52,623][335244] Avg episode reward: [(0, '391.308')]
+[36m[2025-07-08 22:49:57,602][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 201.1. Samples: 129296. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:49:57,602][335244] Avg episode reward: [(0, '395.211')]
+[36m[2025-07-08 22:50:02,658][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 114688. Throughput: 0: 198.5. Samples: 130432. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:02,658][335244] Avg episode reward: [(0, '377.736')]
+[36m[2025-07-08 22:50:07,612][335244] Fps is (10 sec: 1636.8, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 131072. Throughput: 0: 196.2. Samples: 131568. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:07,612][335244] Avg episode reward: [(0, '388.687')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:50:12,642][335244] Fps is (10 sec: 1640.9, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 131072. Throughput: 0: 194.3. Samples: 132112. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:12,643][335244] Avg episode reward: [(0, '383.915')]
+[36m[2025-07-08 22:50:17,654][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 222.1). Total num frames: 131072. Throughput: 0: 193.3. Samples: 133264. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:17,655][335244] Avg episode reward: [(0, '369.400')]
+[36m[2025-07-08 22:50:22,600][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 131072. Throughput: 0: 192.4. Samples: 134432. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:22,601][335244] Avg episode reward: [(0, '368.422')]
+[36m[2025-07-08 22:50:27,664][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 222.1). Total num frames: 131072. Throughput: 0: 191.1. Samples: 134992. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:27,665][335244] Avg episode reward: [(0, '384.574')]
+[37m[1m[2025-07-08 22:50:27,764][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000256_131072.pth...
+[36m[2025-07-08 22:50:27,769][335244] Removing ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000000_0.pth
+[36m[2025-07-08 22:50:32,621][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 131072. Throughput: 0: 191.9. Samples: 136192. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:32,621][335244] Avg episode reward: [(0, '390.506')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:50:37,656][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 131072. Throughput: 0: 194.0. Samples: 137408. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:37,656][335244] Avg episode reward: [(0, '401.603')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:50:42,597][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 131072. Throughput: 0: 193.4. Samples: 138000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:42,598][335244] Avg episode reward: [(0, '394.571')]
+[36m[2025-07-08 22:50:47,615][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 131072. Throughput: 0: 194.7. Samples: 139184. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:47,615][335244] Avg episode reward: [(0, '391.126')]
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:50:52,610][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 131072. Throughput: 0: 195.6. Samples: 140368. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:52,610][335244] Avg episode reward: [(0, '403.547')]
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 512 instances:
+[CURRICULUM DEBUG]   Success rate: 0.018 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.125
+[CURRICULUM DEBUG]   Timeout rate: 0.857
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:50:57,639][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 197.0. Samples: 140976. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:50:57,639][335244] Avg episode reward: [(0, '415.127')]
+[37m[1m[2025-07-08 22:50:57,713][335244] Saving new best policy, reward=415.127!
+[36m[2025-07-08 22:51:02,649][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 196.6. Samples: 142112. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:02,649][335244] Avg episode reward: [(0, '425.167')]
+[37m[1m[2025-07-08 22:51:02,741][335244] Saving new best policy, reward=425.167!
+[36m[2025-07-08 22:51:07,643][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 196.1. Samples: 143264. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:07,643][335244] Avg episode reward: [(0, '429.949')]
+[37m[1m[2025-07-08 22:51:07,713][335244] Saving new best policy, reward=429.949!
+[36m[2025-07-08 22:51:12,641][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 197.1. Samples: 143856. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:12,642][335244] Avg episode reward: [(0, '435.199')]
+[37m[1m[2025-07-08 22:51:12,705][335244] Saving new best policy, reward=435.199!
+[36m[2025-07-08 22:51:17,615][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 195.6. Samples: 144992. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:17,615][335244] Avg episode reward: [(0, '444.303')]
+[37m[1m[2025-07-08 22:51:17,683][335244] Saving new best policy, reward=444.303!
+[36m[2025-07-08 22:51:22,661][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 196.2. Samples: 146240. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:22,661][335244] Avg episode reward: [(0, '436.634')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:51:27,618][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 131072. Throughput: 0: 196.9. Samples: 146864. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:27,619][335244] Avg episode reward: [(0, '449.555')]
+[37m[1m[2025-07-08 22:51:27,717][335244] Saving new best policy, reward=449.555!
+[36m[2025-07-08 22:51:32,677][335244] Fps is (10 sec: 1635.8, 60 sec: 272.8, 300 sec: 222.2). Total num frames: 147456. Throughput: 0: 195.6. Samples: 148000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:32,677][335244] Avg episode reward: [(0, '453.213')]
+[37m[1m[2025-07-08 22:51:32,759][335244] Saving new best policy, reward=453.213!
+[36m[2025-07-08 22:51:37,605][335244] Fps is (10 sec: 1640.5, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 147456. Throughput: 0: 195.6. Samples: 149168. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:37,606][335244] Avg episode reward: [(0, '440.736')]
+[36m[2025-07-08 22:51:42,654][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 222.1). Total num frames: 147456. Throughput: 0: 195.5. Samples: 149776. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:42,654][335244] Avg episode reward: [(0, '437.267')]
+[36m[2025-07-08 22:51:47,634][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 147456. Throughput: 0: 193.1. Samples: 150800. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:47,634][335244] Avg episode reward: [(0, '436.028')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:51:52,655][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.1). Total num frames: 147456. Throughput: 0: 194.1. Samples: 152000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:52,656][335244] Avg episode reward: [(0, '432.818')]
+[36m[2025-07-08 22:51:57,640][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 147456. Throughput: 0: 192.7. Samples: 152528. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:51:57,641][335244] Avg episode reward: [(0, '424.044')]
+[36m[2025-07-08 22:52:02,612][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 147456. Throughput: 0: 193.4. Samples: 153696. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:02,613][335244] Avg episode reward: [(0, '422.650')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:52:07,647][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 222.1). Total num frames: 147456. Throughput: 0: 192.1. Samples: 154880. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:07,647][335244] Avg episode reward: [(0, '412.180')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:52:12,591][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 147456. Throughput: 0: 190.7. Samples: 155440. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:12,592][335244] Avg episode reward: [(0, '412.643')]
+[36m[2025-07-08 22:52:17,675][335244] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 187.7. Samples: 156448. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:17,676][335244] Avg episode reward: [(0, '399.040')]
+[36m[2025-07-08 22:52:22,671][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 182.8. Samples: 157408. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:22,672][335244] Avg episode reward: [(0, '385.231')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:52:27,661][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 194.5. Samples: 158528. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:27,661][335244] Avg episode reward: [(0, '379.230')]
+[37m[1m[2025-07-08 22:52:27,760][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000288_147456.pth...
+[36m[2025-07-08 22:52:27,765][335244] Removing ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000064_32768.pth
+[36m[2025-07-08 22:52:32,647][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 183.4. Samples: 159056. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:32,647][335244] Avg episode reward: [(0, '377.390')]
+[36m[2025-07-08 22:52:37,602][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.7). Total num frames: 147456. Throughput: 0: 183.3. Samples: 160240. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:37,603][335244] Avg episode reward: [(0, '371.954')]
+[36m[2025-07-08 22:52:42,635][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 182.8. Samples: 160752. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:42,635][335244] Avg episode reward: [(0, '363.111')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:52:47,625][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 181.3. Samples: 161856. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:47,625][335244] Avg episode reward: [(0, '356.265')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:52:52,592][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 147456. Throughput: 0: 184.8. Samples: 163184. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:52,593][335244] Avg episode reward: [(0, '359.899')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:52:57,594][335244] Fps is (10 sec: 1643.5, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 163840. Throughput: 0: 184.2. Samples: 163728. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:52:57,594][335244] Avg episode reward: [(0, '378.617')]
+[36m[2025-07-08 22:53:02,602][335244] Fps is (10 sec: 1636.8, 60 sec: 273.1, 300 sec: 222.2). Total num frames: 163840. Throughput: 0: 181.6. Samples: 164608. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:02,602][335244] Avg episode reward: [(0, '379.880')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:53:07,662][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.2). Total num frames: 163840. Throughput: 0: 175.0. Samples: 165280. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:07,662][335244] Avg episode reward: [(0, '379.520')]
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:53:12,637][335244] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 222.2). Total num frames: 163840. Throughput: 0: 157.2. Samples: 165600. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:12,637][335244] Avg episode reward: [(0, '379.662')]
+[CURRICULUM DEBUG] Current stats after 768 instances:
+[CURRICULUM DEBUG]   Success rate: 0.027 (need 0.750 to increase)
+[CURRICULUM DEBUG]   Crash rate: 0.122
+[CURRICULUM DEBUG]   Timeout rate: 0.850
+[CURRICULUM DEBUG]   Current level: 3
+[CURRICULUM DEBUG]   Check threshold: 1024
+[36m[2025-07-08 22:53:17,632][335244] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 222.2). Total num frames: 163840. Throughput: 0: 169.7. Samples: 166688. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:17,632][335244] Avg episode reward: [(0, '383.846')]
+[36m[2025-07-08 22:53:22,606][335244] Fps is (10 sec: 0.0, 60 sec: 273.4, 300 sec: 222.1). Total num frames: 163840. Throughput: 0: 168.9. Samples: 167840. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:22,606][335244] Avg episode reward: [(0, '383.362')]
+[36m[2025-07-08 22:53:27,678][335244] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 222.1). Total num frames: 163840. Throughput: 0: 165.2. Samples: 168192. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:27,678][335244] Avg episode reward: [(0, '390.395')]
+[36m[2025-07-08 22:53:32,623][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 222.2). Total num frames: 163840. Throughput: 0: 156.8. Samples: 168912. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:32,624][335244] Avg episode reward: [(0, '397.733')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:53:37,677][335244] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 148.0. Samples: 169856. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:37,677][335244] Avg episode reward: [(0, '410.244')]
+[36m[2025-07-08 22:53:42,605][335244] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 148.6. Samples: 170416. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:42,606][335244] Avg episode reward: [(0, '418.880')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:53:47,610][335244] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 150.0. Samples: 171360. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:47,611][335244] Avg episode reward: [(0, '421.803')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:53:52,701][335244] Fps is (10 sec: 0.0, 60 sec: 272.6, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 150.3. Samples: 172048. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:52,702][335244] Avg episode reward: [(0, '423.314')]
+[36m[2025-07-08 22:53:57,592][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 152.3. Samples: 172448. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:53:57,593][335244] Avg episode reward: [(0, '413.683')]
+[36m[2025-07-08 22:54:02,605][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 153.0. Samples: 173568. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:54:02,605][335244] Avg episode reward: [(0, '409.530')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:54:07,623][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 151.1. Samples: 174640. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:54:07,623][335244] Avg episode reward: [(0, '409.936')]
+[36m[2025-07-08 22:54:12,616][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 156.7. Samples: 175232. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:54:12,616][335244] Avg episode reward: [(0, '405.203')]
+[CURRICULUM DEBUG] Gate-based successes: 1 / 16
+[CURRICULUM DEBUG] Total successes: 1 / 16
+[36m[2025-07-08 22:54:17,611][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 165.4. Samples: 176352. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:54:17,611][335244] Avg episode reward: [(0, '401.458')]
+[36m[2025-07-08 22:54:22,662][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 169.7. Samples: 177488. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:54:22,662][335244] Avg episode reward: [(0, '399.371')]
+[36m[2025-07-08 22:54:27,661][335244] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 166.6). Total num frames: 163840. Throughput: 0: 168.3. Samples: 178000. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-07-08 22:54:27,661][335244] Avg episode reward: [(0, '402.123')]
+[37m[1m[2025-07-08 22:54:27,756][335244] Saving ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000320_163840.pth...
+[36m[2025-07-08 22:54:27,761][335244] Removing ./train_dir/gate_config_6_original_obs_new_success_criteria3/checkpoint_p0/checkpoint_000000096_49152.pth
+[37m[1m[2025-07-08 22:54:28,131][335244] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 335244], exiting...
+[37m[1m[2025-07-08 22:54:28,132][335244] Runner profile tree view:
+[37m[1mmain_loop: 952.1119
+[37m[1m[2025-07-08 22:54:28,132][335244] Collected {0: 163840}, FPS: 172.1

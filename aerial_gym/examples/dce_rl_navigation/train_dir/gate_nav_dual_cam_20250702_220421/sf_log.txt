@@ -1,0 +1,142 @@
+[2025-07-02 22:04:37,155][738070] Saving configuration to ./train_dir/gate_nav_dual_cam_20250702_220421/config.json...
+[2025-07-02 22:04:37,210][738070] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 22:04:37,211][738070] Rollout worker 0 uses device cuda:0
+[2025-07-02 22:04:37,240][738070] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 22:04:37,241][738070] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-02 22:04:37,241][738070] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 22:04:37,242][738070] Starting seed is not provided
+[2025-07-02 22:04:37,242][738070] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 22:04:37,242][738070] Initializing actor-critic model on device cuda:0
+[2025-07-02 22:04:37,242][738070] RunningMeanStd input shape: (145,)
+[2025-07-02 22:04:37,242][738070] RunningMeanStd input shape: (1,)
+[2025-07-02 22:04:37,269][738070] Created Actor Critic model with architecture:
+[2025-07-02 22:04:37,269][738070] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=6, bias=True)
+  )
+)
+[2025-07-02 22:04:37,703][738070] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-02 22:04:37,704][738070] No checkpoints found
+[2025-07-02 22:04:37,704][738070] Did not load from checkpoint, starting from scratch!
+[2025-07-02 22:04:37,704][738070] Initialized policy 0 weights for model version 0
+[2025-07-02 22:04:37,705][738070] LearnerWorker_p0 finished initialization!
+[2025-07-02 22:04:37,705][738070] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 22:04:37,725][738070] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-02 22:04:37,725][738070] Inference worker 0-0 is ready!
+[2025-07-02 22:04:37,725][738070] All inference workers are ready! Signal rollout workers to start!
+[2025-07-02 22:04:37,725][738070] EnvRunner 0-0 uses policy 0
+[2025-07-02 22:04:43,565][738070] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 0.0. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-02 22:04:48,938][738070] EvtLoop [Runner_EvtLoop, process=main process 738070] unhandled exception in slot='advance_rollouts' connected to emitter=Emitter(object_id='InferenceWorker_p0-w0', signal_name='advance0'), args=(0, 0)
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 241, in advance_rollouts
+    complete_rollouts, episodic_stats = runner.advance_rollouts(policy_id, self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 308, in advance_rollouts
+    self.last_obs, rewards, terminated, truncated, infos = self.vec_env.step(actions)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 222, in step
+    obs, rew, terminated, truncated, infos = self.env.step(action)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 141, in step
+    obs, rew, terminated, truncated, info = self.env.step(action)
+  File "../../rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py", line 117, in step
+    obs, rew, terminated, truncated, infos = self.env.step(dce_action)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 259, in step
+    self.process_image_observation()
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 271, in process_image_observation
+    self.image_latents[:] = self.vae_model.encode(image_obs)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/vae_image_encoder.py", line 70, in encode
+    z_sampled, means, *_ = self.vae_model.encode(interpolated_image)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/VAE.py", line 250, in encode
+    z = self.encoder(img)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/VAE.py", line 117, in forward
+    return self.encode(img)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/VAE.py", line 125, in encode
+    x0_0 = self.conv0(img)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 463, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 459, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 508.00 MiB (GPU 0; 11.72 GiB total capacity; 403.82 MiB already allocated; 368.19 MiB free; 448.00 MiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+[2025-07-02 22:04:48,940][738070] Unhandled exception CUDA out of memory. Tried to allocate 508.00 MiB (GPU 0; 11.72 GiB total capacity; 403.82 MiB already allocated; 368.19 MiB free; 448.00 MiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF in evt loop Runner_EvtLoop
+[2025-07-02 22:04:48,940][738070] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 241, in advance_rollouts
+    complete_rollouts, episodic_stats = runner.advance_rollouts(policy_id, self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 308, in advance_rollouts
+    self.last_obs, rewards, terminated, truncated, infos = self.vec_env.step(actions)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 222, in step
+    obs, rew, terminated, truncated, infos = self.env.step(action)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 141, in step
+    obs, rew, terminated, truncated, info = self.env.step(action)
+  File "../../rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py", line 117, in step
+    obs, rew, terminated, truncated, infos = self.env.step(dce_action)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 259, in step
+    self.process_image_observation()
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 271, in process_image_observation
+    self.image_latents[:] = self.vae_model.encode(image_obs)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/vae_image_encoder.py", line 70, in encode
+    z_sampled, means, *_ = self.vae_model.encode(interpolated_image)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/VAE.py", line 250, in encode
+    z = self.encoder(img)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/VAE.py", line 117, in forward
+    return self.encode(img)
+  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/VAE.py", line 125, in encode
+    x0_0 = self.conv0(img)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 463, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 459, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 508.00 MiB (GPU 0; 11.72 GiB total capacity; 403.82 MiB already allocated; 368.19 MiB free; 448.00 MiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+[2025-07-02 22:04:48,940][738070] Runner profile tree view:
+main_loop: 11.6990
+[2025-07-02 22:04:48,941][738070] Collected {0: 0}, FPS: 0.0

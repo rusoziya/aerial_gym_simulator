@@ -1,0 +1,66 @@
+[2025-07-02 21:36:47,140][726017] Saving configuration to ./train_dir/gate_nav_dual_cam_20250702_213632/config.json...
+[2025-07-02 21:36:47,180][726017] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,181][726017] Rollout worker 0 uses device cuda:0
+[2025-07-02 21:36:47,181][726017] Using GPUs [0] for process 1 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,181][726017] Rollout worker 1 uses device cuda:0
+[2025-07-02 21:36:47,181][726017] Using GPUs [0] for process 2 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,181][726017] Rollout worker 2 uses device cuda:0
+[2025-07-02 21:36:47,181][726017] Using GPUs [0] for process 3 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,181][726017] Rollout worker 3 uses device cuda:0
+[2025-07-02 21:36:47,439][726017] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,439][726017] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-02 21:36:47,440][726017] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,440][726017] Using GPUs [0] for process 1 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,440][726017] Using GPUs [0] for process 2 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,440][726017] Using GPUs [0] for process 3 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,441][726017] Starting seed is not provided
+[2025-07-02 21:36:47,441][726017] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,441][726017] Initializing actor-critic model on device cuda:0
+[2025-07-02 21:36:47,441][726017] RunningMeanStd input shape: (145,)
+[2025-07-02 21:36:47,442][726017] RunningMeanStd input shape: (1,)
+[2025-07-02 21:36:47,467][726017] Created Actor Critic model with architecture:
+[2025-07-02 21:36:47,467][726017] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=6, bias=True)
+  )
+)
+[2025-07-02 21:36:47,900][726017] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-02 21:36:47,900][726017] No checkpoints found
+[2025-07-02 21:36:47,901][726017] Did not load from checkpoint, starting from scratch!
+[2025-07-02 21:36:47,901][726017] Initialized policy 0 weights for model version 0
+[2025-07-02 21:36:47,901][726017] LearnerWorker_p0 finished initialization!
+[2025-07-02 21:36:47,901][726017] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:36:47,919][726017] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-02 21:36:47,920][726017] Inference worker 0-0 is ready!
+[2025-07-02 21:36:47,920][726017] All inference workers are ready! Signal rollout workers to start!
+[2025-07-02 21:36:47,920][726017] EnvRunner 2-0 uses policy 0

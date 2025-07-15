@@ -1,0 +1,1033 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-07-11 15:31:29,640][146237] Queried available GPUs: 0
+[37m[1m[2025-07-11 15:31:29,641][146237] Environment var CUDA_VISIBLE_DEVICES is 0
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[1915 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[1915 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[1915 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[1915 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[1915 ms][base_task] - INFO : Setting seed: 1243631481 (base_task.py:38)
+[37m[1915 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:50)
+[37m[1916 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task_gate.py:51)
+[37m[1916 ms][navigation_task_gate] - INFO : PRE-INIT: Setting curriculum level 3 with 3 curriculum obstacles (navigation_task_gate.py:69)
+[37m[1916 ms][navigation_task_gate] - INFO : PRE-INIT: Total obstacle count for asset manager: 11 (navigation_task_gate.py:70)
+[37m[1916 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[1916 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[1916 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[1916 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[1916 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[1916 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[1917 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[1917 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[1917 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[1917 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[1917 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[1917 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[1917 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 4
+[SUBPROCESS] Target Sample Factory action space: 4D
+[SUBPROCESS] Setting num_envs to 16 based on env_agents=16
+[SUBPROCESS] Set SF_ENV_AGENTS=16 environment variable
+[SUBPROCESS] Config batch_size: 2048
+[SUBPROCESS] Using STANDARD CONFIG (16 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+[37m[3060 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[3060 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[3295 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[3295 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[3295 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[3295 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[3295 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[3295 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[3295 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[3296 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[3296 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[3296 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3296 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3301 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3302 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3304 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3305 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3306 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3308 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3309 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3311 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3314 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[3776 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[3776 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[3776 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[3853 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[3871 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[3871 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[3957 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[3958 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[4013 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 7 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4238 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4240 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.70 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.71 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 12.89 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.55 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 4D target + 13D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[37m[4841 ms][navigation_task_gate] - INFO : POST-INIT: Updated global_tensor_dict with obstacle count: 11 (navigation_task_gate.py:87)
+[37m[4934 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:911)
+[37m[4935 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:930)
+[37m[4935 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:931)
+[37m[4941 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:939)
+[37m[4946 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:939)
+[37m[4951 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:939)
+[37m[4957 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:939)
+[37m[4962 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:939)
+[37m[4967 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:939)
+[37m[4971 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:939)
+[37m[4977 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:939)
+[37m[4982 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:939)
+[37m[4987 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:939)
+[37m[4991 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:939)
+[37m[4996 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:939)
+[37m[5001 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:939)
+[37m[5006 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:939)
+[37m[5010 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:939)
+[37m[5015 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:939)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[5015 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:957)
+[37m[5016 ms][navigation_task_gate] - INFO : Curriculum logging setup successful: ./train_dir/curriculum_gate_navigation_20250711_153134.log (navigation_task_gate.py:305)
+[37m[5016 ms][navigation_task_gate] - INFO : ACTUAL: Asset manager reports 7 fixed assets (navigation_task_gate.py:159)
+[37m[5016 ms][navigation_task_gate] - INFO : CONFIRMED: Global tensor dict already has correct obstacle count: 10 (navigation_task_gate.py:176)
+[37m[5016 ms][navigation_task_gate] - INFO : FINAL: Fixed assets: 7, Curriculum obstacles: 3, Total: 10 (navigation_task_gate.py:178)
+[37m[5016 ms][navigation_task_gate] - INFO : INITIAL CURRICULUM (Level 3): (navigation_task_gate.py:184)
+[37m[5016 ms][navigation_task_gate] - INFO :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:185)
+[37m[5016 ms][navigation_task_gate] - INFO :    2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:186)
+[37m[5016 ms][navigation_task_gate] - INFO :    3. CAMERA ANGLE: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:187)
+[37m[5016 ms][navigation_task_gate] - INFO :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:191)
+[37m[5016 ms][navigation_task_gate] - INFO :    6. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:193)
+[37m[5016 ms][navigation_task_gate] - INFO :    7. PROGRESS: 0.000 (level 3/23) (navigation_task_gate.py:200)
+[37m[5016 ms][navigation_task_gate] - INFO :    8. EVALUATION: Check every 128 instances (success rate threshold: 0.000) (navigation_task_gate.py:201)
+[33m[5016 ms][navigation_task_gate] - WARNING : [INIT] Multi-aspect curriculum initialized at level 3 (navigation_task_gate.py:317)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-11 15:31:34,863][146348] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (145,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-07-11 15:31:36,062][146237] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-07-11 15:31:36,063][146237] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=2048
+[36mnum_batches_per_epoch=8
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 64]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=64
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=16
+[36mheadless=False
+[36msave_gifs=True
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=4
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 64], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 16, 'headless': False, 'save_gifs': True, 'obs_key': 'observations'}
+[36mgit_hash=c49d68cbd738bd355c67ea2b29d9fbf86008c5cf
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35_20250711_153126_378193
+[36m[2025-07-11 15:31:36,064][146237] Saving configuration to ./train_dir/gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35/config.json...
+[36m[2025-07-11 15:31:36,139][146237] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-11 15:31:36,140][146237] Rollout worker 0 uses device cuda:0
+[36m[2025-07-11 15:31:36,165][146237] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-11 15:31:36,165][146237] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-07-11 15:31:36,166][146237] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-11 15:31:36,167][146237] Starting seed is not provided
+[36m[2025-07-11 15:31:36,168][146237] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-07-11 15:31:36,168][146237] Initializing actor-critic model on device cuda:0
+[36m[2025-07-11 15:31:36,169][146237] RunningMeanStd input shape: (145,)
+[36m[2025-07-11 15:31:36,170][146237] RunningMeanStd input shape: (1,)
+[36m[2025-07-11 15:31:36,205][146237] Created Actor Critic model with architecture:
+[36m[2025-07-11 15:31:36,205][146237] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(64, 64)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+[36m  )
+[36m)
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 2.00 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.00 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.33 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.01 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 145D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 4D target + 13D basic + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[36m[2025-07-11 15:31:36,742][146237] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-07-11 15:31:36,753][146237] No checkpoints found
+[36m[2025-07-11 15:31:36,753][146237] Did not load from checkpoint, starting from scratch!
+[36m[2025-07-11 15:31:36,753][146237] Initialized policy 0 weights for model version 0
+[36m[2025-07-11 15:31:36,753][146237] LearnerWorker_p0 finished initialization!
+[36m[2025-07-11 15:31:36,754][146237] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-07-11 15:31:36,765][146237] Inference worker 0-0 is ready!
+[37m[1m[2025-07-11 15:31:36,765][146237] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-07-11 15:31:36,765][146237] EnvRunner 0-0 uses policy 0
+[37m[12730 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[12730 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[12730 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[12730 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[12730 ms][base_task] - INFO : Setting seed: 1954020929 (base_task.py:38)
+[37m[12731 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:50)
+[37m[12731 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task_gate.py:51)
+[37m[12731 ms][navigation_task_gate] - INFO : PRE-INIT: Setting curriculum level 3 with 3 curriculum obstacles (navigation_task_gate.py:69)
+[37m[12731 ms][navigation_task_gate] - INFO : PRE-INIT: Total obstacle count for asset manager: 11 (navigation_task_gate.py:70)
+[37m[12731 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[12731 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[12731 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[12731 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[12731 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[12731 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[12734 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[12734 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[12734 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[12734 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[12734 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[12734 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[12734 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[13924 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[13924 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[14150 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[14150 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[14150 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[14150 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[14150 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[14150 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[14150 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[14151 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[14151 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[14151 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14151 ms][asset_loader] - INFO : Loading asset: gate.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14155 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14156 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14157 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14158 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14159 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14160 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14161 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14162 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14164 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:179)
+[33m[14181 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[14181 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[14181 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[14243 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[14258 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[14259 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[14342 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[14342 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[14394 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 7 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[14596 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[14597 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[37m[15140 ms][navigation_task_gate] - INFO : POST-INIT: Updated global_tensor_dict with obstacle count: 11 (navigation_task_gate.py:87)
+[37m[15217 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:911)
+[37m[15217 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:930)
+[37m[15217 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:931)
+[37m[15222 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:939)
+[37m[15226 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:939)
+[37m[15231 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:939)
+[37m[15235 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:939)
+[37m[15238 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:939)
+[37m[15242 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:939)
+[37m[15246 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:939)
+[37m[15250 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:939)
+[37m[15253 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:939)
+[37m[15257 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:939)
+[37m[15261 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:939)
+[37m[15265 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:939)
+[37m[15268 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:939)
+[37m[15272 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:939)
+[37m[15276 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:939)
+[37m[15280 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:939)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:955)
+[37m[15280 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:957)
+[37m[15280 ms][navigation_task_gate] - INFO : Curriculum logging setup successful: ./train_dir/curriculum_gate_navigation_20250711_153139.log (navigation_task_gate.py:305)
+[37m[15280 ms][navigation_task_gate] - INFO : ACTUAL: Asset manager reports 7 fixed assets (navigation_task_gate.py:159)
+[37m[15280 ms][navigation_task_gate] - INFO : CONFIRMED: Global tensor dict already has correct obstacle count: 10 (navigation_task_gate.py:176)
+[37m[15280 ms][navigation_task_gate] - INFO : FINAL: Fixed assets: 7, Curriculum obstacles: 3, Total: 10 (navigation_task_gate.py:178)
+[37m[15280 ms][navigation_task_gate] - INFO : INITIAL CURRICULUM (Level 3): (navigation_task_gate.py:184)
+[37m[15280 ms][navigation_task_gate] - INFO :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:185)
+[37m[15280 ms][navigation_task_gate] - INFO :    2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:186)
+[37m[15280 ms][navigation_task_gate] - INFO :    3. CAMERA ANGLE: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:187)
+[37m[15280 ms][navigation_task_gate] - INFO :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:191)
+[37m[15280 ms][navigation_task_gate] - INFO :    6. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:193)
+[37m[15280 ms][navigation_task_gate] - INFO :    7. PROGRESS: 0.000 (level 3/23) (navigation_task_gate.py:200)
+[37m[15280 ms][navigation_task_gate] - INFO :    8. EVALUATION: Check every 128 instances (success rate threshold: 0.000) (navigation_task_gate.py:201)
+[33m[15280 ms][navigation_task_gate] - WARNING : [INIT] Multi-aspect curriculum initialized at level 3 (navigation_task_gate.py:317)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-07-11 15:31:39,379][146237] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[GIF] Episode 0 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0000_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0000_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0000_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0000_static_seg.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0000_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0000_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0000_merged_dual_camera_D455_NOISED.gif
+[33m[19951 ms][IGE_viewer_control] - WARNING : Camera follow: True (IGE_viewer_control.py:217)
+[36m[2025-07-11 15:31:44,143][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 10.1. Samples: 48. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:31:44,143][146237] Avg episode reward: [(0, '-100.000')]
+[33m[20252 ms][IGE_viewer_control] - WARNING : Camera follow: False (IGE_viewer_control.py:217)
+[33m[20780 ms][IGE_viewer_control] - WARNING : Camera follow: True (IGE_viewer_control.py:217)
+[33m[22171 ms][IGE_viewer_control] - WARNING : Camera follow: False (IGE_viewer_control.py:217)
+[36m[2025-07-11 15:31:49,007][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 81.4. Samples: 784. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:31:49,007][146237] Avg episode reward: [(0, '-49.230')]
+[36m[2025-07-11 15:31:53,947][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.4. Samples: 1360. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:31:53,947][146237] Avg episode reward: [(0, '-9.393')]
+[37m[1m[2025-07-11 15:31:56,279][146237] Heartbeat connected on Batcher_0
+[37m[1m[2025-07-11 15:31:56,279][146237] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-07-11 15:31:56,280][146237] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-07-11 15:31:56,280][146237] Heartbeat connected on RolloutWorker_w0
+[36m[2025-07-11 15:31:58,978][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 137.1. Samples: 2688. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:31:58,978][146237] Avg episode reward: [(0, '18.841')]
+[33m[37192 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[37192 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:840: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:841: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:842: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
+[33m[37193 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:32:03,964][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 160.7. Samples: 3952. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:03,964][146237] Avg episode reward: [(0, '30.029')]
+[36m[2025-07-11 15:32:08,938][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 155.9. Samples: 4608. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:08,939][146237] Avg episode reward: [(0, '33.999')]
+[36m[2025-07-11 15:32:13,945][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 173.1. Samples: 5984. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:13,945][146237] Avg episode reward: [(0, '30.072')]
+[GIF] Episode 15 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0001_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0001_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0001_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0001_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0001_merged_dual_camera_CLEAN.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0001_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0001_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0001_merged_dual_camera_D455_NOISED.gif
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 129 instances: (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[53334 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[53335 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:32:18,944][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 185.6. Samples: 7344. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:18,944][146237] Avg episode reward: [(0, '24.732')]
+[36m[2025-07-11 15:32:23,939][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 180.3. Samples: 8032. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:23,940][146237] Avg episode reward: [(0, '24.785')]
+[36m[2025-07-11 15:32:28,980][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 209.5. Samples: 9440. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:28,981][146237] Avg episode reward: [(0, '25.273')]
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 129 instances: (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[68101 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[68102 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:32:33,927][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 224.4. Samples: 10864. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:33,928][146237] Avg episode reward: [(0, '25.182')]
+[36m[2025-07-11 15:32:38,992][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 227.0. Samples: 11584. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:38,992][146237] Avg episode reward: [(0, '27.846')]
+[36m[2025-07-11 15:32:43,946][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 230.2. Samples: 13040. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:43,946][146237] Avg episode reward: [(0, '28.160')]
+[GIF] Episode 30 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0002_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0002_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0002_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0002_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0002_merged_dual_camera_CLEAN.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0002_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0002_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0002_merged_dual_camera_D455_NOISED.gif
+[33m[83078 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:317)
+[33m[83078 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[83079 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:32:48,952][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 231.9. Samples: 14384. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:48,953][146237] Avg episode reward: [(0, '22.566')]
+[36m[2025-07-11 15:32:53,967][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 231.7. Samples: 15040. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-07-11 15:32:53,968][146237] Avg episode reward: [(0, '18.995')]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py:1194: UserWarning: operator() profile_node %104 : int[] = prim::profile_ivalue(%102)
+ does not have profile information (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/jit/codegen/cuda/graph_fuser.cpp:105.)
+  return forward_call(*input, **kwargs)
+[36m[2025-07-11 15:32:58,975][146237] Fps is (10 sec: 1634.7, 60 sec: 273.1, 300 sec: 205.8). Total num frames: 16384. Throughput: 0: 231.7. Samples: 16416. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:32:58,975][146237] Avg episode reward: [(0, '18.026')]
+[36m[2025-07-11 15:33:03,962][146237] Fps is (10 sec: 1639.2, 60 sec: 273.1, 300 sec: 193.7). Total num frames: 16384. Throughput: 0: 227.1. Samples: 17568. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:03,963][146237] Avg episode reward: [(0, '22.005')]
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 129 instances: (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[100099 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:33:08,948][146237] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 182.9). Total num frames: 16384. Throughput: 0: 228.2. Samples: 18304. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:08,948][146237] Avg episode reward: [(0, '28.969')]
+[GIF] Episode 45 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0003_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0003_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0003_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0003_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0003_merged_dual_camera_CLEAN.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0003_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0003_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0003_merged_dual_camera_D455_NOISED.gif
+[36m[2025-07-11 15:33:13,995][146237] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 173.2). Total num frames: 16384. Throughput: 0: 226.1. Samples: 19616. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:13,995][146237] Avg episode reward: [(0, '32.683')]
+[36m[2025-07-11 15:33:19,007][146237] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 164.5). Total num frames: 16384. Throughput: 0: 221.5. Samples: 20848. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:19,008][146237] Avg episode reward: [(0, '30.926')]
+[33m[117292 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:317)
+[33m[117292 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[117292 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[117292 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[117292 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[117292 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[117292 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[117293 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[117294 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:33:23,932][146237] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 156.7). Total num frames: 16384. Throughput: 0: 220.7. Samples: 21504. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:23,932][146237] Avg episode reward: [(0, '35.865')]
+[36m[2025-07-11 15:33:28,968][146237] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 149.5). Total num frames: 16384. Throughput: 0: 216.8. Samples: 22800. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:28,969][146237] Avg episode reward: [(0, '38.414')]
+[37m[1m[2025-07-11 15:33:29,050][146237] Saving ./train_dir/gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_35/checkpoint_p0/checkpoint_000000032_16384.pth...
+[36m[2025-07-11 15:33:34,019][146237] Fps is (10 sec: 0.0, 60 sec: 272.7, 300 sec: 142.9). Total num frames: 16384. Throughput: 0: 213.4. Samples: 24000. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:34,019][146237] Avg episode reward: [(0, '41.403')]
+[36m[2025-07-11 15:33:38,938][146237] Fps is (10 sec: 0.0, 60 sec: 273.3, 300 sec: 137.0). Total num frames: 16384. Throughput: 0: 207.1. Samples: 24352. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:38,938][146237] Avg episode reward: [(0, '37.441')]
+[33m[139514 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:317)
+[33m[139514 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[139515 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[139516 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[139516 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[139516 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[139516 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:33:43,988][146237] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 131.5). Total num frames: 16384. Throughput: 0: 192.3. Samples: 25072. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:43,988][146237] Avg episode reward: [(0, '36.329')]
+[36m[2025-07-11 15:33:48,936][146237] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 126.5). Total num frames: 16384. Throughput: 0: 190.0. Samples: 26112. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:48,936][146237] Avg episode reward: [(0, '34.291')]
+[36m[2025-07-11 15:33:53,956][146237] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 121.7). Total num frames: 16384. Throughput: 0: 187.0. Samples: 26720. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:53,956][146237] Avg episode reward: [(0, '31.153')]
+[GIF] Episode 60 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0004_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0004_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0004_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0004_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0004_merged_dual_camera_CLEAN.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0004_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0004_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0004_merged_dual_camera_D455_NOISED.gif
+[36m[2025-07-11 15:33:58,949][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 117.4). Total num frames: 16384. Throughput: 0: 181.5. Samples: 27776. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:33:58,949][146237] Avg episode reward: [(0, '28.933')]
+[33m[159864 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:317)
+[33m[159864 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[159864 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[159865 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[159865 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[159865 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[159865 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[159865 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[159865 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[159865 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[159866 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[159867 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[159867 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[159867 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[159867 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[159867 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[159868 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[159868 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:34:03,950][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 113.3). Total num frames: 16384. Throughput: 0: 179.1. Samples: 28896. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:34:03,951][146237] Avg episode reward: [(0, '27.245')]
+[36m[2025-07-11 15:34:08,954][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 109.5). Total num frames: 16384. Throughput: 0: 176.6. Samples: 29456. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:34:08,955][146237] Avg episode reward: [(0, '32.269')]
+[36m[2025-07-11 15:34:13,935][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 106.0). Total num frames: 16384. Throughput: 0: 171.1. Samples: 30496. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:34:13,935][146237] Avg episode reward: [(0, '32.036')]
+[36m[2025-07-11 15:34:18,995][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 102.6). Total num frames: 16384. Throughput: 0: 166.8. Samples: 31504. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:34:18,996][146237] Avg episode reward: [(0, '36.136')]
+[36m[2025-07-11 15:34:23,956][146237] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 99.6). Total num frames: 16384. Throughput: 0: 167.8. Samples: 31904. Policy #0 lag: (min: 28.0, avg: 28.0, max: 28.0)
+[36m[2025-07-11 15:34:23,956][146237] Avg episode reward: [(0, '35.749')]
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 129 instances: (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[181587 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[181588 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[181588 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[181588 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[181588 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[181588 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:34:28,928][146237] Fps is (10 sec: 1649.5, 60 sec: 273.3, 300 sec: 193.3). Total num frames: 32768. Throughput: 0: 178.4. Samples: 33088. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:34:28,928][146237] Avg episode reward: [(0, '35.787')]
+[36m[2025-07-11 15:34:34,002][146237] Fps is (10 sec: 1630.8, 60 sec: 273.1, 300 sec: 187.6). Total num frames: 32768. Throughput: 0: 178.2. Samples: 34144. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:34:34,003][146237] Avg episode reward: [(0, '41.656')]
+[GIF] Episode 75 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0005_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0005_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0005_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0005_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0005_merged_dual_camera_CLEAN.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0005_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0005_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0005_merged_dual_camera_D455_NOISED.gif
+[36m[2025-07-11 15:34:38,934][146237] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 182.5). Total num frames: 32768. Throughput: 0: 174.7. Samples: 34576. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:34:38,934][146237] Avg episode reward: [(0, '46.998')]
+[36m[2025-07-11 15:34:43,952][146237] Fps is (10 sec: 0.0, 60 sec: 273.2, 300 sec: 177.5). Total num frames: 32768. Throughput: 0: 179.9. Samples: 35872. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:34:43,952][146237] Avg episode reward: [(0, '55.631')]
+[36m[2025-07-11 15:34:48,964][146237] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 172.8). Total num frames: 32768. Throughput: 0: 178.8. Samples: 36944. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:34:48,964][146237] Avg episode reward: [(0, '64.262')]
+[33m[206825 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[206826 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[206827 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:34:53,976][146237] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 168.4). Total num frames: 32768. Throughput: 0: 178.8. Samples: 37504. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:34:53,977][146237] Avg episode reward: [(0, '67.217')]
+[36m[2025-07-11 15:34:58,974][146237] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 164.2). Total num frames: 32768. Throughput: 0: 185.4. Samples: 38848. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:34:58,974][146237] Avg episode reward: [(0, '61.467')]
+[36m[2025-07-11 15:35:03,960][146237] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 160.2). Total num frames: 32768. Throughput: 0: 185.4. Samples: 39840. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:35:03,961][146237] Avg episode reward: [(0, '60.495')]
+[36m[2025-07-11 15:35:08,996][146237] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 156.3). Total num frames: 32768. Throughput: 0: 188.6. Samples: 40400. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:35:08,996][146237] Avg episode reward: [(0, '61.799')]
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.000 (NO DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:317)
+[33m[229329 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:317)
+[33m[229330 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:317)
+[33m[229330 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:317)
+[33m[229330 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 fixed + 3 curriculum) (navigation_task_gate.py:317)
+[33m[229330 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:317)
+[33m[229330 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:317)
+[33m[229330 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:317)
+[33m[229330 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:317)
+[36m[2025-07-11 15:35:13,993][146237] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 152.7). Total num frames: 32768. Throughput: 0: 189.6. Samples: 41632. Policy #0 lag: (min: 5.0, avg: 5.0, max: 5.0)
+[36m[2025-07-11 15:35:13,993][146237] Avg episode reward: [(0, '52.938')]
+[37m[1m[2025-07-11 15:35:15,547][146237] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 146237], exiting...
+[37m[1m[2025-07-11 15:35:15,547][146237] Runner profile tree view:
+[37m[1mmain_loop: 219.3806
+[37m[1m[2025-07-11 15:35:15,548][146237] Collected {0: 32768}, FPS: 149.4

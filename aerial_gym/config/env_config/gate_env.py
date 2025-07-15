@@ -12,6 +12,10 @@ from aerial_gym.config.asset_config.env_asset_config import (
 )
 import numpy as np
 
+# CRITICAL FIX: Import BaseAssetParams directly to ensure proper inheritance
+from aerial_gym.config.asset_config.base_asset import BaseAssetParams
+from aerial_gym import AERIAL_GYM_DIRECTORY
+
 
 class GateEnvCfg:
     """
@@ -79,8 +83,13 @@ class GateEnvCfg:
         }
         
         # Custom random object configuration for gate environment
-        class gate_object_params(object_asset_params):
-            num_assets = 3  # Balanced obstacle count for gate navigation (matches curriculum range)
+        # CRITICAL FIX: Inherit directly from BaseAssetParams to avoid num_assets conflicts
+        class gate_object_params(BaseAssetParams):
+            num_assets = 30  # INCREASED: Support up to 25 curriculum obstacles + 5 buffer (level 23 + buffer)
+            
+            # Asset configuration
+            asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/objects_gate"  # FIXED: Use clean objects_gate folder with walls removed
+            file = None  # Random object selection
             
             # ENABLE COLLISION for objects so they appear in segmentation!
             collision_mask = 0  # 0 = enable collision, 1 = disable collision
@@ -105,14 +114,14 @@ class GateEnvCfg:
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
             ]
             
-            # Objects should stay in environment and be fixed
-            keep_in_env = True
+            # Thin objects are curriculum-controlled (not always kept in environment)
+            keep_in_env = False  # CRITICAL: Allow curriculum to control object count (using thin assets to avoid wall contamination)
             fix_base_link = True
             collapse_fixed_joints = True
             color = [100, 150, 200]  # Blue-gray objects
             
             # CRITICAL: Add the same segmentation properties as the gate!
-            semantic_id = OBJECT_SEMANTIC_ID
+            semantic_id = OBJECT_SEMANTIC_ID  # Use object semantic ID for thin obstacles
             body_semantic_label = OBJECT_SEMANTIC_ID  # Body-level semantic labeling
             link_semantic_label = OBJECT_SEMANTIC_ID  # Link-level semantic labeling
             per_link_semantic = True  # Enable per-link semantic labeling (like gate)

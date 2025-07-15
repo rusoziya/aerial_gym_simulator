@@ -1,0 +1,58 @@
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log
+index 0bc98dd..e4fae7a 120000
+--- a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log
++++ b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug-internal.log
+@@ -1 +1 @@
+-run-20250702_153202-HIGH_CONFIG_128ENV_4_20250702_153201_984438/logs/debug-internal.log
+\ No newline at end of file
++run-20250702_213018-gate_nav_dual_cam_20250702_213014_20250702_213017_477285/logs/debug-internal.log
+\ No newline at end of file
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log
+index aabb121..1a1d820 120000
+--- a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log
++++ b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/debug.log
+@@ -1 +1 @@
+-run-20250702_153202-HIGH_CONFIG_128ENV_4_20250702_153201_984438/logs/debug.log
+\ No newline at end of file
++run-20250702_213018-gate_nav_dual_cam_20250702_213014_20250702_213017_477285/logs/debug.log
+\ No newline at end of file
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run
+index 5c69a92..c8138d1 120000
+--- a/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run
++++ b/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/latest-run
+@@ -1 +1 @@
+-run-20250702_153202-HIGH_CONFIG_128ENV_4_20250702_153201_984438
+\ No newline at end of file
++run-20250702_213018-gate_nav_dual_cam_20250702_213014_20250702_213017_477285
+\ No newline at end of file
+diff --git a/aerial_gym/task/__init__.py b/aerial_gym/task/__init__.py
+index 7dd966d..5bfe345 100644
+--- a/aerial_gym/task/__init__.py
++++ b/aerial_gym/task/__init__.py
+@@ -15,6 +15,7 @@ from aerial_gym.task.position_setpoint_task_acceleration_sim2real.position_setpo
+ )
+ 
+ from aerial_gym.task.navigation_task.navigation_task import NavigationTask
++from aerial_gym.task.navigation_task_gate.navigation_task_gate import NavigationTaskGate
+ 
+ from aerial_gym.config.task_config.position_setpoint_task_config import (
+     task_config as position_setpoint_task_config,
+@@ -36,6 +37,10 @@ from aerial_gym.config.task_config.navigation_task_config import (
+     task_config as navigation_task_config,
+ )
+ 
++from aerial_gym.config.task_config.navigation_task_config_gate import (
++    task_config as navigation_task_config_gate,
++)
++
+ from aerial_gym.registry.task_registry import task_registry
+ 
+ 
+@@ -61,6 +66,7 @@ task_registry.register_task(
+ )
+ 
+ task_registry.register_task("navigation_task", NavigationTask, navigation_task_config)
++task_registry.register_task("navigation_task_gate", NavigationTaskGate, navigation_task_config_gate)
+ 
+ 
+ from aerial_gym.task.position_setpoint_task_reconfigurable.position_setpoint_task_reconfigurable import (

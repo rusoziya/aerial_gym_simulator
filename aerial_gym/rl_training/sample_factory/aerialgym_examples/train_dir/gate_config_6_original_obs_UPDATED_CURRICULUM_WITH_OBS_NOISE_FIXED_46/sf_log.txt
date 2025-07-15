@@ -1,0 +1,89 @@
+[2025-07-12 00:00:15,181][211185] Saving configuration to ./train_dir/gate_config_6_original_obs_UPDATED_CURRICULUM_WITH_OBS_NOISE_FIXED_46/config.json...
+[2025-07-12 00:00:15,251][211185] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-12 00:00:15,252][211185] Rollout worker 0 uses device cuda:0
+[2025-07-12 00:00:15,272][211185] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-12 00:00:15,272][211185] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-12 00:00:15,273][211185] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-12 00:00:15,275][211185] Starting seed is not provided
+[2025-07-12 00:00:15,275][211185] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-12 00:00:15,275][211185] Initializing actor-critic model on device cuda:0
+[2025-07-12 00:00:15,276][211185] RunningMeanStd input shape: (145,)
+[2025-07-12 00:00:15,277][211185] RunningMeanStd input shape: (1,)
+[2025-07-12 00:00:15,338][211185] Created Actor Critic model with architecture:
+[2025-07-12 00:00:15,338][211185] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-12 00:00:15,817][211185] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-12 00:00:15,818][211185] No checkpoints found
+[2025-07-12 00:00:15,818][211185] Did not load from checkpoint, starting from scratch!
+[2025-07-12 00:00:15,818][211185] Initialized policy 0 weights for model version 0
+[2025-07-12 00:00:15,818][211185] LearnerWorker_p0 finished initialization!
+[2025-07-12 00:00:15,819][211185] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-12 00:00:15,829][211185] Inference worker 0-0 is ready!
+[2025-07-12 00:00:15,829][211185] All inference workers are ready! Signal rollout workers to start!
+[2025-07-12 00:00:15,829][211185] EnvRunner 0-0 uses policy 0
+[2025-07-12 00:00:18,768][211185] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:23,789][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 6.4. Samples: 32. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:23,789][211185] Avg episode reward: [(0, '-100.000')]
+[2025-07-12 00:00:27,940][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 15.7. Samples: 144. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:27,940][211185] Avg episode reward: [(0, '-91.669')]
+[2025-07-12 00:00:32,743][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 51.5. Samples: 720. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:32,743][211185] Avg episode reward: [(0, '-40.034')]
+[2025-07-12 00:00:35,482][211185] Heartbeat connected on Batcher_0
+[2025-07-12 00:00:35,482][211185] Heartbeat connected on LearnerWorker_p0
+[2025-07-12 00:00:35,483][211185] Heartbeat connected on InferenceWorker_p0-w0
+[2025-07-12 00:00:35,483][211185] Heartbeat connected on RolloutWorker_w0
+[2025-07-12 00:00:37,766][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 75.0. Samples: 1424. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:37,766][211185] Avg episode reward: [(0, '-20.246')]
+[2025-07-12 00:00:42,867][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 74.4. Samples: 1792. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:42,867][211185] Avg episode reward: [(0, '-8.002')]
+[2025-07-12 00:00:47,793][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 85.4. Samples: 2480. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:47,793][211185] Avg episode reward: [(0, '6.168')]
+[2025-07-12 00:00:52,756][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 94.6. Samples: 3216. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:52,757][211185] Avg episode reward: [(0, '21.330')]
+[2025-07-12 00:00:57,743][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 91.1. Samples: 3552. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:00:57,744][211185] Avg episode reward: [(0, '20.950')]
+[2025-07-12 00:01:02,824][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 96.2. Samples: 4240. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:01:02,824][211185] Avg episode reward: [(0, '24.451')]
+[2025-07-12 00:01:07,808][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 111.6. Samples: 4944. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:01:07,808][211185] Avg episode reward: [(0, '22.028')]
+[2025-07-12 00:01:12,851][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 115.1. Samples: 5312. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:01:12,851][211185] Avg episode reward: [(0, '23.777')]
+[2025-07-12 00:01:17,819][211185] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 117.5. Samples: 6016. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-12 00:01:17,820][211185] Avg episode reward: [(0, '23.914')]
+[2025-07-12 00:01:19,051][211185] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 211185], exiting...
+[2025-07-12 00:01:19,052][211185] Runner profile tree view:
+main_loop: 63.7771
+[2025-07-12 00:01:19,052][211185] Collected {0: 0}, FPS: 0.0
