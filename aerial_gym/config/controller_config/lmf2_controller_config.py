@@ -18,8 +18,8 @@ class control:
     max_inclination_angle_rad = np.pi / 3.0
     max_yaw_rate = np.pi / 3.0
 
-    K_pos_tensor_max = [2.0, 2.0, 2.5]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
-    K_pos_tensor_min = [2.0, 2.0, 2.5]  # INCREASED Z from 1.0 to 2.5 for stronger altitude control
+    K_pos_tensor_max = [2.2, 2.2, 2.8]  # INCREASED Z from 1.0 to 2.5, added 20% variation for domain randomization
+    K_pos_tensor_min = [1.8, 1.8, 2.2]  # Added 20% variation range for position gain randomization
 
     # ENHANCED VELOCITY DAMPING for improved velocity controller stability
     K_vel_tensor_max = [

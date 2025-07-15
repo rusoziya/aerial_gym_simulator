@@ -124,8 +124,8 @@ def get_network(num_envs):
     # register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg(evaluation=True)
     print("CFG is:", cfg)
-    # 4D action space and 145D observation space for gate navigation with velocity control
-    nn_model = NN_Inference_Class(num_envs, 4, 145, cfg)  # 4D action, 145D observation
+    # RESTORED: 4D action space and 145D observation space for gate navigation with target guidance
+    nn_model = NN_Inference_Class(num_envs, 4, 145, cfg)  # 4D action, 145D observation (restored from 141D)
     return nn_model
 
 

@@ -12,7 +12,7 @@
 # - SOLUTION FOR INFERENCE COMPATIBILITY: Train with 4D actions directly
 #   * Training and inference both use 4D action space to avoid shape mismatch
 #   * This ensures trained models have 4D action output compatible with inference scripts
-# - Observation space: 145D total = 17D basic state + 64D drone VAE + 64D static camera VAE
+# - Observation space: 145D total = 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE
 #   * 0-3: normalized vector to target + distance to target / 5.0
 #   * 4-6: euler angles (roll, pitch, 0.0)  
 #   * 7-9: robot body linear velocity
@@ -79,12 +79,17 @@ class AerialGymVecEnv(gym.Env):
             self.gif_output_dir = "./gif_episodes"
             os.makedirs(self.gif_output_dir, exist_ok=True)
             
-            # Frame storage for each environment
+            # Frame storage for each environment - Clean versions
             self.drone_depth_frames = [[] for _ in range(self.num_agents)]
             self.drone_seg_frames = [[] for _ in range(self.num_agents)]
             self.static_depth_frames = [[] for _ in range(self.num_agents)]
             self.static_seg_frames = [[] for _ in range(self.num_agents)]
             self.merged_frames = [[] for _ in range(self.num_agents)]
+            
+            # NEW: Frame storage for D455 noised versions
+            self.drone_depth_noised_frames = [[] for _ in range(self.num_agents)]
+            self.static_depth_noised_frames = [[] for _ in range(self.num_agents)]
+            self.merged_noised_frames = [[] for _ in range(self.num_agents)]
         else:
             print(f"[AerialGymVecEnv] GIF saving DISABLED")
         
@@ -107,7 +112,7 @@ class AerialGymVecEnv(gym.Env):
             print(f"[AerialGymVecEnv] Detected observation space: {task_obs_dim}D")
             
             if task_obs_dim == 145:
-                print(f"[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 17D basic + 64D drone VAE + 64D static camera VAE)")
+                print(f"[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 4D target + 13D basic + 64D drone VAE + 64D static camera VAE)")
             elif task_obs_dim == 81:
                 print(f"[AerialGymVecEnv] Using STANDARD DCE configuration (81D = 17D basic + 64D drone VAE)")
             else:
@@ -141,7 +146,7 @@ class AerialGymVecEnv(gym.Env):
         return None
 
     def _collect_frames(self, obs_dict):
-        """Collect frames from both drone and static cameras for GIF generation."""
+        """Collect frames from both drone and static cameras for GIF generation (clean + noised versions)."""
         if not self.save_gifs:
             return
         
@@ -149,7 +154,8 @@ class AerialGymVecEnv(gym.Env):
             # Access camera data directly from the underlying task
             task = self.env
             
-            # Get drone camera depth image from task's obs_dict
+            # === CLEAN DRONE CAMERA IMAGES ===
+            # Get drone camera depth image from task's obs_dict (original clean version)
             if hasattr(task, 'obs_dict') and "depth_range_pixels" in task.obs_dict:
                 drone_depth = task.obs_dict["depth_range_pixels"][0, 0]  # First env, first camera
                 drone_depth_img = self._process_camera_image(drone_depth, "depth")
@@ -161,9 +167,17 @@ class AerialGymVecEnv(gym.Env):
                 drone_seg_img = self._process_camera_image(drone_seg, "segmentation")
                 self.drone_seg_frames[0].append(drone_seg_img)
             
-            # Get static camera images directly from static camera manager
-            if hasattr(task, 'static_camera_manager'):
-                static_depth, static_seg = task.static_camera_manager.capture_images()
+            # === D455 NOISED DRONE CAMERA IMAGES ===
+            # Get noised drone camera depth image (with D455 noise applied)
+            if hasattr(task, 'obs_dict') and "depth_range_pixels_noised" in task.obs_dict:
+                drone_depth_noised = task.obs_dict["depth_range_pixels_noised"][0, 0]  # First env, first camera
+                drone_depth_noised_img = self._process_camera_image(drone_depth_noised, "depth")
+                self.drone_depth_noised_frames[0].append(drone_depth_noised_img)
+            
+            # === CLEAN STATIC CAMERA IMAGES ===
+            # Get static camera images from stored clean versions
+            if hasattr(task, 'obs_dict') and "static_depth_clean" in task.obs_dict:
+                static_depth = task.obs_dict["static_depth_clean"]
                 
                 # Process static depth
                 if static_depth is not None:
@@ -181,6 +195,8 @@ class AerialGymVecEnv(gym.Env):
                     self.static_depth_frames[0].append(static_depth_img)
                 
                 # Process static segmentation
+            if hasattr(task, 'obs_dict') and "static_seg" in task.obs_dict:
+                static_seg = task.obs_dict["static_seg"]
                 if static_seg is not None:
                     # Convert to tensor if numpy array
                     if isinstance(static_seg, np.ndarray):
@@ -195,7 +211,27 @@ class AerialGymVecEnv(gym.Env):
                     static_seg_img = self._process_camera_image(static_seg_tensor, "segmentation")
                     self.static_seg_frames[0].append(static_seg_img)
                 
-            # Create merged image (drone + static side by side)
+            # === D455 NOISED STATIC CAMERA IMAGES ===
+            # Get noised static camera depth image (with D455 noise applied)
+            if hasattr(task, 'obs_dict') and "static_depth_noised" in task.obs_dict:
+                static_depth_noised = task.obs_dict["static_depth_noised"]
+                
+                # Process static depth
+                if static_depth_noised is not None:
+                    # Convert to tensor if numpy array
+                    if isinstance(static_depth_noised, np.ndarray):
+                        static_depth_noised_tensor = torch.from_numpy(static_depth_noised)
+                    else:
+                        static_depth_noised_tensor = static_depth_noised
+                    
+                    # Ensure 2D array for image processing
+                    if static_depth_noised_tensor.dim() > 2:
+                        static_depth_noised_tensor = static_depth_noised_tensor.squeeze()
+                    
+                    static_depth_noised_img = self._process_camera_image(static_depth_noised_tensor, "depth")
+                    self.static_depth_noised_frames[0].append(static_depth_noised_img)
+            
+            # === MERGED CLEAN IMAGES (drone + static side by side) ===
             if (len(self.drone_depth_frames[0]) > 0 and len(self.static_depth_frames[0]) > 0 and 
                 len(self.drone_depth_frames[0]) == len(self.static_depth_frames[0])):
                 drone_img = self.drone_depth_frames[0][-1]
@@ -215,6 +251,27 @@ class AerialGymVecEnv(gym.Env):
                 merged_array = np.concatenate((drone_array, static_array), axis=1)
                 merged_img = Image.fromarray(merged_array)
                 self.merged_frames[0].append(merged_img)
+            
+            # === MERGED NOISED IMAGES (drone + static side by side) ===
+            if (len(self.drone_depth_noised_frames[0]) > 0 and len(self.static_depth_noised_frames[0]) > 0 and 
+                len(self.drone_depth_noised_frames[0]) == len(self.static_depth_noised_frames[0])):
+                drone_noised_img = self.drone_depth_noised_frames[0][-1]
+                static_noised_img = self.static_depth_noised_frames[0][-1]
+                
+                # Convert to numpy arrays for concatenation
+                drone_noised_array = np.array(drone_noised_img)
+                static_noised_array = np.array(static_noised_img)
+                
+                # Resize static image to match drone image dimensions if needed
+                if drone_noised_array.shape != static_noised_array.shape:
+                    from PIL import Image as PILImage
+                    static_noised_img_resized = PILImage.fromarray(static_noised_array).resize((drone_noised_array.shape[1], drone_noised_array.shape[0]))
+                    static_noised_array = np.array(static_noised_img_resized)
+                
+                # Concatenate horizontally (side by side)
+                merged_noised_array = np.concatenate((drone_noised_array, static_noised_array), axis=1)
+                merged_noised_img = Image.fromarray(merged_noised_array)
+                self.merged_noised_frames[0].append(merged_noised_img)
                 
         except Exception as e:
             print(f"[GIF] Warning: Failed to collect frames: {e}")
@@ -276,9 +333,9 @@ class AerialGymVecEnv(gym.Env):
                 )
                 print(f"[GIF] Saved static segmentation: {gif_path}")
             
-            # Save merged GIF (drone + static side by side)
+            # Save merged GIF (drone + static side by side - CLEAN versions)
             if len(self.merged_frames[env_id]) > 0:
-                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera.gif")
+                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_CLEAN.gif")
                 self.merged_frames[env_id][0].save(
                     gif_path,
                     save_all=True,
@@ -286,19 +343,62 @@ class AerialGymVecEnv(gym.Env):
                     duration=100,
                     loop=0
                 )
-                print(f"[GIF] Saved merged dual camera: {gif_path}")
+                print(f"[GIF] Saved merged dual camera (CLEAN): {gif_path}")
+            
+            # === D455 NOISED CAMERA GIFS ===
+            # Save drone camera noised GIFs
+            if len(self.drone_depth_noised_frames[env_id]) > 0:
+                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_depth_D455_NOISED.gif")
+                self.drone_depth_noised_frames[env_id][0].save(
+                    gif_path,
+                    save_all=True,
+                    append_images=self.drone_depth_noised_frames[env_id][1:],
+                    duration=100,
+                    loop=0
+                )
+                print(f"[GIF] Saved drone depth (D455 NOISED): {gif_path}")
+            
+            # Save static camera noised GIFs
+            if len(self.static_depth_noised_frames[env_id]) > 0:
+                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_depth_D455_NOISED.gif")
+                self.static_depth_noised_frames[env_id][0].save(
+                    gif_path,
+                    save_all=True,
+                    append_images=self.static_depth_noised_frames[env_id][1:],
+                    duration=100,
+                    loop=0
+                )
+                print(f"[GIF] Saved static depth (D455 NOISED): {gif_path}")
+            
+            # Save merged noised GIF (drone + static side by side - NOISED versions)
+            if len(self.merged_noised_frames[env_id]) > 0:
+                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_D455_NOISED.gif")
+                self.merged_noised_frames[env_id][0].save(
+                    gif_path,
+                    save_all=True,
+                    append_images=self.merged_noised_frames[env_id][1:],
+                    duration=100,
+                    loop=0
+                )
+                print(f"[GIF] Saved merged dual camera (D455 NOISED): {gif_path}")
             
         except Exception as e:
             print(f"[GIF] Warning: Failed to save GIFs for episode {episode_num}: {e}")
 
     def _clear_frames(self, env_id=0):
-        """Clear collected frames for the specified environment."""
+        """Clear collected frames for the specified environment (clean + noised versions)."""
         if self.save_gifs and env_id < self.num_agents:
+            # Clear clean frames
             self.drone_depth_frames[env_id] = []
             self.drone_seg_frames[env_id] = []
             self.static_depth_frames[env_id] = []
             self.static_seg_frames[env_id] = []
             self.merged_frames[env_id] = []
+            
+            # Clear D455 noised frames
+            self.drone_depth_noised_frames[env_id] = []
+            self.static_depth_noised_frames[env_id] = []
+            self.merged_noised_frames[env_id] = []
 
     def reset(self, *args, **kwargs) -> Tuple[Dict[str, Tensor], Dict]:
         # some IGE envs return all zeros on the first timestep, but this is probably okay
@@ -336,14 +436,14 @@ class AerialGymVecEnv(gym.Env):
             # Save GIFs for terminated/truncated environments (only save for env 0 to avoid spam)
             reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
             if len(reset_ids) > 0 and 0 in reset_ids:  # Only save for first environment
-                # Check if this episode should be saved (every 100 episodes including episode 0)
-                save_this_episode = (self.episode_count % 100 == 0)
+                # Check if this episode should be saved (every 12 episodes including episode 0) - 4x more frequent than before
+                save_this_episode = (self.episode_count % 15 == 0)
                 
                 if save_this_episode:
                     if terminated[0]:
-                        print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 100 episodes)")
+                        print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 15 episodes)")
                     elif truncated[0]:
-                        print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 100 episodes)")
+                        print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 15 episodes)")
                     self._save_episode_gifs(env_id=0)
                     self._clear_frames(env_id=0)
                 else:
@@ -359,7 +459,7 @@ class AerialGymVecEnv(gym.Env):
         transformed_obs = {"obs": obs["observations"]}
         
         self.step_count += 1
-        # Removed step-based GIF debugging - now using episode-based saving every 100 episodes
+        # Removed step-based GIF debugging - now using episode-based saving every 50 episodes
         
         return transformed_obs, rew, terminated, truncated, infos
 
@@ -407,7 +507,7 @@ def make_aerialgym_env(
                     # Apply DCE-specific configuration changes
                     config.action_space_dim = 3  # DCE uses 3D actions (not 4D)
                     config.curriculum.min_level = 3  # Gate curriculum starts from level 3 (matches environment obstacles)
-                    config.curriculum.max_level = 20  # Gate curriculum goes up to level 20 (manageable obstacle count)
+                    config.curriculum.max_level = 23  # Gate curriculum goes up to level 23 (full difficulty range)
                     TaskClass = DCE_RL_Navigation_Task
                     register_name = "quad_with_obstacles"
                     backup_name = "dce_navigation_task"
@@ -536,7 +636,7 @@ def override_default_params_func(env, parser):
         num_envs_per_worker=1,  # CRITICAL: Only 1 environment per worker (but 128 agents inside it)
         worker_num_splits=1,
         actor_worker_gpus=[0],  # obviously need a GPU
-        train_for_env_steps=10000000,
+        train_for_env_steps=10000000000,
         use_rnn=False,
         adaptive_stddev=True,  # Default for other environments
         policy_initialization="torch_default",
@@ -744,7 +844,8 @@ env_configs = dict(
     ),
     quad_with_obstacles_gate=dict(
         # Gate Navigation Task Configuration
-        # Enhanced observation space: 145D (17D basic + 64D drone VAE + 64D static camera VAE)
+        # PURE VISION NAVIGATION EXPERIMENT: 141D observation space (13D basic + 64D drone VAE + 64D static camera VAE)
+        # Removed explicit target guidance to test vision-based navigation through gate
         # X500 robot with D455 camera flying through static gate with static camera
         adaptive_stddev=True,  # Can use adaptive_stddev with 4D actions
         action_space_dim=4,  # 4D action space for VELOCITY CONTROLLER (x_vel, y_vel, z_vel, yaw_rate)
@@ -958,6 +1059,11 @@ def register_aerialgym_custom_components():
     # This will be updated based on the actual env_agents parameter when env is created
     current_env_agents = os.environ.get('SF_ENV_AGENTS', '128')  # Default to maximum parallelization DCE configuration
     os.environ['SF_ENV_AGENTS'] = current_env_agents
+    
+    # Set train_dir for curriculum logging
+    import os
+    if 'SF_TRAIN_DIR' not in os.environ:
+        os.environ['SF_TRAIN_DIR'] = './train_dir'  # Default train directory
     if current_env_agents == '128':
         print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (MAXIMUM PARALLELIZATION DCE CONFIG)")
     elif current_env_agents == '32':
@@ -986,7 +1092,7 @@ def register_aerialgym_custom_components():
         # Apply DCE-specific configuration changes
         dce_config.action_space_dim = 3  # DCE uses 3D actions (not 4D)
         dce_config.curriculum.min_level = 3  # Gate curriculum starts from level 3 (matches environment obstacles)
-        dce_config.curriculum.max_level = 20  # Gate curriculum goes up to level 20 (manageable obstacle count)
+        dce_config.curriculum.max_level = 23  # Gate curriculum goes up to level 23 (full difficulty range)
         
         # FORCE headless setting - let DCE task handle the default, no override here
         # The headless setting will be properly handled in make_aerialgym_env function

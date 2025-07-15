@@ -15,45 +15,46 @@ from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuCo
 class LMF2Cfg:
 
     class init_config:
-        # SPAWN NEAR STATIC CAMERA FACING GATE DIRECTLY
-        # Static camera at (0, -3.0, 1.0) behind gate, facing towards gate (yaw = 0)
-        # Gate is rotated 90° around Z-axis, so opening faces +X direction
-        # Environment bounds: [-4, 4] x [-4, 4] x [0, 4]
+        # SIMPLIFIED SPAWN CONFIGURATION - NO CURRICULUM DEPENDENCY
+        # Fixed spawn ranges with minimal variation for consistent training
+        # Position: ±0.5m lateral variation around gate center
+        # Orientation: ±45° for reasonable randomization without curriculum complexity
+        # Velocity: Minimal initial velocity for more randomization
+        
+        # Position spawn: 2m behind gate center (Y=-2.0) with ±0.5m lateral (X) variation
+        # Height: 1.5m (gate center level) with ±0.1m variation
+        # Environment bounds: [-4,4] x [-4,4] x [0,4] = 8m × 8m × 4m
         # Position conversion: ratio = (position + 4) / 8 for X,Y; ratio = position / 4 for Z
-        # 
-        # Static camera position (0, -3.0, 1.0) = ratios (0.5, 0.125, 0.25)
-        # Small variations: ±0.3m in X, ±0.2m in Y, ±0.2m in Z
-        # FACE GATE OPENING DIRECTLY: yaw = π/2 (facing +X towards gate opening) with NO variation
         
         min_init_state = [
-            0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
-            0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
-            0.35,   # ratio_z: Z = 1.4 → ratio = 1.4 / 4 = 0.35 (AT GATE LEVEL - INCREASED from 0.2)
-            0,      # no roll
-            0,      # no pitch  
-            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+            0.4375, # ratio_x: X = -0.5m → ratio = ((-0.5) + 4) / 8 = 0.4375 (left of center)
+            0.225,  # ratio_y: Y = -2.2m → ratio = ((-2.2) + 4) / 8 = 0.225 (2.2m behind gate)
+            0.35,   # ratio_z: Z = 1.4m → ratio = 1.4 / 4 = 0.35 (gate level - 0.1m)
+            0,      # no roll variation
+            0,      # no pitch variation
+            -np.pi/4, # yaw: -45° for orientation randomization
             1.0,
-            -0.1,   # very small initial velocity variation
-            -0.1,
-            0.1,    # POSITIVE initial Z-velocity to help gain altitude (CHANGED from -0.1)
-            -0.1,
-            -0.1,
-            -0.1,
+            -0.1,   # minimal initial X velocity variation
+            -0.1,   # minimal initial Y velocity variation
+            -0.05,  # minimal initial Z velocity variation
+            -0.02,  # minimal initial roll rate
+            -0.02,  # minimal initial pitch rate
+            -0.05,  # minimal initial yaw rate
         ]
         max_init_state = [
-            0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
-            0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
-            0.4,    # ratio_z: Z = 1.6 → ratio = 1.6 / 4 = 0.4 (OPTIMAL GATE HEIGHT - INCREASED from 0.3)
-            0,      # no roll
-            0,      # no pitch
-            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+            0.5625, # ratio_x: X = +0.5m → ratio = ((+0.5) + 4) / 8 = 0.5625 (right of center)
+            0.275,  # ratio_y: Y = -1.8m → ratio = ((-1.8) + 4) / 8 = 0.275 (1.8m behind gate)
+            0.4,    # ratio_z: Z = 1.6m → ratio = 1.6 / 4 = 0.4 (gate level + 0.1m)
+            0,      # no roll variation
+            0,      # no pitch variation
+            np.pi/4, # yaw: +45° for orientation randomization
             1.0,
-            0.1,    # very small initial velocity variation
-            0.1,
-            0.2,    # POSITIVE initial Z-velocity to help gain altitude (CHANGED from 0.1)
-            0.1,
-            0.1,
-            0.1,
+            0.1,    # minimal initial X velocity variation
+            0.1,    # minimal initial Y velocity variation
+            0.05,   # minimal initial Z velocity variation
+            0.02,   # minimal initial roll rate
+            0.02,   # minimal initial pitch rate
+            0.05,   # minimal initial yaw rate
         ]
 
     class sensor_config:

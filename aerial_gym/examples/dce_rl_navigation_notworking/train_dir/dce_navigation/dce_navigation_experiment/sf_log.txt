@@ -1,0 +1,121 @@
+[2025-06-28 23:10:20,571][1056112] Saving configuration to ./train_dir/dce_navigation/dce_navigation_experiment/config.json...
+[2025-06-28 23:10:20,649][1056112] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-06-28 23:10:20,650][1056112] Rollout worker 0 uses device cuda:0
+[2025-06-28 23:10:21,000][1056112] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-06-28 23:10:21,000][1056112] InferenceWorker_p0-w0: min num requests: 1
+[2025-06-28 23:10:21,000][1056112] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-06-28 23:10:21,001][1056112] Starting seed is not provided
+[2025-06-28 23:10:21,001][1056112] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-06-28 23:10:21,001][1056112] Initializing actor-critic model on device cuda:0
+[2025-06-28 23:10:21,001][1056112] RunningMeanStd input shape: (1, 135, 240)
+[2025-06-28 23:10:21,002][1056112] RunningMeanStd input shape: (81,)
+[2025-06-28 23:10:21,002][1056112] RunningMeanStd input shape: (1,)
+[2025-06-28 23:10:21,011][1056112] ConvEncoder: input_channels=1
+[2025-06-28 23:10:21,112][1056112] Conv encoder output size: 512
+[2025-06-28 23:10:21,127][1056112] Created Actor Critic model with architecture:
+[2025-06-28 23:10:21,127][1056112] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (image_obs): RunningMeanStdInPlace()
+        (observations): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): CustomEncoder(
+    (encoders): ModuleDict(
+      (image_obs): ConvEncoder(
+        (enc): RecursiveScriptModule(
+          original_name=ConvEncoderImpl
+          (conv_head): RecursiveScriptModule(
+            original_name=Sequential
+            (0): RecursiveScriptModule(original_name=Conv2d)
+            (1): RecursiveScriptModule(original_name=ELU)
+            (2): RecursiveScriptModule(original_name=Conv2d)
+            (3): RecursiveScriptModule(original_name=ELU)
+            (4): RecursiveScriptModule(original_name=Conv2d)
+            (5): RecursiveScriptModule(original_name=ELU)
+          )
+          (mlp_layers): RecursiveScriptModule(
+            original_name=Sequential
+            (0): RecursiveScriptModule(original_name=Linear)
+            (1): RecursiveScriptModule(original_name=ELU)
+          )
+        )
+      )
+    )
+    (mlp_head_custom): RecursiveScriptModule(
+      original_name=Sequential
+      (0): RecursiveScriptModule(original_name=Linear)
+      (1): RecursiveScriptModule(original_name=ELU)
+      (2): RecursiveScriptModule(original_name=Linear)
+      (3): RecursiveScriptModule(original_name=ELU)
+      (4): RecursiveScriptModule(original_name=Linear)
+      (5): RecursiveScriptModule(original_name=ELU)
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-06-28 23:10:21,630][1056112] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-06-28 23:10:21,630][1056112] No checkpoints found
+[2025-06-28 23:10:21,631][1056112] Did not load from checkpoint, starting from scratch!
+[2025-06-28 23:10:21,631][1056112] Initialized policy 0 weights for model version 0
+[2025-06-28 23:10:21,631][1056112] LearnerWorker_p0 finished initialization!
+[2025-06-28 23:10:21,631][1056112] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-06-28 23:10:21,966][1056112] Inference worker 0-0 is ready!
+[2025-06-28 23:10:21,966][1056112] All inference workers are ready! Signal rollout workers to start!
+[2025-06-28 23:10:21,966][1056112] EnvRunner 0-0 uses policy 0
+[2025-06-28 23:10:23,678][1056112] EvtLoop [Runner_EvtLoop, process=main process 1056112] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Sampler', signal_name='_inference_workers_initialized'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 181, in init
+    self.last_obs, info = self.vec_env.reset()  # anything we need to do with info? Currently we ignore it
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 219, in reset
+    return self._convert(obs), info
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 175, in _convert
+    result[key] = self._convert_obs_func[key](value)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 191, in <lambda>
+    return lambda x_: torch.tensor(x_)
+ValueError: only one element tensors can be converted to Python scalars
+[2025-06-28 23:10:23,679][1056112] Unhandled exception only one element tensors can be converted to Python scalars in evt loop Runner_EvtLoop
+[2025-06-28 23:10:23,679][1056112] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 181, in init
+    self.last_obs, info = self.vec_env.reset()  # anything we need to do with info? Currently we ignore it
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 219, in reset
+    return self._convert(obs), info
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 175, in _convert
+    result[key] = self._convert_obs_func[key](value)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/make_env.py", line 191, in <lambda>
+    return lambda x_: torch.tensor(x_)
+ValueError: only one element tensors can be converted to Python scalars
+[2025-06-28 23:10:23,680][1056112] Runner profile tree view:
+main_loop: 2.6791
+[2025-06-28 23:10:23,680][1056112] Collected {0: 0}, FPS: 0.0

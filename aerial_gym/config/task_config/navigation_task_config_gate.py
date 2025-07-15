@@ -14,9 +14,12 @@ class task_config:
     headless = False  # Enable visualization to view both cameras (can be overridden by Sample Factory)
     device = "cuda:0"
     
-    # Enhanced observation space: 17D basic state + 64D drone VAE + 64D static camera VAE = 145D
+    # Enhanced observation space: 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE = 145D
+    # RESTORED: Target guidance observations (vec_to_target + distance) are now enabled
+    # Original: 17D basic state + 128D camera = 145D  
+    # Current:  4D target guidance + 13D basic state + 128D camera = 145D (full navigation assistance)
     # Both cameras now share the same VAE model to reduce GPU memory usage by ~50%
-    observation_space_dim = 17 + 64 + 64  # Enhanced with static camera VAE latents
+    observation_space_dim = 4 + 13 + 64 + 64  # RESTORED: Full navigation with target guidance = 145D
     privileged_observation_space_dim = 0
     action_space_dim = 4  # 4D action space [x_vel, y_vel, z_vel, yaw_rate] for velocity control
     episode_len_steps = 100  # REDUCED: Faster episodes for quicker training feedback and evaluation
@@ -31,7 +34,7 @@ class task_config:
     # Obstacles at Y = [+2.0, +3.2], so targets should be beyond Y = +3.6
     # FIXED: Target Z-range within gate flyable zone (0.2-2.2m → ratios 0.05-0.55)
     target_min_ratio = [0.2, 0.95, 0.35]  # Y=0.95 -> Y=+3.6 (beyond obstacles), Z=0.35 -> Z=1.4m (gate level)
-    target_max_ratio = [0.8, 0.99, 0.45]  # Y=0.99 -> Y=+3.92 (well beyond obstacles), Z=0.45 -> Z=1.8m (within gate)
+    target_max_ratio = [0.8, 0.99, 0.65]  # Y=0.99 -> Y=+3.92 (well beyond obstacles), Z=0.45 -> Z=1.8m (within gate)
     
     # GATE DIMENSIONS ANALYSIS (from gate.urdf):
     # - Gate opening: 2.5m wide (Y = ±1.25m) × 2.3m tall (Z = 0.1m to 2.4m)
@@ -107,12 +110,12 @@ class task_config:
         # "gate_center_passage_bonus_magnitude": 15.0,  # Large bonus for passing through center of gate
         "gate_center_passage_bonus_magnitude": 50.0,  # Large bonus for passing through center of gate
         # "camera_facing_reward_magnitude": 5.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
-        "camera_facing_reward_magnitude": 5.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
+        "camera_facing_reward_magnitude": 0.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
 
         
         # NEW: Altitude maintenance reward to encourage proper gate-level flying
-        "altitude_maintenance_reward_magnitude": 2.0,  # Reward for staying at gate height (1.2-1.8m)
-        "altitude_maintenance_reward_exponent": 2.0,   # Exponential reward for being at optimal altitude
+        "altitude_maintenance_reward_magnitude": 0.0,  # Reward for staying at gate height (1.2-1.8m)
+        "altitude_maintenance_reward_exponent": 0.0,   # Exponential reward for being at optimal altitude
         
         # Gate collision penalty (separate from general collision for specificity)
         "gate_collision_penalty": -50.0,  # Additional penalty for hitting gate specifically
@@ -132,22 +135,178 @@ class task_config:
         interpolation_mode = "nearest"
         return_sampled_latent = True
 
-    # Gate navigation curriculum with static camera positioning progression
+    # ===== NEW MULTI-ASPECT CURRICULUM LEARNING SYSTEM =====
+    # Comprehensive domain randomization with multiple difficulty aspects
     class curriculum:
-        min_level = 3  # Start with 3 obstacles to match gate environment configuration (was 1)
-        max_level = 20  # Progress to more difficult static camera positions
-        check_after_log_instances = 1024  # Check curriculum progress more frequently for gate task
-        increase_step = 1
-        decrease_step = 1
-        success_rate_for_increase = 0.75  # Higher success rate needed for gate task
-        success_rate_for_decrease = 0.5
+        # EXPANDED CURRICULUM RANGE: Level 3-23 (20 levels total)
+        min_level = 3   # Start with 3 obstacles behind gate (base level)
+        max_level = 23  # End with maximum difficulty (20 levels of progression)
+        
+        # ===== 5. CAMERA NOISE PROGRESSION (Levels 3-23) - D455 Realistic Noise =====
+        # Simulate Intel RealSense D455 camera characteristics for both drone and static cameras
+        enable_camera_noise = True                # Enable curriculum-dependent camera noise
+        camera_noise_start_level = 3             # Start minimal noise from level 3 
+        camera_noise_end_level = 23              # Reach maximum noise at level 23
+        max_gaussian_noise_std = 0.0125          # Maximum Gaussian noise: 1.25% of depth range
+        max_pixel_dropout_rate = 0.025           # Maximum pixel dropout: 2.5% of pixels
+        
+        # EVALUATION PARAMETERS
+        check_after_log_instances = 128  # INCREASED FREQUENCY: Check curriculum every 128 instances for faster progression
+        increase_step = 1  # Increase by 1 level at a time for fine-grained progression
+        decrease_step = 0   # NO DECREASE POLICY: Once a level is reached, never go back
+        success_rate_for_increase = 0.0001   # TEMPORARY: 5% success rate for quick testing (was 50%)
+        success_rate_for_decrease = 0.0   # DISABLED: Never decrease difficulty (no-decrease policy)
+        
+        # MULTI-ASPECT DIFFICULTY PROGRESSION
+        # Each curriculum level controls multiple aspects of difficulty:
+        
+        # 1. OBSTACLE COUNT PROGRESSION (Levels 3-23: Increase obstacles behind gate)
+        # Levels 3-23: Direct 1:1 mapping - curriculum level = obstacle count
+        # Level 3: 3 obstacles, Level 4: 4 obstacles, ..., Level 23: 23 obstacles
+        max_obstacles_behind_gate = 25  # Maximum obstacles behind gate (level 23 + buffer)
+        
+        # CRITICAL FIX: Ensure asset capacity matches environment configuration  
+        # Gate environment now loads 30 objects initially, curriculum can use up to 25
+        total_asset_capacity = 30  # Must match gate_object_params.num_assets in gate_env.py
+        
+        # 2. DRONE SPAWNING: FIXED PARAMETERS (NO CURRICULUM DEPENDENCY)
+        # Spawn parameters are now fixed in LMF2 robot config:
+        # - Lateral position: ±0.5m variation around gate center (2m behind gate)
+        # - Orientation: ±45° randomization (fixed, not curriculum-dependent)
+        # - Initial velocity: Minimal random values for additional variation
+        
+        # 3. STATIC CAMERA DIFFICULTY PROGRESSION (Levels 5-23)
+        # Levels 3-4: Camera directly behind gate facing forward (easiest)
+        # Levels 5-12: Camera at side angles but still seeing full gate
+        # Levels 13-20: Camera at extreme angles with partial gate visibility
+        # Levels 21-23: Camera at hardest angles with minimal gate visibility
+        camera_orientation_start_level = 5    # Start camera orientation changes at level 5
+        max_camera_angle_degrees = 30         # Maximum camera angle from straight-on view
+        
+        # DEBUGGING AND MONITORING
+        enable_detailed_logging = True  # Enable comprehensive curriculum debugging
+        log_curriculum_changes = True   # Log all curriculum aspect changes
+        save_curriculum_metrics = True  # Save curriculum metrics to wandb
 
         def update_curriculim_level(self, success_rate, current_level):
+            """
+            ENHANCED CURRICULUM UPDATE WITH NO-DECREASE POLICY
+            
+            This function implements a no-decrease policy where once a level is reached,
+            the difficulty never goes back down. This ensures consistent progression
+            and prevents oscillation between difficulty levels.
+            """
+            # ONLY ALLOW INCREASES (No-decrease policy)
             if success_rate > self.success_rate_for_increase:
-                return min(current_level + self.increase_step, self.max_level)
-            elif success_rate < self.success_rate_for_decrease:
-                return max(current_level - self.decrease_step, self.min_level)
-            return current_level
+                new_level = min(current_level + self.increase_step, self.max_level)
+                return new_level
+            else:
+                # Maintain current level (never decrease)
+                return current_level
+        
+        @staticmethod
+        def get_obstacle_count_behind_gate(level):
+            """
+            Calculate number of obstacles behind gate based on curriculum level.
+            
+            FIXED: Direct 1:1 mapping between curriculum level and obstacle count
+            - Level 3: 3 obstacles
+            - Level 4: 4 obstacles
+            - ...
+            - Level 23: 23 obstacles
+            
+            Simple progression: obstacle_count = curriculum_level
+            """
+            max_obstacles_behind_gate = 25  # INCREASED: Support up to 25 obstacles (level 23 + buffer)
+            total_asset_capacity = 30  # Must match gate_object_params.num_assets in gate_env.py
+            
+            # SIMPLE DIRECT MAPPING: curriculum level = obstacle count
+            requested_obstacles = level
+            
+            # CRITICAL VALIDATION: Ensure we never exceed total asset capacity
+            if requested_obstacles > total_asset_capacity:
+                print(f"WARNING: Curriculum requested {requested_obstacles} obstacles but only {total_asset_capacity} available!")
+                requested_obstacles = total_asset_capacity
+            
+            return requested_obstacles
+        
+        @staticmethod
+        def get_camera_noise(level):
+            """
+            Calculate camera noise parameters based on curriculum level.
+            
+            LINEAR PROGRESSION: Level 3 → Level 23
+            - Level 3: 0% noise (no noise at start)
+            - Level 23: Maximum noise (full D455 simulation)
+            - Linear interpolation between levels
+            
+            D455 Camera Noise Simulation:
+            - Gaussian noise: Simulates depth measurement uncertainty  
+            - Pixel dropouts: Simulates missing depth readings
+            
+            Args:
+                level: Current curriculum level (3-23)
+                
+            Returns:
+                tuple: (gaussian_std, dropout_rate) - Noise parameters for current level
+            """
+            # Linear progression constants
+            camera_noise_start_level = 3       # Start at level 3 with 0 noise
+            camera_noise_end_level = 23        # End at level 23 with max noise
+            max_gaussian_noise_std = 0.0125    # Maximum Gaussian noise: 1.25% of depth range
+            max_pixel_dropout_rate = 0.025     # Maximum pixel dropout: 2.5% of pixels
+            
+            # Linear progression from level 3 to 23
+            if level <= camera_noise_start_level:
+                return 0.0, 0.0  # No noise at level 3
+            elif level >= camera_noise_end_level:
+                return max_gaussian_noise_std, max_pixel_dropout_rate  # Full noise at level 23
+            else:
+                # Linear interpolation between start and end levels
+                level_progress = (level - camera_noise_start_level) / (camera_noise_end_level - camera_noise_start_level)
+                gaussian_std = level_progress * max_gaussian_noise_std
+                dropout_rate = level_progress * max_pixel_dropout_rate
+                return gaussian_std, dropout_rate
+
+        # REMOVED: get_drone_lateral_offset and get_drone_orientation_randomization
+        # These methods have been removed as we now use fixed parameters in LMF2 config
+        # with ±0.5m lateral variation and ±45° orientation without curriculum dependency
+        
+        @staticmethod
+        def get_static_camera_difficulty(level):
+            """
+            Calculate static camera positioning difficulty based on curriculum level.
+            
+            LINEAR PROGRESSION: Level 3 → Level 23
+            - Level 3: 0° max angle range (fixed straight-behind view)
+            - Level 23: ±30° max angle range (randomized within full range each episode)
+            - Linear interpolation between levels
+            
+            Returns:
+                max_camera_angle: Maximum angle range for randomization (±this value)
+                height_offset: Height offset from default position (always 0 - position stays fixed)
+                distance_offset: Distance offset from default position (always 0 - position stays fixed)
+            """
+            # Class constants - LINEAR PROGRESSION
+            camera_start_level = 3     # Start progression from level 3
+            max_level = 23            # End progression at level 23
+            max_camera_angle_degrees = 30  # Maximum ±30° range
+            
+            # Linear progression from level 3 to 23
+            if level <= camera_start_level:
+                max_camera_angle = 0.0  # No angle variation at level 3
+            elif level >= max_level:
+                max_camera_angle = max_camera_angle_degrees  # Full ±30° range at level 23
+            else:
+                # Linear interpolation between start and end levels
+                level_progress = (level - camera_start_level) / (max_level - camera_start_level)
+                max_camera_angle = level_progress * max_camera_angle_degrees
+            
+            # Position stays FIXED - only angle changes
+            height_offset = 0.0    # No height variation - keep fixed position
+            distance_offset = 0.0  # No distance variation - keep fixed position
+            
+            return max_camera_angle, height_offset, distance_offset
 
     # Static camera curriculum positioning based on difficulty level
     class static_camera_curriculum:
@@ -158,7 +317,7 @@ class task_config:
             Get static camera position and orientation based on curriculum level.
             
             Args:
-                level: Current curriculum level (3-20)
+                level: Current curriculum level (3-23)
                 gate_position: Gate position in world coordinates
                 env_bounds: Environment bounds [min_x, max_x, min_y, max_y, min_z, max_z]
             
@@ -166,30 +325,29 @@ class task_config:
                 position: [x, y, z] camera position
                 orientation: [x, y, z, w] quaternion orientation (looking at gate)
             """
-            # Normalize level to [0, 1] range
-            level_progress = (level - 3) / (20 - 3)  # 0.0 at level 3, 1.0 at level 20
+            # Use the curriculum system to get camera difficulty parameters
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+            camera_angle, height_offset, distance_offset = task_config.curriculum.get_static_camera_difficulty(level)
             
             # Environment dimensions
             env_width_x = env_bounds[1] - env_bounds[0]  # 8m
             env_width_y = env_bounds[3] - env_bounds[2]  # 8m
             env_height_z = env_bounds[5] - env_bounds[4]  # 4m
             
-            # Camera height progression: start low, increase with difficulty
-            camera_height = 1.0 + level_progress * 1.5  # 1.0m to 2.5m
+            # Base camera position (behind gate, looking forward)
+            base_distance = 3.0 + distance_offset  # 3.0m to 4.5m behind gate
+            base_height = 1.5 + height_offset       # 1.0m to 2.0m height
             
-            # Camera distance from gate: start close, move further with difficulty  
-            base_distance = 3.0  # meters behind gate
-            distance_variation = level_progress * 1.5  # up to 1.5m further
-            camera_distance = base_distance + distance_variation
+            # Apply angular offset for progressive difficulty
+            import math
+            angle_rad = math.radians(camera_angle)
+            lateral_offset = base_distance * math.sin(angle_rad)
+            depth_offset = base_distance * math.cos(angle_rad)
             
-            # Camera lateral offset: start centered, add offset with difficulty
-            max_lateral_offset = 1.5  # maximum lateral displacement
-            lateral_offset = (level_progress - 0.5) * max_lateral_offset  # -0.75m to +0.75m
-            
-            # Position camera behind gate (negative Y direction)
+            # Position camera with progressive difficulty
             camera_x = gate_position[0] + lateral_offset
-            camera_y = gate_position[1] - camera_distance  # Behind gate
-            camera_z = camera_height
+            camera_y = gate_position[1] - depth_offset  # Behind gate
+            camera_z = base_height
             
             # Ensure camera stays within environment bounds with margin
             margin = 0.5
@@ -199,7 +357,7 @@ class task_config:
             
             position = [camera_x, camera_y, camera_z]
             
-            # Calculate orientation to look at gate center
+            # Calculate orientation to look at gate center (always face gate)
             import torch
             camera_pos = torch.tensor(position, dtype=torch.float32)
             gate_pos = torch.tensor(gate_position, dtype=torch.float32)

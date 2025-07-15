@@ -1,0 +1,57 @@
+[2025-07-02 21:39:20,746][727427] Saving configuration to ./train_dir/gate_nav_dual_cam_20250702_213904/config.json...
+[2025-07-02 21:39:20,798][727427] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:39:20,798][727427] Rollout worker 0 uses device cuda:0
+[2025-07-02 21:39:21,194][727427] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:39:21,194][727427] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-02 21:39:21,194][727427] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:39:21,195][727427] Starting seed is not provided
+[2025-07-02 21:39:21,195][727427] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:39:21,195][727427] Initializing actor-critic model on device cuda:0
+[2025-07-02 21:39:21,196][727427] RunningMeanStd input shape: (145,)
+[2025-07-02 21:39:21,196][727427] RunningMeanStd input shape: (1,)
+[2025-07-02 21:39:21,225][727427] Created Actor Critic model with architecture:
+[2025-07-02 21:39:21,226][727427] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=6, bias=True)
+  )
+)
+[2025-07-02 21:39:21,690][727427] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-02 21:39:21,691][727427] No checkpoints found
+[2025-07-02 21:39:21,691][727427] Did not load from checkpoint, starting from scratch!
+[2025-07-02 21:39:21,692][727427] Initialized policy 0 weights for model version 0
+[2025-07-02 21:39:21,692][727427] LearnerWorker_p0 finished initialization!
+[2025-07-02 21:39:21,693][727427] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-02 21:39:21,714][727427] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-02 21:39:21,715][727427] Inference worker 0-0 is ready!
+[2025-07-02 21:39:21,715][727427] All inference workers are ready! Signal rollout workers to start!
+[2025-07-02 21:39:21,715][727427] EnvRunner 0-0 uses policy 0

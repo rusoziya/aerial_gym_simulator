@@ -17,6 +17,8 @@ from isaacgym import gymapi, gymtorch
 
 logger = CustomLogger("navigation_task_gate")
 
+# VERSION: 2025.01.09_v2 - Fixed AttributeError curriculum_log_file in subprocesses
+# Added robust curriculum logging with proper hasattr() checks
 
 def dict_to_class(dict):
     return type("ClassFromDict", (object,), dict)
@@ -55,6 +57,18 @@ class NavigationTaskGate(BaseTask):
             )
         )
 
+        # CRITICAL FIX: Set curriculum level and obstacle count BEFORE building environment
+        # This ensures the asset manager gets the correct count from the start
+        self.curriculum_level = self.task_config.curriculum.min_level
+        obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
+        
+        # Estimate fixed assets: gate (1) + walls (6) + robot (1) = 8 base assets
+        estimated_fixed_assets = 8
+        total_obstacles_in_env = estimated_fixed_assets + obstacles_behind_gate
+        
+        logger.info(f"PRE-INIT: Setting curriculum level {self.curriculum_level} with {obstacles_behind_gate} curriculum obstacles")
+        logger.info(f"PRE-INIT: Total obstacle count for asset manager: {total_obstacles_in_env}")
+
         self.sim_env = SimBuilder().build_env(
             sim_name=self.task_config.sim_name,
             env_name=self.task_config.env_name,
@@ -66,6 +80,11 @@ class NavigationTaskGate(BaseTask):
             use_warp=self.task_config.use_warp,
             headless=self.task_config.headless,
         )
+        
+        # CRITICAL FIX: Immediately update the environment's obstacle count after creation
+        if hasattr(self.sim_env, 'global_tensor_dict'):
+            self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            logger.info(f"POST-INIT: Updated global_tensor_dict with obstacle count: {total_obstacles_in_env}")
 
         self.target_position = torch.zeros(
             (self.sim_env.num_envs, 3), device=self.device, requires_grad=False
@@ -100,7 +119,7 @@ class NavigationTaskGate(BaseTask):
                 requires_grad=False,
             )
             # Reuse the same VAE model for static camera processing
-            self.static_camera_latents = torch.zeros(
+            self.static_image_latents = torch.zeros(
                 (self.sim_env.num_envs, self.task_config.vae_config.latent_dims),  # Same latent dims
                 device=self.device,
                 requires_grad=False,
@@ -110,7 +129,7 @@ class NavigationTaskGate(BaseTask):
             self.image_latents = torch.zeros(
                 (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
             )
-            self.static_camera_latents = torch.zeros(
+            self.static_image_latents = torch.zeros(
                 (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
             )
 
@@ -119,20 +138,69 @@ class NavigationTaskGate(BaseTask):
 
         # Get the dictionary once from the environment and use it to get the observations later.
         self.obs_dict = self.sim_env.get_obs()
-        if "curriculum_level" not in self.obs_dict.keys():
-            self.curriculum_level = self.task_config.curriculum.min_level
-            self.obs_dict["curriculum_level"] = self.curriculum_level
-        else:
-            self.curriculum_level = self.obs_dict["curriculum_level"]
         
-        # Calculate total obstacles: fixed assets (1 gate + 6 walls = 7) + curriculum objects (3)
-        # Asset manager expects count of ALL assets with keep_in_env=True (total=10)
-        FIXED_ASSETS_COUNT = 7  # 1 gate + 6 boundary walls (left, right, front, back, bottom, top)
-        total_obstacles_in_env = FIXED_ASSETS_COUNT + self.curriculum_level  # 7 + 3 = 10
+        # Use the curriculum level that was already set during pre-initialization
+        self.obs_dict["curriculum_level"] = self.curriculum_level
+        
+        # Track maximum curriculum level reached (for no-decrease policy)
+        self.max_curriculum_level_reached = self.curriculum_level
+        
+        # ===== CURRICULUM PARAMETER INITIALIZATION =====
+        # Get obstacle count using the already-set curriculum level
+        obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
+        
+        # Initialize curriculum logging first
+        self.curriculum_log_file = None  # Initialize to None
+        self.setup_curriculum_logging()  # Set up logging before using it
+        
+        # Get the actual number of assets that are always kept from the asset manager
+        if hasattr(self.sim_env, 'asset_manager') and hasattr(self.sim_env.asset_manager, 'num_keep_in_env'):
+            fixed_assets_always_kept = self.sim_env.asset_manager.num_keep_in_env
+            logger.info(f"ACTUAL: Asset manager reports {fixed_assets_always_kept} fixed assets")
+        else:
+            # Use the estimated value from pre-initialization
+            fixed_assets_always_kept = 8  # Gate + 6 walls + robot (estimated)
+            logger.warning(f"FALLBACK: Using estimated {fixed_assets_always_kept} fixed assets")
+        
+        total_obstacles_in_env = fixed_assets_always_kept + obstacles_behind_gate
+        
+        # Update observation dictionary with obstacle count
         self.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
+        
+        # Confirm the environment manager has the correct count
+        if hasattr(self.sim_env, 'global_tensor_dict'):
+            if self.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0) != total_obstacles_in_env:
+                logger.warning(f"MISMATCH: Updating global_tensor_dict from {self.sim_env.global_tensor_dict.get('num_obstacles_in_env', 0)} to {total_obstacles_in_env}")
+                self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            else:
+                logger.info(f"CONFIRMED: Global tensor dict already has correct obstacle count: {total_obstacles_in_env}")
+        
+        logger.info(f"FINAL: Fixed assets: {fixed_assets_always_kept}, Curriculum obstacles: {obstacles_behind_gate}, Total: {total_obstacles_in_env}")
+        
+        # Initialize camera difficulty parameters (only static camera curriculum remains)
+        self.max_camera_angle, self.camera_height_offset, self.camera_distance_offset = self.task_config.curriculum.get_static_camera_difficulty(self.curriculum_level)
+        
+        # ===== CURRICULUM LOGGING =====
+        logger.info(f"INITIAL CURRICULUM (Level {self.curriculum_level}):")
+        logger.info(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_always_kept} fixed + {obstacles_behind_gate} curriculum)")
+        logger.info(f"   2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency)")
+        logger.info(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
+        
+        # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
+        initial_camera_gaussian_std, initial_camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
+        logger.info(f"   5. CAMERA NOISE: Gaussian STD={initial_camera_gaussian_std:.4f}, Dropout={initial_camera_dropout_rate*100:.1f}% (both drone & static)")
+        
+        logger.info(f"   6. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
+        
+        # Calculate progress fraction
         self.curriculum_progress_fraction = (
             self.curriculum_level - self.task_config.curriculum.min_level
         ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
+        
+        logger.info(f"   7. PROGRESS: {self.curriculum_progress_fraction:.3f} (level {self.curriculum_level}/{self.task_config.curriculum.max_level})")
+        logger.info(f"   8. EVALUATION: Check every {self.task_config.curriculum.check_after_log_instances} instances (success rate threshold: {self.task_config.curriculum.success_rate_for_increase:.3f})")
+        
+        self.log_curriculum_update(f"[INIT] Multi-aspect curriculum initialized at level {self.curriculum_level}")
 
         self.terminations = self.obs_dict["crashes"]
         self.truncations = self.obs_dict["truncations"]
@@ -144,7 +212,7 @@ class NavigationTaskGate(BaseTask):
                 "observations": Box(
                     low=-1.0,
                     high=1.0,
-                    shape=(self.task_config.observation_space_dim,),  # 145D: 17D basic + 64D drone VAE + 64D static VAE
+                    shape=(self.task_config.observation_space_dim,),  # 141D: 13D basic + 64D drone VAE + 64D static VAE (PURE VISION)
                     dtype=np.float32,
                 ),
                 "image_obs": Box(
@@ -184,6 +252,8 @@ class NavigationTaskGate(BaseTask):
         }
 
         self.num_task_steps = 0
+        
+        # Curriculum logging already initialized earlier in __init__
 
     def close(self):
         try:
@@ -195,12 +265,85 @@ class NavigationTaskGate(BaseTask):
                 print("[DEBUG] No cleanup method found for sim_env")
         except Exception as e:
             print(f"[DEBUG] Error during close: {e}")
+        
+        # Close curriculum log file
+        if hasattr(self, 'curriculum_log_file') and self.curriculum_log_file:
+            try:
+                import datetime
+                self.curriculum_log_file.write(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Training session ended.\n")
+                self.curriculum_log_file.write("="*80 + "\n")
+                self.curriculum_log_file.close()
+            except Exception as e:
+                print(f"[DEBUG] Error closing curriculum log: {e}")
+
+    def setup_curriculum_logging(self):
+        """Setup separate curriculum logging file in train_dir."""
+        try:
+            # Try to determine train_dir path from Sample Factory environment or working directory
+            import os
+            import datetime
+            
+            # Get train_dir from environment variable or use current directory/train_dir
+            train_dir = os.environ.get('SF_TRAIN_DIR', './train_dir')
+            
+            # If train_dir doesn't exist, create it
+            os.makedirs(train_dir, exist_ok=True)
+            
+            # Create curriculum log filename with timestamp
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            curriculum_log_filename = f"curriculum_gate_navigation_{timestamp}.log"
+            curriculum_log_path = os.path.join(train_dir, curriculum_log_filename)
+            
+            # Open curriculum log file in UTF-8 encoding
+            self.curriculum_log_file = open(curriculum_log_path, 'w', encoding='utf-8')
+            
+            # Log initial setup
+            init_message = f"=== CURRICULUM LOGGING STARTED ===\nTimestamp: {timestamp}\nLog file: {curriculum_log_path}\n"
+            self.curriculum_log_file.write(init_message)
+            self.curriculum_log_file.flush()
+            
+            logger.info(f"Curriculum logging setup successful: {curriculum_log_path}")
+            
+        except Exception as e:
+            # If curriculum logging setup fails, continue without it
+            logger.warning(f"Failed to setup curriculum logging: {e}")
+            logger.warning("Continuing without curriculum file logging (console logging still active)")
+            self.curriculum_log_file = None
+
+    def log_curriculum_update(self, message):
+        """Log curriculum update messages to both console and curriculum log file."""
+        try:
+            # Always log to console
+            logger.warning(message)
+            
+            # Try to log to file if available
+            if hasattr(self, 'curriculum_log_file') and self.curriculum_log_file:
+                try:
+                    import datetime
+                    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    self.curriculum_log_file.write(f"[{timestamp}] {message}\n")
+                    self.curriculum_log_file.flush()  # Ensure immediate write
+                except Exception as e:
+                    # If file logging fails, continue without it
+                    logger.debug(f"Failed to write to curriculum log file: {e}")
+        except Exception as e:
+            # If anything fails, just log to console
+            logger.warning(f"Curriculum update: {message}")
+            logger.debug(f"Curriculum logging error: {e}")
 
     def reset(self):
         self.reset_idx(torch.arange(self.sim_env.num_envs))
         return self.get_return_tuple()
 
     def reset_idx(self, env_ids):
+        """
+        SIMPLIFIED RESET WITH FIXED SPAWNING PARAMETERS
+        
+        Uses LMF2 robot config for spawning with fixed parameters:
+        - ±0.5m lateral variation from gate center
+        - ±45° orientation randomization  
+        - Minimal initial velocity for randomization
+        """
         # Set target positions (goals remain on front side of gate)
         target_ratio = torch_rand_float_tensor(self.target_min_ratio, self.target_max_ratio)
         self.target_position[env_ids] = torch_interpolate_ratio(
@@ -209,15 +352,25 @@ class NavigationTaskGate(BaseTask):
             ratio=target_ratio[env_ids],
         )
         
+        # Robot spawning is now handled by the normal Isaac Gym reset mechanism
+        # which uses the min_init_state and max_init_state from LMF2 config
+        # This provides ±0.5m lateral variation and ±45° orientation automatically
+        
         # Reset gate-specific tracking
         self.gate_passed[env_ids] = False
         self.gate_approach_distance[env_ids] = 0.0
         
-        # Update static camera position based on curriculum level
-        self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids)
+        # Update static camera position based on curriculum level (ONLY for resetting environments)
+        if len(env_ids) > 0:
+            self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids)
+            logger.debug(f"Updated static camera angles for {len(env_ids)} resetting environments: {env_ids.tolist()}")
         
         self.infos = {}
         return
+    
+    # REMOVED: _apply_curriculum_drone_spawning and _apply_curriculum_orientation_randomization
+    # These methods have been removed as we now use fixed parameters from LMF2 config
+    # The normal Isaac Gym reset mechanism handles spawning using min_init_state/max_init_state
 
     def render(self):
         return self.sim_env.render()
@@ -250,11 +403,33 @@ class NavigationTaskGate(BaseTask):
             torch.zeros_like(self.truncations),
         )
 
-        # successes are are the sum of the environments which are to be truncated and have reached the target within a distance threshold
-        successes = self.truncations * (
-            torch.norm(self.target_position - self.obs_dict["robot_position"], dim=1) < 1.0
+        # ===== SIMPLE GATE PASSAGE SUCCESS CRITERIA =====
+        # Success = simply passing through the gate boundary (any part of the gate opening)
+        # More forgiving than target-based or centered passage requirements
+        robot_position = self.obs_dict["robot_position"]
+        
+        # Gate passage detection: crossed gate plane with proper alignment
+        # Gate dimensions: 2.5m wide × 2.3m tall, positioned at (0,0,0)
+        gate_passage_success = (
+            (robot_position[:, 1] > self.gate_position[:, 1]) &  # Crossed gate (Y > 0)
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.3) &  # Within gate width (±1.3m for safety margin)
+            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)  # Within gate height range
         )
+        
+        # Success when episode truncates (not crashes) and gate passage achieved
+        successes = self.truncations * gate_passage_success
         successes = torch.where(self.terminations > 0, torch.zeros_like(successes), successes)
+        
+        # Keep original target-based success as backup for comparison
+        target_success = torch.norm(self.target_position - robot_position, dim=1) < 1.0
+        target_successes = self.truncations * target_success
+        target_successes = torch.where(self.terminations > 0, torch.zeros_like(target_successes), target_successes)
+        
+        # Use gate passage as primary, but also accept target success if achieved
+        successes = torch.logical_or(successes, target_successes)
+        
+
+        # ===== END SIMPLE GATE PASSAGE SUCCESS =====
         timeouts = torch.where(
             self.truncations > 0, torch.logical_not(successes), torch.zeros_like(successes)
         )
@@ -323,30 +498,93 @@ class NavigationTaskGate(BaseTask):
         return return_tuple
 
     def process_image_observation(self):
-        """Process drone camera observations."""
-        image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)
+        """Process drone camera observations with D455 curriculum-dependent noise."""
+        # Get the drone's depth image (normalized 0.0–1.0)
+        image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)  # shape: (num_envs, H, W)
+        
+        # Apply D455 camera noise if enabled and at sufficient curriculum level
+        noised_image_obs = image_obs.clone()  # Start with clean image
+        if getattr(self.task_config.curriculum, "enable_camera_noise", False):
+            # Get noise parameters for current level
+            gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
+            if gaussian_std > 0 or dropout_rate > 0:
+                # Gaussian noise: add N(0, gaussian_std) to each pixel (depth measurement uncertainty)
+                noise = torch.randn_like(noised_image_obs) * gaussian_std
+                noised_image_obs = noised_image_obs + noise
+                
+                # Pixel dropout: set a fraction of pixels to 1.0 (missing depth readings)
+                if dropout_rate > 0:
+                    dropout_mask = torch.rand_like(noised_image_obs) < dropout_rate
+                    noised_image_obs = noised_image_obs.masked_fill(dropout_mask, 1.0)  # 1.0 = max depth (no reading)
+                
+                # Clamp values to valid range [0, 1]
+                noised_image_obs = torch.clamp(noised_image_obs, 0.0, 1.0)
+        
+        # Store noised drone camera image for GIF generation (add channel dimension back)
+        self.obs_dict["depth_range_pixels_noised"] = noised_image_obs.unsqueeze(1)  # shape: (num_envs, 1, H, W)
+        
+        # Encode the (potentially noisy) image using VAE
         if self.task_config.vae_config.use_vae:
-            self.image_latents[:] = self.shared_vae_model.encode(image_obs)
+            self.image_latents[:] = self.shared_vae_model.encode(noised_image_obs)
 
     def process_static_camera_observation(self):
-        """Process static camera observations."""
+        """Process static camera observations with D455 curriculum-dependent noise."""
         try:
             static_depth, static_seg = self.static_camera_manager.capture_images()
             if static_depth is not None and self.task_config.vae_config.use_vae:
-                # Convert to tensor and process through VAE
-                if isinstance(static_depth, np.ndarray):
-                    static_depth_tensor = torch.from_numpy(static_depth).float().to(self.device)
+                
+                # Store clean static camera image (original)
+                static_depth_clean = static_depth.copy() if isinstance(static_depth, np.ndarray) else static_depth.clone()
+                
+                # Apply D455 camera noise if enabled and at sufficient curriculum level
+                static_depth_noised = static_depth_clean.copy() if isinstance(static_depth_clean, np.ndarray) else static_depth_clean.clone()
+                if getattr(self.task_config.curriculum, "enable_camera_noise", False):
+                    # Get noise parameters for current level
+                    gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
+                    if gaussian_std > 0 or dropout_rate > 0:
+                        # Handle numpy array case
+                        if isinstance(static_depth_noised, np.ndarray):
+                            # Gaussian noise: add N(0, gaussian_std) to each pixel (depth measurement uncertainty)
+                            noise = np.random.normal(0.0, gaussian_std, size=static_depth_noised.shape)
+                            static_depth_noised = static_depth_noised + noise
+                            
+                            # Pixel dropout: set a fraction of pixels to 1.0 (missing depth readings)
+                            if dropout_rate > 0:
+                                dropout_mask = np.random.rand(*static_depth_noised.shape) < dropout_rate
+                                static_depth_noised[dropout_mask] = 1.0  # 1.0 = max depth (no reading)
+                            
+                            # Clip depth values to [0, 1] range
+                            static_depth_noised = np.clip(static_depth_noised, 0.0, 1.0)
+                        else:
+                            # Handle tensor case
+                            noise = torch.randn_like(static_depth_noised) * gaussian_std
+                            static_depth_noised = static_depth_noised + noise
+                            
+                            if dropout_rate > 0:
+                                dropout_mask = torch.rand_like(static_depth_noised) < dropout_rate
+                                static_depth_noised = static_depth_noised.masked_fill(dropout_mask, 1.0)
+                            
+                            static_depth_noised = torch.clamp(static_depth_noised, 0.0, 1.0)
+                
+                # Store noised static camera images for GIF generation
+                self.obs_dict["static_depth_clean"] = static_depth_clean
+                self.obs_dict["static_depth_noised"] = static_depth_noised
+                self.obs_dict["static_seg"] = static_seg
+                
+                # Convert to tensor and process through VAE (use noised version for training)
+                if isinstance(static_depth_noised, np.ndarray):
+                    static_depth_tensor = torch.from_numpy(static_depth_noised).float().to(self.device)
                     if static_depth_tensor.dim() == 2:
                         static_depth_tensor = static_depth_tensor.unsqueeze(0)  # Add batch dimension
                     # Ensure all environments get the same static camera view
                     static_depth_expanded = static_depth_tensor.expand(self.sim_env.num_envs, -1, -1)
-                    self.static_camera_latents[:] = self.shared_vae_model.encode(static_depth_expanded)
+                    self.static_image_latents[:] = self.shared_vae_model.encode(static_depth_expanded)
                 else:
                     # If already tensor
-                    if static_depth.dim() == 2:
-                        static_depth = static_depth.unsqueeze(0)
-                    static_depth_expanded = static_depth.expand(self.sim_env.num_envs, -1, -1)
-                    self.static_camera_latents[:] = self.shared_vae_model.encode(static_depth_expanded)
+                    if static_depth_noised.dim() == 2:
+                        static_depth_noised = static_depth_noised.unsqueeze(0)
+                    static_depth_expanded = static_depth_noised.expand(self.sim_env.num_envs, -1, -1)
+                    self.static_image_latents[:] = self.shared_vae_model.encode(static_depth_expanded)
         except Exception as e:
             logger.debug(f"Static camera processing error: {e}")
 
@@ -370,37 +608,63 @@ class NavigationTaskGate(BaseTask):
         )
 
     def process_obs_for_task(self):
-        """Process observations for gate navigation task with enhanced observation space."""
-        vec_to_tgt = quat_rotate_inverse(
+        """
+        Process observations for the gate navigation task.
+        
+        RESTORED: Full navigation assistance with target direction and distance.
+        ADDED: Observation noise from base navigation task for robustness.
+        
+        Observation space (145D):
+        - 0-3: Target direction vector (normalized) + distance to target
+        - 4-6: Euler angles (roll, pitch, 0.0) with noise
+        - 7-9: Robot body linear velocity
+        - 10-12: Robot body angular velocity
+        - 13-16: Robot actions (4D for gate navigation)
+        - 17-80: Drone camera VAE latents (64D)
+        - 81-144: Static camera VAE latents (64D)
+        """
+        # Calculate target direction and distance (with noise from base navigation task)
+        vec_to_target = quat_rotate_inverse(
             self.obs_dict["robot_vehicle_orientation"],
             (self.target_position - self.obs_dict["robot_position"]),
         )
-        dist_to_tgt = torch.norm(vec_to_tgt, dim=-1)
         
-        # Basic state observations (17D)
-        self.task_obs["observations"][:, 0:3] = vec_to_tgt / dist_to_tgt.unsqueeze(1)
-        self.task_obs["observations"][:, 3] = dist_to_tgt / 5.0
+        # ADD OBSERVATION NOISE: Target direction perturbation (from base navigation task)
+        # This adds robustness to the learned policy by preventing over-fitting to perfect observations
+        perturbed_vec_to_target = vec_to_target + 0.1 * 2 * (torch.rand_like(vec_to_target) - 0.5)
         
+        # Calculate distance and normalize direction
+        dist_to_target = torch.norm(vec_to_target, dim=1)
+        perturbed_unit_vec_to_target = perturbed_vec_to_target / dist_to_target.unsqueeze(1)
+        
+        # Target guidance observations (4D): normalized direction + distance
+        self.task_obs["observations"][:, 0:3] = perturbed_unit_vec_to_target
+        self.task_obs["observations"][:, 3] = dist_to_target / 5.0  # Normalized distance
+        
+        # Euler angles with noise (from base navigation task)
         euler_angles = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))
-        self.task_obs["observations"][:, 4:6] = euler_angles[:, 0:2]
-        self.task_obs["observations"][:, 6] = 0.0
+        
+        # ADD OBSERVATION NOISE: Euler angle perturbation (from base navigation task)
+        perturbed_euler_angles = euler_angles + 0.1 * (torch.rand_like(euler_angles) - 0.5)
+        
+        self.task_obs["observations"][:, 4] = perturbed_euler_angles[:, 0]  # Roll with noise
+        self.task_obs["observations"][:, 5] = perturbed_euler_angles[:, 1]  # Pitch with noise
+        self.task_obs["observations"][:, 6] = 0.0  # Yaw set to 0 (relative to robot frame)
+        
+        # Robot state observations (no noise added to these)
         self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
-        # 4D actions [x_vel, y_vel, z_vel, yaw_rate] for velocity controller
-        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # All 4 actions now
+        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # 4D actions
         
-        # Drone camera VAE latents (64D)
-        if self.task_config.vae_config.use_vae:
-            self.task_obs["observations"][:, 17:81] = self.image_latents
+        # Camera observations: Drone camera VAE latents (64D) + Static camera VAE latents (64D)
+        self.task_obs["observations"][:, 17:81] = self.image_latents  # Drone camera VAE latents
+        self.task_obs["observations"][:, 81:145] = self.static_image_latents  # Static camera VAE latents
         
-        # Static camera VAE latents (64D)
-        if self.task_config.vae_config.use_vae:
-            self.task_obs["observations"][:, 81:145] = self.static_camera_latents
-
+        # Store additional data for rendering/debugging
         self.task_obs["rewards"] = self.rewards
         self.task_obs["terminations"] = self.terminations
         self.task_obs["truncations"] = self.truncations
-        self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]
+        self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]  # Raw drone camera image
 
     def compute_rewards_and_crashes(self, obs_dict):
         """Compute rewards with gate-specific components."""
@@ -433,53 +697,168 @@ class NavigationTaskGate(BaseTask):
         return rewards, crashes, camera_gate_alignment
 
     def check_and_update_curriculum_level(self, successes, crashes, timeouts):
-        """Update curriculum level and static camera positioning."""
+        """
+        COMPREHENSIVE MULTI-ASPECT CURRICULUM LEARNING SYSTEM
+        
+        Updates curriculum level and applies changes to multiple difficulty aspects:
+        1. Obstacle count behind gate (increases by 1 per level, cap at 10)
+        2. Drone spawning difficulty (angle and distance from gate)
+        3. Drone orientation randomization (progressive random orientations)
+        4. Static camera positioning (progressive angle and distance changes)
+        """
         self.success_aggregate += torch.sum(successes)
         self.crashes_aggregate += torch.sum(crashes)
         self.timeouts_aggregate += torch.sum(timeouts)
 
         instances = self.success_aggregate + self.crashes_aggregate + self.timeouts_aggregate
+        
+        # Remove excessive debugging as requested by user
 
         if instances >= self.task_config.curriculum.check_after_log_instances:
             success_rate = self.success_aggregate / instances
             crash_rate = self.crashes_aggregate / instances
             timeout_rate = self.timeouts_aggregate / instances
+            
+            # ===== CURRICULUM DEBUGGING: Log curriculum evaluation =====
+            old_level = self.curriculum_level
+            self.log_curriculum_update(f"[CURRICULUM UPDATE] EVALUATING curriculum after {instances} instances:")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Success rate: {success_rate:.3f}")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Crash rate: {crash_rate:.3f}")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Timeout rate: {timeout_rate:.3f}")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Current level: {old_level} (max reached: {self.max_curriculum_level_reached})")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Threshold for increase: >{self.task_config.curriculum.success_rate_for_increase:.3f} (NO DECREASE POLICY)")
 
+            # NO-DECREASE POLICY: Only allow increases, never decreases
             if success_rate > self.task_config.curriculum.success_rate_for_increase:
                 self.curriculum_level += self.task_config.curriculum.increase_step
-            elif success_rate < self.task_config.curriculum.success_rate_for_decrease:
-                self.curriculum_level -= self.task_config.curriculum.decrease_step
+                self.max_curriculum_level_reached = max(self.max_curriculum_level_reached, self.curriculum_level)
+                self.log_curriculum_update(f"[CURRICULUM UPDATE] LEVEL INCREASED: {old_level} -> {self.curriculum_level} (success rate {success_rate:.3f} > threshold)")
+                self.log_curriculum_update(f"[CURRICULUM UPDATE] NEW MAX LEVEL: {self.max_curriculum_level_reached}")
+            else:
+                # NO-DECREASE POLICY: Only increase or stay the same, never decrease
+                self.log_curriculum_update(f"[CURRICULUM UPDATE] LEVEL UNCHANGED: {self.curriculum_level} (success rate {success_rate:.3f} <= threshold, no decrease allowed)")
 
-            # clamp curriculum_level
+            # Clamp curriculum_level to valid range
             self.curriculum_level = min(
                 max(self.curriculum_level, self.task_config.curriculum.min_level),
                 self.task_config.curriculum.max_level,
             )
             self.obs_dict["curriculum_level"] = self.curriculum_level
             
-            # Calculate total obstacles: fixed assets (1 gate + 6 walls = 7) + curriculum objects (3)
-            # Asset manager expects count of ALL assets with keep_in_env=True (total=10)
-            FIXED_ASSETS_COUNT = 7  # 1 gate + 6 boundary walls (left, right, front, back, bottom, top)
-            total_obstacles_in_env = FIXED_ASSETS_COUNT + self.curriculum_level  # 7 + 3 = 10
+            # ===== MULTI-ASPECT CURRICULUM APPLICATION =====
+            
+            # 1. OBSTACLE COUNT PROGRESSION: Apply new obstacle count behind gate
+            obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
+            
+            # CRITICAL FIX: Get the actual number of assets that are always kept from the asset manager
+            # instead of hardcoding it as 7. The asset manager determines this based on keep_in_env flags.
+            if hasattr(self.sim_env, 'asset_manager') and hasattr(self.sim_env.asset_manager, 'num_keep_in_env'):
+                fixed_assets_always_kept = self.sim_env.asset_manager.num_keep_in_env
+            else:
+                # Fallback: Gate + 6 walls + possibly robot = estimate 8-9, use safe default
+                fixed_assets_always_kept = 9  # Updated fallback based on asset manager logs
+                
+            total_obstacles_in_env = fixed_assets_always_kept + obstacles_behind_gate
             self.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            
+            # CRITICAL: Also update the environment manager's global tensor dict for asset management
+            # This ensures the asset manager gets the updated obstacle count when environments reset
+            if hasattr(self.sim_env, 'global_tensor_dict'):
+                self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            
+            # CRITICAL FIX: Force asset manager to update obstacle count
+            # The asset manager may be caching the initial obstacle count, so we need to force it to update
+            if hasattr(self.sim_env, 'asset_manager'):
+                try:
+                    # Try to directly update the asset manager's obstacle count
+                    if hasattr(self.sim_env.asset_manager, 'num_obstacles_per_env'):
+                        old_count = getattr(self.sim_env.asset_manager, 'num_obstacles_per_env', 'unknown')
+                        self.sim_env.asset_manager.num_obstacles_per_env = total_obstacles_in_env
+                        self.log_curriculum_update(f"[CRITICAL FIX] Direct asset manager update: {old_count} → {total_obstacles_in_env}")
+                        
+                    # NOTE: Asset manager changes will be applied when environments naturally reset
+                    self.log_curriculum_update(f"[CRITICAL FIX] Asset manager updated - changes will apply on next environment reset")
+                    
+                except Exception as e:
+                    self.log_curriculum_update(f"[CRITICAL FIX] Warning: Failed to directly update asset manager: {e}")
+            
+            # ALTERNATIVE: Try to access environment configuration directly
+            if hasattr(self.sim_env, 'env_config'):
+                try:
+                    if hasattr(self.sim_env.env_config, 'num_obstacles'):
+                        old_env_count = getattr(self.sim_env.env_config, 'num_obstacles', 'unknown')
+                        self.sim_env.env_config.num_obstacles = total_obstacles_in_env
+                        self.log_curriculum_update(f"[CRITICAL FIX] Environment config update: {old_env_count} → {total_obstacles_in_env}")
+                except Exception as e:
+                    self.log_curriculum_update(f"[CRITICAL FIX] Warning: Failed to update environment config: {e}")
+            
+            # 2. STATIC CAMERA DIFFICULTY: Update camera parameters for NEW episodes only
+            # Update max camera angle for logging (affects new episodes only)
+            self.max_camera_angle, self.camera_height_offset, self.camera_distance_offset = self.task_config.curriculum.get_static_camera_difficulty(self.curriculum_level)
+            
+            # DON'T update camera positions here - only update on episode reset
+            # This ensures camera orientation stays fixed during each episode
+            self.log_curriculum_update(f"[CAMERA UPDATE] Camera max angle updated for NEW episodes: ±{self.max_camera_angle:.1f}° (existing episodes unchanged)")
+
+            # Calculate curriculum progress fraction
             self.curriculum_progress_fraction = (
                 self.curriculum_level - self.task_config.curriculum.min_level
             ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
 
-            logger.warning(
-                f"Gate Navigation Curriculum Level: {self.curriculum_level}, Progress: {self.curriculum_progress_fraction}"
-            )
-            logger.warning(
-                f"\nSuccess Rate: {success_rate}\nCrash Rate: {crash_rate}\nTimeout Rate: {timeout_rate}"
-            )
+            # ===== COMPREHENSIVE CURRICULUM LOGGING =====
+            self.log_curriculum_update(f"Gate Navigation Curriculum Level: {self.curriculum_level}, Progress: {self.curriculum_progress_fraction:.3f}")
+            self.log_curriculum_update(f"\nSuccess Rate: {success_rate:.3f}\nCrash Rate: {crash_rate:.3f}\nTimeout Rate: {timeout_rate:.3f}")
             
-            # Add curriculum metrics to infos for wandb logging
+            self.log_curriculum_update(f"\nCURRICULUM APPLIED:")
+            self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_always_kept} fixed + {obstacles_behind_gate} curriculum)")
+            self.log_curriculum_update(f"   2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)")
+            # Get current randomized angle for first environment (representative)
+            current_angle = 0.0
+            if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
+                current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
+            self.log_curriculum_update(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
+            
+            # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
+            camera_gaussian_std, camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
+            self.log_curriculum_update(f"   5. CAMERA NOISE: Gaussian STD={camera_gaussian_std:.4f}, Dropout={camera_dropout_rate*100:.1f}% (both drone & static)")
+            
+            # ===== CURRICULUM DEBUGGING: Final state after update =====
+            self.log_curriculum_update(f"[CURRICULUM UPDATE] FINAL STATE:")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Level: {self.curriculum_level} (range: {self.task_config.curriculum.min_level}-{self.task_config.curriculum.max_level})")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Max level reached: {self.max_curriculum_level_reached} (NO-DECREASE POLICY)")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Progress: {self.curriculum_progress_fraction:.3f}")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Obstacles behind gate: {obstacles_behind_gate} (total assets: {total_obstacles_in_env} = {fixed_assets_always_kept} fixed + {obstacles_behind_gate} curriculum)")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Camera angle: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
+            
+            # ===== END CURRICULUM DEBUGGING =====
+            
+            # Add comprehensive curriculum metrics to infos for wandb logging
             self.infos["curriculum/level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
             self.infos["curriculum/progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
             self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
             self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
             self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
             
+            # Add curriculum metrics
+            self.infos["curriculum/obstacles_behind_gate"] = torch.tensor(obstacles_behind_gate, dtype=torch.float32)
+            self.infos["curriculum/total_assets"] = torch.tensor(total_obstacles_in_env, dtype=torch.float32)
+            self.infos["curriculum/max_level_reached"] = torch.tensor(self.max_curriculum_level_reached, dtype=torch.float32)
+            
+            # Add camera noise metrics (D455 simulation)
+            self.infos["curriculum/camera_gaussian_std"] = torch.tensor(camera_gaussian_std, dtype=torch.float32)
+            self.infos["curriculum/camera_dropout_rate"] = torch.tensor(camera_dropout_rate, dtype=torch.float32)
+            
+            # Add camera angle metrics
+            self.infos["curriculum/camera_max_angle"] = torch.tensor(self.max_camera_angle, dtype=torch.float32)
+            # Use first environment's angle as representative for wandb tracking
+            current_angle = 0.0
+            if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
+                current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
+            self.infos["curriculum/camera_current_angle"] = torch.tensor(current_angle, dtype=torch.float32)
+            
+            self.log_curriculum_update(f"[CURRICULUM UPDATE] RESETTING counters for next evaluation period")
             self.success_aggregate = 0
             self.crashes_aggregate = 0
             self.timeouts_aggregate = 0
@@ -515,7 +894,17 @@ class StaticCameraManager:
         self.gate_position = [0.0, 0.0, 0.0]
         self.env_bounds = [[-4.0, -4.0, 0.0], [4.0, 4.0, 4.0]]  # Updated for gate_env bounds
         
+        # Per-environment camera angle tracking - FIXED during each episode
+        self.num_envs = len(self.env_handles)
+        self.current_camera_angles = [0.0] * self.num_envs  # Track angle per environment
+        
         self._setup_static_camera()
+    
+    def get_average_camera_angle(self):
+        """Get average camera angle across all environments for logging."""
+        if not hasattr(self, 'current_camera_angles') or not self.current_camera_angles:
+            return 0.0
+        return sum(self.current_camera_angles) / len(self.current_camera_angles)
     
     def _setup_static_camera(self):
         """Setup static camera using Isaac Gym native camera API with D455 specifications."""
@@ -575,17 +964,77 @@ class StaticCameraManager:
             self.use_synthetic_camera = True
     
     def update_camera_positions(self, curriculum_level, env_ids):
-        """Update static camera positions based on curriculum level."""
+        """Update static camera orientation ONLY for resetting environments."""
         if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            # In synthetic mode, just log the curriculum level for reference
-            logger.debug(f"Synthetic camera mode - curriculum level {curriculum_level}")
+            # In synthetic mode, just update the angle tracking for the resetting environments
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+            max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
+            
+            import random
+            for env_idx in env_ids:
+                if env_idx < len(self.current_camera_angles):
+                    if max_angle_range > 0:
+                        self.current_camera_angles[env_idx] = random.uniform(-max_angle_range, max_angle_range)
+                    else:
+                        self.current_camera_angles[env_idx] = 0.0
+            
+            logger.debug(f"Synthetic camera mode - updated angles for envs {env_ids.tolist()}")
             return
             
-        if not self.camera_setup_success:
+        if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         
-        # FIXED POSITIONING: Camera position is now fixed during setup, no dynamic repositioning needed
-        logger.debug(f"Static camera uses fixed positioning - curriculum level {curriculum_level} noted but position unchanged")
+        # Get maximum angle range from curriculum (linear progression from 0° to ±30°)
+        from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+        max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
+        
+        try:
+            # Fixed camera position (3m behind gate, 1.5m height) - POSITION NEVER CHANGES
+            base_camera_pos = gymapi.Vec3(0.0, -3.0, 1.5)
+            
+            import math
+            import random
+            
+            # Update camera orientation ONLY for the specified environments (those resetting)
+            for env_idx in env_ids:
+                if env_idx >= len(self.env_handles) or env_idx >= len(self.camera_handles):
+                    continue
+                    
+                # Generate NEW random angle for this resetting environment
+                if max_angle_range > 0:
+                    angle_offset_degrees = random.uniform(-max_angle_range, max_angle_range)
+                else:
+                    angle_offset_degrees = 0.0
+                
+                # Store the angle for this environment
+                if env_idx < len(self.current_camera_angles):
+                    self.current_camera_angles[env_idx] = angle_offset_degrees
+                
+                # Convert to radians and update camera
+                angle_offset_radians = angle_offset_degrees * (3.14159 / 180.0)
+                
+                # Calculate offset target position based on randomized angle for this environment
+                target_distance = 3.0  # Distance from camera to gate
+                target_x = base_camera_pos.x + target_distance * math.sin(angle_offset_radians)
+                target_y = base_camera_pos.y + target_distance * math.cos(angle_offset_radians)
+                target_z = 1.5  # Keep same height as gate center
+                
+                new_target = gymapi.Vec3(target_x, target_y, target_z)
+                
+                # Update ONLY this environment's camera
+                env_handle = self.env_handles[env_idx]
+                cam_handle = self.camera_handles[env_idx]
+                self.gym.set_camera_location(cam_handle, env_handle, base_camera_pos, new_target)
+                
+                logger.debug(f"Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{max_angle_range:.1f}°)")
+            
+            logger.debug(f"Updated static camera orientation for {len(env_ids)} resetting environments")
+            
+        except Exception as e:
+            logger.warning(f"Failed to update static camera orientation: {e}")
+            # Fall back to fixed positioning if update fails
+            logger.debug(f"Static camera orientation update failed - using fixed positioning")
+            return
     
     def capture_images(self):
         """Capture depth and segmentation images from static camera."""
