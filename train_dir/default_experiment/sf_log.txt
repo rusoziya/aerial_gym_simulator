@@ -1,0 +1,531 @@
+[2025-07-21 17:11:54,529][849122] Saving configuration to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/train_dir/default_experiment/config.json...
+[2025-07-21 17:11:55,582][849122] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:11:55,582][849122] Rollout worker 0 uses device cuda:0
+[2025-07-21 17:11:55,606][849122] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:11:55,607][849122] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 17:11:55,607][849122] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:11:55,608][849122] Starting seed is not provided
+[2025-07-21 17:11:55,608][849122] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:11:55,608][849122] Initializing actor-critic model on device cuda:0
+[2025-07-21 17:11:55,608][849122] RunningMeanStd input shape: (150,)
+[2025-07-21 17:11:55,608][849122] RunningMeanStd input shape: (1,)
+[2025-07-21 17:11:55,641][849122] Created Actor Critic model with architecture:
+[2025-07-21 17:11:55,641][849122] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=8, bias=True)
+  )
+)
+[2025-07-21 17:11:56,066][849122] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 17:11:56,067][849122] No checkpoints found
+[2025-07-21 17:11:56,067][849122] Did not load from checkpoint, starting from scratch!
+[2025-07-21 17:11:56,067][849122] Initialized policy 0 weights for model version 0
+[2025-07-21 17:11:56,067][849122] LearnerWorker_p0 finished initialization!
+[2025-07-21 17:11:56,068][849122] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:11:56,086][849122] Inference worker 0-0 is ready!
+[2025-07-21 17:11:56,087][849122] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 17:11:56,087][849122] EnvRunner 0-0 uses policy 0
+[2025-07-21 17:11:59,288][849122] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:12:03,643][849122] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 7.3. Samples: 32. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:12:03,643][849122] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 17:12:08,315][849122] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 63.8. Samples: 576. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:12:08,315][849122] Avg episode reward: [(0, '-95.641')]
+[2025-07-21 17:12:13,308][849122] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 71.9. Samples: 1008. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:12:13,308][849122] Avg episode reward: [(0, '-89.006')]
+[2025-07-21 17:12:15,799][849122] Heartbeat connected on Batcher_0
+[2025-07-21 17:12:15,799][849122] Heartbeat connected on LearnerWorker_p0
+[2025-07-21 17:12:15,799][849122] Heartbeat connected on InferenceWorker_p0-w0
+[2025-07-21 17:12:15,799][849122] Heartbeat connected on RolloutWorker_w0
+[2025-07-21 17:12:18,312][849122] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 99.2. Samples: 1888. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:12:18,312][849122] Avg episode reward: [(0, '-85.800')]
+[2025-07-21 17:12:19,201][849122] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 849122], exiting...
+[2025-07-21 17:12:19,202][849122] Runner profile tree view:
+main_loop: 23.5942
+[2025-07-21 17:12:19,202][849122] Collected {0: 0}, FPS: 0.0
+[2025-07-21 17:33:06,450][857535] Saving configuration to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/train_dir/default_experiment/config.json...
+[2025-07-21 17:33:07,500][857535] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:33:07,501][857535] Rollout worker 0 uses device cuda:0
+[2025-07-21 17:33:07,537][857535] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:33:07,537][857535] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 17:33:07,538][857535] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:33:07,539][857535] EvtLoop [Runner_EvtLoop, process=main process 857535] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Runner_EvtLoop', signal_name='start'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+TypeError: enhanced_learner_init() missing 5 required positional arguments: 'cfg', 'env_info', 'policy_versions_tensor', 'policy_id', and 'param_server'
+[2025-07-21 17:33:07,540][857535] Unhandled exception enhanced_learner_init() missing 5 required positional arguments: 'cfg', 'env_info', 'policy_versions_tensor', 'policy_id', and 'param_server' in evt loop Runner_EvtLoop
+[2025-07-21 17:33:07,540][857535] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+TypeError: enhanced_learner_init() missing 5 required positional arguments: 'cfg', 'env_info', 'policy_versions_tensor', 'policy_id', and 'param_server'
+[2025-07-21 17:33:07,541][857535] Runner profile tree view:
+main_loop: 0.0019
+[2025-07-21 17:33:07,541][857535] Collected {}, FPS: 0.0
+[2025-07-21 17:34:32,082][858259] Saving configuration to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/train_dir/default_experiment/config.json...
+[2025-07-21 17:34:33,136][858259] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:34:33,136][858259] Rollout worker 0 uses device cuda:0
+[2025-07-21 17:34:33,176][858259] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:34:33,177][858259] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 17:34:33,178][858259] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:34:33,180][858259] Starting seed is not provided
+[2025-07-21 17:34:33,180][858259] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:34:33,180][858259] Initializing actor-critic model on device cuda:0
+[2025-07-21 17:34:33,181][858259] RunningMeanStd input shape: (150,)
+[2025-07-21 17:34:33,182][858259] RunningMeanStd input shape: (1,)
+[2025-07-21 17:34:33,222][858259] Created Actor Critic model with architecture:
+[2025-07-21 17:34:33,223][858259] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=8, bias=True)
+  )
+)
+[2025-07-21 17:34:33,744][858259] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 17:34:33,744][858259] No checkpoints found
+[2025-07-21 17:34:33,744][858259] Did not load from checkpoint, starting from scratch!
+[2025-07-21 17:34:33,745][858259] Initialized policy 0 weights for model version 0
+[2025-07-21 17:34:33,745][858259] LearnerWorker_p0 finished initialization!
+[2025-07-21 17:34:33,745][858259] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:34:33,773][858259] Inference worker 0-0 is ready!
+[2025-07-21 17:34:33,774][858259] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 17:34:33,774][858259] EnvRunner 0-0 uses policy 0
+[2025-07-21 17:34:40,742][858259] Env info does not match the cached value: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1) != EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=128, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1). Deleting the cache entry /tmp/sf2_ziyar/env_info_quad_with_obstacles_gate
+[2025-07-21 17:34:40,742][858259] This is likely because the environment has changed after the cache entry was created. Either restart the experiment to fix this or run with --use_env_info_cache=False to avoid such problems in the future.
+[2025-07-21 17:34:40,742][858259] EvtLoop [Runner_EvtLoop, process=main process 858259] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Sampler', signal_name='_inference_workers_initialized'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 167, in init
+    check_env_info(env, self.env_info, self.cfg)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 92, in check_env_info
+    raise ValueError("Env info mismatch. See logs above for details.")
+ValueError: Env info mismatch. See logs above for details.
+[2025-07-21 17:34:40,743][858259] Unhandled exception Env info mismatch. See logs above for details. in evt loop Runner_EvtLoop
+[2025-07-21 17:34:40,743][858259] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 167, in init
+    check_env_info(env, self.env_info, self.cfg)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 92, in check_env_info
+    raise ValueError("Env info mismatch. See logs above for details.")
+ValueError: Env info mismatch. See logs above for details.
+[2025-07-21 17:34:40,743][858259] Runner profile tree view:
+main_loop: 7.5639
+[2025-07-21 17:34:40,743][858259] Collected {0: 0}, FPS: 0.0
+[2025-07-21 17:36:02,227][859039] Saving configuration to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/train_dir/default_experiment/config.json...
+[2025-07-21 17:36:03,271][859039] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:03,272][859039] Rollout worker 0 uses device cuda:0
+[2025-07-21 17:36:03,297][859039] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:03,297][859039] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 17:36:03,298][859039] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:03,298][859039] Starting seed is not provided
+[2025-07-21 17:36:03,298][859039] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:03,298][859039] Initializing actor-critic model on device cuda:0
+[2025-07-21 17:36:03,299][859039] RunningMeanStd input shape: (150,)
+[2025-07-21 17:36:03,299][859039] RunningMeanStd input shape: (1,)
+[2025-07-21 17:36:03,328][859039] Created Actor Critic model with architecture:
+[2025-07-21 17:36:03,328][859039] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=8, bias=True)
+  )
+)
+[2025-07-21 17:36:03,761][859039] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 17:36:03,761][859039] No checkpoints found
+[2025-07-21 17:36:03,761][859039] Did not load from checkpoint, starting from scratch!
+[2025-07-21 17:36:03,761][859039] Initialized policy 0 weights for model version 0
+[2025-07-21 17:36:03,762][859039] LearnerWorker_p0 finished initialization!
+[2025-07-21 17:36:03,762][859039] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:03,780][859039] Inference worker 0-0 is ready!
+[2025-07-21 17:36:03,781][859039] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 17:36:03,781][859039] EnvRunner 0-0 uses policy 0
+[2025-07-21 17:36:09,742][859039] Env info does not match the cached value: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1) != EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=128, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1). Deleting the cache entry /tmp/sf2_ziyar/env_info_quad_with_obstacles_gate
+[2025-07-21 17:36:09,742][859039] This is likely because the environment has changed after the cache entry was created. Either restart the experiment to fix this or run with --use_env_info_cache=False to avoid such problems in the future.
+[2025-07-21 17:36:09,742][859039] EvtLoop [Runner_EvtLoop, process=main process 859039] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Sampler', signal_name='_inference_workers_initialized'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 167, in init
+    check_env_info(env, self.env_info, self.cfg)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 92, in check_env_info
+    raise ValueError("Env info mismatch. See logs above for details.")
+ValueError: Env info mismatch. See logs above for details.
+[2025-07-21 17:36:09,743][859039] Unhandled exception Env info mismatch. See logs above for details. in evt loop Runner_EvtLoop
+[2025-07-21 17:36:09,743][859039] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 167, in init
+    check_env_info(env, self.env_info, self.cfg)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 92, in check_env_info
+    raise ValueError("Env info mismatch. See logs above for details.")
+ValueError: Env info mismatch. See logs above for details.
+[2025-07-21 17:36:09,743][859039] Runner profile tree view:
+main_loop: 6.4453
+[2025-07-21 17:36:09,743][859039] Collected {0: 0}, FPS: 0.0
+[2025-07-21 17:36:28,159][859400] Saving configuration to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/train_dir/default_experiment/config.json...
+[2025-07-21 17:36:29,211][859400] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:29,212][859400] Rollout worker 0 uses device cuda:0
+[2025-07-21 17:36:29,252][859400] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:29,252][859400] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 17:36:29,253][859400] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:29,254][859400] Starting seed is not provided
+[2025-07-21 17:36:29,254][859400] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:29,254][859400] Initializing actor-critic model on device cuda:0
+[2025-07-21 17:36:29,254][859400] RunningMeanStd input shape: (150,)
+[2025-07-21 17:36:29,255][859400] RunningMeanStd input shape: (1,)
+[2025-07-21 17:36:29,290][859400] Created Actor Critic model with architecture:
+[2025-07-21 17:36:29,291][859400] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=8, bias=True)
+  )
+)
+[2025-07-21 17:36:29,808][859400] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 17:36:29,809][859400] No checkpoints found
+[2025-07-21 17:36:29,809][859400] Did not load from checkpoint, starting from scratch!
+[2025-07-21 17:36:29,809][859400] Initialized policy 0 weights for model version 0
+[2025-07-21 17:36:29,810][859400] LearnerWorker_p0 finished initialization!
+[2025-07-21 17:36:29,810][859400] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:36:29,835][859400] Inference worker 0-0 is ready!
+[2025-07-21 17:36:29,836][859400] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 17:36:29,836][859400] EnvRunner 0-0 uses policy 0
+[2025-07-21 17:36:37,066][859400] Env info does not match the cached value: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1) != EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=128, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1). Deleting the cache entry /tmp/sf2_ziyar/env_info_quad_with_obstacles_gate
+[2025-07-21 17:36:37,066][859400] This is likely because the environment has changed after the cache entry was created. Either restart the experiment to fix this or run with --use_env_info_cache=False to avoid such problems in the future.
+[2025-07-21 17:36:37,066][859400] EvtLoop [Runner_EvtLoop, process=main process 859400] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Sampler', signal_name='_inference_workers_initialized'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 167, in init
+    check_env_info(env, self.env_info, self.cfg)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 92, in check_env_info
+    raise ValueError("Env info mismatch. See logs above for details.")
+ValueError: Env info mismatch. See logs above for details.
+[2025-07-21 17:36:37,067][859400] Unhandled exception Env info mismatch. See logs above for details. in evt loop Runner_EvtLoop
+[2025-07-21 17:36:37,067][859400] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/rollout_worker.py", line 150, in init
+    env_runner.init(self.timing)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/sampling/batched_sampling.py", line 167, in init
+    check_env_info(env, self.env_info, self.cfg)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/utils/env_info.py", line 92, in check_env_info
+    raise ValueError("Env info mismatch. See logs above for details.")
+ValueError: Env info mismatch. See logs above for details.
+[2025-07-21 17:36:37,067][859400] Runner profile tree view:
+main_loop: 7.8140
+[2025-07-21 17:36:37,067][859400] Collected {0: 0}, FPS: 0.0
+[2025-07-21 17:41:04,564][861230] Saving configuration to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/train_dir/default_experiment/config.json...
+[2025-07-21 17:41:05,613][861230] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:41:05,613][861230] Rollout worker 0 uses device cuda:0
+[2025-07-21 17:41:05,644][861230] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:41:05,645][861230] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 17:41:05,645][861230] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:41:05,646][861230] Starting seed is not provided
+[2025-07-21 17:41:05,646][861230] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:41:05,646][861230] Initializing actor-critic model on device cuda:0
+[2025-07-21 17:41:05,647][861230] RunningMeanStd input shape: (150,)
+[2025-07-21 17:41:05,648][861230] RunningMeanStd input shape: (1,)
+[2025-07-21 17:41:05,685][861230] Created Actor Critic model with architecture:
+[2025-07-21 17:41:05,685][861230] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=8, bias=True)
+  )
+)
+[2025-07-21 17:41:06,189][861230] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 17:41:06,190][861230] No checkpoints found
+[2025-07-21 17:41:06,190][861230] Did not load from checkpoint, starting from scratch!
+[2025-07-21 17:41:06,190][861230] Initialized policy 0 weights for model version 0
+[2025-07-21 17:41:06,191][861230] LearnerWorker_p0 finished initialization!
+[2025-07-21 17:41:06,191][861230] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:41:06,218][861230] Inference worker 0-0 is ready!
+[2025-07-21 17:41:06,218][861230] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 17:41:06,219][861230] EnvRunner 0-0 uses policy 0
+[2025-07-21 17:41:09,902][861230] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:41:13,236][861230] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 4.8. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:41:13,237][861230] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 17:41:17,255][861230] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 10.9. Samples: 80. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:41:17,255][861230] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 17:41:22,328][861230] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 42.5. Samples: 528. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:41:22,329][861230] Avg episode reward: [(0, '-96.008')]
+[2025-07-21 17:41:26,011][861230] Heartbeat connected on Batcher_0
+[2025-07-21 17:41:26,012][861230] Heartbeat connected on LearnerWorker_p0
+[2025-07-21 17:41:26,012][861230] Heartbeat connected on InferenceWorker_p0-w0
+[2025-07-21 17:41:26,012][861230] Heartbeat connected on RolloutWorker_w0
+[2025-07-21 17:41:27,267][861230] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 46.1. Samples: 800. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:41:27,267][861230] Avg episode reward: [(0, '-91.597')]
+[2025-07-21 17:41:32,261][861230] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 60.1. Samples: 1344. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:41:32,262][861230] Avg episode reward: [(0, '-90.304')]
+[2025-07-21 17:41:36,878][861230] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 861230], exiting...
+[2025-07-21 17:41:36,879][861230] Runner profile tree view:
+main_loop: 31.2329
+[2025-07-21 17:41:36,879][861230] Collected {0: 0}, FPS: 0.0
+[2025-07-21 17:42:33,987][861987] Saving configuration to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/train_dir/default_experiment/config.json...
+[2025-07-21 17:42:35,019][861987] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:42:35,020][861987] Rollout worker 0 uses device cuda:0
+[2025-07-21 17:42:35,045][861987] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:42:35,045][861987] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 17:42:35,046][861987] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:42:35,046][861987] Starting seed is not provided
+[2025-07-21 17:42:35,046][861987] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:42:35,046][861987] Initializing actor-critic model on device cuda:0
+[2025-07-21 17:42:35,047][861987] RunningMeanStd input shape: (150,)
+[2025-07-21 17:42:35,047][861987] RunningMeanStd input shape: (1,)
+[2025-07-21 17:42:35,072][861987] Created Actor Critic model with architecture:
+[2025-07-21 17:42:35,072][861987] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(128, 128)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=128, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=128, out_features=8, bias=True)
+  )
+)
+[2025-07-21 17:42:35,525][861987] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 17:42:35,525][861987] No checkpoints found
+[2025-07-21 17:42:35,525][861987] Did not load from checkpoint, starting from scratch!
+[2025-07-21 17:42:35,525][861987] Initialized policy 0 weights for model version 0
+[2025-07-21 17:42:35,526][861987] LearnerWorker_p0 finished initialization!
+[2025-07-21 17:42:35,526][861987] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 17:42:35,548][861987] Inference worker 0-0 is ready!
+[2025-07-21 17:42:35,549][861987] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 17:42:35,549][861987] EnvRunner 0-0 uses policy 0
+[2025-07-21 17:42:38,814][861987] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:42:43,293][861987] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 7.1. Samples: 32. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:42:43,293][861987] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 17:42:47,477][861987] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 20.3. Samples: 176. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:42:47,478][861987] Avg episode reward: [(0, '-101.531')]
+[2025-07-21 17:42:52,114][861987] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 48.1. Samples: 640. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 17:42:52,114][861987] Avg episode reward: [(0, '-98.451')]
+[2025-07-21 17:42:55,063][861987] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 861987], exiting...
+[2025-07-21 17:42:55,064][861987] Runner profile tree view:
+main_loop: 20.0176
+[2025-07-21 17:42:55,064][861987] Collected {0: 0}, FPS: 0.0

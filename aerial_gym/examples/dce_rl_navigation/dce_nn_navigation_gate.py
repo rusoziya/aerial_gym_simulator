@@ -48,7 +48,7 @@ def sample_command(args):
         obs, rewards, termination, truncation, infos = rl_task.step(command_actions)
 
         obs["obs"] = obs["observations"]
-        # print(obs["observations"].shape)  # Should be 145D for gate navigation
+        # print(obs["observations"].shape)  # Should be 150D for gate navigation with position awareness
         action = nn_model.get_action(obs)
         # print("Action", action, action.shape)  # Should be 4D for gate navigation
         action = torch.tensor(action).expand(rl_task.num_envs, -1)
@@ -121,11 +121,12 @@ def sample_command(args):
 
 def get_network(num_envs):
     """Script entry point."""
-    # register_aerialgym_custom_components()
+    from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import register_aerialgym_custom_components
+    register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg(evaluation=True)
     print("CFG is:", cfg)
-    # RESTORED: 4D action space and 145D observation space for gate navigation with target guidance
-    nn_model = NN_Inference_Class(num_envs, 4, 145, cfg)  # 4D action, 145D observation (restored from 141D)
+    # ENHANCED: 4D action space and 150D observation space for position-aware gate navigation
+    nn_model = NN_Inference_Class(num_envs, 4, 150, cfg)  # 4D action, 150D observation (position-aware)
     return nn_model
 
 

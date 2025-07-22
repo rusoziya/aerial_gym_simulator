@@ -500,8 +500,9 @@ class RobotManagerIGE(BaseManager):
             self.camera_sensor.reset_idx(env_ids)
 
     def pre_physics_step(self, actions):
-        self.prev_actions[:] = self.actions[:]
-        self.actions[:] = actions
+        # FIXED: Action tracking now works correctly with tensor cloning in reward computation
+        self.prev_actions[:] = self.actions[:]  # Save current actions as previous
+        self.actions[:] = actions  # Set new actions  
         self.robot.step(self.actions)
 
     def post_physics_step(self):

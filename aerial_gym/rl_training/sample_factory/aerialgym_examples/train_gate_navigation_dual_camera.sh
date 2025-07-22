@@ -43,6 +43,7 @@ while [[ $# -gt 0 ]]; do
             echo "  - Observation space: 141D (13D basic + 64D drone VAE + 64D static camera VAE) - PURE VISION"
             echo "  - Action space: 4D (x_vel, y_vel, z_vel, yaw_rate) - VELOCITY CONTROLLER"
             echo "  - Memory optimization: Shared VAE model reduces GPU usage by ~50%"
+            echo "  - Gradient monitoring: ENABLED - tracks static camera usage during training"
             echo "  - EXPERIMENT: Removed target guidance for pure vision-based navigation"
             echo ""
             echo "Arguments:"
@@ -112,6 +113,7 @@ echo -e "${YELLOW}Robot: X500 with D455 camera${NC}"
 echo -e "${YELLOW}Static camera: D455 behind gate (270x480 resolution)${NC}"
 echo -e "${YELLOW}Observation space: 141D (13D basic + 64D drone VAE + 64D static camera VAE) - PURE VISION${NC}"
 echo -e "${GREEN}⚡ MEMORY OPTIMIZATION: Shared VAE model reduces GPU usage by ~50%${NC}"
+echo -e "${BLUE}🔬 GRADIENT MONITORING: Tracks static camera usage during training${NC}"
 echo -e "${YELLOW}Action space: 4D (x_vel, y_vel, z_vel, yaw_rate) - VELOCITY CONTROLLER${NC}"
 echo -e "${GREEN}Environments: ${ENV_AGENTS} (standard configuration)${NC}"
 if [ "$ENABLE_VIEWER" = true ]; then
@@ -285,6 +287,9 @@ fi
 if [ "$ENABLE_GIFS" = true ]; then
     TRAIN_CMD="$TRAIN_CMD --save_gifs=true"
 fi
+
+# Add gradient monitoring for static camera analysis
+TRAIN_CMD="$TRAIN_CMD --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100"
 
 echo -e "${YELLOW}Training command:${NC}"
 echo "$TRAIN_CMD"

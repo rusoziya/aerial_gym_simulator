@@ -1,2 +1,3 @@
-datetime,gpu_id,gpu_name,memory_used_mb,memory_total_mb,memory_free_mb,memory_used_percent,gpu_utilization,temperature,power_draw
-2025-07-03T15:14:25.241126,0,NVIDIA GeForce RTX 4080 Laptop GPU,4916,12282,7087,40.03,0,51,18.2
+version https://git-lfs.github.com/spec/v1
+oid sha256:a5e326176741c58ac836eb4e222b7c9b3d4cc8345f1006a95c3d2a81842ea98a
+size 228

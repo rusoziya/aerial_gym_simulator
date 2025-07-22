@@ -1,0 +1,1184 @@
+diff --git a/aerial_gym/__pycache__/__init__.cpython-310.pyc b/aerial_gym/__pycache__/__init__.cpython-310.pyc
+deleted file mode 100644
+index ec8d693..0000000
+Binary files a/aerial_gym/__pycache__/__init__.cpython-310.pyc and /dev/null differ
+diff --git a/aerial_gym/config/env_config/__pycache__/gate_env.cpython-38.pyc b/aerial_gym/config/env_config/__pycache__/gate_env.cpython-38.pyc
+index f61b290..0644be7 100644
+Binary files a/aerial_gym/config/env_config/__pycache__/gate_env.cpython-38.pyc and b/aerial_gym/config/env_config/__pycache__/gate_env.cpython-38.pyc differ
+diff --git a/aerial_gym/config/env_config/gate_env.py b/aerial_gym/config/env_config/gate_env.py
+index 2ce356c..30ed674 100644
+--- a/aerial_gym/config/env_config/gate_env.py
++++ b/aerial_gym/config/env_config/gate_env.py
+@@ -101,6 +101,7 @@ class GateEnvCfg:
+             # Objects positioned on obstacle side (positive Y) where drone shouldn't spawn
+             
+             # For 8x8 environment, position objects in a line behind the gate
++            # FIXED: Obstacles now spawn throughout full gate height (bottom to top)
+             min_state_ratio = [
+                 0.1, 0.65, 0.0,  # X: wider spread from left, Y: behind gate (positive Y), Z: on ground
+                 0, -np.pi/3.0, -np.pi,  # More rotation variation
+@@ -108,7 +109,7 @@ class GateEnvCfg:
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+             ]
+             max_state_ratio = [
+-                0.9, 0.95, 0.3,  # X: wider spread to right, Y: well behind gate, Z: higher elevation
++                0.9, 0.95, 0.55,  # X: wider spread to right, Y: well behind gate, Z: gate top (2.2m)
+                 0, np.pi/3.0, np.pi,  # More rotation variation
+                 1.5,  # Larger maximum scale for more visual diversity
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
+diff --git a/aerial_gym/config/robot_config/__pycache__/lmf2_config.cpython-38.pyc b/aerial_gym/config/robot_config/__pycache__/lmf2_config.cpython-38.pyc
+index e9f01c2..020794d 100644
+Binary files a/aerial_gym/config/robot_config/__pycache__/lmf2_config.cpython-38.pyc and b/aerial_gym/config/robot_config/__pycache__/lmf2_config.cpython-38.pyc differ
+diff --git a/aerial_gym/config/robot_config/lmf2_config.py b/aerial_gym/config/robot_config/lmf2_config.py
+index 062f844..33eb100 100644
+--- a/aerial_gym/config/robot_config/lmf2_config.py
++++ b/aerial_gym/config/robot_config/lmf2_config.py
+@@ -21,13 +21,13 @@ class LMF2Cfg:
+         # Orientation: ±45° for reasonable randomization without curriculum complexity
+         # Velocity: Minimal initial velocity for more randomization
+         
+-        # Position spawn: 2m behind gate center (Y=-2.0) with ±0.5m lateral (X) variation
++        # Position spawn: 2m behind gate center (Y=-2.0) with ±1.2m lateral (X) variation
+         # Height: 1.5m (gate center level) with ±0.1m variation
+         # Environment bounds: [-4,4] x [-4,4] x [0,4] = 8m × 8m × 4m
+         # Position conversion: ratio = (position + 4) / 8 for X,Y; ratio = position / 4 for Z
+         
+         min_init_state = [
+-            0.4375, # ratio_x: X = -0.5m → ratio = ((-0.5) + 4) / 8 = 0.4375 (left of center)
++            0.35,   # ratio_x: X = -1.2m → ratio = ((-1.2) + 4) / 8 = 0.35 (1.2m left of center)
+             0.225,  # ratio_y: Y = -2.2m → ratio = ((-2.2) + 4) / 8 = 0.225 (2.2m behind gate)
+             0.35,   # ratio_z: Z = 1.4m → ratio = 1.4 / 4 = 0.35 (gate level - 0.1m)
+             0,      # no roll variation
+@@ -42,7 +42,7 @@ class LMF2Cfg:
+             -0.05,  # minimal initial yaw rate
+         ]
+         max_init_state = [
+-            0.5625, # ratio_x: X = +0.5m → ratio = ((+0.5) + 4) / 8 = 0.5625 (right of center)
++            0.65,   # ratio_x: X = +1.2m → ratio = ((+1.2) + 4) / 8 = 0.65 (1.2m right of center)
+             0.275,  # ratio_y: Y = -1.8m → ratio = ((-1.8) + 4) / 8 = 0.275 (1.8m behind gate)
+             0.4,    # ratio_z: Z = 1.6m → ratio = 1.6 / 4 = 0.4 (gate level + 0.1m)
+             0,      # no roll variation
+diff --git a/aerial_gym/config/task_config/__pycache__/navigation_task_config.cpython-38.pyc b/aerial_gym/config/task_config/__pycache__/navigation_task_config.cpython-38.pyc
+index ab6e250..e9ef703 100644
+Binary files a/aerial_gym/config/task_config/__pycache__/navigation_task_config.cpython-38.pyc and b/aerial_gym/config/task_config/__pycache__/navigation_task_config.cpython-38.pyc differ
+diff --git a/aerial_gym/config/task_config/__pycache__/navigation_task_config_gate.cpython-38.pyc b/aerial_gym/config/task_config/__pycache__/navigation_task_config_gate.cpython-38.pyc
+index 3bd14de..f941bec 100644
+Binary files a/aerial_gym/config/task_config/__pycache__/navigation_task_config_gate.cpython-38.pyc and b/aerial_gym/config/task_config/__pycache__/navigation_task_config_gate.cpython-38.pyc differ
+diff --git a/aerial_gym/config/task_config/navigation_task_config_gate.py b/aerial_gym/config/task_config/navigation_task_config_gate.py
+index 9680d8e..abff660 100644
+--- a/aerial_gym/config/task_config/navigation_task_config_gate.py
++++ b/aerial_gym/config/task_config/navigation_task_config_gate.py
+@@ -14,12 +14,13 @@ class task_config:
+     headless = False  # Enable visualization to view both cameras (can be overridden by Sample Factory)
+     device = "cuda:0"
+     
+-    # Enhanced observation space: 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE = 145D
+-    # RESTORED: Target guidance observations (vec_to_target + distance) are now enabled
+-    # Original: 17D basic state + 128D camera = 145D  
+-    # Current:  4D target guidance + 13D basic state + 128D camera = 145D (full navigation assistance)
++    # Enhanced observation space: 3D drone position + 6D static camera pose + 3D full orientation + 10D state + 64D drone VAE + 64D static camera VAE = 150D
++    # MODIFIED: Added drone absolute position (3D) and full yaw sensing (3D orientation instead of 2D)
++    # Previous: 6D static camera pose + 2D orientation + 9D state + 128D camera = 147D  
++    # Current:  3D drone position + 6D static camera pose + 3D full orientation + 10D state + 128D camera = 150D (position-aware navigation)
++    # State breakdown: 3D linear velocity + 3D angular velocity + 4D actions = 10D
+     # Both cameras now share the same VAE model to reduce GPU memory usage by ~50%
+-    observation_space_dim = 4 + 13 + 64 + 64  # RESTORED: Full navigation with target guidance = 145D
++    observation_space_dim = 150  # Enhanced to include drone position and full orientation = 150D (3+6+3+10+64+64)
+     privileged_observation_space_dim = 0
+     action_space_dim = 4  # 4D action space [x_vel, y_vel, z_vel, yaw_rate] for velocity control
+     episode_len_steps = 100  # REDUCED: Faster episodes for quicker training feedback and evaluation
+@@ -59,12 +60,12 @@ class task_config:
+     
+     # Enhanced reward parameters for gate navigation with 4D action space
+     reward_parameters = {
+-        # BASE NAVIGATION REWARDS (Strong penalties to prevent crashes)
+-        "pos_reward_magnitude": 5.0,  # Match base navigation
++        # BASE NAVIGATION REWARDS (SCALED DOWN to prevent reward inflation)
++        "pos_reward_magnitude": 2.5,  # REDUCED from 5.0 (10x reduction)
+         "pos_reward_exponent": 1.0 / 3.5,
+-        "very_close_to_goal_reward_magnitude": 5.0,  # Match base navigation
++        "very_close_to_goal_reward_magnitude": 2.5,  # REDUCED from 5.0 (10x reduction)
+         "very_close_to_goal_reward_exponent": 2.0,
+-        "getting_closer_reward_multiplier": 10.0,  # Match base navigation
++        "getting_closer_reward_multiplier": 5.0,  # REDUCED from 10.0 (10x reduction)
+         
+         # Action smoothness penalties (match base navigation)
+         "x_action_diff_penalty_magnitude": 0.8,
+@@ -100,17 +101,17 @@ class task_config:
+         # CRITICAL: Strong collision penalty to prevent ground crashes
+         "collision_penalty": -100.0,  # Match base navigation - STRONG penalty for any collision
+         
+-        # GATE-SPECIFIC REWARDS (Additive bonuses on top of base rewards)
+-        "gate_approach_reward_magnitude": 5.0,  # Reward for approaching the gate
+-        # "gate_approach_reward_magnitude": 2.0,  # Reward for approaching the gate
+-        "gate_alignment_reward_magnitude": 2.0,  # Reward for aligning with gate opening
+-        # "gate_alignment_reward_magnitude": 1.0,  # Reward for aligning with gate opening
+-        "gate_passage_reward_magnitude": 10.0,  # Large reward for successfully passing through gate
+-        "gate_center_bonus_magnitude": 5.0,  # Bonus for being centered in gate opening
+-        # "gate_center_passage_bonus_magnitude": 15.0,  # Large bonus for passing through center of gate
+-        "gate_center_passage_bonus_magnitude": 50.0,  # Large bonus for passing through center of gate
++        # GATE-SPECIFIC REWARDS (SCALED DOWN to prevent reward inflation)
++        "gate_approach_reward_magnitude": 1.25,  # REDUCED from 5.0 (10x reduction)
++        # "gate_approach_reward_magnitude": 2.0,  # OLD value
++        "gate_alignment_reward_magnitude": 0.5,  # REDUCED from 2.0 (10x reduction)
++        # "gate_alignment_reward_magnitude": 1.0,  # OLD value
++        "gate_passage_reward_magnitude": 50.0,  # INCREASED from 10.0 (one-time bonus should be high)
++        "gate_center_bonus_magnitude": 1.25,  # REDUCED from 5.0 (10x reduction)
++        # "gate_center_passage_bonus_magnitude": 15.0,  # OLD value
++        "gate_center_passage_bonus_magnitude": 100.0,  # INCREASED from 50.0 (one-time center bonus should be high)
+         # "camera_facing_reward_magnitude": 5.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
+-        "camera_facing_reward_magnitude": 0.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
++        "camera_facing_reward_magnitude": 0.0,  # Enhanced reward for drone camera facing towards gate (TRIPLED from 1.0)
+ 
+         
+         # NEW: Altitude maintenance reward to encourage proper gate-level flying
+@@ -154,7 +155,7 @@ class task_config:
+         check_after_log_instances = 128  # INCREASED FREQUENCY: Check curriculum every 128 instances for faster progression
+         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
+         decrease_step = 0   # NO DECREASE POLICY: Once a level is reached, never go back
+-        success_rate_for_increase = 0.0001   # TEMPORARY: 5% success rate for quick testing (was 50%)
++        success_rate_for_increase = 0.5   # 50% success rate to progress to next curriculum level
+         success_rate_for_decrease = 0.0   # DISABLED: Never decrease difficulty (no-decrease policy)
+         
+         # MULTI-ASPECT DIFFICULTY PROGRESSION
+@@ -181,7 +182,7 @@ class task_config:
+         # Levels 13-20: Camera at extreme angles with partial gate visibility
+         # Levels 21-23: Camera at hardest angles with minimal gate visibility
+         camera_orientation_start_level = 5    # Start camera orientation changes at level 5
+-        max_camera_angle_degrees = 30         # Maximum camera angle from straight-on view
++        max_camera_angle_degrees = 25         # Maximum camera angle from straight-on view (was 30)
+         
+         # DEBUGGING AND MONITORING
+         enable_detailed_logging = True  # Enable comprehensive curriculum debugging
+@@ -290,7 +291,7 @@ class task_config:
+             # Class constants - LINEAR PROGRESSION
+             camera_start_level = 3     # Start progression from level 3
+             max_level = 23            # End progression at level 23
+-            max_camera_angle_degrees = 30  # Maximum ±30° range
++            max_camera_angle_degrees = 25  # Maximum ±30° range
+             
+             # Linear progression from level 3 to 23
+             if level <= camera_start_level:
+diff --git a/aerial_gym/examples/dce_rl_navigation/__pycache__/dce_navigation_task_gate.cpython-38.pyc b/aerial_gym/examples/dce_rl_navigation/__pycache__/dce_navigation_task_gate.cpython-38.pyc
+index 27c2547..850d042 100644
+Binary files a/aerial_gym/examples/dce_rl_navigation/__pycache__/dce_navigation_task_gate.cpython-38.pyc and b/aerial_gym/examples/dce_rl_navigation/__pycache__/dce_navigation_task_gate.cpython-38.pyc differ
+diff --git a/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py b/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py
+index 50cc3a5..a4c5de4 100644
+--- a/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py
++++ b/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py
+@@ -49,38 +49,186 @@ class DCE_RL_Navigation_Task_Gate(NavigationTaskGate):
+             
+         super().__init__(task_config=task_config, **kwargs)
+ 
+-    # ===== RESTORED: Enhanced observation processing for gate navigation with dual cameras =====
+-    # 145D total: 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE (target guidance restored)
++    # ===== ENHANCED: Complete drone state observations including absolute position =====
++    # 150D total: 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE
+ 
+     def process_obs_for_task(self):
+-        # RESTORED: Target direction and distance observations are now ENABLED
+-        # This DCE task now matches the base navigation task with full target guidance
+-        
+-        # Calculate target info for both rewards AND observations
+-        vec_to_target = quat_rotate_inverse(
+-            self.obs_dict["robot_vehicle_orientation"],
+-            (self.target_position - self.obs_dict["robot_position"]),
+-        )
+-        dist_to_tgt = torch.norm(vec_to_target, dim=1)
+-        
+-        # ===== RESTORED: Target guidance observations =====
+-        # UNCOMMENTED: These lines are now active for full navigation assistance
+-        self.task_obs["observations"][:, 0:3] = vec_to_target / dist_to_tgt.unsqueeze(1)
+-        self.task_obs["observations"][:, 3] = dist_to_tgt / 5.0
+-        # ====================================================
+-        
+-        # Basic state observations (17D) - RESTORED to original positions
++        # MODIFIED: Include drone absolute position and full orientation sensing
++        # This provides the agent with complete spatial awareness of its state and static camera relative position
++        
++        # ===== DRONE ABSOLUTE POSITION OBSERVATIONS (3D) =====
++        # [0:3] = Drone absolute position in world coordinates (x, y, z)
++        self.task_obs["observations"][:, 0:3] = self.obs_dict["robot_position"]
++        
++        # ===== STATIC CAMERA POSE OBSERVATIONS (6D) =====
++        # Get static camera pose information relative to drone
++        static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
++        
++        # [3:6] = Static camera position relative to drone (x, y, z in drone's reference frame)
++        self.task_obs["observations"][:, 3:6] = static_camera_pos
++        
++        # [6:9] = Static camera orientation relative to drone (roll, pitch, yaw in drone's reference frame)
++        self.task_obs["observations"][:, 6:9] = static_camera_orientation
++        
++        # ===== DRONE FULL ORIENTATION OBSERVATIONS (3D) =====
++        # [9:12] = Full drone orientation including yaw (roll, pitch, yaw)
+         euler_angles = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))
+-        self.task_obs["observations"][:, 4:6] = euler_angles[:, 0:2]  # RESTORED: was [0:2]
+-        self.task_obs["observations"][:, 6] = 0.0  # RESTORED: was [2]
+-        self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]  # RESTORED: was [3:6]
+-        self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]  # RESTORED: was [6:9]
+-        # 4D actions [x_vel, y_vel, z_vel, yaw_rate] for velocity controller
+-        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # RESTORED: was [9:13]
+-        
+-        # Enhanced observation space with dual VAE latents (145D total) - RESTORED to original positions
+-        self.task_obs["observations"][:, 17:81] = self.image_latents  # Drone camera VAE (64D) - RESTORED: was [13:77]
+-        self.task_obs["observations"][:, 81:145] = self.static_image_latents  # Static camera VAE (64D) - FIXED: was static_camera_latents
++        self.task_obs["observations"][:, 9:12] = euler_angles  # MODIFIED: Include full yaw instead of setting to 0.0
++        
++        # ===== DRONE STATE OBSERVATIONS (10D) =====
++        # [12:15] = Robot body linear velocity
++        self.task_obs["observations"][:, 12:15] = self.obs_dict["robot_body_linvel"]
++        
++        # [15:18] = Robot body angular velocity  
++        self.task_obs["observations"][:, 15:18] = self.obs_dict["robot_body_angvel"]
++        
++        # [18:22] = Robot actions (x_vel, y_vel, z_vel, yaw_rate)
++        self.task_obs["observations"][:, 18:22] = self.obs_dict["robot_actions"]
++        
++        # ===== VISUAL OBSERVATIONS (128D) =====
++        # [22:86] = Drone camera VAE latents (64D)
++        self.task_obs["observations"][:, 22:86] = self.image_latents
++        
++        # [86:150] = Static camera VAE latents (64D)
++        self.task_obs["observations"][:, 86:150] = self.static_image_latents
++
++        # DEBUG: Periodic spawn/position logging to track drone movement
++        if not hasattr(self, '_position_debug_counter'):
++            self._position_debug_counter = 0
++        
++        self._position_debug_counter += 1
++        
++        # DEBUG: Detect fresh spawns (very low position and velocity)
++        drone_pos = self.obs_dict["robot_position"]
++        drone_linvel = self.obs_dict["robot_body_linvel"] 
++        drone_angvel = self.obs_dict["robot_body_angvel"]
++        
++        # Check for spawn conditions: near origin + very low velocities
++        position_norm = torch.norm(drone_pos, dim=1)
++        linvel_norm = torch.norm(drone_linvel, dim=1)
++        angvel_norm = torch.norm(drone_angvel, dim=1)
++        
++        # Detect likely spawns (position < 1m from origin, velocities < 0.1 m/s)
++        likely_spawns = (position_norm < 1.0) & (linvel_norm < 0.1) & (angvel_norm < 0.1)
++        
++        if torch.any(likely_spawns) and not hasattr(self, '_spawn_detected'):
++            spawn_envs = torch.where(likely_spawns)[0]
++            logger.warning("="*80)
++            logger.warning(f"🎯 SPAWN DETECTION: Found {len(spawn_envs)} likely spawned environments")
++            for env_id in spawn_envs[:3]:  # Log first 3 for brevity
++                pos = drone_pos[env_id]
++                vel = drone_linvel[env_id]
++                euler = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))[env_id]
++                static_rel = static_camera_pos[env_id]
++                logger.warning(f"  🚁 Env {env_id}: Pos=[{pos[0]:.3f}, {pos[1]:.3f}, {pos[2]:.3f}], Vel=[{vel[0]:.3f}, {vel[1]:.3f}, {vel[2]:.3f}]")
++                logger.warning(f"            Orient=[{euler[0]*57.3:.1f}°, {euler[1]*57.3:.1f}°, {euler[2]*57.3:.1f}°]")
++                logger.warning(f"            Static Rel=[{static_rel[0]:.3f}, {static_rel[1]:.3f}, {static_rel[2]:.3f}]")
++            logger.warning("="*80)
++            self._spawn_detected = True  # Only log spawns once per session
++
++    def _get_static_camera_pose_relative_to_drone(self):
++        """
++        Calculate static camera position and orientation relative to the drone's reference frame.
++        
++        Returns:
++            static_camera_pos: [num_envs, 3] - Camera position in drone's reference frame
++            static_camera_orientation: [num_envs, 3] - Camera orientation (roll, pitch, yaw) relative to drone
++        """
++        # Static camera base position (world coordinates)
++        # Camera is at (0.0, -3.0, 1.5) in world frame, but orientation varies by curriculum
++        static_camera_world_pos = torch.tensor([0.0, -3.0, 1.5], device=self.device).expand(self.num_envs, -1)
++        
++        # Get drone position and orientation
++        drone_pos = self.obs_dict["robot_position"]  # [num_envs, 3]
++        drone_orientation = self.obs_dict["robot_vehicle_orientation"]  # [num_envs, 4] quaternion
++        
++        # DEBUG: Log coordinate transformation for first environment
++        if not hasattr(self, '_coord_debug_logged'):
++            self._coord_debug_logged = True
++            
++            # Convert quaternion to euler for readable display
++            from aerial_gym.utils.math import get_euler_xyz_tensor, ssa
++            drone_euler = ssa(get_euler_xyz_tensor(drone_orientation))
++            
++            logger.warning("="*80)
++            logger.warning("🌍 COORDINATE TRANSFORMATION DEBUG:")
++            logger.warning(f"  📍 Static Camera World Position (FIXED): {static_camera_world_pos[0].cpu().numpy()}")
++            logger.warning(f"  🤖 Drone World Position (DYNAMIC): {drone_pos[0].cpu().numpy()}")
++            logger.warning(f"  🧭 Drone World Orientation (Quaternion): {drone_orientation[0].cpu().numpy()}")
++            logger.warning(f"  🧭 Drone World Orientation (Euler deg): [{drone_euler[0, 0].item()*57.3:.1f}°, {drone_euler[0, 1].item()*57.3:.1f}°, {drone_euler[0, 2].item()*57.3:.1f}°]")
++            
++            # Calculate intermediate steps for debugging
++            camera_pos_world_relative = static_camera_world_pos - drone_pos
++            logger.warning(f"  ↔️  World Vector (camera - drone): {camera_pos_world_relative[0].cpu().numpy()}")
++            
++            # Show the transformation
++            static_camera_pos = quat_rotate_inverse(drone_orientation, camera_pos_world_relative)
++            logger.warning(f"  🔄 After Quaternion Transform: {static_camera_pos[0].cpu().numpy()}")
++            logger.warning(f"  📏 Distance from drone to camera: {torch.norm(static_camera_pos[0]).item():.3f}m")
++            logger.warning("="*80)
++        
++        # Calculate camera position relative to drone
++        camera_pos_world_relative = static_camera_world_pos - drone_pos
++        
++        # Transform camera position to drone's reference frame
++        static_camera_pos = quat_rotate_inverse(drone_orientation, camera_pos_world_relative)
++        
++        # Calculate camera orientation relative to drone
++        static_camera_orientation = self._calculate_camera_orientation_relative_to_drone()
++        
++        return static_camera_pos, static_camera_orientation
++    
++    def _calculate_camera_orientation_relative_to_drone(self):
++        """
++        Calculate static camera orientation relative to drone's reference frame.
++        
++        The static camera orientation depends on the curriculum level and current camera angles.
++        Returns the camera's orientation as Euler angles relative to the drone.
++        
++        Returns:
++            camera_orientation: [num_envs, 3] - Camera orientation (roll, pitch, yaw) relative to drone
++        """
++        # Get current camera angles for each environment (stored by StaticCameraManager)
++        if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
++            camera_angles = self.static_camera_manager.current_camera_angles
++        else:
++            # Fallback: assume 0 degree angle for all environments
++            camera_angles = [0.0] * self.num_envs
++        
++        # Ensure we have angles for all environments
++        while len(camera_angles) < self.num_envs:
++            camera_angles.append(0.0)
++        
++        # Convert camera angles to tensor
++        camera_yaw_angles = torch.tensor(camera_angles[:self.num_envs], device=self.device)
++        
++        # Get drone's current orientation (Euler angles)
++        drone_euler = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))
++        
++        # Camera orientation in world frame (looking at gate with curriculum-dependent angle)
++        # Camera base orientation: looking forward (0° roll, 0° pitch, variable yaw based on curriculum)
++        camera_roll_world = torch.zeros_like(camera_yaw_angles)
++        camera_pitch_world = torch.zeros_like(camera_yaw_angles)
++        camera_yaw_world = camera_yaw_angles * (3.14159 / 180.0)  # Convert degrees to radians
++        
++        # Calculate relative orientation (camera orientation - drone orientation)
++        camera_roll_relative = camera_roll_world - drone_euler[:, 0]
++        camera_pitch_relative = camera_pitch_world - drone_euler[:, 1] 
++        camera_yaw_relative = camera_yaw_world - drone_euler[:, 2]
++        
++        # Normalize angles to [-π, π]
++        camera_roll_relative = ssa(camera_roll_relative)
++        camera_pitch_relative = ssa(camera_pitch_relative)
++        camera_yaw_relative = ssa(camera_yaw_relative)
++        
++        # Stack into [num_envs, 3] tensor
++        static_camera_orientation = torch.stack([
++            camera_roll_relative, 
++            camera_pitch_relative, 
++            camera_yaw_relative
++        ], dim=1)
++        
++        return static_camera_orientation
+ 
+ 
+ @torch.jit.script
+diff --git a/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py b/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py
+index 16759fb..cfae9d5 100644
+--- a/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py
++++ b/aerial_gym/examples/dce_rl_navigation/dce_nn_navigation_gate.py
+@@ -48,7 +48,7 @@ def sample_command(args):
+         obs, rewards, termination, truncation, infos = rl_task.step(command_actions)
+ 
+         obs["obs"] = obs["observations"]
+-        # print(obs["observations"].shape)  # Should be 145D for gate navigation
++        # print(obs["observations"].shape)  # Should be 150D for gate navigation with position awareness
+         action = nn_model.get_action(obs)
+         # print("Action", action, action.shape)  # Should be 4D for gate navigation
+         action = torch.tensor(action).expand(rl_task.num_envs, -1)
+@@ -121,11 +121,12 @@ def sample_command(args):
+ 
+ def get_network(num_envs):
+     """Script entry point."""
+-    # register_aerialgym_custom_components()
++    from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import register_aerialgym_custom_components
++    register_aerialgym_custom_components()
+     cfg = parse_aerialgym_cfg(evaluation=True)
+     print("CFG is:", cfg)
+-    # RESTORED: 4D action space and 145D observation space for gate navigation with target guidance
+-    nn_model = NN_Inference_Class(num_envs, 4, 145, cfg)  # 4D action, 145D observation (restored from 141D)
++    # ENHANCED: 4D action space and 150D observation space for position-aware gate navigation
++    nn_model = NN_Inference_Class(num_envs, 4, 150, cfg)  # 4D action, 150D observation (position-aware)
+     return nn_model
+ 
+ 
+diff --git a/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py b/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py
+index 279f627..cdcc396 100644
+--- a/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py
++++ b/aerial_gym/examples/dce_rl_navigation/sf_inference_class_gate.py
+@@ -1,23 +1,38 @@
+ """
+-Sample Factory inference class for DCE navigation with gate environment - FULL NAVIGATION
++Sample Factory inference class for DCE navigation with gate environment - POSITION-AWARE NAVIGATION
+ This class provides trained model inference for DCE navigation tasks with gate navigation using velocity control.
+ 
+-RESTORED: Full navigation with target guidance enabled
+-- Includes explicit target direction and distance observations (4D)
+-- Tests navigation to gate center using both visual information AND target guidance
+-- Observation space: 145D (4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE)
++ENHANCED: Position-aware navigation with drone absolute position and full yaw sensing
++- Includes drone absolute position in world coordinates (3D)
++- Includes static camera position and orientation relative to drone (6D)
++- Includes full drone orientation with yaw sensing (3D instead of 2D)
++- Tests navigation to gate center using complete spatial awareness
++- Observation space: 150D (3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)
+ 
+ The class is specifically designed to interface with trained Sample Factory models and:
+ - Uses 4D action space matching the training configuration [x_vel, y_vel, z_vel, yaw_rate]
+-- Processes 145D observations (4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE)
+-- Directly interfaces with Sample Factory trained models for gate navigation
+-- Supports both inference and evaluation with dual camera setup
+-- Compatible with velocity controller for direct responsive control
++- Processes 150D observations with complete drone state and spatial awareness  
++- Outputs 4D actions directly compatible with DCE gate navigation task
+ 
+-Architecture compatibility:
+-- Inference action output: 4D Sample Factory model output [x_vel, y_vel, z_vel, yaw_rate]
+-- Observation input: 145D tensor (restored with target guidance)
+-- Action scaling: Conservative velocity limits for improved stability
++OBSERVATION STRUCTURE (150D):
++- [0:2] = Drone absolute position (x, y, z in world coordinates)
++- [3:5] = Static camera position relative to drone (x, y, z in drone's reference frame)
++- [6:8] = Static camera orientation relative to drone (roll, pitch, yaw in drone's reference frame)
++- [9:11] = Drone full orientation including yaw (roll, pitch, yaw)
++- [12:14] = Drone linear velocity in body frame
++- [15:17] = Drone angular velocity in body frame
++- [18:21] = Drone actions (4D for velocity controller)
++- [22:85] = Drone camera VAE latents (64D)
++- [86:149] = Static camera VAE latents (64D)
++
++TRAINING COMPATIBILITY:
++- Compatible with models trained using train_aerialgym_custom_net_gate.py with 150D observations
++- Requires models trained after the position-aware navigation upgrade
++
++Usage:
++    inference = SampleFactoryInferenceGateNew(num_envs=1, action_space_dim=4, obs_space_dim=150, cfg=config)
++    inference.load_model("/path/to/model.pth")
++    action = inference.get_action_deterministic(observation)
+ """
+ 
+ import time
+@@ -33,15 +48,25 @@ from sample_factory.utils.utils import AttrDict
+ 
+ 
+ class NN_Inference_Class:
+-    def __init__(self, cfg: Dict[str, Any], device: str):
++    """
++    Sample Factory inference class for gate navigation with static camera pose observations.
++    
++    Handles models trained with 147D observation space containing static camera pose information
++    instead of explicit target guidance, enabling camera-aware navigation through gates.
++    """
++
++    def __init__(self, num_envs, action_dim, obs_dim, cfg):
+         """
+-        Initialize the inference class with Sample Factory configuration.
++        Initialize inference class for gate navigation.
+         
+         Args:
+-            cfg: Sample Factory configuration dictionary 
+-            device: Device to run inference on (e.g., 'cuda:0', 'cpu')
++            num_envs: Number of parallel environments
++            action_dim: Action space dimension (should be 4 for gate navigation)
++            obs_dim: Observation space dimension (should be 147 for camera-aware gate navigation)
++            cfg: Sample Factory configuration
+         """
+-        self.device = device
++        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
++        self.num_envs = num_envs
+         
+         # Store Sample Factory config
+         self.cfg = AttrDict(cfg) if isinstance(cfg, dict) else cfg
+@@ -52,17 +77,17 @@ class NN_Inference_Class:
+         self.action_space_dim = 4
+         print(f"[NN_Inference_Class] Configured for 4D action space (gate navigation with Z-axis control)")
+         
+-        # Observation space configuration (145D for gate navigation)
+-        # 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE = 145D total
+-        self.obs_space_dim = 145
+-        print(f"[NN_Inference_Class] Configured for {self.obs_space_dim}D observation space (dual camera gate navigation)")
++        # Observation space configuration (150D for gate navigation with position awareness)
++        # 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE = 150D total
++        self.obs_space_dim = 150
++        print(f"[NN_Inference_Class] Configured for {self.obs_space_dim}D observation space (position-aware gate navigation)")
+         
+         # Model initialization placeholder
+         self.model = None
+         self.rnn_states = None
+         self.is_model_loaded = False
+         
+-        print(f"[NN_Inference_Class] Initialized for inference with device: {device}")
++        print(f"[NN_Inference_Class] Initialized for inference with device: {self.device}")
+ 
+     def load_model(self, model_path: str):
+         """
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth.gif
+index 5874ac0..222f4a4 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth_D455_NOISED.gif
+index 8bfcea7..222f4a4 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_seg.gif
+index 9e86e95..38dfeaf 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_drone_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera.gif
+deleted file mode 100644
+index 772a2b6..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera_D455_NOISED.gif
+index af6fb95..10052ba 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_merged_dual_camera_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth.gif
+index 883cb26..83dfddf 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth_D455_NOISED.gif
+index 883cb26..83dfddf 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_seg.gif
+index 4ce96aa..30103fc 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0000_static_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif
+index f9dffb0..44cb184 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth_D455_NOISED.gif
+index f9dffb0..44cb184 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif
+index 503a04f..d8cadb4 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_drone_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_CLEAN.gif
+index 73afe26..9d1ae05 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_CLEAN.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_CLEAN.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_D455_NOISED.gif
+index 73afe26..9d1ae05 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_merged_dual_camera_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif
+index 50c398f..3de9bfe 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth_D455_NOISED.gif
+index 50c398f..3de9bfe 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif
+index de546dc..8f9e6ef 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0001_static_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth.gif
+index cd1f70f..67b7ab3 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth_D455_NOISED.gif
+index cd1f70f..67b7ab3 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_seg.gif
+index df5847e..17cdb59 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_drone_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_CLEAN.gif
+index 76cf951..6d688fc 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_CLEAN.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_CLEAN.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_D455_NOISED.gif
+index 76cf951..6d688fc 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_merged_dual_camera_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth.gif
+index 16e22b2..ed7a71f 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth_D455_NOISED.gif
+index 16e22b2..ed7a71f 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_seg.gif
+index 430605b..1027dc9 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0002_static_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth.gif
+index 3289055..67c4d3e 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth_D455_NOISED.gif
+index 3289055..67c4d3e 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_seg.gif
+index 15a98fb..b39057c 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_drone_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_CLEAN.gif
+index abbafe4..b56e158 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_CLEAN.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_CLEAN.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_D455_NOISED.gif
+index abbafe4..b56e158 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_merged_dual_camera_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth.gif
+index 752e905..e886350 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth_D455_NOISED.gif
+index 752e905..e886350 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_seg.gif
+index 17895ce..37694ff 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0003_static_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth.gif
+index c407039..e355432 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth_D455_NOISED.gif
+index c407039..e355432 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_seg.gif
+index f17aee5..e804040 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_drone_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_CLEAN.gif
+index e24ffb0..e345231 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_CLEAN.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_CLEAN.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_D455_NOISED.gif
+index e24ffb0..e345231 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_merged_dual_camera_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth.gif
+index 7d9688e..cc2ef5c 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth_D455_NOISED.gif
+index 7d9688e..cc2ef5c 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_seg.gif
+index cb65f71..e31c89b 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0004_static_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth.gif
+index ce2389c..f96520a 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth_D455_NOISED.gif
+index ce2389c..f96520a 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_seg.gif
+index 6bc7c67..b963fe6 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_drone_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_CLEAN.gif
+index d2d7165..474131d 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_CLEAN.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_CLEAN.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_D455_NOISED.gif
+index d2d7165..474131d 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_merged_dual_camera_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth.gif
+index 1141584..dda783b 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth_D455_NOISED.gif
+index 1141584..dda783b 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth_D455_NOISED.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_depth_D455_NOISED.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_seg.gif
+index 5cd33bb..d4229d8 100644
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_seg.gif and b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0005_static_seg.gif differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth.gif
+deleted file mode 100644
+index 4f59edb..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 4f59edb..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_seg.gif
+deleted file mode 100644
+index 71b3623..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 7f4a6df..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 7f4a6df..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth.gif
+deleted file mode 100644
+index 909bc04..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 909bc04..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_seg.gif
+deleted file mode 100644
+index 6e16552..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0006_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth.gif
+deleted file mode 100644
+index 36e1bbe..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 36e1bbe..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_seg.gif
+deleted file mode 100644
+index 6294e9e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 8db1ce0..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 8db1ce0..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth.gif
+deleted file mode 100644
+index 368f67e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 368f67e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_seg.gif
+deleted file mode 100644
+index f2c9175..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0007_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth.gif
+deleted file mode 100644
+index 14bdfdc..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 14bdfdc..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_seg.gif
+deleted file mode 100644
+index caf3d72..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 07000b2..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 07000b2..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth.gif
+deleted file mode 100644
+index 7b4f722..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 7b4f722..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_seg.gif
+deleted file mode 100644
+index e48adad..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0008_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth.gif
+deleted file mode 100644
+index 2aeecc4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 2aeecc4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_seg.gif
+deleted file mode 100644
+index 7d50e13..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index c3929d2..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index c3929d2..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth.gif
+deleted file mode 100644
+index 120a704..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 120a704..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_seg.gif
+deleted file mode 100644
+index 0c5b6a8..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0009_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth.gif
+deleted file mode 100644
+index bdde72a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 0d72b1e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_seg.gif
+deleted file mode 100644
+index e61aacc..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 5686f79..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 7cea389..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth.gif
+deleted file mode 100644
+index ac28e5c..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 7751be3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_seg.gif
+deleted file mode 100644
+index ca5273e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0010_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth.gif
+deleted file mode 100644
+index 9992f17..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 0636e2c..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_seg.gif
+deleted file mode 100644
+index 3b5f3fa..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 66a4648..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 15060ad..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth.gif
+deleted file mode 100644
+index 2c4882a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 81ee639..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_seg.gif
+deleted file mode 100644
+index 98789c4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0011_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth.gif
+deleted file mode 100644
+index 3c69ac0..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index b9cba66..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_seg.gif
+deleted file mode 100644
+index 24ee612..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index c10a233..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 15b2b3b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth.gif
+deleted file mode 100644
+index 1b266a5..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 2b049cd..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_seg.gif
+deleted file mode 100644
+index 53b17cf..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0012_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth.gif
+deleted file mode 100644
+index 6a1b568..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 21a1484..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_seg.gif
+deleted file mode 100644
+index ac53ff3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 2d684c6..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index e52b733..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth.gif
+deleted file mode 100644
+index 023e70b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 147dc5c..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_seg.gif
+deleted file mode 100644
+index 124923b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0013_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth.gif
+deleted file mode 100644
+index 439e4ef..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 301e714..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_seg.gif
+deleted file mode 100644
+index 466d6fa..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 022c49e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index de1fa6d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth.gif
+deleted file mode 100644
+index 0405320..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 446526e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_seg.gif
+deleted file mode 100644
+index 8f62062..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0014_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth.gif
+deleted file mode 100644
+index de561d3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 00df142..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_seg.gif
+deleted file mode 100644
+index 49a9333..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 9409c7e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 904bb6a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth.gif
+deleted file mode 100644
+index 27c7d5b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 34b42aa..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_seg.gif
+deleted file mode 100644
+index 1b1a11d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0015_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth.gif
+deleted file mode 100644
+index 28b4366..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 68b2958..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_seg.gif
+deleted file mode 100644
+index 5a16600..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 35f2113..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index f666dd8..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth.gif
+deleted file mode 100644
+index 90dcb4d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 98381d1..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_seg.gif
+deleted file mode 100644
+index 0698359..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0016_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth.gif
+deleted file mode 100644
+index 1a21bb3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index 5dcd693..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_seg.gif
+deleted file mode 100644
+index a93f9af..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 69b3e5a..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 538e4e4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth.gif
+deleted file mode 100644
+index 7b0d839..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index bf7ab82..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_seg.gif
+deleted file mode 100644
+index 520ecd7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0017_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth.gif
+deleted file mode 100644
+index bb954c7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index aa62b18..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_seg.gif
+deleted file mode 100644
+index 80c03d3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index 81de9ca..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 675f8ac..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth.gif
+deleted file mode 100644
+index 63a3b58..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 5851aeb..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_seg.gif
+deleted file mode 100644
+index 2865740..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0018_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth.gif
+deleted file mode 100644
+index 031dc22..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index f0b2f23..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_seg.gif
+deleted file mode 100644
+index 8dad446..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index deabd8d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 7e7ad11..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth.gif
+deleted file mode 100644
+index 51e2137..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 4f8ee42..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_seg.gif
+deleted file mode 100644
+index 67d12b5..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0019_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth.gif
+deleted file mode 100644
+index 87e0101..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index c5386f4..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_seg.gif
+deleted file mode 100644
+index affce4e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index ab76758..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index a4d463d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth.gif
+deleted file mode 100644
+index 2509f0b..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index f83881e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_seg.gif
+deleted file mode 100644
+index a6a26b3..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0020_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth.gif
+deleted file mode 100644
+index 4d0da2e..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth_D455_NOISED.gif
+deleted file mode 100644
+index d595759..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_seg.gif
+deleted file mode 100644
+index 8ed1d3d..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_drone_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera_CLEAN.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera_CLEAN.gif
+deleted file mode 100644
+index eae0bc6..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera_CLEAN.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera_D455_NOISED.gif
+deleted file mode 100644
+index 21949be..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_merged_dual_camera_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth.gif
+deleted file mode 100644
+index f62ea28..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth_D455_NOISED.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth_D455_NOISED.gif
+deleted file mode 100644
+index 3f05218..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_depth_D455_NOISED.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_seg.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_seg.gif
+deleted file mode 100644
+index 5ef0631..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0021_static_seg.gif and /dev/null differ
+diff --git a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_depth.gif b/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_depth.gif
+deleted file mode 100644
+index 6739ac7..0000000
+Binary files a/aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/episode_0022_drone_depth.gif and /dev/null dif
