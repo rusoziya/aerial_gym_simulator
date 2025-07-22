@@ -1,0 +1,4 @@
+=== CURRICULUM LOGGING STARTED ===
+Timestamp: 20250721_173440
+Log file: ./train_dir/curriculum_gate_navigation_20250721_173440.log
+[2025-07-21 17:34:40] [INIT] Multi-aspect curriculum initialized at level 3

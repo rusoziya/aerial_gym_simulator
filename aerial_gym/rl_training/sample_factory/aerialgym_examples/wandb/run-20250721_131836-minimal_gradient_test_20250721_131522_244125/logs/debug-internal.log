@@ -1,0 +1,167 @@
+2025-07-21 13:18:36,728 INFO    MainThread:750919 [internal.py:wandb_internal():90] W&B internal server running at pid: 750919, started at: 2025-07-21 13:18:36.727494
+2025-07-21 13:18:36,732 DEBUG   SenderThread:750919 [sender.py:send():236] send: header
+2025-07-21 13:18:36,732 INFO    WriterThread:750919 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/run-minimal_gradient_test_20250721_131522_244125.wandb
+2025-07-21 13:18:36,767 DEBUG   SenderThread:750919 [sender.py:send():236] send: run
+2025-07-21 13:18:36,769 INFO    SenderThread:750919 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso-ucl/gate_navigation_dual_camera/minimal_gradient_test_20250721_131522_244125
+2025-07-21 13:18:37,116 INFO    SenderThread:750919 [sender.py:_maybe_setup_resume():556] configured resuming with: ResumeState(resumed=True,step=1,history=0,events=1,output=995,runtime=21,wandb_runtime=19,summary={'_wandb': {'runtime': 19}},config={'env': {'desc': None, 'value': 'quad_with_obstacles_gate'}, 'algo': {'desc': None, 'value': 'APPO'}, 'help': {'desc': None, 'value': False}, 'seed': {'desc': None, 'value': None}, 'gamma': {'desc': None, 'value': 0.98}, '_wandb': {'desc': None, 'value': {'t': {'1': [1, 55], '2': [1, 55], '3': [13, 14, 15, 35], '4': '3.8.19', '5': '0.12.21', '8': [6]}, 'framework': 'torch', 'start_time': 1753100122, 'cli_version': '0.12.21', 'is_jupyter_run': False, 'python_version': '3.8.19', 'is_kaggle_kernel': False}}, 'device': {'desc': None, 'value': 'gpu'}, 'obs_key': {'desc': None, 'value': 'observations'}, 'rollout': {'desc': None, 'value': 16}, 'subtask': {'desc': None, 'value': None}, 'use_rnn': {'desc': None, 'value': True}, 'adam_eps': {'desc': None, 'value': 1e-06}, 'async_rl': {'desc': None, 'value': True}, 'cli_args': {'desc': None, 'value': {'env': 'quad_with_obstacles_gate', 'gamma': 0.98, 'obs_key': 'observations', 'rollout': 16, 'use_rnn': True, 'headless': True, 'rnn_size': 32, 'train_dir': './train_dir', 'batch_size': 128, 'env_agents': 4, 'experiment': 'minimal_gradient_test', 'num_epochs': 1, 'num_workers': 1, 'reward_scale': 0.1, 'learning_rate': 0.0003, 'max_grad_norm': 1, 'rnn_num_layers': 1, 'save_every_sec': 3600, 'normalize_input': True, 'encoder_mlp_layers': [64, 32], 'use_env_info_cache': False, 'num_envs_per_worker': 1, 'save_best_every_sec': 3600, 'train_for_env_steps': 500, 'gradient_log_interval': 25, 'num_batches_per_epoch': 1, 'gradient_print_interval': 25, 'num_batches_to_accumulate': 1, 'enable_gradient_monitoring': True}}, 'git_hash': {'desc': None, 'value': 'c1f2719af2dc775861344c14d98681662964662d'}, 'headless': {'desc': None, 'value': True}, 'rnn_size': {'desc': None, 'value': 32}, 'rnn_type': {'desc': None, 'value': 'gru'}, 'vtrace_c': {'desc': None, 'value': 1}, 'with_pbt': {'desc': None, 'value': False}, 'benchmark': {'desc': None, 'value': False}, 'obs_scale': {'desc': None, 'value': 1}, 'optimizer': {'desc': None, 'value': 'adam'}, 'save_gifs': {'desc': None, 'value': False}, 'stats_avg': {'desc': None, 'value': 100}, 'train_dir': {'desc': None, 'value': './train_dir'}, 'adam_beta1': {'desc': None, 'value': 0.9}, 'adam_beta2': {'desc': None, 'value': 0.999}, 'batch_size': {'desc': None, 'value': 128}, 'env_agents': {'desc': None, 'value': 4}, 'eval_stats': {'desc': None, 'value': False}, 'experiment': {'desc': None, 'value': 'minimal_gradient_test'}, 'gae_lambda': {'desc': None, 'value': 0.95}, 'num_epochs': {'desc': None, 'value': 1}, 'recurrence': {'desc': None, 'value': 32}, 'vtrace_rho': {'desc': None, 'value': 1}, 'wandb_tags': {'desc': None, 'value': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory']}, 'wandb_user': {'desc': None, 'value': 'ziya-ruso-ucl'}, 'with_wandb': {'desc': None, 'value': True}, 'log_to_file': {'desc': None, 'value': True}, 'lr_schedule': {'desc': None, 'value': 'kl_adaptive_epoch'}, 'num_workers': {'desc': None, 'value': 1}, 'reward_clip': {'desc': None, 'value': 1000}, 'serial_mode': {'desc': None, 'value': True}, 'wandb_group': {'desc': None, 'value': 'gate_navigation_training'}, 'with_vtrace': {'desc': None, 'value': False}, 'command_line': {'desc': None, 'value': '--env=quad_with_obstacles_gate --experiment=minimal_gradient_test --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=4 --obs_key=observations --batch_size=128 --num_batches_to_accumulate=1 --num_batches_per_epoch=1 --num_epochs=1 --rollout=16 --learning_rate=0.0003 --use_rnn=true --rnn_size=32 --rnn_num_layers=1 --encoder_mlp_layers 64 32 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --normalize_input=true --use_env_info_cache=false --save_every_sec=3600 --save_best_every_sec=3600 --train_for_env_steps=500 --headless=true --enable_gradient_monitoring=true --gradient_log_interval=25 --gradient_print_interval=25'}, 'nonlinearity': {'desc': None, 'value': 'elu'}, 'num_policies': {'desc': None, 'value': 1}, 'pixel_format': {'desc': None, 'value': 'CHW'}, 'reward_scale': {'desc': None, 'value': 0.1}, 'env_frameskip': {'desc': None, 'value': 1}, 'git_repo_name': {'desc': None, 'value': 'git@github.com:rusoziya/aerial_gym_simulator.git'}, 'kl_loss_coeff': {'desc': None, 'value': 0.1}, 'learning_rate': {'desc': None, 'value': 0.0003}, 'max_grad_norm': {'desc': None, 'value': 1}, 'wandb_project': {'desc': None, 'value': 'gate_navigation_dual_camera'}, 'env_framestack': {'desc': None, 'value': 1}, 'initial_stddev': {'desc': None, 'value': 1}, 'max_policy_lag': {'desc': None, 'value': 1000}, 'ppo_clip_ratio': {'desc': None, 'value': 0.2}, 'ppo_clip_value': {'desc': None, 'value': 1}, 'rnn_num_layers': {'desc': None, 'value': 1}, 'save_every_sec': {'desc': None, 'value': 3600}, 'wandb_job_type': {'desc': None, 'value': 'SF'}, 'adaptive_stddev': {'desc': None, 'value': True}, 'env_gpu_actions': {'desc': None, 'value': True}, 'ige_api_version': {'desc': None, 'value': 'preview4'}, 'lr_adaptive_max': {'desc': None, 'value': 0.01}, 'lr_adaptive_min': {'desc': None, 'value': 1e-06}, 'normalize_input': {'desc': None, 'value': True}, 'pbt_perturb_max': {'desc': None, 'value': 1.5}, 'pbt_perturb_min': {'desc': None, 'value': 1.1}, 'save_best_after': {'desc': None, 'value': 100000}, 'value_bootstrap': {'desc': None, 'value': True}, 'wandb_unique_id': {'desc': None, 'value': 'minimal_gradient_test_20250721_131522_244125'}, 'action_space_dim': {'desc': None, 'value': 4}, 'batched_sampling': {'desc': None, 'value': True}, 'default_niceness': {'desc': None, 'value': 0}, 'exploration_loss': {'desc': None, 'value': 'entropy'}, 'keep_checkpoints': {'desc': None, 'value': 5}, 'policy_init_gain': {'desc': None, 'value': 1}, 'restart_behavior': {'desc': None, 'value': 'resume'}, 'save_best_metric': {'desc': None, 'value': 'reward'}, 'value_loss_coeff': {'desc': None, 'value': 2}, 'actor_worker_gpus': {'desc': None, 'value': [0]}, 'normalize_returns': {'desc': None, 'value': True}, 'obs_subtract_mean': {'desc': None, 'value': 0}, 'pbt_mutation_rate': {'desc': None, 'value': 0.15}, 'train_for_seconds': {'desc': None, 'value': 10000000000}, 'worker_num_splits': {'desc': None, 'value': 1}, 'decoder_mlp_layers': {'desc': None, 'value': []}, 'encoder_mlp_layers': {'desc': None, 'value': [64, 32]}, 'heartbeat_interval': {'desc': None, 'value': 20}, 'pbt_optimize_gamma': {'desc': None, 'value': False}, 'pbt_start_mutation': {'desc': None, 'value': 20000000}, 'use_env_info_cache': {'desc': None, 'value': False}, 'num_envs_per_worker': {'desc': None, 'value': 1}, 'save_best_every_sec': {'desc': None, 'value': 3600}, 'save_milestones_sec': {'desc': None, 'value': -1}, 'shuffle_minibatches': {'desc': None, 'value': False}, 'train_for_env_steps': {'desc': None, 'value': 500}, 'env_gpu_observations': {'desc': None, 'value': True}, 'load_checkpoint_kind': {'desc': None, 'value': 'latest'}, 'normalize_input_keys': {'desc': None, 'value': None}, 'pbt_period_env_steps': {'desc': None, 'value': 5000000}, 'pbt_replace_fraction': {'desc': None, 'value': 0.3}, 'pbt_target_objective': {'desc': None, 'value': 'true_objective'}, 'continuous_tanh_scale': {'desc': None, 'value': 0}, 'gradient_log_interval': {'desc': None, 'value': 25}, 'num_batches_per_epoch': {'desc': None, 'value': 1}, 'policy_initialization': {'desc': None, 'value': 'torch_default'}, 'exploration_loss_coeff': {'desc': None, 'value': 0.001}, 'pbt_replace_reward_gap': {'desc': None, 'value': 0.1}, 'encoder_conv_mlp_layers': {'desc': None, 'value': []}, 'gradient_print_interval': {'desc': None, 'value': 25}, 'summaries_use_frameskip': {'desc': None, 'value': True}, 'flush_summaries_interval': {'desc': None, 'value': 30}, 'force_envs_single_thread': {'desc': None, 'value': False}, 'lr_schedule_kl_threshold': {'desc': None, 'value': 0.016}, 'set_workers_cpu_affinity': {'desc': None, 'value': True}, 'encoder_conv_architecture': {'desc': None, 'value': 'convnet_simple'}, 'num_batches_to_accumulate': {'desc': None, 'value': 1}, 'policy_workers_per_policy': {'desc': None, 'value': 1}, 'actor_critic_share_weights': {'desc': None, 'value': True}, 'enable_gradient_monitoring': {'desc': None, 'value': True}, 'pbt_mix_policies_in_one_env': {'desc': None, 'value': True}, 'heartbeat_reporting_interval': {'desc': None, 'value': 180}, 'experiment_summaries_interval': {'desc': None, 'value': 10}, 'use_record_episode_statistics': {'desc': None, 'value': False}, 'decorrelate_envs_on_one_worker': {'desc': None, 'value': True}, 'pbt_replace_reward_gap_absolute': {'desc': None, 'value': 1e-06}, 'decorrelate_experience_max_seconds': {'desc': None, 'value': 0}})
+2025-07-21 13:18:37,433 INFO    SenderThread:750919 [dir_watcher.py:__init__():216] watching files in: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files
+2025-07-21 13:18:37,433 INFO    SenderThread:750919 [sender.py:_start_run_threads():815] run started: minimal_gradient_test_20250721_131522_244125 with start time 1753100295
+2025-07-21 13:18:37,448 DEBUG   SenderThread:750919 [sender.py:send():236] send: summary
+2025-07-21 13:18:37,449 INFO    SenderThread:750919 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-21 13:18:37,450 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: check_version
+2025-07-21 13:18:37,450 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: check_version
+2025-07-21 13:18:37,492 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: run_start
+2025-07-21 13:18:37,506 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: stop_status
+2025-07-21 13:18:37,506 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: stop_status
+2025-07-21 13:18:37,518 INFO    HandlerThread:750919 [handler.py:handle_tbrecord():723] handling tbrecord: tbrecord {
+  log_dir: "./train_dir/minimal_gradient_test/.summary/0"
+  save: true
+}
+
+2025-07-21 13:18:37,518 DEBUG   HandlerThread:750919 [config_util.py:dict_from_config_file():100] no default config file found in config-defaults.yaml
+2025-07-21 13:18:37,730 DEBUG   SenderThread:750919 [sender.py:send():236] send: telemetry
+2025-07-21 13:18:37,731 DEBUG   SenderThread:750919 [sender.py:send():236] send: config
+2025-07-21 13:18:37,732 DEBUG   SenderThread:750919 [sender.py:send():236] send: tbrecord
+2025-07-21 13:18:37,732 DEBUG   SenderThread:750919 [sender.py:send():236] send: files
+2025-07-21 13:18:37,732 INFO    SenderThread:750919 [sender.py:_save_file():952] saving file events.out.tfevents.1753100317.ziyar with policy live
+2025-07-21 13:18:38,435 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/wandb-summary.json
+2025-07-21 13:18:38,436 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/events.out.tfevents.1753100317.ziyar
+2025-07-21 13:18:38,436 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:40,434 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:42,435 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:44,435 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:46,436 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:48,436 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:50,437 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/events.out.tfevents.1753100317.ziyar
+2025-07-21 13:18:50,437 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:50,937 INFO    Thread-14 :750919 [upload_job.py:push():138] Uploaded file /tmp/tmp1y2b53ybwandb/nly1a2gz-events.out.tfevents.1753100317.ziyar
+2025-07-21 13:18:52,438 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:52,732 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: stop_status
+2025-07-21 13:18:52,733 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: stop_status
+2025-07-21 13:18:56,439 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:18:57,997 DEBUG   SenderThread:750919 [sender.py:send():236] send: telemetry
+2025-07-21 13:18:58,440 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/events.out.tfevents.1753100317.ziyar
+2025-07-21 13:19:00,441 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:19:00,550 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:00,550 DEBUG   SenderThread:750919 [sender.py:send():236] send: exit
+2025-07-21 13:19:00,550 INFO    SenderThread:750919 [sender.py:send_exit():372] handling exit code: 0
+2025-07-21 13:19:00,550 INFO    SenderThread:750919 [sender.py:send_exit():374] handling runtime: 42
+2025-07-21 13:19:00,550 INFO    SenderThread:750919 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-21 13:19:00,550 INFO    SenderThread:750919 [sender.py:send_exit():380] send defer
+2025-07-21 13:19:00,551 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:00,551 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:00,551 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 0
+2025-07-21 13:19:00,552 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:00,552 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 0
+2025-07-21 13:19:00,552 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 1
+2025-07-21 13:19:00,552 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:00,552 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 1
+2025-07-21 13:19:00,609 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:00,610 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 1
+2025-07-21 13:19:00,610 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 2
+2025-07-21 13:19:00,610 DEBUG   SenderThread:750919 [sender.py:send():236] send: stats
+2025-07-21 13:19:00,611 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:00,611 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 2
+2025-07-21 13:19:00,611 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:00,611 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 2
+2025-07-21 13:19:00,611 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 3
+2025-07-21 13:19:00,611 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:00,611 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 3
+2025-07-21 13:19:01,441 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/wandb-summary.json
+2025-07-21 13:19:01,442 INFO    Thread-8  :750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:19:07,554 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:07,554 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:07,554 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:07,556 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 3
+2025-07-21 13:19:07,556 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 4
+2025-07-21 13:19:07,560 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:07,561 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 4
+2025-07-21 13:19:07,965 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:07,965 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:07,965 DEBUG   SenderThread:750919 [sender.py:send():236] send: history
+2025-07-21 13:19:07,965 DEBUG   SenderThread:750919 [sender.py:send():236] send: summary
+2025-07-21 13:19:07,967 INFO    SenderThread:750919 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-21 13:19:07,967 DEBUG   SenderThread:750919 [sender.py:send():236] send: summary
+2025-07-21 13:19:07,974 INFO    SenderThread:750919 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-21 13:19:07,975 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:07,975 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 4
+2025-07-21 13:19:07,975 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 5
+2025-07-21 13:19:07,975 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:07,975 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 5
+2025-07-21 13:19:07,975 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:07,976 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 5
+2025-07-21 13:19:07,976 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 6
+2025-07-21 13:19:07,976 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:07,976 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 6
+2025-07-21 13:19:07,976 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:07,976 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 6
+2025-07-21 13:19:07,976 INFO    SenderThread:750919 [dir_watcher.py:finish():353] shutting down directory watcher
+2025-07-21 13:19:08,068 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:08,445 INFO    SenderThread:750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/wandb-summary.json
+2025-07-21 13:19:08,446 INFO    SenderThread:750919 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/config.yaml
+2025-07-21 13:19:08,447 INFO    SenderThread:750919 [dir_watcher.py:finish():383] scan: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files
+2025-07-21 13:19:08,448 INFO    SenderThread:750919 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/events.out.tfevents.1753100317.ziyar events.out.tfevents.1753100317.ziyar
+2025-07-21 13:19:08,448 INFO    SenderThread:750919 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/wandb-summary.json wandb-summary.json
+2025-07-21 13:19:08,449 INFO    SenderThread:750919 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/config.yaml config.yaml
+2025-07-21 13:19:08,450 INFO    SenderThread:750919 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log output.log
+2025-07-21 13:19:08,450 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 7
+2025-07-21 13:19:08,450 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:08,452 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:08,452 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 7
+2025-07-21 13:19:08,452 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:08,453 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 7
+2025-07-21 13:19:08,453 INFO    SenderThread:750919 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-21 13:19:08,553 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:08,554 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:08,656 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:08,656 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:08,757 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:08,758 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:08,859 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:08,860 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:08,960 INFO    Thread-16 :750919 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/wandb-summary.json
+2025-07-21 13:19:08,962 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:08,962 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:08,994 INFO    Thread-15 :750919 [upload_job.py:push():138] Uploaded file /tmp/tmp1y2b53ybwandb/cvdl07ad-events.out.tfevents.1753100317.ziyar
+2025-07-21 13:19:09,017 INFO    Thread-17 :750919 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/config.yaml
+2025-07-21 13:19:09,064 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:09,064 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:09,167 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:09,168 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:09,270 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:09,270 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:09,370 INFO    Thread-18 :750919 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/files/output.log
+2025-07-21 13:19:09,372 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:09,372 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:09,474 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:09,474 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:09,570 INFO    Thread-7  :750919 [sender.py:transition_state():393] send defer: 8
+2025-07-21 13:19:09,571 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:09,571 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 8
+2025-07-21 13:19:09,571 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:09,571 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 8
+2025-07-21 13:19:09,576 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:10,143 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 9
+2025-07-21 13:19:10,144 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:10,144 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:10,145 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 9
+2025-07-21 13:19:10,145 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:10,145 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 9
+2025-07-21 13:19:10,145 INFO    SenderThread:750919 [sender.py:transition_state():393] send defer: 10
+2025-07-21 13:19:10,146 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: defer
+2025-07-21 13:19:10,146 DEBUG   SenderThread:750919 [sender.py:send():236] send: final
+2025-07-21 13:19:10,146 INFO    HandlerThread:750919 [handler.py:handle_request_defer():163] handle defer: 10
+2025-07-21 13:19:10,147 DEBUG   SenderThread:750919 [sender.py:send():236] send: footer
+2025-07-21 13:19:10,147 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: defer
+2025-07-21 13:19:10,147 INFO    SenderThread:750919 [sender.py:send_request_defer():389] handle sender defer: 10
+2025-07-21 13:19:10,245 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-21 13:19:10,246 DEBUG   SenderThread:750919 [sender.py:send_request():250] send_request: poll_exit
+2025-07-21 13:19:10,246 INFO    SenderThread:750919 [file_pusher.py:join():176] waiting for file pusher
+2025-07-21 13:19:10,700 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: sampled_history
+2025-07-21 13:19:10,701 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: get_summary
+2025-07-21 13:19:10,701 DEBUG   HandlerThread:750919 [handler.py:handle_request():140] handle_request: shutdown
+2025-07-21 13:19:10,701 INFO    HandlerThread:750919 [handler.py:finish():806] shutting down handler
+2025-07-21 13:19:11,147 INFO    WriterThread:750919 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_131836-minimal_gradient_test_20250721_131522_244125/run-minimal_gradient_test_20250721_131522_244125.wandb
+2025-07-21 13:19:11,598 INFO    SenderThread:750919 [sender.py:finish():1114] shutting down sender
+2025-07-21 13:19:11,598 INFO    SenderThread:750919 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-21 13:19:11,598 INFO    SenderThread:750919 [file_pusher.py:join():176] waiting for file pusher

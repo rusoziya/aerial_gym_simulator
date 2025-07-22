@@ -101,6 +101,7 @@ class GateEnvCfg:
             # Objects positioned on obstacle side (positive Y) where drone shouldn't spawn
             
             # For 8x8 environment, position objects in a line behind the gate
+            # FIXED: Obstacles now spawn throughout full gate height (bottom to top)
             min_state_ratio = [
                 0.1, 0.65, 0.0,  # X: wider spread from left, Y: behind gate (positive Y), Z: on ground
                 0, -np.pi/3.0, -np.pi,  # More rotation variation
@@ -108,7 +109,7 @@ class GateEnvCfg:
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities
             ]
             max_state_ratio = [
-                0.9, 0.95, 0.3,  # X: wider spread to right, Y: well behind gate, Z: higher elevation
+                0.9, 0.95, 0.55,  # X: wider spread to right, Y: well behind gate, Z: gate top (2.2m)
                 0, np.pi/3.0, np.pi,  # More rotation variation
                 1.5,  # Larger maximum scale for more visual diversity
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  # Velocities

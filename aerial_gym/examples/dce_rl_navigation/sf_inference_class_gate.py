@@ -1,23 +1,38 @@
 """
-Sample Factory inference class for DCE navigation with gate environment - FULL NAVIGATION
+Sample Factory inference class for DCE navigation with gate environment - POSITION-AWARE NAVIGATION
 This class provides trained model inference for DCE navigation tasks with gate navigation using velocity control.
 
-RESTORED: Full navigation with target guidance enabled
-- Includes explicit target direction and distance observations (4D)
-- Tests navigation to gate center using both visual information AND target guidance
-- Observation space: 145D (4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE)
+ENHANCED: Position-aware navigation with drone absolute position and full yaw sensing
+- Includes drone absolute position in world coordinates (3D)
+- Includes static camera position and orientation relative to drone (6D)
+- Includes full drone orientation with yaw sensing (3D instead of 2D)
+- Tests navigation to gate center using complete spatial awareness
+- Observation space: 150D (3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)
 
 The class is specifically designed to interface with trained Sample Factory models and:
 - Uses 4D action space matching the training configuration [x_vel, y_vel, z_vel, yaw_rate]
-- Processes 145D observations (4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE)
-- Directly interfaces with Sample Factory trained models for gate navigation
-- Supports both inference and evaluation with dual camera setup
-- Compatible with velocity controller for direct responsive control
+- Processes 150D observations with complete drone state and spatial awareness  
+- Outputs 4D actions directly compatible with DCE gate navigation task
 
-Architecture compatibility:
-- Inference action output: 4D Sample Factory model output [x_vel, y_vel, z_vel, yaw_rate]
-- Observation input: 145D tensor (restored with target guidance)
-- Action scaling: Conservative velocity limits for improved stability
+OBSERVATION STRUCTURE (150D):
+- [0:2] = Drone absolute position (x, y, z in world coordinates)
+- [3:5] = Static camera position relative to drone (x, y, z in drone's reference frame)
+- [6:8] = Static camera orientation relative to drone (roll, pitch, yaw in drone's reference frame)
+- [9:11] = Drone full orientation including yaw (roll, pitch, yaw)
+- [12:14] = Drone linear velocity in body frame
+- [15:17] = Drone angular velocity in body frame
+- [18:21] = Drone actions (4D for velocity controller)
+- [22:85] = Drone camera VAE latents (64D)
+- [86:149] = Static camera VAE latents (64D)
+
+TRAINING COMPATIBILITY:
+- Compatible with models trained using train_aerialgym_custom_net_gate.py with 150D observations
+- Requires models trained after the position-aware navigation upgrade
+
+Usage:
+    inference = SampleFactoryInferenceGateNew(num_envs=1, action_space_dim=4, obs_space_dim=150, cfg=config)
+    inference.load_model("/path/to/model.pth")
+    action = inference.get_action_deterministic(observation)
 """
 
 import time
@@ -33,15 +48,25 @@ from sample_factory.utils.utils import AttrDict
 
 
 class NN_Inference_Class:
-    def __init__(self, cfg: Dict[str, Any], device: str):
+    """
+    Sample Factory inference class for gate navigation with static camera pose observations.
+    
+    Handles models trained with 147D observation space containing static camera pose information
+    instead of explicit target guidance, enabling camera-aware navigation through gates.
+    """
+
+    def __init__(self, num_envs, action_dim, obs_dim, cfg):
         """
-        Initialize the inference class with Sample Factory configuration.
+        Initialize inference class for gate navigation.
         
         Args:
-            cfg: Sample Factory configuration dictionary 
-            device: Device to run inference on (e.g., 'cuda:0', 'cpu')
+            num_envs: Number of parallel environments
+            action_dim: Action space dimension (should be 4 for gate navigation)
+            obs_dim: Observation space dimension (should be 147 for camera-aware gate navigation)
+            cfg: Sample Factory configuration
         """
-        self.device = device
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.num_envs = num_envs
         
         # Store Sample Factory config
         self.cfg = AttrDict(cfg) if isinstance(cfg, dict) else cfg
@@ -52,17 +77,17 @@ class NN_Inference_Class:
         self.action_space_dim = 4
         print(f"[NN_Inference_Class] Configured for 4D action space (gate navigation with Z-axis control)")
         
-        # Observation space configuration (145D for gate navigation)
-        # 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE = 145D total
-        self.obs_space_dim = 145
-        print(f"[NN_Inference_Class] Configured for {self.obs_space_dim}D observation space (dual camera gate navigation)")
+        # Observation space configuration (150D for gate navigation with position awareness)
+        # 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE = 150D total
+        self.obs_space_dim = 150
+        print(f"[NN_Inference_Class] Configured for {self.obs_space_dim}D observation space (position-aware gate navigation)")
         
         # Model initialization placeholder
         self.model = None
         self.rnn_states = None
         self.is_model_loaded = False
         
-        print(f"[NN_Inference_Class] Initialized for inference with device: {device}")
+        print(f"[NN_Inference_Class] Initialized for inference with device: {self.device}")
 
     def load_model(self, model_path: str):
         """

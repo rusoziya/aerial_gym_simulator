@@ -1,0 +1,146 @@
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_setup.py:_flush():76] Configure stats pid to 745515
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/.config/wandb/settings
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/settings
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py', 'program': 'train_aerialgym_custom_net_gate.py'}
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_init.py:_log_setup():461] Logging user logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_130722-quick_gradient_test_20250721_130440_283780/logs/debug.log
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_init.py:_log_setup():462] Logging internal logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250721_130722-quick_gradient_test_20250721_130440_283780/logs/debug-internal.log
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_init.py:init():495] calling init triggers
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {}
+2025-07-21 13:07:22,575 INFO    MainThread:745515 [wandb_init.py:init():543] wandb.init() called when a run is still active
+2025-07-21 13:07:22,584 INFO    MainThread:745515 [wandb_run.py:_config_callback():1131] config_cb None None {'help': False, 'algo': 'APPO', 'env': 'quad_with_obstacles_gate', 'experiment': 'quick_gradient_test', 'train_dir': './train_dir', 'restart_behavior': 'resume', 'device': 'gpu', 'seed': None, 'num_policies': 1, 'async_rl': True, 'serial_mode': True, 'batched_sampling': True, 'num_batches_to_accumulate': 1, 'worker_num_splits': 1, 'policy_workers_per_policy': 1, 'max_policy_lag': 1000, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 512, 'num_batches_per_epoch': 2, 'num_epochs': 2, 'rollout': 32, 'recurrence': 32, 'shuffle_minibatches': False, 'gamma': 0.98, 'reward_scale': 0.1, 'reward_clip': 1000.0, 'value_bootstrap': True, 'normalize_returns': True, 'exploration_loss_coeff': 0.001, 'value_loss_coeff': 2.0, 'kl_loss_coeff': 0.1, 'exploration_loss': 'entropy', 'gae_lambda': 0.95, 'ppo_clip_ratio': 0.2, 'ppo_clip_value': 1.0, 'with_vtrace': False, 'vtrace_rho': 1.0, 'vtrace_c': 1.0, 'optimizer': 'adam', 'adam_eps': 1e-06, 'adam_beta1': 0.9, 'adam_beta2': 0.999, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'lr_schedule': 'kl_adaptive_epoch', 'lr_schedule_kl_threshold': 0.016, 'lr_adaptive_min': 1e-06, 'lr_adaptive_max': 0.01, 'obs_subtract_mean': 0.0, 'obs_scale': 1.0, 'normalize_input': True, 'normalize_input_keys': None, 'decorrelate_experience_max_seconds': 0, 'decorrelate_envs_on_one_worker': True, 'actor_worker_gpus': [0], 'set_workers_cpu_affinity': True, 'force_envs_single_thread': False, 'default_niceness': 0, 'log_to_file': True, 'experiment_summaries_interval': 10, 'flush_summaries_interval': 30, 'stats_avg': 100, 'summaries_use_frameskip': True, 'heartbeat_interval': 20, 'heartbeat_reporting_interval': 180, 'train_for_env_steps': 1000, 'train_for_seconds': 10000000000, 'save_every_sec': 3600, 'keep_checkpoints': 5, 'load_checkpoint_kind': 'latest', 'save_milestones_sec': -1, 'save_best_every_sec': 3600, 'save_best_metric': 'reward', 'save_best_after': 100000, 'benchmark': False, 'encoder_mlp_layers': [128, 64, 32], 'encoder_conv_architecture': 'convnet_simple', 'encoder_conv_mlp_layers': [], 'use_rnn': True, 'rnn_size': 64, 'rnn_type': 'gru', 'rnn_num_layers': 1, 'decoder_mlp_layers': [], 'nonlinearity': 'elu', 'policy_initialization': 'torch_default', 'policy_init_gain': 1.0, 'actor_critic_share_weights': True, 'adaptive_stddev': True, 'continuous_tanh_scale': 0.0, 'initial_stddev': 1.0, 'use_env_info_cache': False, 'env_gpu_actions': True, 'env_gpu_observations': True, 'env_frameskip': 1, 'env_framestack': 1, 'pixel_format': 'CHW', 'use_record_episode_statistics': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_job_type': 'SF', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory'], 'with_pbt': False, 'pbt_mix_policies_in_one_env': True, 'pbt_period_env_steps': 5000000, 'pbt_start_mutation': 20000000, 'pbt_replace_fraction': 0.3, 'pbt_mutation_rate': 0.15, 'pbt_replace_reward_gap': 0.1, 'pbt_replace_reward_gap_absolute': 1e-06, 'pbt_optimize_gamma': False, 'pbt_target_objective': 'true_objective', 'pbt_perturb_min': 1.1, 'pbt_perturb_max': 1.5, 'env_agents': 16, 'headless': True, 'save_gifs': False, 'enable_gradient_monitoring': True, 'gradient_log_interval': 50, 'gradient_print_interval': 50, 'obs_key': 'observations', 'subtask': None, 'ige_api_version': 'preview4', 'eval_stats': False, 'action_space_dim': 4, 'command_line': '--env=quad_with_obstacles_gate --experiment=quick_gradient_test --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=512 --num_batches_to_accumulate=1 --num_batches_per_epoch=2 --num_epochs=2 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 128 64 32 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --save_every_sec=3600 --save_best_every_sec=3600 --train_for_env_steps=1000 --headless=true --enable_gradient_monitoring=true --gradient_log_interval=50 --gradient_print_interval=50', 'cli_args': {'env': 'quad_with_obstacles_gate', 'experiment': 'quick_gradient_test', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 1, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 512, 'num_batches_per_epoch': 2, 'num_epochs': 2, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 1000, 'save_every_sec': 3600, 'save_best_every_sec': 3600, 'encoder_mlp_layers': [128, 64, 32], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'env_agents': 16, 'headless': True, 'enable_gradient_monitoring': True, 'gradient_log_interval': 50, 'gradient_print_interval': 50, 'obs_key': 'observations'}, 'git_hash': 'c1f2719af2dc775861344c14d98681662964662d', 'git_repo_name': 'git@github.com:rusoziya/aerial_gym_simulator.git', 'wandb_unique_id': 'quick_gradient_test_20250721_130440_283780'}
+2025-07-21 13:07:22,585 INFO    MainThread:745515 [wandb_run.py:_tensorboard_callback():1239] tensorboard callback: ./train_dir/quick_gradient_test/.summary/0, True
+2025-07-21 13:07:30,109 INFO    MainThread:745515 [wandb_run.py:_atexit_cleanup():1862] got exitcode: 1
+2025-07-21 13:07:30,111 INFO    MainThread:745515 [wandb_run.py:_restore():1834] restore
+2025-07-21 13:07:35,763 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  other_count: 2
+}
+pusher_stats {
+  total_bytes: 80
+}
+
+2025-07-21 13:07:40,864 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: None
+2025-07-21 13:07:42,007 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 80
+  total_bytes: 80
+}
+
+2025-07-21 13:07:42,291 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 80
+  total_bytes: 80
+}
+
+2025-07-21 13:07:42,950 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 2
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 80
+  total_bytes: 8120
+}
+
+2025-07-21 13:07:43,052 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 80
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:43,153 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 80
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:43,255 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:43,357 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:43,459 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:43,562 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:43,663 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:43,765 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:44,005 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+
+2025-07-21 13:07:44,517 INFO    MainThread:745515 [wandb_run.py:_on_finish():1991] got exit ret: done: true
+exit_result {
+}
+file_counts {
+  wandb_count: 3
+  other_count: 2
+}
+pusher_stats {
+  uploaded_bytes: 90409
+  total_bytes: 90409
+}
+local_info {
+}
+
+2025-07-21 13:07:45,621 INFO    MainThread:745515 [wandb_run.py:_footer_history_summary_info():3099] rendering history
+2025-07-21 13:07:45,621 INFO    MainThread:745515 [wandb_run.py:_footer_history_summary_info():3131] rendering summary
+2025-07-21 13:07:45,623 INFO    MainThread:745515 [wandb_run.py:_footer_sync_info():3055] logging synced files

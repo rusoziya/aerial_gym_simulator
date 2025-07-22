@@ -47,6 +47,19 @@ class NavigationTaskGate(BaseTask):
             self.task_config.reward_parameters[key] = torch.tensor(
                 self.task_config.reward_parameters[key], device=self.device
             )
+        
+        # CONFIG VERIFICATION: Print key reward parameters to verify loading
+        logger.warning("="*60)
+        logger.warning("CONFIG VERIFICATION - REWARD PARAMETERS:")
+        logger.warning(f"pos_reward_magnitude: {self.task_config.reward_parameters['pos_reward_magnitude']}")
+        logger.warning(f"very_close_to_goal_reward_magnitude: {self.task_config.reward_parameters['very_close_to_goal_reward_magnitude']}")
+        logger.warning(f"getting_closer_reward_multiplier: {self.task_config.reward_parameters['getting_closer_reward_multiplier']}")
+        logger.warning(f"gate_approach_reward_magnitude: {self.task_config.reward_parameters['gate_approach_reward_magnitude']}")
+        logger.warning(f"gate_passage_reward_magnitude: {self.task_config.reward_parameters['gate_passage_reward_magnitude']}")
+        logger.warning(f"camera_facing_reward_magnitude: {self.task_config.reward_parameters.get('camera_facing_reward_magnitude', 'NOT FOUND!')}")
+        logger.warning(f"collision_penalty: {self.task_config.reward_parameters['collision_penalty']}")
+        logger.warning("="*60)
+        
         logger.info("Building environment for gate navigation task.")
         logger.info(
             "Sim Name: {}, Env Name: {}, Robot Name: {}, Controller Name: {}".format(
@@ -101,12 +114,8 @@ class NavigationTaskGate(BaseTask):
         self.crashes_aggregate = 0
         self.timeouts_aggregate = 0
 
-        self.pos_error_vehicle_frame_prev = torch.zeros_like(self.target_position)
-        self.pos_error_vehicle_frame = torch.zeros_like(self.target_position)
-
         # Gate-specific tracking
         self.gate_position = torch.zeros((self.sim_env.num_envs, 3), device=self.device)
-        self.gate_passed = torch.zeros(self.sim_env.num_envs, device=self.device, dtype=torch.bool)
         self.gate_approach_distance = torch.zeros(self.sim_env.num_envs, device=self.device)
 
         # Initialize single shared VAE model for both drone and static cameras
@@ -138,6 +147,73 @@ class NavigationTaskGate(BaseTask):
 
         # Get the dictionary once from the environment and use it to get the observations later.
         self.obs_dict = self.sim_env.get_obs()
+        
+        # DEBUG: Print all available observations at startup for debugging
+        logger.warning("="*80)
+        logger.warning("🔍 AVAILABLE OBSERVATIONS AT INITIALIZATION:")
+        for key, value in self.obs_dict.items():
+            if hasattr(value, 'shape'):
+                logger.warning(f"  📊 {key}: shape={value.shape}, dtype={value.dtype}")
+            else:
+                logger.warning(f"  📊 {key}: {type(value)} = {value}")
+        logger.warning("="*80)
+        
+        # IMMEDIATE DEBUG: Test observation processing right after initialization  
+        logger.warning("🧪 TESTING OBSERVATION PROCESSING AT INITIALIZATION:")
+        try:
+            # Initialize task_obs first to avoid AttributeError
+            if not hasattr(self, 'task_obs'):
+                self.task_obs = {
+                    "observations": torch.zeros(
+                        (self.sim_env.num_envs, self.task_config.observation_space_dim),
+                        device=self.device,
+                        requires_grad=False,
+                    ),
+                }
+            
+            self.process_obs_for_task()
+            logger.warning("✅ process_obs_for_task() executed successfully")
+            
+            # Check if task_obs was populated
+            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+                obs_shape = self.task_obs['observations'].shape
+                logger.warning(f"📊 task_obs shape: {obs_shape}")
+                
+                if obs_shape[1] == 150:  # 150D observation space
+                    obs_sample = self.task_obs["observations"][0]  # First environment
+                    
+                    # Static camera data verification
+                    static_cam_pos = obs_sample[3:6]
+                    static_cam_orient = obs_sample[6:9] 
+                    static_vae = obs_sample[86:150]
+                    
+                    logger.warning("🔍 IMMEDIATE STATIC CAMERA VERIFICATION:")
+                    logger.warning(f"  📍 Static cam pos [3:6]: {static_cam_pos.cpu().numpy()}")
+                    logger.warning(f"  📍 Static cam pos sum: {torch.sum(static_cam_pos).item():.6f}")
+                    logger.warning(f"  🧭 Static cam orient [6:9]: {static_cam_orient.cpu().numpy()}")
+                    logger.warning(f"  🧭 Static cam orient sum: {torch.sum(static_cam_orient).item():.6f}")
+                    logger.warning(f"  📷 Static VAE sum: {torch.sum(static_vae).item():.6f}")
+                    logger.warning(f"  📷 Static VAE norm: {torch.norm(static_vae).item():.6f}")
+                    
+                    # Critical checks
+                    pos_is_zero = torch.allclose(static_cam_pos, torch.zeros_like(static_cam_pos), atol=1e-6)
+                    orient_is_zero = torch.allclose(static_cam_orient, torch.zeros_like(static_cam_orient), atol=1e-6)
+                    vae_is_zero = torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
+                    
+                    logger.warning(f"  ✅ Position populated: {'❌ ALL ZEROS' if pos_is_zero else '✅ NON-ZERO'}")
+                    logger.warning(f"  ✅ Orientation populated: {'❌ ALL ZEROS' if orient_is_zero else '✅ NON-ZERO'}")
+                    logger.warning(f"  ✅ VAE latents populated: {'❌ ALL ZEROS' if vae_is_zero else '✅ NON-ZERO'}")
+                else:
+                    logger.warning(f"❌ Wrong observation space dimension: {obs_shape[1]} (expected 150)")
+            else:
+                logger.warning("❌ task_obs not found or observations key missing")
+                
+        except Exception as e:
+            logger.warning(f"❌ Error in process_obs_for_task(): {e}")
+            import traceback
+            logger.warning(f"Traceback: {traceback.format_exc()}")
+        
+        logger.warning("="*80)
         
         # Use the curriculum level that was already set during pre-initialization
         self.obs_dict["curriculum_level"] = self.curriculum_level
@@ -212,7 +288,7 @@ class NavigationTaskGate(BaseTask):
                 "observations": Box(
                     low=-1.0,
                     high=1.0,
-                    shape=(self.task_config.observation_space_dim,),  # 141D: 13D basic + 64D drone VAE + 64D static VAE (PURE VISION)
+                    shape=(self.task_config.observation_space_dim,),  # 150D: 3D drone position + 6D static camera pose + 3D full orientation + 10D state + 64D drone VAE + 64D static camera VAE
                     dtype=np.float32,
                 ),
                 "image_obs": Box(
@@ -254,6 +330,34 @@ class NavigationTaskGate(BaseTask):
         self.num_task_steps = 0
         
         # Curriculum logging already initialized earlier in __init__
+
+        self.pos_error_vehicle_frame = torch.zeros(
+            self.num_envs, 3, device=self.device
+        )
+        self.pos_error_vehicle_frame_prev = torch.zeros(
+            self.num_envs, 3, device=self.device
+        )
+        self.gate_passed = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        self.camera_alignment_debug = torch.zeros(self.num_envs, device=self.device)
+        self.num_task_steps = 0
+        self.curriculum_progress_fraction = 0.0
+        
+        # EPISODE-LEVEL REWARD TRACKING: Track cumulative contributions per episode
+        self.episode_pos_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_very_close_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_getting_closer_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_gate_approach_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_gate_alignment_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_camera_facing_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_action_penalty = torch.zeros(self.num_envs, device=self.device)
+        self.episode_gate_passage_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_collision_penalty = torch.zeros(self.num_envs, device=self.device)
+        self.episode_image_reward = torch.zeros(self.num_envs, device=self.device)
+        
+        # Track episode statistics
+        self.episode_lengths = torch.zeros(self.num_envs, device=self.device)
+        self.completed_episodes = []  # Store last 10 episode breakdowns
+        self.max_stored_episodes = 10
 
     def close(self):
         try:
@@ -359,6 +463,9 @@ class NavigationTaskGate(BaseTask):
         # Reset gate-specific tracking
         self.gate_passed[env_ids] = False
         self.gate_approach_distance[env_ids] = 0.0
+        
+        # RESET EPISODE REWARD TRACKING: Store completed episode data and reset trackers
+        self.reset_episode_reward_tracking(env_ids)
         
         # Update static camera position based on curriculum level (ONLY for resetting environments)
         if len(env_ids) > 0:
@@ -493,6 +600,49 @@ class NavigationTaskGate(BaseTask):
         self.process_image_observation()
         self.process_static_camera_observation()
         self.post_image_reward_addition()
+        
+        # FINAL VERIFICATION: After all processing is complete
+        if not hasattr(self, '_final_verification_printed'):
+            self._final_verification_printed = True
+            logger.warning("🎯 FINAL STATIC CAMERA VERIFICATION (AFTER PROCESSING):")
+            
+            # Process observations to get final state
+            self.process_obs_for_task()
+            
+            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+                obs_sample = self.task_obs["observations"][0]
+                
+                static_pos = obs_sample[3:6]
+                static_orient = obs_sample[6:9]
+                static_vae = obs_sample[86:150]
+                
+                logger.warning(f"  📍 Final static pos: {static_pos.cpu().numpy()}")
+                logger.warning(f"  🧭 Final static orient: {static_orient.cpu().numpy()}")
+                logger.warning(f"  📷 Final static VAE: range=[{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]")
+                
+                # Check final state
+                pos_ok = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
+                orient_ok = not torch.allclose(static_orient, torch.zeros_like(static_orient), atol=1e-6)
+                vae_ok = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
+                
+                logger.warning(f"  ✅ FINAL RESULTS: pos={pos_ok}, orient={orient_ok}, vae={vae_ok}")
+                
+                if pos_ok and orient_ok and vae_ok:
+                    logger.warning("🎉 SUCCESS: All 150D static camera observations verified!")
+                    
+                    # CRITICAL: Add verification that observations reach RL training
+                    logger.warning("🤖 RL TRAINING USAGE VERIFICATION:")
+                    logger.warning("  ⚠️  IMPORTANT: This verifies DATA PIPELINE, not RL training usage!")
+                    logger.warning("  📋 To verify RL training usage, check:")
+                    logger.warning("     1. Neural network receives 150D input (not 128D or other)")
+                    logger.warning("     2. Policy network architecture matches observation space")
+                    logger.warning("     3. Static camera indices [3:6] and [86:150] affect policy decisions")
+                    logger.warning("     4. Ablation test: performance difference with vs without static camera")
+                    logger.warning("  🔍 Current verification: Environment correctly provides 150D observations")
+                    logger.warning("  ❓ Next step needed: Verify Sample Factory & neural network usage")
+                else:
+                    logger.error("❌ Some static camera data still missing after processing!")
+        
         if self.task_config.return_state_before_reset == False:
             return_tuple = self.get_return_tuple()
         return return_tuple
@@ -531,8 +681,16 @@ class NavigationTaskGate(BaseTask):
         """Process static camera observations with D455 curriculum-dependent noise."""
         try:
             static_depth, static_seg = self.static_camera_manager.capture_images()
+            
+            # CRITICAL DEBUG: Log static camera capture success/failure
+            if not hasattr(self, '_static_debug_logged'):
+                self._static_debug_logged = True
+                if static_depth is not None:
+                    logger.warning(f"✅ Static camera capture successful: shape={static_depth.shape if hasattr(static_depth, 'shape') else 'N/A'}, type={type(static_depth)}")
+                else:
+                    logger.warning("❌ Static camera capture failed: static_depth is None")
+            
             if static_depth is not None and self.task_config.vae_config.use_vae:
-                
                 # Store clean static camera image (original)
                 static_depth_clean = static_depth.copy() if isinstance(static_depth, np.ndarray) else static_depth.clone()
                 
@@ -571,34 +729,151 @@ class NavigationTaskGate(BaseTask):
                 self.obs_dict["static_depth_noised"] = static_depth_noised
                 self.obs_dict["static_seg"] = static_seg
                 
-                # Convert to tensor and process through VAE (use noised version for training)
-                if isinstance(static_depth_noised, np.ndarray):
-                    static_depth_tensor = torch.from_numpy(static_depth_noised).float().to(self.device)
-                    if static_depth_tensor.dim() == 2:
-                        static_depth_tensor = static_depth_tensor.unsqueeze(0)  # Add batch dimension
-                    # Ensure all environments get the same static camera view
-                    static_depth_expanded = static_depth_tensor.expand(self.sim_env.num_envs, -1, -1)
-                    self.static_image_latents[:] = self.shared_vae_model.encode(static_depth_expanded)
-                else:
-                    # If already tensor
-                    if static_depth_noised.dim() == 2:
-                        static_depth_noised = static_depth_noised.unsqueeze(0)
-                    static_depth_expanded = static_depth_noised.expand(self.sim_env.num_envs, -1, -1)
-                    self.static_image_latents[:] = self.shared_vae_model.encode(static_depth_expanded)
+                # CRITICAL FIX: Enhanced VAE encoding with detailed debugging
+                try:
+                    # Convert to tensor and process through VAE (use noised version for training)
+                    if isinstance(static_depth_noised, np.ndarray):
+                        static_depth_tensor = torch.from_numpy(static_depth_noised).float().to(self.device)
+                        if static_depth_tensor.dim() == 2:
+                            static_depth_tensor = static_depth_tensor.unsqueeze(0)  # Add batch dimension
+                        # Ensure all environments get the same static camera view
+                        static_depth_expanded = static_depth_tensor.expand(self.sim_env.num_envs, -1, -1)
+                        
+                        # CRITICAL DEBUG: Log VAE encoding attempt
+                        if not hasattr(self, '_vae_debug_logged'):
+                            self._vae_debug_logged = True
+                            logger.warning(f"🔧 VAE encoding static camera: input_shape={static_depth_expanded.shape}, device={static_depth_expanded.device}")
+                        
+                        encoded_latents = self.shared_vae_model.encode(static_depth_expanded)
+                        self.static_image_latents[:] = encoded_latents
+                        
+                        # CRITICAL DEBUG: Verify VAE output
+                        if not hasattr(self, '_vae_output_logged'):
+                            self._vae_output_logged = True
+                            logger.warning(f"✅ VAE encoding successful: output_shape={encoded_latents.shape}, range=[{encoded_latents.min().item():.3f}, {encoded_latents.max().item():.3f}]")
+                        
+                    else:
+                        # If already tensor
+                        if static_depth_noised.dim() == 2:
+                            static_depth_noised = static_depth_noised.unsqueeze(0)
+                        static_depth_expanded = static_depth_noised.expand(self.sim_env.num_envs, -1, -1)
+                        
+                        encoded_latents = self.shared_vae_model.encode(static_depth_expanded)
+                        self.static_image_latents[:] = encoded_latents
+                        
+                except Exception as vae_error:
+                    logger.error(f"❌ VAE encoding failed: {vae_error}")
+                    # Fallback to zeros if VAE fails
+                    self.static_image_latents.fill_(0.0)
+                    
+            else:
+                # No static camera data or VAE disabled
+                if not hasattr(self, '_no_static_logged'):
+                    self._no_static_logged = True
+                    if static_depth is None:
+                        logger.warning("❌ Static camera data is None - camera capture failed")
+                    elif not self.task_config.vae_config.use_vae:
+                        logger.warning("❌ VAE disabled in config - static camera latents will be zeros")
+                
+                # Fill with zeros if no data
+                self.static_image_latents.fill_(0.0)
+                
         except Exception as e:
-            logger.debug(f"Static camera processing error: {e}")
+            logger.error(f"❌ Static camera processing error: {e}")
+            # Fallback to zeros on any error
+            self.static_image_latents.fill_(0.0)
 
     def post_image_reward_addition(self):
         """Add image-based rewards from drone camera."""
         image_obs = 10.0 * self.obs_dict["depth_range_pixels"].squeeze(1)
         image_obs[image_obs < 0] = 10.0
         self.min_pixel_dist = torch.amin(image_obs, dim=(1, 2))
-        self.rewards[self.terminations < 0] += -exponential_reward_function(
+        
+        # Calculate image rewards for debugging
+        image_rewards = -exponential_reward_function(
             4.0, 1.0, self.min_pixel_dist[self.terminations < 0]
         )
+        
+        # COMPREHENSIVE IMAGE REWARD DEBUGGING: Print values every 200 steps  
+        if hasattr(self, 'num_task_steps') and self.num_task_steps % 200 == 0:
+            avg_min_dist = torch.mean(self.min_pixel_dist).item()
+            avg_image_reward = torch.mean(image_rewards).item() if len(image_rewards) > 0 else 0.0
+            min_pixel_dist = torch.min(self.min_pixel_dist).item()
+            max_pixel_dist = torch.max(self.min_pixel_dist).item()
+            
+            # Count environments with different distance ranges
+            very_close_count = torch.sum(self.min_pixel_dist < 2.0).item()  # < 2m
+            close_count = torch.sum((self.min_pixel_dist >= 2.0) & (self.min_pixel_dist < 4.0)).item()  # 2-4m
+            safe_count = torch.sum(self.min_pixel_dist >= 4.0).item()  # > 4m
+            
+            # COMMENTED OUT: Verbose image reward analysis (clutters training output)
+            # logger.warning("="*60)
+            # logger.warning(f"📷 IMAGE REWARD ANALYSIS (Step {self.num_task_steps}):")
+            # logger.warning(f"  🎯 Average Image Reward:   {avg_image_reward:.3f}")
+            # logger.warning(f"  📏 Distance Stats:")
+            # logger.warning(f"    • Average:               {avg_min_dist:.2f}m")
+            # logger.warning(f"    • Range:                 {min_pixel_dist:.2f}m - {max_pixel_dist:.2f}m")
+            # logger.warning(f"  🚦 Environment Distribution:")
+            # logger.warning(f"    • Very Close (<2m):      {very_close_count}/16 envs")
+            # logger.warning(f"    • Close (2-4m):          {close_count}/16 envs")
+            # logger.warning(f"    • Safe (>4m):            {safe_count}/16 envs")
+            # 
+            # # Safety warnings
+            # if avg_min_dist < 1.5:
+            #     logger.warning("  ⚠️  WARNING: Drones flying very close to obstacles!")
+            # elif avg_image_reward < -2.0:
+            #     logger.warning("  ⚠️  WARNING: High image penalties - collision avoidance active!")
+            # elif very_close_count > 8:
+            #     logger.warning("  ⚠️  WARNING: Many drones in danger zone (<2m from obstacles)!")
+            # else:
+            #     logger.warning("  ✅ Image rewards normal - good collision avoidance")
+            # 
+            # logger.warning("="*60)
+        
+        # Apply the image rewards
+        self.rewards[self.terminations < 0] += image_rewards
 
     def get_return_tuple(self):
         self.process_obs_for_task()
+        
+        # ADDITIONAL DEBUG: Verify observations in get_return_tuple (called every step)
+        if not hasattr(self, '_return_tuple_debug_printed'):
+            self._return_tuple_debug_printed = True
+            logger.warning("🎯 OBSERVATION VERIFICATION IN get_return_tuple():")
+            
+            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+                obs_shape = self.task_obs['observations'].shape
+                logger.warning(f"📊 Final task_obs shape: {obs_shape}")
+                
+                if obs_shape[1] >= 150:
+                    obs_sample = self.task_obs["observations"][0]
+                    
+                    # Core verification of static camera data
+                    static_pos = obs_sample[3:6]
+                    static_orient = obs_sample[6:9]
+                    static_vae = obs_sample[86:150] if obs_shape[1] >= 150 else obs_sample[86:]
+                    
+                    logger.warning(f"🔍 FINAL VERIFICATION:")
+                    logger.warning(f"  Static pos: {static_pos.cpu().numpy()}")
+                    logger.warning(f"  Static orient: {static_orient.cpu().numpy()}")
+                    logger.warning(f"  Static VAE range: [{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]")
+                    
+                    # Check if properly populated
+                    pos_nonzero = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
+                    orient_nonzero = not torch.allclose(static_orient, torch.zeros_like(static_orient), atol=1e-6) 
+                    vae_nonzero = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
+                    
+                    logger.warning(f"  ✅ Static camera working: pos={pos_nonzero}, orient={orient_nonzero}, vae={vae_nonzero}")
+                    
+                    if not (pos_nonzero and orient_nonzero and vae_nonzero):
+                        logger.error("❌ CRITICAL: Static camera data is missing!")
+                    else:
+                        logger.warning("✅ SUCCESS: All static camera data populated correctly!")
+                else:
+                    logger.error(f"❌ WRONG OBSERVATION DIMENSION: {obs_shape[1]} (expected 150)")
+            else:
+                logger.error("❌ task_obs not available in get_return_tuple")
+        
         return (
             self.task_obs,
             self.rewards,
@@ -611,60 +886,57 @@ class NavigationTaskGate(BaseTask):
         """
         Process observations for the gate navigation task.
         
-        RESTORED: Full navigation assistance with target direction and distance.
-        ADDED: Observation noise from base navigation task for robustness.
+        UPDATED: Now matches DCE navigation task format with static camera pose observations.
         
-        Observation space (145D):
-        - 0-3: Target direction vector (normalized) + distance to target
-        - 4-6: Euler angles (roll, pitch, 0.0) with noise
-        - 7-9: Robot body linear velocity
-        - 10-12: Robot body angular velocity
-        - 13-16: Robot actions (4D for gate navigation)
-        - 17-80: Drone camera VAE latents (64D)
-        - 81-144: Static camera VAE latents (64D)
+        Observation space (150D):
+        - 0-3: Drone absolute position in world coordinates
+        - 3-6: Static camera position relative to drone  
+        - 6-9: Static camera orientation relative to drone
+        - 9-12: Full drone orientation including yaw
+        - 12-15: Robot body linear velocity
+        - 15-18: Robot body angular velocity
+        - 18-22: Robot actions (4D for gate navigation)
+        - 22-86: Drone camera VAE latents (64D)
+        - 86-150: Static camera VAE latents (64D)
         """
-        # Calculate target direction and distance (with noise from base navigation task)
-        vec_to_target = quat_rotate_inverse(
-            self.obs_dict["robot_vehicle_orientation"],
-            (self.target_position - self.obs_dict["robot_position"]),
-        )
+        # MODIFIED: Include drone absolute position and full orientation sensing
+        # This provides the agent with complete spatial awareness of its state and static camera relative position
         
-        # ADD OBSERVATION NOISE: Target direction perturbation (from base navigation task)
-        # This adds robustness to the learned policy by preventing over-fitting to perfect observations
-        perturbed_vec_to_target = vec_to_target + 0.1 * 2 * (torch.rand_like(vec_to_target) - 0.5)
+        # ===== DRONE ABSOLUTE POSITION OBSERVATIONS (3D) =====
+        # [0:3] = Drone absolute position in world coordinates (x, y, z)
+        self.task_obs["observations"][:, 0:3] = self.obs_dict["robot_position"]
         
-        # Calculate distance and normalize direction
-        dist_to_target = torch.norm(vec_to_target, dim=1)
-        perturbed_unit_vec_to_target = perturbed_vec_to_target / dist_to_target.unsqueeze(1)
+        # ===== STATIC CAMERA POSE OBSERVATIONS (6D) =====
+        # Get static camera pose information relative to drone
+        static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
         
-        # Target guidance observations (4D): normalized direction + distance
-        self.task_obs["observations"][:, 0:3] = perturbed_unit_vec_to_target
-        self.task_obs["observations"][:, 3] = dist_to_target / 5.0  # Normalized distance
+        # [3:6] = Static camera position relative to drone (x, y, z in drone's reference frame)
+        self.task_obs["observations"][:, 3:6] = static_camera_pos
         
-        # Euler angles with noise (from base navigation task)
+        # [6:9] = Static camera orientation relative to drone (roll, pitch, yaw in drone's reference frame)
+        self.task_obs["observations"][:, 6:9] = static_camera_orientation
+        
+        # ===== DRONE FULL ORIENTATION OBSERVATIONS (3D) =====
+        # [9:12] = Full drone orientation including yaw (roll, pitch, yaw)
         euler_angles = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))
+        self.task_obs["observations"][:, 9:12] = euler_angles  # MODIFIED: Include full yaw instead of setting to 0.0
         
-        # ADD OBSERVATION NOISE: Euler angle perturbation (from base navigation task)
-        perturbed_euler_angles = euler_angles + 0.1 * (torch.rand_like(euler_angles) - 0.5)
+        # ===== DRONE STATE OBSERVATIONS (10D) =====
+        # [12:15] = Robot body linear velocity
+        self.task_obs["observations"][:, 12:15] = self.obs_dict["robot_body_linvel"]
         
-        self.task_obs["observations"][:, 4] = perturbed_euler_angles[:, 0]  # Roll with noise
-        self.task_obs["observations"][:, 5] = perturbed_euler_angles[:, 1]  # Pitch with noise
-        self.task_obs["observations"][:, 6] = 0.0  # Yaw set to 0 (relative to robot frame)
+        # [15:18] = Robot body angular velocity  
+        self.task_obs["observations"][:, 15:18] = self.obs_dict["robot_body_angvel"]
         
-        # Robot state observations (no noise added to these)
-        self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
-        self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
-        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]  # 4D actions
+        # [18:22] = Robot actions (x_vel, y_vel, z_vel, yaw_rate)
+        self.task_obs["observations"][:, 18:22] = self.obs_dict["robot_actions"]
         
-        # Camera observations: Drone camera VAE latents (64D) + Static camera VAE latents (64D)
-        self.task_obs["observations"][:, 17:81] = self.image_latents  # Drone camera VAE latents
-        self.task_obs["observations"][:, 81:145] = self.static_image_latents  # Static camera VAE latents
+        # ===== VISUAL OBSERVATIONS (128D) =====
+        # [22:86] = Drone camera VAE latents (64D)
+        self.task_obs["observations"][:, 22:86] = self.image_latents
         
-        # Store additional data for rendering/debugging
-        self.task_obs["rewards"] = self.rewards
-        self.task_obs["terminations"] = self.terminations
-        self.task_obs["truncations"] = self.truncations
-        self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]  # Raw drone camera image
+        # [86:150] = Static camera VAE latents (64D)
+        self.task_obs["observations"][:, 86:150] = self.static_image_latents
 
     def compute_rewards_and_crashes(self, obs_dict):
         """Compute rewards with gate-specific components."""
@@ -677,12 +949,17 @@ class NavigationTaskGate(BaseTask):
             robot_vehicle_orientation, (target_position - robot_position)
         )
         
+        # CRITICAL FIX: Clone action tensors to break reference dependency
+        # obs_dict contains direct references to global tensors that get updated simultaneously
+        current_actions = obs_dict["robot_actions"].clone()
+        previous_actions = obs_dict["robot_prev_actions"].clone()
+        
         rewards, crashes, camera_gate_alignment = compute_gate_reward(
             self.pos_error_vehicle_frame,
             self.pos_error_vehicle_frame_prev,
             obs_dict["crashes"],
-            obs_dict["robot_actions"],
-            obs_dict["robot_prev_actions"],
+            current_actions,
+            previous_actions,
             robot_position,
             robot_vehicle_orientation,
             self.gate_position,
@@ -690,6 +967,274 @@ class NavigationTaskGate(BaseTask):
             self.curriculum_progress_fraction,
             self.task_config.reward_parameters,
         )
+        
+        # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
+        self.update_episode_reward_tracking(obs_dict, rewards, crashes)
+        
+        # COMPREHENSIVE REWARD DEBUGGING: Print ALL reward components every 200 steps
+        if hasattr(self, 'num_task_steps') and self.num_task_steps % 200 == 0:
+            # Recalculate components for debugging (without JIT optimization)
+            dist = torch.norm(self.pos_error_vehicle_frame, dim=1)
+            prev_dist = torch.norm(self.pos_error_vehicle_frame_prev, dim=1)
+            action = obs_dict["robot_actions"]
+            prev_action = obs_dict["robot_prev_actions"]
+            robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
+            
+            # Individual reward components (average across environments)
+            pos_reward = exponential_reward_function(
+                self.task_config.reward_parameters["pos_reward_magnitude"],
+                self.task_config.reward_parameters["pos_reward_exponent"],
+                dist,
+            )
+            
+            very_close_reward = exponential_reward_function(
+                self.task_config.reward_parameters["very_close_to_goal_reward_magnitude"],
+                self.task_config.reward_parameters["very_close_to_goal_reward_exponent"],
+                dist,
+            )
+            
+            getting_closer = prev_dist - dist
+            getting_closer_reward = torch.where(
+                getting_closer > 0,
+                self.task_config.reward_parameters["getting_closer_reward_multiplier"] * getting_closer,
+                2.0 * self.task_config.reward_parameters["getting_closer_reward_multiplier"] * getting_closer,
+            )
+            
+            gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
+            gate_approach_reward = exponential_reward_function(
+                self.task_config.reward_parameters["gate_approach_reward_magnitude"],
+                0.5,
+                gate_distance,
+            )
+            
+            # Gate alignment
+            gate_alignment_reward = torch.zeros_like(gate_distance)
+            aligned_mask = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
+            gate_alignment_reward[aligned_mask] = self.task_config.reward_parameters["gate_alignment_reward_magnitude"]
+            
+            # Camera facing reward calculation (same as in compute_gate_reward)
+            drone_to_gate = self.gate_position - robot_position
+            drone_to_gate_normalized = drone_to_gate / (torch.norm(drone_to_gate, dim=1, keepdim=True) + 1e-8)
+            
+            # Get drone's forward direction (where camera points)
+            qw, qx, qy, qz = robot_vehicle_orientation[:, 3], robot_vehicle_orientation[:, 0], robot_vehicle_orientation[:, 1], robot_vehicle_orientation[:, 2]
+            forward_x = 1.0 - 2.0 * (qy * qy + qz * qz)
+            forward_y = 2.0 * (qx * qy + qw * qz)
+            forward_z = 2.0 * (qx * qz - qw * qy)
+            drone_forward = torch.stack([forward_x, forward_y, forward_z], dim=1)
+            drone_forward_normalized = drone_forward / (torch.norm(drone_forward, dim=1, keepdim=True) + 1e-8)
+            
+            # Calculate alignment between camera direction and gate direction
+            camera_gate_alignment = torch.sum(drone_forward_normalized * drone_to_gate_normalized, dim=1)
+            camera_gate_alignment = torch.clamp(camera_gate_alignment, -1.0, 1.0)
+            
+            # Camera facing reward with same logic as compute_gate_reward
+            camera_facing_reward = torch.zeros_like(camera_gate_alignment)
+            perfect_mask = camera_gate_alignment > 0.966
+            camera_facing_reward[perfect_mask] = self.task_config.reward_parameters["camera_facing_reward_magnitude"]
+            excellent_mask = (camera_gate_alignment > 0.866) & (camera_gate_alignment <= 0.966)
+            camera_facing_reward[excellent_mask] = 0.9 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[excellent_mask]
+            good_mask = (camera_gate_alignment > 0.5) & (camera_gate_alignment <= 0.866)
+            camera_facing_reward[good_mask] = 0.8 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[good_mask]
+            moderate_mask = (camera_gate_alignment > 0.0) & (camera_gate_alignment <= 0.5)
+            camera_facing_reward[moderate_mask] = 0.4 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[moderate_mask]
+            poor_mask = (camera_gate_alignment > -0.707) & (camera_gate_alignment <= 0.0)
+            camera_facing_reward[poor_mask] = 0.2 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[poor_mask]
+            severe_mask = camera_gate_alignment <= -0.707
+            camera_facing_reward[severe_mask] = 2.0 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[severe_mask]
+            
+            # Action penalties - FIXED: Added missing Y-action penalties for 4D action space
+            action_diff = action - prev_action
+            
+            # ENHANCED ACTION DEBUG: Deep investigation of action tracking system
+            if self.num_task_steps % 200 == 0:
+                avg_action_diff = torch.mean(torch.abs(action_diff), dim=0)
+                max_action_diff = torch.max(torch.abs(action_diff), dim=0)[0]
+                
+                # Show actual action values to understand the pattern
+                avg_current = torch.mean(action, dim=0)
+                avg_previous = torch.mean(prev_action, dim=0)
+                
+                # Check if all actions are identical across environments
+                action_std = torch.std(action, dim=0)
+                prev_action_std = torch.std(prev_action, dim=0)
+                
+                # COMMENTED OUT: Verbose action debug logs (clutters training output)
+                # logger.warning(f"🔧 ACTION DEBUG - Action differences (avg): X={avg_action_diff[0]:.6f}, Y={avg_action_diff[1]:.6f}, Z={avg_action_diff[2]:.6f}, Yaw={avg_action_diff[3]:.6f}")
+                # logger.warning(f"🔧 ACTION DEBUG - Action differences (max): X={max_action_diff[0]:.6f}, Y={max_action_diff[1]:.6f}, Z={max_action_diff[2]:.6f}, Yaw={max_action_diff[3]:.6f}")
+                # logger.warning(f"🔧 ACTION DEBUG - Current actions (avg): X={avg_current[0]:.6f}, Y={avg_current[1]:.6f}, Z={avg_current[2]:.6f}, Yaw={avg_current[3]:.6f}")
+                # logger.warning(f"🔧 ACTION DEBUG - Previous actions (avg): X={avg_previous[0]:.6f}, Y={avg_previous[1]:.6f}, Z={avg_previous[2]:.6f}, Yaw={avg_previous[3]:.6f}")
+                # logger.warning(f"🔧 ACTION DEBUG - Current action std: X={action_std[0]:.6f}, Y={action_std[1]:.6f}, Z={action_std[2]:.6f}, Yaw={action_std[3]:.6f}")
+                # logger.warning(f"🔧 ACTION DEBUG - Previous action std: X={prev_action_std[0]:.6f}, Y={prev_action_std[1]:.6f}, Z={prev_action_std[2]:.6f}, Yaw={prev_action_std[3]:.6f}")
+                # 
+                # # Check first environment for exact values
+                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Current: {action[0].tolist()}")
+                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Previous: {prev_action[0].tolist()}")
+                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Difference: {action_diff[0].tolist()}")
+            
+            x_diff_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["x_action_diff_penalty_magnitude"],
+                self.task_config.reward_parameters["x_action_diff_penalty_exponent"],
+                action_diff[:, 0],
+            )
+            # FIXED: Added missing Y-action difference penalty for debugging
+            y_diff_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["y_action_diff_penalty_magnitude"],
+                self.task_config.reward_parameters["y_action_diff_penalty_exponent"],
+                action_diff[:, 1],
+            )
+            z_diff_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["z_action_diff_penalty_magnitude"],
+                self.task_config.reward_parameters["z_action_diff_penalty_exponent"],
+                action_diff[:, 2],
+            )
+            yawrate_diff_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["yawrate_action_diff_penalty_magnitude"],
+                self.task_config.reward_parameters["yawrate_action_diff_penalty_exponent"],
+                action_diff[:, 3],
+            )
+            
+            # CRITICAL FIX: Add missing absolute penalties in debugging section
+            x_absolute_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["x_absolute_action_penalty_magnitude"],
+                self.task_config.reward_parameters["x_absolute_action_penalty_exponent"],
+                action[:, 0],
+            )
+            y_absolute_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["y_absolute_action_penalty_magnitude"],
+                self.task_config.reward_parameters["y_absolute_action_penalty_exponent"],
+                action[:, 1],
+            )
+            z_absolute_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["z_absolute_action_penalty_magnitude"],
+                self.task_config.reward_parameters["z_absolute_action_penalty_exponent"],
+                action[:, 2],
+            )
+            yawrate_absolute_penalty = exponential_penalty_function(
+                self.task_config.reward_parameters["yawrate_absolute_action_penalty_magnitude"],
+                self.task_config.reward_parameters["yawrate_absolute_action_penalty_exponent"],
+                action[:, 3],
+            )
+            
+            action_diff_penalty = x_diff_penalty + y_diff_penalty + z_diff_penalty + yawrate_diff_penalty
+            absolute_action_penalty = x_absolute_penalty + y_absolute_penalty + z_absolute_penalty + yawrate_absolute_penalty
+            total_action_penalty = action_diff_penalty + absolute_action_penalty
+            
+            # COMMENTED OUT: Verbose penalty breakdown logs (clutters training output)
+            # # ABSOLUTE PENALTY DEBUG: Check individual components
+            # if self.num_task_steps % 200 == 0:
+            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Diff penalties (avg): X={torch.mean(x_diff_penalty).item():.6f}, Y={torch.mean(y_diff_penalty).item():.6f}, Z={torch.mean(z_diff_penalty).item():.6f}, Yaw={torch.mean(yawrate_diff_penalty).item():.6f}")
+            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Abs penalties (avg): X={torch.mean(x_absolute_penalty).item():.6f}, Y={torch.mean(y_absolute_penalty).item():.6f}, Z={torch.mean(z_absolute_penalty).item():.6f}, Yaw={torch.mean(yawrate_absolute_penalty).item():.6f}")
+            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Total diff: {torch.mean(action_diff_penalty).item():.6f}, Total abs: {torch.mean(absolute_action_penalty).item():.6f}, Grand total: {torch.mean(total_action_penalty).item():.6f}")
+            
+            # Calculate averages for debugging
+            mult_factor = 1.0 + (0.5) * self.curriculum_progress_fraction
+            avg_total_reward = torch.mean(rewards).item()
+            avg_pos_reward = torch.mean(mult_factor * pos_reward).item()
+            avg_very_close = torch.mean(mult_factor * very_close_reward).item()
+            avg_getting_closer = torch.mean(mult_factor * getting_closer_reward).item()
+            avg_gate_approach = torch.mean(mult_factor * gate_approach_reward).item()
+            avg_gate_alignment = torch.mean(mult_factor * gate_alignment_reward).item()
+            avg_camera_facing = torch.mean(mult_factor * camera_facing_reward).item()
+            avg_action_penalty = torch.mean(total_action_penalty).item()
+            avg_distance = torch.mean(dist).item()
+            avg_gate_distance = torch.mean(gate_distance).item()
+            avg_camera_alignment = torch.mean(camera_gate_alignment).item()
+            
+            logger.warning("="*80)
+            logger.warning(f"🔍 COMPREHENSIVE REWARD BREAKDOWN (Step {self.num_task_steps}):")
+            logger.warning(f"  📊 TOTAL REWARD:           {avg_total_reward:.3f}")
+            logger.warning(f"  📍 Position Reward:        {avg_pos_reward:.3f} (dist: {avg_distance:.2f}m)")
+            logger.warning(f"  🎯 Very Close Reward:      {avg_very_close:.3f}")
+            logger.warning(f"  ⬆️  Getting Closer:         {avg_getting_closer:.3f}")
+            logger.warning(f"  🚪 Gate Approach:          {avg_gate_approach:.3f} (gate_dist: {avg_gate_distance:.2f}m)")
+            logger.warning(f"  ✅ Gate Alignment:         {avg_gate_alignment:.3f}")
+            logger.warning(f"  📹 Camera Facing:          {avg_camera_facing:.3f} (align: {avg_camera_alignment:.3f})")
+            logger.warning(f"  🎮 Action Penalty:         {avg_action_penalty:.3f}")
+            logger.warning(f"  ⚡ Multiplier Factor:      {mult_factor:.3f}")
+            
+            # Check for any gate passages
+            num_passed = torch.sum((robot_position[:, 1] > self.gate_position[:, 1]) & 
+                                 (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &
+                                 (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)).item()
+            
+            if num_passed > 0:
+                logger.warning(f"  🎉 GATE PASSAGES:          {num_passed}/16 environments!")
+                logger.warning(f"  💰 Gate Passage Reward:   {self.task_config.reward_parameters['gate_passage_reward_magnitude'].item():.1f} per passage")
+            
+            # Check for crashes
+            num_crashes = torch.sum(obs_dict["crashes"]).item()
+            if num_crashes > 0:
+                logger.warning(f"  💥 CRASHES:                {num_crashes}/16 environments")
+                logger.warning(f"  💸 Collision Penalty:     {self.task_config.reward_parameters['collision_penalty'].item():.1f} per crash")
+            
+            # EPISODE-LEVEL REWARD BREAKDOWN: Show how components contribute to episode totals
+            if len(self.completed_episodes) > 0:
+                logger.warning("-"*80)
+                logger.warning(f"📈 EPISODE REWARD ANALYSIS (Last {len(self.completed_episodes)} Episodes):")
+                
+                # Calculate averages across completed episodes
+                avg_episode_data = {}
+                for key in self.completed_episodes[0].keys():
+                    avg_episode_data[key] = sum(ep[key] for ep in self.completed_episodes) / len(self.completed_episodes)
+                
+                logger.warning(f"  🏆 EPISODE TOTAL:          {avg_episode_data['total_reward']:.1f}")
+                logger.warning(f"  📍 Position Contribution:  {avg_episode_data['pos_reward']:.1f}")
+                logger.warning(f"  🎯 Very Close Contribution: {avg_episode_data['very_close_reward']:.1f}")
+                logger.warning(f"  ⬆️  Getting Closer:         {avg_episode_data['getting_closer_reward']:.1f}")
+                logger.warning(f"  🚪 Gate Approach:          {avg_episode_data['gate_approach_reward']:.1f}")
+                logger.warning(f"  ✅ Gate Alignment:         {avg_episode_data['gate_alignment_reward']:.1f}")
+                logger.warning(f"  📹 Camera Facing:          {avg_episode_data['camera_facing_reward']:.1f}")
+                logger.warning(f"  🎮 Action Penalties:       {avg_episode_data['action_penalty']:.1f}")
+                logger.warning(f"  🎉 Gate Passage Bonuses:   {avg_episode_data['gate_passage_reward']:.1f} (basic + center)")
+                
+                # Calculate estimated passages per episode
+                basic_passage_reward = 50.0  # From config
+                center_bonus = 100.0  # From config
+                max_reward_per_passage = (basic_passage_reward + center_bonus) * 1.5  # With curriculum multiplier
+                estimated_passages = avg_episode_data['gate_passage_reward'] / max_reward_per_passage
+                logger.warning(f"  📊 Estimated Passages:     {estimated_passages:.1f} per episode (should be ≤1.0)")
+                logger.warning(f"  💥 Collision Penalties:    {avg_episode_data['collision_penalty']:.1f}")
+                logger.warning(f"  📷 Image Penalties:        {avg_episode_data['image_reward']:.1f}")
+                logger.warning(f"  📏 Average Episode Length: {avg_episode_data['episode_length']:.0f} steps")
+                
+                # Show recent trend (if we have enough episodes)
+                if len(self.completed_episodes) >= 5:
+                    recent_total = sum(ep['total_reward'] for ep in self.completed_episodes[-3:]) / 3
+                    older_total = sum(ep['total_reward'] for ep in self.completed_episodes[:3]) / 3
+                    trend = recent_total - older_total
+                    trend_emoji = "📈" if trend > 0 else "📉" if trend < 0 else "➡️"
+                    logger.warning(f"  {trend_emoji} Recent Trend:         {trend:+.1f} (last 3 vs first 3)")
+            
+            # CURRENT EPISODE PROGRESS: Show cumulative rewards for ongoing episodes
+            logger.warning("-"*80)
+            logger.warning("🔄 CURRENT EPISODE PROGRESS (Cumulative):")
+            
+            # Average current episode progress across all environments
+            avg_current_pos = torch.mean(self.episode_pos_reward).item()
+            avg_current_very_close = torch.mean(self.episode_very_close_reward).item()
+            avg_current_getting_closer = torch.mean(self.episode_getting_closer_reward).item()
+            avg_current_gate_approach = torch.mean(self.episode_gate_approach_reward).item()
+            avg_current_gate_alignment = torch.mean(self.episode_gate_alignment_reward).item()
+            avg_current_camera_facing = torch.mean(self.episode_camera_facing_reward).item()
+            avg_current_action_penalty = torch.mean(self.episode_action_penalty).item()
+            avg_current_collision_penalty = torch.mean(self.episode_collision_penalty).item()
+            avg_current_episode_length = torch.mean(self.episode_lengths).item()
+            
+            current_total = (avg_current_pos + avg_current_very_close + avg_current_getting_closer + 
+                           avg_current_gate_approach + avg_current_gate_alignment + avg_current_camera_facing + 
+                           avg_current_action_penalty + avg_current_collision_penalty)
+            
+            logger.warning(f"  🔄 Current Episode Total:  {current_total:.1f} (avg across 16 envs)")
+            logger.warning(f"  📍 Position So Far:        {avg_current_pos:.1f}")
+            logger.warning(f"  ⬆️  Getting Closer So Far:  {avg_current_getting_closer:.1f}")
+            logger.warning(f"  🚪 Gate Approach So Far:   {avg_current_gate_approach:.1f}")
+            logger.warning(f"  ✅ Gate Alignment So Far:  {avg_current_gate_alignment:.1f}")
+            logger.warning(f"  📹 Camera Facing So Far:   {avg_current_camera_facing:.1f}")
+            logger.warning(f"  💥 Collision Penalties:    {avg_current_collision_penalty:.1f}")
+            logger.warning(f"  📏 Steps So Far:           {avg_current_episode_length:.0f}")
+            
+            logger.warning("="*80)
         
         # Store camera alignment for debugging
         self.camera_alignment_debug = camera_gate_alignment
@@ -875,6 +1420,252 @@ class NavigationTaskGate(BaseTask):
             logger.critical("Success and timeout are occuring at the same time")
         if torch.sum(torch.logical_and(crashes, timeouts)) > 0:
             logger.critical("Crash and timeout are occuring at the same time")
+
+    def update_episode_reward_tracking(self, obs_dict, rewards, crashes):
+        """Update cumulative episode reward tracking for comprehensive debugging."""
+        robot_position = obs_dict["robot_position"]
+        
+        # Calculate individual reward components (same as in compute_rewards_and_crashes)
+        dist = torch.norm(self.pos_error_vehicle_frame, dim=1)
+        prev_dist = torch.norm(self.pos_error_vehicle_frame_prev, dim=1)
+        # CRITICAL FIX: Clone action tensors here too for consistency
+        action = obs_dict["robot_actions"].clone()
+        prev_action = obs_dict["robot_prev_actions"].clone()
+        
+        mult_factor = 1.0 + (0.5) * self.curriculum_progress_fraction
+        
+        # Position reward
+        pos_reward = exponential_reward_function(
+            self.task_config.reward_parameters["pos_reward_magnitude"],
+            self.task_config.reward_parameters["pos_reward_exponent"],
+            dist,
+        )
+        self.episode_pos_reward += mult_factor * pos_reward
+        
+        # Very close reward
+        very_close_reward = exponential_reward_function(
+            self.task_config.reward_parameters["very_close_to_goal_reward_magnitude"],
+            self.task_config.reward_parameters["very_close_to_goal_reward_exponent"],
+            dist,
+        )
+        self.episode_very_close_reward += mult_factor * very_close_reward
+        
+        # Getting closer reward
+        getting_closer = prev_dist - dist
+        getting_closer_reward = torch.where(
+            getting_closer > 0,
+            self.task_config.reward_parameters["getting_closer_reward_multiplier"] * getting_closer,
+            2.0 * self.task_config.reward_parameters["getting_closer_reward_multiplier"] * getting_closer,
+        )
+        self.episode_getting_closer_reward += mult_factor * getting_closer_reward
+        
+        # Gate approach reward
+        gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
+        gate_approach_reward = exponential_reward_function(
+            self.task_config.reward_parameters["gate_approach_reward_magnitude"],
+            0.5,
+            gate_distance,
+        )
+        self.episode_gate_approach_reward += mult_factor * gate_approach_reward
+        
+        # Gate alignment reward
+        gate_alignment_reward = torch.zeros_like(gate_distance)
+        aligned_mask = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
+        gate_alignment_reward[aligned_mask] = self.task_config.reward_parameters["gate_alignment_reward_magnitude"]
+        self.episode_gate_alignment_reward += mult_factor * gate_alignment_reward
+        
+        # Camera facing reward (same calculation as in debugging section)
+        robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
+        drone_to_gate = self.gate_position - robot_position
+        drone_to_gate_normalized = drone_to_gate / (torch.norm(drone_to_gate, dim=1, keepdim=True) + 1e-8)
+        
+        # Get drone's forward direction (where camera points)
+        qw, qx, qy, qz = robot_vehicle_orientation[:, 3], robot_vehicle_orientation[:, 0], robot_vehicle_orientation[:, 1], robot_vehicle_orientation[:, 2]
+        forward_x = 1.0 - 2.0 * (qy * qy + qz * qz)
+        forward_y = 2.0 * (qx * qy + qw * qz)
+        forward_z = 2.0 * (qx * qz - qw * qy)
+        drone_forward = torch.stack([forward_x, forward_y, forward_z], dim=1)
+        drone_forward_normalized = drone_forward / (torch.norm(drone_forward, dim=1, keepdim=True) + 1e-8)
+        
+        # Calculate alignment and camera facing reward
+        camera_gate_alignment = torch.sum(drone_forward_normalized * drone_to_gate_normalized, dim=1)
+        camera_gate_alignment = torch.clamp(camera_gate_alignment, -1.0, 1.0)
+        
+        camera_facing_reward = torch.zeros_like(camera_gate_alignment)
+        perfect_mask = camera_gate_alignment > 0.966
+        camera_facing_reward[perfect_mask] = self.task_config.reward_parameters["camera_facing_reward_magnitude"]
+        excellent_mask = (camera_gate_alignment > 0.866) & (camera_gate_alignment <= 0.966)
+        camera_facing_reward[excellent_mask] = 0.9 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[excellent_mask]
+        good_mask = (camera_gate_alignment > 0.5) & (camera_gate_alignment <= 0.866)
+        camera_facing_reward[good_mask] = 0.8 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[good_mask]
+        moderate_mask = (camera_gate_alignment > 0.0) & (camera_gate_alignment <= 0.5)
+        camera_facing_reward[moderate_mask] = 0.4 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[moderate_mask]
+        poor_mask = (camera_gate_alignment > -0.707) & (camera_gate_alignment <= 0.0)
+        camera_facing_reward[poor_mask] = 0.2 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[poor_mask]
+        severe_mask = camera_gate_alignment <= -0.707
+        camera_facing_reward[severe_mask] = 2.0 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[severe_mask]
+        self.episode_camera_facing_reward += mult_factor * camera_facing_reward
+        
+        # Action penalties - FIXED: Added missing Y-action penalties for 4D action space  
+        action_diff = action - prev_action
+        
+        x_diff_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["x_action_diff_penalty_magnitude"],
+            self.task_config.reward_parameters["x_action_diff_penalty_exponent"],
+            action_diff[:, 0],
+        )
+        # FIXED: Added missing Y-action difference penalty for episode tracking
+        y_diff_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["y_action_diff_penalty_magnitude"],
+            self.task_config.reward_parameters["y_action_diff_penalty_exponent"],
+            action_diff[:, 1],
+        )
+        z_diff_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["z_action_diff_penalty_magnitude"],
+            self.task_config.reward_parameters["z_action_diff_penalty_exponent"],
+            action_diff[:, 2],
+        )
+        yawrate_diff_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["yawrate_action_diff_penalty_magnitude"],
+            self.task_config.reward_parameters["yawrate_action_diff_penalty_exponent"],
+            action_diff[:, 3],
+        )
+        
+        # CRITICAL FIX: Add missing absolute penalties in episode tracking
+        x_absolute_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["x_absolute_action_penalty_magnitude"],
+            self.task_config.reward_parameters["x_absolute_action_penalty_exponent"],
+            action[:, 0],
+        )
+        y_absolute_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["y_absolute_action_penalty_magnitude"],
+            self.task_config.reward_parameters["y_absolute_action_penalty_exponent"],
+            action[:, 1],
+        )
+        z_absolute_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["z_absolute_action_penalty_magnitude"],
+            self.task_config.reward_parameters["z_absolute_action_penalty_exponent"],
+            action[:, 2],
+        )
+        yawrate_absolute_penalty = exponential_penalty_function(
+            self.task_config.reward_parameters["yawrate_absolute_action_penalty_magnitude"],
+            self.task_config.reward_parameters["yawrate_absolute_action_penalty_exponent"],
+            action[:, 3],
+        )
+        
+        action_diff_penalty = x_diff_penalty + y_diff_penalty + z_diff_penalty + yawrate_diff_penalty
+        absolute_action_penalty = x_absolute_penalty + y_absolute_penalty + z_absolute_penalty + yawrate_absolute_penalty
+        total_action_penalty = action_diff_penalty + absolute_action_penalty
+        self.episode_action_penalty += total_action_penalty
+        
+        # Track collision penalties
+        collision_mask = crashes > 0
+        collision_penalty = torch.where(
+            collision_mask,
+            self.task_config.reward_parameters["collision_penalty"],
+            torch.zeros_like(crashes, dtype=torch.float32),
+        )
+        self.episode_collision_penalty += collision_penalty
+        
+        # Track gate passage rewards (check if any gate passages occurred this step)
+        # FIXED: Use the same logic as main reward system and properly update gate_passed flag
+        gate_passed_this_step = (
+            (robot_position[:, 1] > self.gate_position[:, 1]) &
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &
+            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2) &
+            (~self.gate_passed)  # Haven't passed before
+        )
+        
+        # FIXED: Include both basic passage reward AND center bonus (like main system)
+        x_distance_from_center = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
+        z_distance_from_center = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + 1.2))
+        center_aligned_mask = (x_distance_from_center < 0.5) & (z_distance_from_center < 0.3)
+        
+        # Basic gate passage reward
+        gate_passage_reward = torch.where(
+            gate_passed_this_step,
+            mult_factor * self.task_config.reward_parameters["gate_passage_reward_magnitude"],
+            torch.zeros_like(gate_passed_this_step, dtype=torch.float32),
+        )
+        
+        # Gate center passage bonus (only for centered passages)
+        gate_center_passage_bonus = torch.where(
+            gate_passed_this_step & center_aligned_mask,
+            mult_factor * self.task_config.reward_parameters["gate_center_passage_bonus_magnitude"],
+            torch.zeros_like(gate_passed_this_step, dtype=torch.float32),
+        )
+        
+        # CRITICAL FIX: Update gate_passed flag to prevent multiple detections in same episode
+        self.gate_passed = self.gate_passed | gate_passed_this_step
+        
+        # Track total gate passage rewards (basic + center bonus)
+        total_gate_rewards = gate_passage_reward + gate_center_passage_bonus
+        self.episode_gate_passage_reward += total_gate_rewards
+        
+        # Track image rewards (from post_image_reward_addition)
+        if hasattr(self, 'min_pixel_dist'):
+            image_rewards = -exponential_reward_function(
+                4.0, 1.0, self.min_pixel_dist[self.terminations < 0]
+            )
+            # Only add for non-terminated environments
+            non_terminated_mask = self.terminations < 0
+            if torch.sum(non_terminated_mask) > 0:
+                self.episode_image_reward[non_terminated_mask] += image_rewards
+        
+        # Increment episode length tracking
+        self.episode_lengths += 1
+
+    def reset_episode_reward_tracking(self, env_ids):
+        """Reset episode reward tracking for specified environments when episodes end."""
+        if len(env_ids) == 0:
+            return
+            
+        # Store completed episode data for averaging
+        for env_id in env_ids:
+            if self.episode_lengths[env_id] > 0:  # Valid episode
+                episode_data = {
+                    'total_reward': (
+                        self.episode_pos_reward[env_id] + 
+                        self.episode_very_close_reward[env_id] + 
+                        self.episode_getting_closer_reward[env_id] + 
+                        self.episode_gate_approach_reward[env_id] + 
+                        self.episode_gate_alignment_reward[env_id] + 
+                        self.episode_camera_facing_reward[env_id] + 
+                        self.episode_action_penalty[env_id] + 
+                        self.episode_gate_passage_reward[env_id] + 
+                        self.episode_collision_penalty[env_id] + 
+                        self.episode_image_reward[env_id]
+                    ).item(),
+                    'pos_reward': self.episode_pos_reward[env_id].item(),
+                    'very_close_reward': self.episode_very_close_reward[env_id].item(),
+                    'getting_closer_reward': self.episode_getting_closer_reward[env_id].item(),
+                    'gate_approach_reward': self.episode_gate_approach_reward[env_id].item(),
+                    'gate_alignment_reward': self.episode_gate_alignment_reward[env_id].item(),
+                    'camera_facing_reward': self.episode_camera_facing_reward[env_id].item(),
+                    'action_penalty': self.episode_action_penalty[env_id].item(),
+                    'gate_passage_reward': self.episode_gate_passage_reward[env_id].item(),  # Now includes both basic + center bonus
+                    'collision_penalty': self.episode_collision_penalty[env_id].item(),
+                    'image_reward': self.episode_image_reward[env_id].item(),
+                    'episode_length': self.episode_lengths[env_id].item(),
+                }
+                self.completed_episodes.append(episode_data)
+                
+                # Keep only last N episodes
+                if len(self.completed_episodes) > self.max_stored_episodes:
+                    self.completed_episodes.pop(0)
+        
+        # Reset trackers for completed episodes
+        self.episode_pos_reward[env_ids] = 0
+        self.episode_very_close_reward[env_ids] = 0
+        self.episode_getting_closer_reward[env_ids] = 0
+        self.episode_gate_approach_reward[env_ids] = 0
+        self.episode_gate_alignment_reward[env_ids] = 0
+        self.episode_camera_facing_reward[env_ids] = 0
+        self.episode_action_penalty[env_ids] = 0
+        self.episode_gate_passage_reward[env_ids] = 0
+        self.episode_collision_penalty[env_ids] = 0
+        self.episode_image_reward[env_ids] = 0
+        self.episode_lengths[env_ids] = 0
 
 
 class StaticCameraManager:
@@ -1195,44 +1986,56 @@ def compute_gate_reward(
     # distance_from_goal_reward = (20.0 - dist) / 20.0  # This was causing rapid learning!
     distance_from_goal_reward = torch.zeros_like(dist)  # Replace with zero reward
     
-    # Action penalties
+    # Action penalties - FIXED: Added missing Y-action penalties for 4D action space
     action_diff = action - prev_action
     x_diff_penalty = exponential_penalty_function(
         parameter_dict["x_action_diff_penalty_magnitude"],
         parameter_dict["x_action_diff_penalty_exponent"],
         action_diff[:, 0],
     )
+    # FIXED: Added missing Y-action difference penalty for 4D action space [x_vel, y_vel, z_vel, yaw_rate]
+    y_diff_penalty = exponential_penalty_function(
+        parameter_dict["y_action_diff_penalty_magnitude"],
+        parameter_dict["y_action_diff_penalty_exponent"],
+        action_diff[:, 1],
+    )
     z_diff_penalty = exponential_penalty_function(
         parameter_dict["z_action_diff_penalty_magnitude"],
         parameter_dict["z_action_diff_penalty_exponent"],
-        action_diff[:, 2] if action_diff.shape[1] > 2 else torch.zeros_like(action_diff[:, 0]),
+        action_diff[:, 2],
     )
     yawrate_diff_penalty = exponential_penalty_function(
         parameter_dict["yawrate_action_diff_penalty_magnitude"],
         parameter_dict["yawrate_action_diff_penalty_exponent"],
-        action_diff[:, 2] if action_diff.shape[1] == 3 else action_diff[:, 3] if action_diff.shape[1] > 3 else torch.zeros_like(action_diff[:, 0]),
+        action_diff[:, 3],
     )
     
-    action_diff_penalty = x_diff_penalty + z_diff_penalty + yawrate_diff_penalty
+    action_diff_penalty = x_diff_penalty + y_diff_penalty + z_diff_penalty + yawrate_diff_penalty
     
-    # Absolute action penalties
-    x_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    # Absolute action penalties - FIXED: Removed curriculum scaling and added Y-axis penalty
+    x_absolute_penalty = exponential_penalty_function(
         parameter_dict["x_absolute_action_penalty_magnitude"],
         parameter_dict["x_absolute_action_penalty_exponent"],
         action[:, 0],
     )
-    z_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    # FIXED: Added missing Y-action absolute penalty for 4D action space
+    y_absolute_penalty = exponential_penalty_function(
+        parameter_dict["y_absolute_action_penalty_magnitude"],
+        parameter_dict["y_absolute_action_penalty_exponent"],
+        action[:, 1],
+    )
+    z_absolute_penalty = exponential_penalty_function(
         parameter_dict["z_absolute_action_penalty_magnitude"],
         parameter_dict["z_absolute_action_penalty_exponent"],
-        action[:, 2] if action.shape[1] > 2 else torch.zeros_like(action[:, 0]),
+        action[:, 2],
     )
-    yawrate_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    yawrate_absolute_penalty = exponential_penalty_function(
         parameter_dict["yawrate_absolute_action_penalty_magnitude"],
         parameter_dict["yawrate_absolute_action_penalty_exponent"],
-        action[:, 2] if action.shape[1] == 3 else action[:, 3] if action.shape[1] > 3 else torch.zeros_like(action[:, 0]),
+        action[:, 3],
     )
     
-    absolute_action_penalty = x_absolute_penalty + z_absolute_penalty + yawrate_absolute_penalty
+    absolute_action_penalty = x_absolute_penalty + y_absolute_penalty + z_absolute_penalty + yawrate_absolute_penalty
     total_action_penalty = action_diff_penalty + absolute_action_penalty
 
     # Gate-specific rewards
@@ -1366,22 +2169,32 @@ def compute_gate_reward(
         altitude_error,
     )
 
+    # Calculate individual component contributions (for debugging)
+    multiplied_pos_reward = MULTIPLICATION_FACTOR_REWARD * pos_reward
+    multiplied_very_close_reward = MULTIPLICATION_FACTOR_REWARD * very_close_to_goal_reward  
+    multiplied_getting_closer = MULTIPLICATION_FACTOR_REWARD * getting_closer_reward
+    multiplied_distance_reward = MULTIPLICATION_FACTOR_REWARD * distance_from_goal_reward
+    multiplied_gate_approach = MULTIPLICATION_FACTOR_REWARD * gate_approach_reward
+    multiplied_gate_alignment = MULTIPLICATION_FACTOR_REWARD * gate_alignment_reward
+    multiplied_gate_passage = MULTIPLICATION_FACTOR_REWARD * gate_passage_reward
+    multiplied_gate_center_bonus = MULTIPLICATION_FACTOR_REWARD * gate_center_bonus
+    multiplied_gate_center_passage = MULTIPLICATION_FACTOR_REWARD * gate_center_passage_bonus
+    multiplied_camera_facing = MULTIPLICATION_FACTOR_REWARD * camera_facing_reward
+    multiplied_altitude_maintenance = MULTIPLICATION_FACTOR_REWARD * altitude_maintenance_reward
+
     # Combined reward - NOW INCLUDING CAMERA FACING REWARD AND ALTITUDE MAINTENANCE
     reward = (
-        MULTIPLICATION_FACTOR_REWARD
-        * (
-            pos_reward
-            + very_close_to_goal_reward
-            + getting_closer_reward
-            + distance_from_goal_reward
-            + gate_approach_reward
-            + gate_alignment_reward
-            + gate_passage_reward
-            + gate_center_bonus
-            + gate_center_passage_bonus
-            + camera_facing_reward  # Camera facing reward
-            + altitude_maintenance_reward  # NEW: Altitude maintenance reward
-        )
+        multiplied_pos_reward
+        + multiplied_very_close_reward
+        + multiplied_getting_closer
+        + multiplied_distance_reward
+        + multiplied_gate_approach
+        + multiplied_gate_alignment
+        + multiplied_gate_passage
+        + multiplied_gate_center_bonus
+        + multiplied_gate_center_passage
+        + multiplied_camera_facing  # Camera facing reward
+        + multiplied_altitude_maintenance  # NEW: Altitude maintenance reward
         + total_action_penalty
     )
 

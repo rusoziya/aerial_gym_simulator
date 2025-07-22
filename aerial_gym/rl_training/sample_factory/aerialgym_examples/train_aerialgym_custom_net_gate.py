@@ -12,14 +12,16 @@
 # - SOLUTION FOR INFERENCE COMPATIBILITY: Train with 4D actions directly
 #   * Training and inference both use 4D action space to avoid shape mismatch
 #   * This ensures trained models have 4D action output compatible with inference scripts
-# - Observation space: 145D total = 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE
-#   * 0-3: normalized vector to target + distance to target / 5.0
-#   * 4-6: euler angles (roll, pitch, 0.0)  
-#   * 7-9: robot body linear velocity
-#   * 10-12: robot body angular velocity
-#   * 13-16: robot actions (last action taken - now 4D)
-#   * 17-80: VAE-encoded drone depth image latents (64 dimensions, pre-computed by DCE task)
-#   * 81-144: VAE-encoded static camera depth image latents (64 dimensions, pre-computed by DCE task)
+# - Observation space: 150D total = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE
+#   * 0-2: drone absolute position (x, y, z in world coordinates)
+#   * 3-5: static camera position relative to drone (x, y, z in drone's reference frame)
+#   * 6-8: static camera orientation relative to drone (roll, pitch, yaw in drone's reference frame)
+#   * 9-11: drone full orientation including yaw (roll, pitch, yaw)
+#   * 12-14: drone linear velocity in body frame
+#   * 15-17: drone angular velocity in body frame
+#   * 18-21: drone actions (4D for velocity controller)
+#   * 22-85: drone camera VAE latents (64D)
+#   * 86-149: static camera VAE latents (64D)
 # - Curriculum: starts at level 3 and goes up to level 20 (custom range for progressive difficulty)
 # - 128 parallel environments (1 agent per environment) for maximum parallelization
 # - Uses LMF2 robot with VELOCITY CONTROL for direct responsive control
@@ -105,14 +107,18 @@ class AerialGymVecEnv(gym.Env):
         print(f"[AerialGymVecEnv] is_multiagent: {self.is_multiagent}, num_agents: {self.num_agents}")
 
         # DYNAMIC OBSERVATION SPACE: Detect observation space dimension from task config
-        # This handles both standard DCE navigation (81D) and gate navigation (145D)
+        # This handles both standard DCE navigation (81D) and gate navigation (147D)
         if obs_key == "obs":
             # Get the actual observation space dimension from the task configuration
-            task_obs_dim = getattr(self.env.task_config, 'observation_space_dim', 145)  # Default to 145D for gate navigation
+            task_obs_dim = getattr(self.env.task_config, 'observation_space_dim', 150)  # Default to 150D for gate navigation
             print(f"[AerialGymVecEnv] Detected observation space: {task_obs_dim}D")
             
-            if task_obs_dim == 145:
-                print(f"[AerialGymVecEnv] Using GATE NAVIGATION configuration (145D = 4D target + 13D basic + 64D drone VAE + 64D static camera VAE)")
+            if task_obs_dim == 150:
+                print(f"[AerialGymVecEnv] Using GATE NAVIGATION configuration (150D = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)")
+            elif task_obs_dim == 143:
+                print(f"[AerialGymVecEnv] Using ALTERNATIVE GATE NAVIGATION configuration (143D)")
+            elif task_obs_dim == 145:
+                print(f"[AerialGymVecEnv] Using OLDER GATE NAVIGATION configuration (145D)")
             elif task_obs_dim == 81:
                 print(f"[AerialGymVecEnv] Using STANDARD DCE configuration (81D = 17D basic + 64D drone VAE)")
             else:
@@ -591,6 +597,12 @@ def add_extra_params_func(parser):
     parser.add_argument("--env_agents", default=None, type=int, help="Num agents in env (multi-agent only)")
     parser.add_argument("--headless", type=lambda x: x.lower() == 'true', default=None, help="Force headless mode (True/False)")
     parser.add_argument("--save_gifs", type=lambda x: x.lower() == 'true', default=False, help="Save episode GIFs for both cameras (True/False)")
+    
+    # Complete observation influence tracking arguments
+    parser.add_argument("--enable_gradient_monitoring", type=lambda x: x.lower() == 'true', default=False, help="Enable complete observation influence tracking")
+    parser.add_argument("--gradient_log_interval", default=100, type=int, help="Log influence metrics every N steps")
+    parser.add_argument("--gradient_print_interval", default=100, type=int, help="Print analysis summary every N steps")
+    
     p = parser
     p.add_argument(
         "--obs_key",
@@ -643,7 +655,7 @@ def override_default_params_func(env, parser):
         env_gpu_actions=True,
         env_gpu_observations=True,  # Critical: Tell Sample Factory we're providing GPU tensors
         reward_scale=0.1,
-        rollout=32,  # changed to match DCE config
+        rollout=32,  # REVERTED: Issue was tensor reference bug, not rollout frequency
         max_grad_norm=1.0,  # changed to match DCE config
         # batch_size=2048,
         # num_batches_per_epoch=2,
@@ -735,7 +747,7 @@ env_configs = dict(
         recurrence=32,  # Match original config
         gamma=0.98,
         reward_scale=0.1,  # Match original config
-        rollout=32,
+        rollout=32,  # REVERTED: Issue was tensor reference bug, not rollout frequency
         learning_rate=0.0003,  # Match original config (3e-4)
         lr_schedule="kl_adaptive_epoch",
         lr_schedule_kl_threshold=0.016,
@@ -861,7 +873,7 @@ env_configs = dict(
         recurrence=32,
         gamma=0.98,
         reward_scale=0.1,
-        rollout=32,
+        rollout=32,  # REVERTED: Issue was tensor reference bug, not rollout frequency
         learning_rate=0.0003,
         lr_schedule="kl_adaptive_epoch",
         lr_schedule_kl_threshold=0.016,
@@ -884,7 +896,7 @@ env_configs = dict(
         num_envs_per_worker=1,
         
         # Gate Navigation Environment Configuration
-        env_agents=128,  # 128 environments for maximum parallelization
+        env_agents=16,  # 16 environments for stable testing (can be overridden via --env_agents)
         worker_num_splits=1,
         policy_workers_per_policy=1,
         nonlinearity="elu",
@@ -1162,8 +1174,186 @@ def main():
     """Script entry point."""
     register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg()
-    status = run_rl(cfg)
-    return status
+    
+    # Check if complete observation influence tracking is enabled
+    if getattr(cfg, 'enable_gradient_monitoring', False):
+        return run_with_influence_tracking(cfg)
+    else:
+        return run_rl(cfg)
+
+
+def run_with_influence_tracking(cfg: Config):
+    """Enhanced training with complete observation influence tracking."""
+    
+    # Import the complete observation influence tracker
+    try:
+        from aerial_gym.utils.gradient_monitor import create_influence_tracker, INFLUENCE_MONITOR_AVAILABLE
+        # For compatibility during transition
+        GRADIENT_MONITOR_AVAILABLE = INFLUENCE_MONITOR_AVAILABLE
+    except ImportError:
+        print("❌ Complete observation influence tracker not available")
+        INFLUENCE_MONITOR_AVAILABLE = False
+        GRADIENT_MONITOR_AVAILABLE = False
+    
+    if not INFLUENCE_MONITOR_AVAILABLE:
+        print("❌ Complete observation influence tracker not available - falling back to standard training")
+        return run_rl(cfg)
+
+    print("🔬 Complete observation influence tracking ENABLED - analyzing ALL 150D observation components")
+    print("   📊 Log interval: {} steps".format(getattr(cfg, 'gradient_log_interval', 100)))
+    print("   📋 Print interval: {} steps".format(getattr(cfg, 'gradient_print_interval', 100)))
+    print("✅ Complete observation influence tracker ready")
+    print("🔍 Will analyze ALL 150D observation components for neural network influence")
+    
+    # Store original wandb.log if wandb is used
+    original_wandb_log = None
+    if cfg.with_wandb:
+        try:
+            import wandb
+            original_wandb_log = wandb.log
+        except ImportError:
+            pass
+
+    # Create influence tracker instance (will be attached to model later)
+    influence_tracker = None
+
+    def enhanced_wandb_log(metrics, **kwargs):
+        """Enhanced wandb logging that includes influence monitoring metrics"""
+        nonlocal influence_tracker
+        if influence_tracker and influence_tracker.should_log():
+            influence_metrics = influence_tracker.get_logging_metrics()
+            metrics.update(influence_metrics)
+            influence_tracker.step()
+            if hasattr(influence_tracker, 'step_count'):
+                if influence_tracker.step_count % getattr(cfg, 'gradient_print_interval', 100) == 0:
+                    influence_tracker.print_analysis_summary()
+        if original_wandb_log:
+            original_wandb_log(metrics, **kwargs)
+
+    # Store original functions before monkey patching
+    from sample_factory.algo.learning.learner import Learner
+    original_learner_init = Learner.init
+    original_learner_train = Learner.train
+
+    # Tracker configuration
+    tracker_config = {
+        'log_interval': getattr(cfg, 'gradient_log_interval', 100),
+        'print_interval': getattr(cfg, 'gradient_print_interval', 100),
+    }
+
+    def enhanced_learner_init(self):
+        """Enhanced learner init that attaches influence tracker to the model"""
+        nonlocal influence_tracker
+        result = original_learner_init(self)
+        
+        print(f"🔧 Enhanced learner init called")
+        print(f"🔧 actor_critic type: {type(self.actor_critic)}")
+        print(f"🔧 actor_critic is None: {self.actor_critic is None}")
+        
+        if hasattr(self, 'actor_critic') and self.actor_critic is not None:
+            print("🔧 Creating influence tracker with actual model...")
+            print(f"🔧 Model structure: {self.actor_critic}")
+            
+            try:
+                influence_tracker = create_influence_tracker(self.actor_critic, tracker_config)
+                print(f"🔧 Created influence tracker: {type(influence_tracker)}")
+                print(f"🔧 Influence tracker enabled: {influence_tracker.enabled if influence_tracker else 'None'}")
+                
+                if influence_tracker and influence_tracker.enabled:
+                    print("✅ Influence tracker successfully attached to model")
+                    print(f"   🔍 Monitoring ALL observation components based on 150D observation structure:")
+                    print(f"      • [0:3] Drone position | [3:9] Static camera pose | [9:12] Drone orientation")
+                    print(f"      • [12:18] Velocities | [18:22] Actions | [22:86] Drone camera | [86:150] Static camera")
+                    print(f"   📊 Complete 150D observation breakdown:")
+                    print(f"      🎯 Spatial: 15D (position + pose + orientation)")
+                    print(f"      ⚡ Kinematic: 10D (velocities + actions)")
+                    print(f"      📹 Visual: 128D (dual camera VAE latents)")
+                    print(f"   📊 Logging every {cfg.gradient_log_interval} steps")
+                    print(f"   📺 Analysis summary every {cfg.gradient_print_interval} steps")
+                else:
+                    print("❌ Failed to attach influence tracker")
+            except Exception as e:
+                print(f"❌ Error creating influence tracker: {e}")
+                influence_tracker = None
+        else:
+            print("🔧 Cannot create influence tracker - model not available")
+            if hasattr(self, 'actor_critic'):
+                print(f"   • actor_critic exists but is None: {self.actor_critic is None}")
+            else:
+                print("   • actor_critic attribute doesn't exist")
+        
+        # Store tracker reference on learner for access in train method
+        self._influence_tracker = influence_tracker
+        return result
+
+    def enhanced_train(self, *args, **kwargs):
+        """Enhanced train method that updates influence tracker"""
+        # Log when training method is called
+        current_step_before = getattr(self, 'train_step', 0)
+        print(f"🔧 enhanced_train() called - current step BEFORE: {current_step_before}")
+        
+        result = original_learner_train(self, *args, **kwargs)
+        
+        current_step_after = getattr(self, 'train_step', 0)
+        print(f"🔧 enhanced_train() finished - current step AFTER: {current_step_after}")
+        
+        if hasattr(self, '_influence_tracker') and self._influence_tracker and self._influence_tracker.enabled:
+            tracker = self._influence_tracker
+            print(f"🔧 Calling tracker.step() - Sample Factory training step {current_step_after}")
+            
+            # Update tracker to use Sample Factory's actual step count
+            tracker.step_count = current_step_after
+            
+            # Show data collection progress
+            if hasattr(tracker, 'activation_history'):
+                influence_samples = len(tracker.activation_history.get('drone_camera_vae', {}).get('correlations', []))
+                print(f"🔧 Tracker synced to step {current_step_after} - collected {influence_samples} influence samples")
+            
+            # Print analysis at specified intervals
+            if current_step_after > 0 and current_step_after % cfg.gradient_print_interval == 0:
+                print(f"🔧 Influence analysis at training step {current_step_after}")
+                tracker.print_analysis_summary()
+        else:
+            print(f"🔧 No influence tracker available for step {current_step_after}")
+        
+        return result
+
+    # Apply monkey patches
+    Learner.init = enhanced_learner_init
+    Learner.train = enhanced_train
+
+    # Apply wandb monkey patch if available
+    if original_wandb_log:
+        import wandb
+        wandb.log = enhanced_wandb_log
+
+    try:
+        print("🚀 Starting enhanced training with complete observation influence tracking...")
+        result = run_rl(cfg)
+        
+        # Final analysis and cleanup
+        print("=" * 80)
+        print("🎯 COMPLETE OBSERVATION INFLUENCE ANALYSIS - FINAL SUMMARY")
+        print("=" * 80)
+        
+        if influence_tracker:
+            print(f"📊 Training completed with {influence_tracker.step_count} analysis steps")
+            influence_tracker.print_analysis_summary()
+            influence_tracker.cleanup()
+        else:
+            print("❌ No influence tracker was created - analysis unavailable")
+            
+        print("=" * 80)
+        
+        return result
+        
+    finally:
+        # Restore original functions
+        Learner.init = original_learner_init
+        Learner.train = original_learner_train
+        if original_wandb_log:
+            import wandb
+            wandb.log = original_wandb_log
 
 
 if __name__ == "__main__":

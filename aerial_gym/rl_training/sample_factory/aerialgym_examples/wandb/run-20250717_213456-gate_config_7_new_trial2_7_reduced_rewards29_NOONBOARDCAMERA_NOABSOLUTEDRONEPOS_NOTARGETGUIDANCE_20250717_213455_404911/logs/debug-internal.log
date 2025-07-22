@@ -1,0 +1,176 @@
+2025-07-17 21:34:56,293 INFO    MainThread:261415 [internal.py:wandb_internal():90] W&B internal server running at pid: 261415, started at: 2025-07-17 21:34:56.291127
+2025-07-17 21:34:56,296 INFO    WriterThread:261415 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/run-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911.wandb
+2025-07-17 21:34:56,297 DEBUG   SenderThread:261415 [sender.py:send():236] send: header
+2025-07-17 21:34:56,346 DEBUG   SenderThread:261415 [sender.py:send():236] send: run
+2025-07-17 21:34:56,348 INFO    SenderThread:261415 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso-ucl/gate_navigation_dual_camera/gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911
+2025-07-17 21:34:57,055 INFO    SenderThread:261415 [dir_watcher.py:__init__():216] watching files in: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files
+2025-07-17 21:34:57,055 INFO    SenderThread:261415 [sender.py:_start_run_threads():815] run started: gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911 with start time 1752784496
+2025-07-17 21:34:57,055 DEBUG   SenderThread:261415 [sender.py:send():236] send: summary
+2025-07-17 21:34:57,055 INFO    SenderThread:261415 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-17 21:34:57,058 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: check_version
+2025-07-17 21:34:57,058 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: check_version
+2025-07-17 21:34:57,185 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: run_start
+2025-07-17 21:34:57,197 DEBUG   HandlerThread:261415 [meta.py:__init__():35] meta init
+2025-07-17 21:34:57,197 DEBUG   HandlerThread:261415 [meta.py:__init__():49] meta init done
+2025-07-17 21:34:57,197 DEBUG   HandlerThread:261415 [meta.py:probe():209] probe
+2025-07-17 21:34:57,204 DEBUG   HandlerThread:261415 [meta.py:_setup_git():199] setup git
+2025-07-17 21:34:57,288 DEBUG   HandlerThread:261415 [meta.py:_setup_git():206] setup git done
+2025-07-17 21:34:57,288 DEBUG   HandlerThread:261415 [meta.py:_save_pip():53] save pip
+2025-07-17 21:34:57,289 DEBUG   HandlerThread:261415 [meta.py:_save_pip():67] save pip done
+2025-07-17 21:34:57,289 DEBUG   HandlerThread:261415 [meta.py:_save_conda():74] save conda
+2025-07-17 21:34:58,057 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/wandb-summary.json
+2025-07-17 21:34:58,057 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/requirements.txt
+2025-07-17 21:34:58,058 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/conda-environment.yaml
+2025-07-17 21:34:58,223 DEBUG   HandlerThread:261415 [meta.py:_save_conda():84] save conda done
+2025-07-17 21:34:58,223 DEBUG   HandlerThread:261415 [meta.py:probe():247] probe done
+2025-07-17 21:34:58,225 DEBUG   SenderThread:261415 [sender.py:send():236] send: files
+2025-07-17 21:34:58,225 INFO    SenderThread:261415 [sender.py:_save_file():952] saving file wandb-metadata.json with policy now
+2025-07-17 21:34:58,229 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: stop_status
+2025-07-17 21:34:58,229 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: stop_status
+2025-07-17 21:34:58,239 INFO    HandlerThread:261415 [handler.py:handle_tbrecord():723] handling tbrecord: tbrecord {
+  log_dir: "./train_dir/gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE/.summary/0"
+  save: true
+}
+
+2025-07-17 21:34:58,240 DEBUG   HandlerThread:261415 [config_util.py:dict_from_config_file():100] no default config file found in config-defaults.yaml
+2025-07-17 21:34:58,451 DEBUG   SenderThread:261415 [sender.py:send():236] send: telemetry
+2025-07-17 21:34:58,451 DEBUG   SenderThread:261415 [sender.py:send():236] send: config
+2025-07-17 21:34:58,451 DEBUG   SenderThread:261415 [sender.py:send():236] send: tbrecord
+2025-07-17 21:34:58,451 DEBUG   SenderThread:261415 [sender.py:send():236] send: files
+2025-07-17 21:34:58,451 INFO    SenderThread:261415 [sender.py:_save_file():952] saving file events.out.tfevents.1752784498.ziyar with policy live
+2025-07-17 21:34:58,758 INFO    Thread-12 :261415 [upload_job.py:push():138] Uploaded file /tmp/tmpk2b44nyawandb/awwg4muj-wandb-metadata.json
+2025-07-17 21:34:59,056 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/conda-environment.yaml
+2025-07-17 21:34:59,056 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/wandb-metadata.json
+2025-07-17 21:34:59,056 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:34:59,056 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/events.out.tfevents.1752784498.ziyar
+2025-07-17 21:35:01,057 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:03,057 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:05,058 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:08,059 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:09,244 DEBUG   SenderThread:261415 [sender.py:send():236] send: telemetry
+2025-07-17 21:35:10,060 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:10,060 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/events.out.tfevents.1752784498.ziyar
+2025-07-17 21:35:10,587 INFO    Thread-15 :261415 [upload_job.py:push():138] Uploaded file /tmp/tmpk2b44nyawandb/dtnsr7vr-events.out.tfevents.1752784498.ziyar
+2025-07-17 21:35:11,061 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:11,400 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:11,401 DEBUG   SenderThread:261415 [sender.py:send():236] send: exit
+2025-07-17 21:35:11,401 INFO    SenderThread:261415 [sender.py:send_exit():372] handling exit code: 0
+2025-07-17 21:35:11,401 INFO    SenderThread:261415 [sender.py:send_exit():374] handling runtime: 14
+2025-07-17 21:35:11,401 INFO    SenderThread:261415 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-17 21:35:11,402 INFO    SenderThread:261415 [sender.py:send_exit():380] send defer
+2025-07-17 21:35:11,402 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:11,403 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:11,403 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 0
+2025-07-17 21:35:11,403 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:11,403 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 0
+2025-07-17 21:35:11,403 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 1
+2025-07-17 21:35:11,404 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:11,404 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 1
+2025-07-17 21:35:11,433 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:11,433 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 1
+2025-07-17 21:35:11,433 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 2
+2025-07-17 21:35:11,433 DEBUG   SenderThread:261415 [sender.py:send():236] send: stats
+2025-07-17 21:35:11,434 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:11,434 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 2
+2025-07-17 21:35:11,435 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:11,435 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 2
+2025-07-17 21:35:11,435 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 3
+2025-07-17 21:35:11,435 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:11,436 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 3
+2025-07-17 21:35:12,062 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:12,062 INFO    Thread-8  :261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/wandb-summary.json
+2025-07-17 21:35:18,246 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:18,246 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 3
+2025-07-17 21:35:18,246 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 4
+2025-07-17 21:35:18,246 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:18,247 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:18,248 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:18,248 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:18,248 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 4
+2025-07-17 21:35:18,248 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:18,248 DEBUG   SenderThread:261415 [sender.py:send():236] send: summary
+2025-07-17 21:35:18,251 INFO    SenderThread:261415 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-07-17 21:35:18,251 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:18,251 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 4
+2025-07-17 21:35:18,251 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 5
+2025-07-17 21:35:18,252 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:18,252 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 5
+2025-07-17 21:35:18,252 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:18,252 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 5
+2025-07-17 21:35:18,353 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:18,497 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 6
+2025-07-17 21:35:18,497 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:18,498 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:18,498 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 6
+2025-07-17 21:35:18,498 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:18,498 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 6
+2025-07-17 21:35:18,498 INFO    SenderThread:261415 [dir_watcher.py:finish():353] shutting down directory watcher
+2025-07-17 21:35:18,600 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,064 INFO    SenderThread:261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/config.yaml
+2025-07-17 21:35:19,064 INFO    SenderThread:261415 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/wandb-summary.json
+2025-07-17 21:35:19,065 INFO    SenderThread:261415 [dir_watcher.py:finish():383] scan: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files
+2025-07-17 21:35:19,065 INFO    SenderThread:261415 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/events.out.tfevents.1752784498.ziyar events.out.tfevents.1752784498.ziyar
+2025-07-17 21:35:19,065 INFO    SenderThread:261415 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/conda-environment.yaml conda-environment.yaml
+2025-07-17 21:35:19,065 INFO    SenderThread:261415 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/requirements.txt requirements.txt
+2025-07-17 21:35:19,066 INFO    SenderThread:261415 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/wandb-summary.json wandb-summary.json
+2025-07-17 21:35:19,066 INFO    SenderThread:261415 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/config.yaml config.yaml
+2025-07-17 21:35:19,066 INFO    SenderThread:261415 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log output.log
+2025-07-17 21:35:19,066 INFO    SenderThread:261415 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/wandb-metadata.json wandb-metadata.json
+2025-07-17 21:35:19,066 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 7
+2025-07-17 21:35:19,067 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,071 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:19,071 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 7
+2025-07-17 21:35:19,075 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:19,079 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 7
+2025-07-17 21:35:19,083 INFO    SenderThread:261415 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-17 21:35:19,169 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,170 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,273 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,274 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,376 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,377 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,479 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,480 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,582 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,583 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,649 INFO    Thread-19 :261415 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/config.yaml
+2025-07-17 21:35:19,673 INFO    Thread-16 :261415 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/conda-environment.yaml
+2025-07-17 21:35:19,675 INFO    Thread-18 :261415 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/wandb-summary.json
+2025-07-17 21:35:19,676 INFO    Thread-17 :261415 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/requirements.txt
+2025-07-17 21:35:19,686 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,687 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,781 INFO    Thread-20 :261415 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/files/output.log
+2025-07-17 21:35:19,790 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,790 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,894 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:19,894 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:19,981 INFO    Thread-7  :261415 [sender.py:transition_state():393] send defer: 8
+2025-07-17 21:35:19,983 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:19,983 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 8
+2025-07-17 21:35:19,984 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:19,984 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 8
+2025-07-17 21:35:19,997 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:20,264 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 9
+2025-07-17 21:35:20,264 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:20,265 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:20,265 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 9
+2025-07-17 21:35:20,266 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:20,266 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 9
+2025-07-17 21:35:20,266 INFO    SenderThread:261415 [sender.py:transition_state():393] send defer: 10
+2025-07-17 21:35:20,267 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: defer
+2025-07-17 21:35:20,267 INFO    HandlerThread:261415 [handler.py:handle_request_defer():163] handle defer: 10
+2025-07-17 21:35:20,267 DEBUG   SenderThread:261415 [sender.py:send():236] send: final
+2025-07-17 21:35:20,267 DEBUG   SenderThread:261415 [sender.py:send():236] send: footer
+2025-07-17 21:35:20,267 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: defer
+2025-07-17 21:35:20,267 INFO    SenderThread:261415 [sender.py:send_request_defer():389] handle sender defer: 10
+2025-07-17 21:35:20,368 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: poll_exit
+2025-07-17 21:35:20,368 DEBUG   SenderThread:261415 [sender.py:send_request():250] send_request: poll_exit
+2025-07-17 21:35:20,369 INFO    SenderThread:261415 [file_pusher.py:join():176] waiting for file pusher
+2025-07-17 21:35:20,776 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: sampled_history
+2025-07-17 21:35:20,777 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: get_summary
+2025-07-17 21:35:20,779 DEBUG   HandlerThread:261415 [handler.py:handle_request():140] handle_request: shutdown
+2025-07-17 21:35:20,779 INFO    HandlerThread:261415 [handler.py:finish():806] shutting down handler
+2025-07-17 21:35:21,268 INFO    WriterThread:261415 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250717_213456-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911/run-gate_config_7_new_trial2_7_reduced_rewards29_NOONBOARDCAMERA_NOABSOLUTEDRONEPOS_NOTARGETGUIDANCE_20250717_213455_404911.wandb
+2025-07-17 21:35:21,674 INFO    SenderThread:261415 [sender.py:finish():1114] shutting down sender
+2025-07-17 21:35:21,674 INFO    SenderThread:261415 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-17 21:35:21,674 INFO    SenderThread:261415 [file_pusher.py:join():176] waiting for file pusher

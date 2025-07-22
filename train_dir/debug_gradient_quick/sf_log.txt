@@ -1,0 +1,1600 @@
+[2025-07-21 13:47:49,684][763433] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 13:47:50,717][763433] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:47:50,717][763433] Rollout worker 0 uses device cuda:0
+[2025-07-21 13:47:50,724][763433] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:47:50,724][763433] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 13:47:50,724][763433] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:47:50,725][763433] Starting seed is not provided
+[2025-07-21 13:47:50,725][763433] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:47:50,725][763433] Initializing actor-critic model on device cuda:0
+[2025-07-21 13:47:50,726][763433] RunningMeanStd input shape: (150,)
+[2025-07-21 13:47:50,727][763433] RunningMeanStd input shape: (1,)
+[2025-07-21 13:47:50,753][763433] Created Actor Critic model with architecture:
+[2025-07-21 13:47:50,754][763433] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 13:47:51,225][763433] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 13:47:51,226][763433] No checkpoints found
+[2025-07-21 13:47:51,226][763433] Did not load from checkpoint, starting from scratch!
+[2025-07-21 13:47:51,226][763433] Initialized policy 0 weights for model version 0
+[2025-07-21 13:47:51,227][763433] LearnerWorker_p0 finished initialization!
+[2025-07-21 13:47:51,227][763433] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:47:51,228][763433] Inference worker 0-0 is ready!
+[2025-07-21 13:47:51,229][763433] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 13:47:51,229][763433] EnvRunner 0-0 uses policy 0
+[2025-07-21 13:47:54,905][763433] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:47:58,264][763433] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 4.8. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:47:58,265][763433] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 13:48:02,579][763433] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 10.4. Samples: 80. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:48:02,579][763433] Avg episode reward: [(0, '-100.396')]
+[2025-07-21 13:48:05,460][763433] Signal inference workers to stop experience collection...
+[2025-07-21 13:48:05,794][763433] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 13:48:05,796][763433] Signal inference workers to resume experience collection...
+[2025-07-21 13:48:05,923][763433] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 13:48:06,345][763433] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000002_512.pth...
+[2025-07-21 13:48:06,349][763433] Stopping RolloutWorker_w0...
+[2025-07-21 13:48:06,349][763433] Stopping InferenceWorker_p0-w0...
+[2025-07-21 13:48:06,350][763433] Stopping Batcher_0...
+[2025-07-21 13:48:06,350][763433] Component RolloutWorker_w0 stopped!
+[2025-07-21 13:48:06,350][763433] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 13:48:06,350][763433] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000002_512.pth...
+[2025-07-21 13:48:06,354][763433] Stopping LearnerWorker_p0...
+[2025-07-21 13:48:06,354][763433] Component Batcher_0 stopped!
+[2025-07-21 13:48:06,354][763433] Component LearnerWorker_p0 stopped!
+[2025-07-21 13:48:06,354][763433] Batcher 0 profile tree view:
+batching: 0.0005, releasing_batches: 0.0004
+[2025-07-21 13:48:06,355][763433] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0003
+one_step: 0.0021
+  handle_policy_step: 0.2243
+    deserialize: 0.0004, stack: 0.0000, obs_to_device_normalize: 0.0093, forward: 0.2063, prepare_outputs: 0.0043, send_messages: 0.0012
+[2025-07-21 13:48:06,355][763433] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5250
+train: 0.0952
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0002, kl_divergence: 0.0001, after_optimizer: 0.0023
+  calculate_losses: 0.0101
+    losses_init: 0.0000, forward_head: 0.0007, bptt_initial: 0.0028, tail: 0.0025, advantages_returns: 0.0007, losses: 0.0018
+    bptt: 0.0013
+      bptt_forward_core: 0.0013
+  update: 0.0815
+    clip: 0.0014
+[2025-07-21 13:48:06,355][763433] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0034, process_policy_outputs: 0.0052, env_step: 10.5375, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0117
+  process_env_step: 0.0034
+[2025-07-21 13:48:06,355][763433] Loop Runner_EvtLoop terminating...
+[2025-07-21 13:48:06,355][763433] Runner profile tree view:
+main_loop: 15.6303
+[2025-07-21 13:48:06,355][763433] Collected {0: 512}, FPS: 32.8
+[2025-07-21 13:51:41,870][765167] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 13:51:42,908][765167] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:51:42,908][765167] Rollout worker 0 uses device cuda:0
+[2025-07-21 13:51:42,914][765167] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:51:42,914][765167] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 13:51:42,915][765167] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:51:42,915][765167] Starting seed is not provided
+[2025-07-21 13:51:42,915][765167] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:51:42,915][765167] Initializing actor-critic model on device cuda:0
+[2025-07-21 13:51:42,916][765167] RunningMeanStd input shape: (150,)
+[2025-07-21 13:51:42,916][765167] RunningMeanStd input shape: (1,)
+[2025-07-21 13:51:42,943][765167] Created Actor Critic model with architecture:
+[2025-07-21 13:51:42,943][765167] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 13:51:43,404][765167] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 13:51:43,405][765167] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000002_512.pth...
+[2025-07-21 13:51:43,408][765167] Loading model from checkpoint
+[2025-07-21 13:51:43,410][765167] Loaded experiment state at self.train_step=2, self.env_steps=512
+[2025-07-21 13:51:43,411][765167] Initialized policy 0 weights for model version 2
+[2025-07-21 13:51:43,411][765167] LearnerWorker_p0 finished initialization!
+[2025-07-21 13:51:43,412][765167] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:51:43,413][765167] Inference worker 0-0 is ready!
+[2025-07-21 13:51:43,413][765167] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 13:51:43,413][765167] EnvRunner 0-0 uses policy 0
+[2025-07-21 13:51:47,141][765167] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 512. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:51:50,415][765167] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 512. Throughput: 0: 4.9. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:51:50,415][765167] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 13:51:54,707][765167] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 512. Throughput: 0: 12.7. Samples: 96. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:51:54,707][765167] Avg episode reward: [(0, '-100.224')]
+[2025-07-21 13:51:57,366][765167] Signal inference workers to stop experience collection...
+[2025-07-21 13:51:57,738][765167] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 13:51:57,741][765167] Signal inference workers to resume experience collection...
+[2025-07-21 13:51:57,929][765167] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 13:51:58,327][765167] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000004_1024.pth...
+[2025-07-21 13:51:58,329][765167] Stopping Batcher_0...
+[2025-07-21 13:51:58,330][765167] Stopping InferenceWorker_p0-w0...
+[2025-07-21 13:51:58,330][765167] Stopping RolloutWorker_w0...
+[2025-07-21 13:51:58,330][765167] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000004_1024.pth...
+[2025-07-21 13:51:58,332][765167] Stopping LearnerWorker_p0...
+[2025-07-21 13:51:58,332][765167] Component Batcher_0 stopped!
+[2025-07-21 13:51:58,333][765167] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 13:51:58,333][765167] Component RolloutWorker_w0 stopped!
+[2025-07-21 13:51:58,333][765167] Component LearnerWorker_p0 stopped!
+[2025-07-21 13:51:58,333][765167] Batcher 0 profile tree view:
+batching: 0.0004, releasing_batches: 0.0004
+[2025-07-21 13:51:58,333][765167] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0004
+one_step: 0.0024
+  handle_policy_step: 0.2235
+    deserialize: 0.0005, stack: 0.0000, obs_to_device_normalize: 0.0104, forward: 0.2048, prepare_outputs: 0.0041, send_messages: 0.0010
+[2025-07-21 13:51:58,333][765167] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5247
+train: 0.0903
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0003, kl_divergence: 0.0001, after_optimizer: 0.0023
+  calculate_losses: 0.0099
+    losses_init: 0.0000, forward_head: 0.0005, bptt_initial: 0.0029, tail: 0.0020, advantages_returns: 0.0007, losses: 0.0024
+    bptt: 0.0013
+      bptt_forward_core: 0.0012
+  update: 0.0770
+    clip: 0.0011
+[2025-07-21 13:51:58,333][765167] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0037, process_policy_outputs: 0.0051, env_step: 10.2425, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0120
+  process_env_step: 0.0035
+[2025-07-21 13:51:58,333][765167] Loop Runner_EvtLoop terminating...
+[2025-07-21 13:51:58,333][765167] Runner profile tree view:
+main_loop: 15.4182
+[2025-07-21 13:51:58,333][765167] Collected {0: 1024}, FPS: 33.2
+[2025-07-21 13:54:14,760][766276] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 13:54:15,798][766276] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:54:15,798][766276] Rollout worker 0 uses device cuda:0
+[2025-07-21 13:54:15,802][766276] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:54:15,802][766276] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 13:54:15,802][766276] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:54:15,803][766276] Starting seed is not provided
+[2025-07-21 13:54:15,803][766276] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:54:15,803][766276] Initializing actor-critic model on device cuda:0
+[2025-07-21 13:54:15,804][766276] RunningMeanStd input shape: (150,)
+[2025-07-21 13:54:15,804][766276] RunningMeanStd input shape: (1,)
+[2025-07-21 13:54:15,836][766276] Created Actor Critic model with architecture:
+[2025-07-21 13:54:15,836][766276] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 13:54:16,327][766276] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 13:54:16,328][766276] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000004_1024.pth...
+[2025-07-21 13:54:16,333][766276] Loading model from checkpoint
+[2025-07-21 13:54:16,335][766276] Loaded experiment state at self.train_step=4, self.env_steps=1024
+[2025-07-21 13:54:16,335][766276] Initialized policy 0 weights for model version 4
+[2025-07-21 13:54:16,336][766276] LearnerWorker_p0 finished initialization!
+[2025-07-21 13:54:16,337][766276] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 13:54:16,338][766276] Inference worker 0-0 is ready!
+[2025-07-21 13:54:16,338][766276] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 13:54:16,338][766276] EnvRunner 0-0 uses policy 0
+[2025-07-21 13:54:20,059][766276] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 1024. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:54:23,417][766276] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 1024. Throughput: 0: 4.8. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:54:23,418][766276] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 13:54:27,352][766276] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 1024. Throughput: 0: 11.0. Samples: 80. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 13:54:27,352][766276] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 13:54:30,225][766276] Signal inference workers to stop experience collection...
+[2025-07-21 13:54:30,544][766276] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 13:54:30,546][766276] Signal inference workers to resume experience collection...
+[2025-07-21 13:54:30,680][766276] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 13:54:31,103][766276] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000006_1536.pth...
+[2025-07-21 13:54:31,106][766276] Stopping RolloutWorker_w0...
+[2025-07-21 13:54:31,107][766276] Stopping InferenceWorker_p0-w0...
+[2025-07-21 13:54:31,107][766276] Stopping Batcher_0...
+[2025-07-21 13:54:31,107][766276] Component RolloutWorker_w0 stopped!
+[2025-07-21 13:54:31,107][766276] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 13:54:31,107][766276] Component Batcher_0 stopped!
+[2025-07-21 13:54:31,107][766276] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000006_1536.pth...
+[2025-07-21 13:54:31,111][766276] Stopping LearnerWorker_p0...
+[2025-07-21 13:54:31,111][766276] Component LearnerWorker_p0 stopped!
+[2025-07-21 13:54:31,111][766276] Batcher 0 profile tree view:
+batching: 0.0006, releasing_batches: 0.0006
+[2025-07-21 13:54:31,111][766276] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0004
+one_step: 0.0018
+  handle_policy_step: 0.2228
+    deserialize: 0.0004, stack: 0.0000, obs_to_device_normalize: 0.0109, forward: 0.2036, prepare_outputs: 0.0040, send_messages: 0.0010
+[2025-07-21 13:54:31,111][766276] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5324
+train: 0.0842
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0003, kl_divergence: 0.0001, after_optimizer: 0.0019
+  calculate_losses: 0.0085
+    losses_init: 0.0000, forward_head: 0.0005, bptt_initial: 0.0026, tail: 0.0021, advantages_returns: 0.0004, losses: 0.0018
+    bptt: 0.0011
+      bptt_forward_core: 0.0010
+  update: 0.0727
+    clip: 0.0015
+[2025-07-21 13:54:31,111][766276] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0039, process_policy_outputs: 0.0052, env_step: 10.1497, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0122
+  process_env_step: 0.0033
+[2025-07-21 13:54:31,111][766276] Loop Runner_EvtLoop terminating...
+[2025-07-21 13:54:31,112][766276] Runner profile tree view:
+main_loop: 15.3088
+[2025-07-21 13:54:31,112][766276] Collected {0: 1536}, FPS: 33.4
+[2025-07-21 14:04:35,830][770076] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:04:36,861][770076] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:04:36,861][770076] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:04:36,864][770076] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:04:36,864][770076] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:04:36,865][770076] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:04:36,865][770076] Starting seed is not provided
+[2025-07-21 14:04:36,865][770076] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:04:36,865][770076] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:04:36,866][770076] RunningMeanStd input shape: (150,)
+[2025-07-21 14:04:36,866][770076] RunningMeanStd input shape: (1,)
+[2025-07-21 14:04:36,887][770076] Created Actor Critic model with architecture:
+[2025-07-21 14:04:36,887][770076] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:04:37,304][770076] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:04:37,304][770076] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000006_1536.pth...
+[2025-07-21 14:04:37,307][770076] Loading model from checkpoint
+[2025-07-21 14:04:37,309][770076] Loaded experiment state at self.train_step=6, self.env_steps=1536
+[2025-07-21 14:04:37,309][770076] Initialized policy 0 weights for model version 6
+[2025-07-21 14:04:37,310][770076] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:04:37,310][770076] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:04:37,311][770076] Inference worker 0-0 is ready!
+[2025-07-21 14:04:37,311][770076] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:04:37,311][770076] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:04:40,521][770076] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 1536. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:04:44,884][770076] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 1536. Throughput: 0: 7.3. Samples: 32. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:04:44,885][770076] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:04:49,100][770076] Signal inference workers to stop experience collection...
+[2025-07-21 14:04:49,414][770076] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:04:49,415][770076] Signal inference workers to resume experience collection...
+[2025-07-21 14:04:49,420][770076] Fps is (10 sec: 28.8, 60 sec: 28.8, 300 sec: 28.8). Total num frames: 1792. Throughput: 0: 28.8. Samples: 256. Policy #0 lag: (min: 0.0, avg: 0.0, max: 0.0)
+[2025-07-21 14:04:49,420][770076] Avg episode reward: [(0, '-100.338')]
+[2025-07-21 14:04:49,553][770076] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:04:49,923][770076] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000008_2048.pth...
+[2025-07-21 14:04:49,925][770076] Stopping RolloutWorker_w0...
+[2025-07-21 14:04:49,925][770076] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:04:49,925][770076] Stopping Batcher_0...
+[2025-07-21 14:04:49,926][770076] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:04:49,926][770076] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:04:49,926][770076] Component Batcher_0 stopped!
+[2025-07-21 14:04:49,926][770076] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000008_2048.pth...
+[2025-07-21 14:04:49,928][770076] Stopping LearnerWorker_p0...
+[2025-07-21 14:04:49,928][770076] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:04:49,928][770076] Batcher 0 profile tree view:
+batching: 0.0003, releasing_batches: 0.0003
+[2025-07-21 14:04:49,929][770076] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0002
+one_step: 0.0010
+  handle_policy_step: 0.1798
+    deserialize: 0.0003, stack: 0.0000, obs_to_device_normalize: 0.0060, forward: 0.1685, prepare_outputs: 0.0028, send_messages: 0.0005
+[2025-07-21 14:04:49,929][770076] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.4655
+train: 0.0669
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0001, kl_divergence: 0.0001, after_optimizer: 0.0013
+  calculate_losses: 0.0064
+    losses_init: 0.0000, forward_head: 0.0003, bptt_initial: 0.0017, tail: 0.0017, advantages_returns: 0.0004, losses: 0.0013
+    bptt: 0.0008
+      bptt_forward_core: 0.0008
+  update: 0.0586
+    clip: 0.0008
+[2025-07-21 14:04:49,929][770076] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0026, process_policy_outputs: 0.0026, env_step: 8.6550, finalize_trajectories: 0.0001, complete_rollouts: 0.0000
+post_env_step: 0.0074
+  process_env_step: 0.0022
+[2025-07-21 14:04:49,929][770076] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:04:49,929][770076] Runner profile tree view:
+main_loop: 13.0637
+[2025-07-21 14:04:49,929][770076] Collected {0: 2048}, FPS: 39.2
+[2025-07-21 14:11:12,107][772799] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:11:13,144][772799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:11:13,144][772799] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:11:13,152][772799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:11:13,153][772799] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:11:13,153][772799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:11:13,154][772799] Starting seed is not provided
+[2025-07-21 14:11:13,154][772799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:11:13,154][772799] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:11:13,154][772799] RunningMeanStd input shape: (150,)
+[2025-07-21 14:11:13,155][772799] RunningMeanStd input shape: (1,)
+[2025-07-21 14:11:13,185][772799] Created Actor Critic model with architecture:
+[2025-07-21 14:11:13,186][772799] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:11:13,676][772799] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:11:13,677][772799] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000008_2048.pth...
+[2025-07-21 14:11:13,681][772799] Loading model from checkpoint
+[2025-07-21 14:11:13,683][772799] Loaded experiment state at self.train_step=8, self.env_steps=2048
+[2025-07-21 14:11:13,683][772799] Initialized policy 0 weights for model version 8
+[2025-07-21 14:11:13,684][772799] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:11:13,684][772799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:11:13,685][772799] Inference worker 0-0 is ready!
+[2025-07-21 14:11:13,685][772799] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:11:13,686][772799] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:11:17,553][772799] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 2048. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:11:20,861][772799] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 2048. Throughput: 0: 4.8. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:11:20,861][772799] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:11:24,422][772799] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 2048. Throughput: 0: 9.3. Samples: 64. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:11:24,423][772799] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:11:28,060][772799] Signal inference workers to stop experience collection...
+[2025-07-21 14:11:28,377][772799] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:11:28,380][772799] Signal inference workers to resume experience collection...
+[2025-07-21 14:11:28,639][772799] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:11:29,105][772799] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000010_2560.pth...
+[2025-07-21 14:11:29,109][772799] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:11:29,109][772799] Stopping Batcher_0...
+[2025-07-21 14:11:29,109][772799] Stopping RolloutWorker_w0...
+[2025-07-21 14:11:29,109][772799] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:11:29,109][772799] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000010_2560.pth...
+[2025-07-21 14:11:29,113][772799] Stopping LearnerWorker_p0...
+[2025-07-21 14:11:29,113][772799] Component Batcher_0 stopped!
+[2025-07-21 14:11:29,113][772799] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:11:29,113][772799] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:11:29,113][772799] Batcher 0 profile tree view:
+batching: 0.0004, releasing_batches: 0.0006
+[2025-07-21 14:11:29,113][772799] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0005
+one_step: 0.0025
+  handle_policy_step: 0.2248
+    deserialize: 0.0005, stack: 0.0000, obs_to_device_normalize: 0.0103, forward: 0.2059, prepare_outputs: 0.0042, send_messages: 0.0010
+[2025-07-21 14:11:29,114][772799] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5752
+train: 0.0833
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0002, kl_divergence: 0.0001, after_optimizer: 0.0023
+  calculate_losses: 0.0099
+    losses_init: 0.0000, forward_head: 0.0004, bptt_initial: 0.0027, tail: 0.0025, advantages_returns: 0.0005, losses: 0.0020
+    bptt: 0.0015
+      bptt_forward_core: 0.0015
+  update: 0.0701
+    clip: 0.0012
+[2025-07-21 14:11:29,114][772799] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0043, process_policy_outputs: 0.0050, env_step: 10.6100, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0120
+  process_env_step: 0.0035
+[2025-07-21 14:11:29,114][772799] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:11:29,114][772799] Runner profile tree view:
+main_loop: 15.9606
+[2025-07-21 14:11:29,114][772799] Collected {0: 2560}, FPS: 32.1
+[2025-07-21 14:13:05,842][773799] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:13:06,876][773799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:06,876][773799] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:13:06,879][773799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:06,880][773799] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:13:06,880][773799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:06,880][773799] Starting seed is not provided
+[2025-07-21 14:13:06,881][773799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:06,881][773799] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:13:06,881][773799] RunningMeanStd input shape: (150,)
+[2025-07-21 14:13:06,881][773799] RunningMeanStd input shape: (1,)
+[2025-07-21 14:13:06,907][773799] Created Actor Critic model with architecture:
+[2025-07-21 14:13:06,907][773799] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:13:07,318][773799] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:13:07,319][773799] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000010_2560.pth...
+[2025-07-21 14:13:07,322][773799] Loading model from checkpoint
+[2025-07-21 14:13:07,323][773799] Loaded experiment state at self.train_step=10, self.env_steps=2560
+[2025-07-21 14:13:07,323][773799] Initialized policy 0 weights for model version 10
+[2025-07-21 14:13:07,324][773799] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:13:07,324][773799] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:07,325][773799] Inference worker 0-0 is ready!
+[2025-07-21 14:13:07,325][773799] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:13:07,326][773799] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:13:10,659][773799] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 2560. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:13:13,945][773799] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 2560. Throughput: 0: 4.9. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:13:13,945][773799] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:13:18,811][773799] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 2560. Throughput: 0: 15.7. Samples: 128. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:13:18,812][773799] Avg episode reward: [(0, '-99.987')]
+[2025-07-21 14:13:20,950][773799] Signal inference workers to stop experience collection...
+[2025-07-21 14:13:21,219][773799] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:13:21,221][773799] Signal inference workers to resume experience collection...
+[2025-07-21 14:13:21,360][773799] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:13:21,766][773799] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000012_3072.pth...
+[2025-07-21 14:13:21,768][773799] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000002_512.pth
+[2025-07-21 14:13:21,768][773799] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:13:21,769][773799] Stopping RolloutWorker_w0...
+[2025-07-21 14:13:21,769][773799] Stopping Batcher_0...
+[2025-07-21 14:13:21,769][773799] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:13:21,769][773799] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:13:21,769][773799] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000012_3072.pth...
+[2025-07-21 14:13:21,771][773799] Stopping LearnerWorker_p0...
+[2025-07-21 14:13:21,772][773799] Component Batcher_0 stopped!
+[2025-07-21 14:13:21,772][773799] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:13:21,772][773799] Batcher 0 profile tree view:
+batching: 0.0003, releasing_batches: 0.0004
+[2025-07-21 14:13:21,772][773799] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0003
+one_step: 0.0016
+  handle_policy_step: 0.2174
+    deserialize: 0.0004, stack: 0.0000, obs_to_device_normalize: 0.0096, forward: 0.1995, prepare_outputs: 0.0041, send_messages: 0.0011
+[2025-07-21 14:13:21,772][773799] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5004
+train: 0.0674
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0002, kl_divergence: 0.0001, after_optimizer: 0.0014
+  calculate_losses: 0.0074
+    losses_init: 0.0000, forward_head: 0.0004, bptt_initial: 0.0022, tail: 0.0019, advantages_returns: 0.0004, losses: 0.0015
+    bptt: 0.0009
+      bptt_forward_core: 0.0008
+  update: 0.0579
+    clip: 0.0008
+[2025-07-21 14:13:21,772][773799] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0036, process_policy_outputs: 0.0056, env_step: 10.2692, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0112
+  process_env_step: 0.0035
+[2025-07-21 14:13:21,772][773799] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:13:21,772][773799] Runner profile tree view:
+main_loop: 14.8919
+[2025-07-21 14:13:21,772][773799] Collected {0: 3072}, FPS: 34.4
+[2025-07-21 14:13:49,857][774269] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:13:50,894][774269] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:50,895][774269] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:13:50,899][774269] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:50,900][774269] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:13:50,900][774269] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:50,901][774269] Starting seed is not provided
+[2025-07-21 14:13:50,901][774269] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:50,901][774269] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:13:50,901][774269] RunningMeanStd input shape: (150,)
+[2025-07-21 14:13:50,902][774269] RunningMeanStd input shape: (1,)
+[2025-07-21 14:13:50,929][774269] Created Actor Critic model with architecture:
+[2025-07-21 14:13:50,930][774269] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:13:51,412][774269] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:13:51,413][774269] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000012_3072.pth...
+[2025-07-21 14:13:51,418][774269] Loading model from checkpoint
+[2025-07-21 14:13:51,420][774269] Loaded experiment state at self.train_step=12, self.env_steps=3072
+[2025-07-21 14:13:51,420][774269] Initialized policy 0 weights for model version 12
+[2025-07-21 14:13:51,422][774269] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:13:51,422][774269] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:13:51,423][774269] Inference worker 0-0 is ready!
+[2025-07-21 14:13:51,424][774269] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:13:51,424][774269] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:13:55,143][774269] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 3072. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:13:58,495][774269] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 3072. Throughput: 0: 4.8. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:13:58,496][774269] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:14:02,694][774269] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 3072. Throughput: 0: 10.6. Samples: 80. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:14:02,694][774269] Avg episode reward: [(0, '-99.818')]
+[2025-07-21 14:14:05,437][774269] Signal inference workers to stop experience collection...
+[2025-07-21 14:14:05,798][774269] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:14:05,800][774269] Signal inference workers to resume experience collection...
+[2025-07-21 14:14:05,968][774269] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:14:06,397][774269] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000014_3584.pth...
+[2025-07-21 14:14:06,399][774269] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000004_1024.pth
+[2025-07-21 14:14:06,400][774269] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:14:06,400][774269] Stopping RolloutWorker_w0...
+[2025-07-21 14:14:06,401][774269] Stopping Batcher_0...
+[2025-07-21 14:14:06,401][774269] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:14:06,401][774269] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:14:06,402][774269] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000014_3584.pth...
+[2025-07-21 14:14:06,406][774269] Stopping LearnerWorker_p0...
+[2025-07-21 14:14:06,406][774269] Component Batcher_0 stopped!
+[2025-07-21 14:14:06,406][774269] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:14:06,407][774269] Batcher 0 profile tree view:
+batching: 0.0005, releasing_batches: 0.0004
+[2025-07-21 14:14:06,407][774269] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0005
+one_step: 0.0024
+  handle_policy_step: 0.2411
+    deserialize: 0.0005, stack: 0.0000, obs_to_device_normalize: 0.0102, forward: 0.2215, prepare_outputs: 0.0047, send_messages: 0.0011
+[2025-07-21 14:14:06,407][774269] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5392
+train: 0.0827
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0002, kl_divergence: 0.0001, after_optimizer: 0.0018
+  calculate_losses: 0.0100
+    losses_init: 0.0000, forward_head: 0.0011, bptt_initial: 0.0028, tail: 0.0024, advantages_returns: 0.0004, losses: 0.0019
+    bptt: 0.0011
+      bptt_forward_core: 0.0010
+  update: 0.0701
+    clip: 0.0019
+[2025-07-21 14:14:06,407][774269] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0041, process_policy_outputs: 0.0078, env_step: 10.3278, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0120
+  process_env_step: 0.0033
+[2025-07-21 14:14:06,407][774269] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:14:06,407][774269] Runner profile tree view:
+main_loop: 15.5066
+[2025-07-21 14:14:06,407][774269] Collected {0: 3584}, FPS: 33.0
+[2025-07-21 14:16:11,354][775327] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:16:12,391][775327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:16:12,392][775327] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:16:12,397][775327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:16:12,397][775327] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:16:12,397][775327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:16:12,398][775327] Starting seed is not provided
+[2025-07-21 14:16:12,398][775327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:16:12,398][775327] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:16:12,399][775327] RunningMeanStd input shape: (150,)
+[2025-07-21 14:16:12,399][775327] RunningMeanStd input shape: (1,)
+[2025-07-21 14:16:12,429][775327] Created Actor Critic model with architecture:
+[2025-07-21 14:16:12,429][775327] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:16:12,911][775327] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:16:12,912][775327] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000014_3584.pth...
+[2025-07-21 14:16:12,914][775327] Loading model from checkpoint
+[2025-07-21 14:16:12,917][775327] Loaded experiment state at self.train_step=14, self.env_steps=3584
+[2025-07-21 14:16:12,917][775327] Initialized policy 0 weights for model version 14
+[2025-07-21 14:16:12,918][775327] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:16:12,918][775327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:16:12,920][775327] Inference worker 0-0 is ready!
+[2025-07-21 14:16:12,920][775327] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:16:12,920][775327] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:16:16,819][775327] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 3584. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:16:20,262][775327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 3584. Throughput: 0: 4.6. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:16:20,262][775327] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:16:23,510][775327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 3584. Throughput: 0: 9.6. Samples: 64. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:16:23,510][775327] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:16:26,884][775327] Signal inference workers to stop experience collection...
+[2025-07-21 14:16:27,228][775327] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:16:27,231][775327] Signal inference workers to resume experience collection...
+[2025-07-21 14:16:27,390][775327] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:16:27,825][775327] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000016_4096.pth...
+[2025-07-21 14:16:27,828][775327] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000006_1536.pth
+[2025-07-21 14:16:27,829][775327] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:16:27,829][775327] Stopping RolloutWorker_w0...
+[2025-07-21 14:16:27,829][775327] Stopping Batcher_0...
+[2025-07-21 14:16:27,829][775327] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:16:27,829][775327] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:16:27,829][775327] Component Batcher_0 stopped!
+[2025-07-21 14:16:27,830][775327] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000016_4096.pth...
+[2025-07-21 14:16:27,833][775327] Stopping LearnerWorker_p0...
+[2025-07-21 14:16:27,833][775327] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:16:27,833][775327] Batcher 0 profile tree view:
+batching: 0.0005, releasing_batches: 0.0005
+[2025-07-21 14:16:27,833][775327] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0005
+one_step: 0.0023
+  handle_policy_step: 0.2560
+    deserialize: 0.0005, stack: 0.0000, obs_to_device_normalize: 0.0102, forward: 0.2373, prepare_outputs: 0.0042, send_messages: 0.0010
+[2025-07-21 14:16:27,833][775327] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5408
+train: 0.0871
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0002, kl_divergence: 0.0001, after_optimizer: 0.0020
+  calculate_losses: 0.0108
+    losses_init: 0.0000, forward_head: 0.0011, bptt_initial: 0.0028, tail: 0.0026, advantages_returns: 0.0006, losses: 0.0020
+    bptt: 0.0013
+      bptt_forward_core: 0.0013
+  update: 0.0733
+    clip: 0.0011
+[2025-07-21 14:16:27,833][775327] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0038, process_policy_outputs: 0.0051, env_step: 10.0851, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0112
+  process_env_step: 0.0032
+[2025-07-21 14:16:27,833][775327] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:16:27,834][775327] Runner profile tree view:
+main_loop: 15.4357
+[2025-07-21 14:16:27,834][775327] Collected {0: 4096}, FPS: 33.2
+[2025-07-21 14:18:57,479][776854] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:18:58,535][776854] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:18:58,536][776854] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:18:58,542][776854] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:18:58,543][776854] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:18:58,543][776854] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:18:58,545][776854] Starting seed is not provided
+[2025-07-21 14:18:58,545][776854] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:18:58,545][776854] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:18:58,546][776854] RunningMeanStd input shape: (150,)
+[2025-07-21 14:18:58,546][776854] RunningMeanStd input shape: (1,)
+[2025-07-21 14:18:58,581][776854] Created Actor Critic model with architecture:
+[2025-07-21 14:18:58,581][776854] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:18:59,047][776854] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:18:59,048][776854] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000016_4096.pth...
+[2025-07-21 14:18:59,053][776854] Loading model from checkpoint
+[2025-07-21 14:18:59,055][776854] Loaded experiment state at self.train_step=16, self.env_steps=4096
+[2025-07-21 14:18:59,055][776854] Initialized policy 0 weights for model version 16
+[2025-07-21 14:18:59,056][776854] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:18:59,056][776854] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:18:59,057][776854] Inference worker 0-0 is ready!
+[2025-07-21 14:18:59,057][776854] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:18:59,058][776854] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:19:02,609][776854] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 4096. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:19:05,952][776854] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 4096. Throughput: 0: 4.8. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:19:05,953][776854] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:19:09,898][776854] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 4096. Throughput: 0: 13.2. Samples: 96. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:19:09,899][776854] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:19:12,815][776854] Signal inference workers to stop experience collection...
+[2025-07-21 14:19:13,129][776854] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:19:13,132][776854] Signal inference workers to resume experience collection...
+[2025-07-21 14:19:13,267][776854] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:19:13,680][776854] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000018_4608.pth...
+[2025-07-21 14:19:13,683][776854] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000008_2048.pth
+[2025-07-21 14:19:13,684][776854] Stopping Batcher_0...
+[2025-07-21 14:19:13,684][776854] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:19:13,684][776854] Stopping RolloutWorker_w0...
+[2025-07-21 14:19:13,685][776854] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000018_4608.pth...
+[2025-07-21 14:19:13,688][776854] Stopping LearnerWorker_p0...
+[2025-07-21 14:19:13,688][776854] Component Batcher_0 stopped!
+[2025-07-21 14:19:13,688][776854] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:19:13,689][776854] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:19:13,689][776854] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:19:13,689][776854] Batcher 0 profile tree view:
+batching: 0.0005, releasing_batches: 0.0005
+[2025-07-21 14:19:13,689][776854] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0004
+one_step: 0.0028
+  handle_policy_step: 0.2409
+    deserialize: 0.0005, stack: 0.0000, obs_to_device_normalize: 0.0107, forward: 0.2209, prepare_outputs: 0.0047, send_messages: 0.0010
+[2025-07-21 14:19:13,689][776854] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5194
+train: 0.0834
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0002, kl_divergence: 0.0001, after_optimizer: 0.0024
+  calculate_losses: 0.0095
+    losses_init: 0.0000, forward_head: 0.0004, bptt_initial: 0.0019, tail: 0.0030, advantages_returns: 0.0006, losses: 0.0018
+    bptt: 0.0015
+      bptt_forward_core: 0.0014
+  update: 0.0704
+    clip: 0.0013
+[2025-07-21 14:19:13,689][776854] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0043, process_policy_outputs: 0.0059, env_step: 10.1710, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0117
+  process_env_step: 0.0028
+[2025-07-21 14:19:13,689][776854] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:19:13,689][776854] Runner profile tree view:
+main_loop: 15.1454
+[2025-07-21 14:19:13,690][776854] Collected {0: 4608}, FPS: 33.8
+[2025-07-21 14:21:49,718][778099] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:21:50,760][778099] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:21:50,760][778099] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:21:50,766][778099] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:21:50,766][778099] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:21:50,766][778099] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:21:50,767][778099] Starting seed is not provided
+[2025-07-21 14:21:50,767][778099] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:21:50,767][778099] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:21:50,768][778099] RunningMeanStd input shape: (150,)
+[2025-07-21 14:21:50,768][778099] RunningMeanStd input shape: (1,)
+[2025-07-21 14:21:50,801][778099] Created Actor Critic model with architecture:
+[2025-07-21 14:21:50,801][778099] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:21:51,291][778099] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:21:51,292][778099] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000018_4608.pth...
+[2025-07-21 14:21:51,297][778099] Loading model from checkpoint
+[2025-07-21 14:21:51,299][778099] Loaded experiment state at self.train_step=18, self.env_steps=4608
+[2025-07-21 14:21:51,300][778099] Initialized policy 0 weights for model version 18
+[2025-07-21 14:21:51,301][778099] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:21:51,302][778099] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:21:51,303][778099] Inference worker 0-0 is ready!
+[2025-07-21 14:21:51,303][778099] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:21:51,303][778099] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:21:55,124][778099] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 4608. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:21:58,522][778099] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 4608. Throughput: 0: 4.7. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:21:58,523][778099] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:22:02,297][778099] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 4608. Throughput: 0: 8.9. Samples: 64. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:22:02,297][778099] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:22:06,154][778099] Signal inference workers to stop experience collection...
+[2025-07-21 14:22:06,494][778099] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:22:06,496][778099] Signal inference workers to resume experience collection...
+[2025-07-21 14:22:06,663][778099] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:22:07,074][778099] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000020_5120.pth...
+[2025-07-21 14:22:07,078][778099] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000010_2560.pth
+[2025-07-21 14:22:07,078][778099] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:22:07,078][778099] Stopping RolloutWorker_w0...
+[2025-07-21 14:22:07,079][778099] Stopping Batcher_0...
+[2025-07-21 14:22:07,079][778099] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:22:07,079][778099] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:22:07,079][778099] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000020_5120.pth...
+[2025-07-21 14:22:07,082][778099] Stopping LearnerWorker_p0...
+[2025-07-21 14:22:07,082][778099] Component Batcher_0 stopped!
+[2025-07-21 14:22:07,082][778099] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:22:07,082][778099] Batcher 0 profile tree view:
+batching: 0.0006, releasing_batches: 0.0004
+[2025-07-21 14:22:07,082][778099] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0004
+one_step: 0.0018
+  handle_policy_step: 0.2300
+    deserialize: 0.0004, stack: 0.0000, obs_to_device_normalize: 0.0098, forward: 0.2126, prepare_outputs: 0.0037, send_messages: 0.0009
+[2025-07-21 14:22:07,082][778099] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5203
+train: 0.0844
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0003, kl_divergence: 0.0001, after_optimizer: 0.0018
+  calculate_losses: 0.0111
+    losses_init: 0.0000, forward_head: 0.0010, bptt_initial: 0.0031, tail: 0.0026, advantages_returns: 0.0005, losses: 0.0021
+    bptt: 0.0013
+      bptt_forward_core: 0.0013
+  update: 0.0704
+    clip: 0.0015
+[2025-07-21 14:22:07,083][778099] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0034, process_policy_outputs: 0.0038, env_step: 11.0591, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0107
+  process_env_step: 0.0029
+[2025-07-21 14:22:07,083][778099] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:22:07,083][778099] Runner profile tree view:
+main_loop: 16.3158
+[2025-07-21 14:22:07,083][778099] Collected {0: 5120}, FPS: 31.4
+[2025-07-21 14:25:04,426][779523] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:25:05,458][779523] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:25:05,458][779523] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:25:05,463][779523] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:25:05,464][779523] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:25:05,464][779523] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:25:05,465][779523] EvtLoop [Runner_EvtLoop, process=main process 779523] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Runner_EvtLoop', signal_name='start'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+TypeError: enhanced_learner_init() missing 5 required positional arguments: 'cfg', 'env_info', 'policy_versions_tensor', 'policy_id', and 'param_server'
+[2025-07-21 14:25:05,466][779523] Unhandled exception enhanced_learner_init() missing 5 required positional arguments: 'cfg', 'env_info', 'policy_versions_tensor', 'policy_id', and 'param_server' in evt loop Runner_EvtLoop
+[2025-07-21 14:25:05,466][779523] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+TypeError: enhanced_learner_init() missing 5 required positional arguments: 'cfg', 'env_info', 'policy_versions_tensor', 'policy_id', and 'param_server'
+[2025-07-21 14:25:05,466][779523] Runner profile tree view:
+main_loop: 0.0011
+[2025-07-21 14:25:05,466][779523] Collected {}, FPS: 0.0
+[2025-07-21 14:29:30,306][781537] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:29:31,349][781537] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:29:31,350][781537] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:29:31,354][781537] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:29:31,354][781537] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:29:31,355][781537] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:29:31,355][781537] Starting seed is not provided
+[2025-07-21 14:29:31,356][781537] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:29:31,356][781537] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:29:31,356][781537] RunningMeanStd input shape: (150,)
+[2025-07-21 14:29:31,357][781537] RunningMeanStd input shape: (1,)
+[2025-07-21 14:29:31,385][781537] Created Actor Critic model with architecture:
+[2025-07-21 14:29:31,386][781537] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:29:31,887][781537] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:29:31,887][781537] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000020_5120.pth...
+[2025-07-21 14:29:31,891][781537] Loading model from checkpoint
+[2025-07-21 14:29:31,893][781537] Loaded experiment state at self.train_step=20, self.env_steps=5120
+[2025-07-21 14:29:31,893][781537] Initialized policy 0 weights for model version 20
+[2025-07-21 14:29:31,893][781537] EvtLoop [Runner_EvtLoop, process=main process 781537] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Runner_EvtLoop', signal_name='start'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+  File "aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py", line 1294, in enhanced_learner_init
+    original_calculate_losses = self.calculate_losses
+AttributeError: 'Learner' object has no attribute 'calculate_losses'
+[2025-07-21 14:29:31,894][781537] Unhandled exception 'Learner' object has no attribute 'calculate_losses' in evt loop Runner_EvtLoop
+[2025-07-21 14:29:31,894][781537] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+  File "aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py", line 1294, in enhanced_learner_init
+    original_calculate_losses = self.calculate_losses
+AttributeError: 'Learner' object has no attribute 'calculate_losses'
+[2025-07-21 14:29:31,895][781537] Runner profile tree view:
+main_loop: 0.5396
+[2025-07-21 14:29:31,895][781537] Collected {}, FPS: 0.0
+[2025-07-21 14:35:29,953][784066] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:35:30,988][784066] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:35:30,988][784066] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:35:30,994][784066] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:35:30,994][784066] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:35:30,994][784066] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:35:30,995][784066] Starting seed is not provided
+[2025-07-21 14:35:30,995][784066] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:35:30,995][784066] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:35:30,995][784066] RunningMeanStd input shape: (150,)
+[2025-07-21 14:35:30,996][784066] RunningMeanStd input shape: (1,)
+[2025-07-21 14:35:31,022][784066] Created Actor Critic model with architecture:
+[2025-07-21 14:35:31,022][784066] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:35:31,479][784066] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:35:31,480][784066] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000020_5120.pth...
+[2025-07-21 14:35:31,483][784066] Loading model from checkpoint
+[2025-07-21 14:35:31,485][784066] Loaded experiment state at self.train_step=20, self.env_steps=5120
+[2025-07-21 14:35:31,486][784066] Initialized policy 0 weights for model version 20
+[2025-07-21 14:35:31,486][784066] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:35:31,487][784066] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:35:31,488][784066] Inference worker 0-0 is ready!
+[2025-07-21 14:35:31,488][784066] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:35:31,488][784066] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:35:35,148][784066] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 5120. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:35:38,438][784066] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 5120. Throughput: 0: 4.9. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:35:38,439][784066] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:35:42,545][784066] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 5120. Throughput: 0: 15.1. Samples: 112. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:35:42,545][784066] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:35:45,109][784066] Signal inference workers to stop experience collection...
+[2025-07-21 14:35:45,487][784066] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:35:45,490][784066] Signal inference workers to resume experience collection...
+[2025-07-21 14:35:46,059][784066] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:35:46,563][784066] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000022_5632.pth...
+[2025-07-21 14:35:46,567][784066] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000012_3072.pth
+[2025-07-21 14:35:46,568][784066] Stopping RolloutWorker_w0...
+[2025-07-21 14:35:46,568][784066] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:35:46,568][784066] Stopping Batcher_0...
+[2025-07-21 14:35:46,568][784066] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:35:46,569][784066] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:35:46,569][784066] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000022_5632.pth...
+[2025-07-21 14:35:46,573][784066] Stopping LearnerWorker_p0...
+[2025-07-21 14:35:46,573][784066] Component Batcher_0 stopped!
+[2025-07-21 14:35:46,574][784066] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:35:46,574][784066] Batcher 0 profile tree view:
+batching: 0.0003, releasing_batches: 0.0004
+[2025-07-21 14:35:46,574][784066] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0005
+one_step: 0.0031
+  handle_policy_step: 0.2944
+    deserialize: 0.0006, stack: 0.0001, obs_to_device_normalize: 0.0115, forward: 0.2722, prepare_outputs: 0.0054, send_messages: 0.0011
+[2025-07-21 14:35:46,574][784066] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.6531
+train: 0.0940
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0003, kl_divergence: 0.0001, after_optimizer: 0.0017
+  calculate_losses: 0.0149
+    losses_init: 0.0000, forward_head: 0.0043, bptt_initial: 0.0026, tail: 0.0036, advantages_returns: 0.0006, losses: 0.0022
+    bptt: 0.0012
+      bptt_forward_core: 0.0012
+  update: 0.0763
+    clip: 0.0019
+[2025-07-21 14:35:46,574][784066] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0050, process_policy_outputs: 0.0048, env_step: 10.3128, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0125
+  process_env_step: 0.0029
+[2025-07-21 14:35:46,575][784066] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:35:46,575][784066] Runner profile tree view:
+main_loop: 15.5799
+[2025-07-21 14:35:46,575][784066] Collected {0: 5632}, FPS: 32.9
+[2025-07-21 14:49:16,300][789738] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 14:49:17,339][789738] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:49:17,339][789738] Rollout worker 0 uses device cuda:0
+[2025-07-21 14:49:17,342][789738] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:49:17,342][789738] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 14:49:17,343][789738] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:49:17,343][789738] Starting seed is not provided
+[2025-07-21 14:49:17,344][789738] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:49:17,344][789738] Initializing actor-critic model on device cuda:0
+[2025-07-21 14:49:17,344][789738] RunningMeanStd input shape: (150,)
+[2025-07-21 14:49:17,344][789738] RunningMeanStd input shape: (1,)
+[2025-07-21 14:49:17,365][789738] Created Actor Critic model with architecture:
+[2025-07-21 14:49:17,366][789738] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 14:49:17,799][789738] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 14:49:17,800][789738] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000022_5632.pth...
+[2025-07-21 14:49:17,803][789738] Loading model from checkpoint
+[2025-07-21 14:49:17,804][789738] Loaded experiment state at self.train_step=22, self.env_steps=5632
+[2025-07-21 14:49:17,804][789738] Initialized policy 0 weights for model version 22
+[2025-07-21 14:49:17,805][789738] LearnerWorker_p0 finished initialization!
+[2025-07-21 14:49:17,805][789738] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 14:49:17,806][789738] Inference worker 0-0 is ready!
+[2025-07-21 14:49:17,806][789738] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 14:49:17,807][789738] EnvRunner 0-0 uses policy 0
+[2025-07-21 14:49:21,114][789738] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 5632. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:49:25,532][789738] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 5632. Throughput: 0: 7.2. Samples: 32. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 14:49:25,533][789738] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 14:49:29,353][789738] Signal inference workers to stop experience collection...
+[2025-07-21 14:49:29,664][789738] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 14:49:29,667][789738] Signal inference workers to resume experience collection...
+[2025-07-21 14:49:29,829][789738] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 14:49:30,216][789738] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000024_6144.pth...
+[2025-07-21 14:49:30,218][789738] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000014_3584.pth
+[2025-07-21 14:49:30,219][789738] Stopping Batcher_0...
+[2025-07-21 14:49:30,219][789738] Stopping RolloutWorker_w0...
+[2025-07-21 14:49:30,219][789738] Stopping InferenceWorker_p0-w0...
+[2025-07-21 14:49:30,219][789738] Component Batcher_0 stopped!
+[2025-07-21 14:49:30,219][789738] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000024_6144.pth...
+[2025-07-21 14:49:30,222][789738] Stopping LearnerWorker_p0...
+[2025-07-21 14:49:30,222][789738] Component RolloutWorker_w0 stopped!
+[2025-07-21 14:49:30,222][789738] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 14:49:30,222][789738] Component LearnerWorker_p0 stopped!
+[2025-07-21 14:49:30,222][789738] Batcher 0 profile tree view:
+batching: 0.0004, releasing_batches: 0.0004
+[2025-07-21 14:49:30,222][789738] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0003
+one_step: 0.0025
+  handle_policy_step: 0.2133
+    deserialize: 0.0003, stack: 0.0000, obs_to_device_normalize: 0.0064, forward: 0.2009, prepare_outputs: 0.0030, send_messages: 0.0007
+[2025-07-21 14:49:30,222][789738] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.4944
+train: 0.0809
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0002, kl_divergence: 0.0001, after_optimizer: 0.0037
+  calculate_losses: 0.0091
+    losses_init: 0.0000, forward_head: 0.0023, bptt_initial: 0.0019, tail: 0.0018, advantages_returns: 0.0004, losses: 0.0017
+    bptt: 0.0009
+      bptt_forward_core: 0.0008
+  update: 0.0674
+    clip: 0.0015
+[2025-07-21 14:49:30,222][789738] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0028, process_policy_outputs: 0.0041, env_step: 8.2828, finalize_trajectories: 0.0001, complete_rollouts: 0.0000
+post_env_step: 0.0071
+  process_env_step: 0.0017
+[2025-07-21 14:49:30,222][789738] Loop Runner_EvtLoop terminating...
+[2025-07-21 14:49:30,222][789738] Runner profile tree view:
+main_loop: 12.8792
+[2025-07-21 14:49:30,223][789738] Collected {0: 6144}, FPS: 39.8
+[2025-07-21 15:00:50,460][794277] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 15:00:51,505][794277] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:00:51,505][794277] Rollout worker 0 uses device cuda:0
+[2025-07-21 15:00:51,509][794277] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:00:51,509][794277] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 15:00:51,510][794277] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:00:51,511][794277] Starting seed is not provided
+[2025-07-21 15:00:51,511][794277] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:00:51,511][794277] Initializing actor-critic model on device cuda:0
+[2025-07-21 15:00:51,512][794277] RunningMeanStd input shape: (150,)
+[2025-07-21 15:00:51,512][794277] RunningMeanStd input shape: (1,)
+[2025-07-21 15:00:51,540][794277] Created Actor Critic model with architecture:
+[2025-07-21 15:00:51,540][794277] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 15:00:52,011][794277] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 15:00:52,012][794277] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000024_6144.pth...
+[2025-07-21 15:00:52,016][794277] Loading model from checkpoint
+[2025-07-21 15:00:52,018][794277] Loaded experiment state at self.train_step=24, self.env_steps=6144
+[2025-07-21 15:00:52,018][794277] Initialized policy 0 weights for model version 24
+[2025-07-21 15:00:52,020][794277] LearnerWorker_p0 finished initialization!
+[2025-07-21 15:00:52,020][794277] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:00:52,021][794277] Inference worker 0-0 is ready!
+[2025-07-21 15:00:52,021][794277] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 15:00:52,022][794277] EnvRunner 0-0 uses policy 0
+[2025-07-21 15:00:55,687][794277] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 6144. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 15:00:59,108][794277] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 6144. Throughput: 0: 4.7. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 15:00:59,108][794277] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 15:01:02,939][794277] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 6144. Throughput: 0: 11.0. Samples: 80. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 15:01:02,940][794277] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 15:01:05,297][794277] Signal inference workers to stop experience collection...
+[2025-07-21 15:01:05,628][794277] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 15:01:05,630][794277] Signal inference workers to resume experience collection...
+[2025-07-21 15:01:05,754][794277] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 15:01:06,211][794277] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000026_6656.pth...
+[2025-07-21 15:01:06,214][794277] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000016_4096.pth
+[2025-07-21 15:01:06,215][794277] Stopping Batcher_0...
+[2025-07-21 15:01:06,215][794277] Stopping InferenceWorker_p0-w0...
+[2025-07-21 15:01:06,215][794277] Stopping RolloutWorker_w0...
+[2025-07-21 15:01:06,215][794277] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000026_6656.pth...
+[2025-07-21 15:01:06,219][794277] Stopping LearnerWorker_p0...
+[2025-07-21 15:01:06,219][794277] Component Batcher_0 stopped!
+[2025-07-21 15:01:06,219][794277] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 15:01:06,219][794277] Component RolloutWorker_w0 stopped!
+[2025-07-21 15:01:06,219][794277] Component LearnerWorker_p0 stopped!
+[2025-07-21 15:01:06,219][794277] Batcher 0 profile tree view:
+batching: 0.0006, releasing_batches: 0.0004
+[2025-07-21 15:01:06,219][794277] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0004
+one_step: 0.0023
+  handle_policy_step: 0.2321
+    deserialize: 0.0004, stack: 0.0000, obs_to_device_normalize: 0.0092, forward: 0.2148, prepare_outputs: 0.0038, send_messages: 0.0013
+[2025-07-21 15:01:06,219][794277] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5753
+train: 0.0906
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0003, kl_divergence: 0.0001, after_optimizer: 0.0020
+  calculate_losses: 0.0112
+    losses_init: 0.0000, forward_head: 0.0011, bptt_initial: 0.0029, tail: 0.0030, advantages_returns: 0.0005, losses: 0.0018
+    bptt: 0.0016
+      bptt_forward_core: 0.0015
+  update: 0.0763
+    clip: 0.0012
+[2025-07-21 15:01:06,220][794277] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0034, process_policy_outputs: 0.0049, env_step: 9.5852, finalize_trajectories: 0.0001, complete_rollouts: 0.0001
+post_env_step: 0.0104
+  process_env_step: 0.0024
+[2025-07-21 15:01:06,220][794277] Loop Runner_EvtLoop terminating...
+[2025-07-21 15:01:06,220][794277] Runner profile tree view:
+main_loop: 14.7093
+[2025-07-21 15:01:06,220][794277] Collected {0: 6656}, FPS: 34.8
+[2025-07-21 15:07:00,537][796944] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 15:07:01,568][796944] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:07:01,569][796944] Rollout worker 0 uses device cuda:0
+[2025-07-21 15:07:01,573][796944] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:07:01,573][796944] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 15:07:01,573][796944] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:07:01,574][796944] Starting seed is not provided
+[2025-07-21 15:07:01,574][796944] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:07:01,574][796944] Initializing actor-critic model on device cuda:0
+[2025-07-21 15:07:01,575][796944] RunningMeanStd input shape: (1,)
+[2025-07-21 15:07:01,619][796944] Created Actor Critic model with architecture:
+[2025-07-21 15:07:01,619][796944] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer()
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 15:07:02,114][796944] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 15:07:02,114][796944] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000026_6656.pth...
+[2025-07-21 15:07:02,119][796944] Loading model from checkpoint
+[2025-07-21 15:07:02,120][796944] EvtLoop [Runner_EvtLoop, process=main process 796944] unhandled exception in slot='init' connected to emitter=Emitter(object_id='Runner_EvtLoop', signal_name='start'), args=()
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+  File "aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py", line 1272, in enhanced_learner_init
+    result = original_learner_init(self)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner.py", line 245, in init
+    self.load_from_checkpoint(self.policy_id)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner.py", line 307, in load_from_checkpoint
+    self._load_state(checkpoint_dict, load_progress=load_progress)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner.py", line 291, in _load_state
+    self.actor_critic.load_state_dict(checkpoint_dict["model"])
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1671, in load_state_dict
+    raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
+RuntimeError: Error(s) in loading state_dict for ActorCriticSharedWeights:
+	Unexpected key(s) in state_dict: "obs_normalizer.running_mean_std.running_mean_std.obs.running_mean", "obs_normalizer.running_mean_std.running_mean_std.obs.running_var", "obs_normalizer.running_mean_std.running_mean_std.obs.count". 
+[2025-07-21 15:07:02,120][796944] Unhandled exception Error(s) in loading state_dict for ActorCriticSharedWeights:
+	Unexpected key(s) in state_dict: "obs_normalizer.running_mean_std.running_mean_std.obs.running_mean", "obs_normalizer.running_mean_std.running_mean_std.obs.running_var", "obs_normalizer.running_mean_std.running_mean_std.obs.count".  in evt loop Runner_EvtLoop
+[2025-07-21 15:07:02,120][796944] Uncaught exception in Runner evt loop
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/runners/runner.py", line 770, in run
+    evt_loop_status = self.event_loop.exec()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 403, in exec
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 399, in exec
+    while self._loop_iteration():
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 383, in _loop_iteration
+    self._process_signal(s)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 358, in _process_signal
+    raise exc
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/signal_slot/signal_slot.py", line 355, in _process_signal
+    slot_callable(*args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner_worker.py", line 139, in init
+    init_model_data = self.learner.init()
+  File "aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py", line 1272, in enhanced_learner_init
+    result = original_learner_init(self)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner.py", line 245, in init
+    self.load_from_checkpoint(self.policy_id)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner.py", line 307, in load_from_checkpoint
+    self._load_state(checkpoint_dict, load_progress=load_progress)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/sample_factory/algo/learning/learner.py", line 291, in _load_state
+    self.actor_critic.load_state_dict(checkpoint_dict["model"])
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1671, in load_state_dict
+    raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
+RuntimeError: Error(s) in loading state_dict for ActorCriticSharedWeights:
+	Unexpected key(s) in state_dict: "obs_normalizer.running_mean_std.running_mean_std.obs.running_mean", "obs_normalizer.running_mean_std.running_mean_std.obs.running_var", "obs_normalizer.running_mean_std.running_mean_std.obs.count". 
+[2025-07-21 15:07:02,121][796944] Runner profile tree view:
+main_loop: 0.5471
+[2025-07-21 15:07:02,121][796944] Collected {}, FPS: 0.0
+[2025-07-21 15:13:38,487][800347] Saving configuration to ./train_dir/debug_gradient_quick/config.json...
+[2025-07-21 15:13:39,536][800347] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:13:39,536][800347] Rollout worker 0 uses device cuda:0
+[2025-07-21 15:13:39,540][800347] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:13:39,540][800347] InferenceWorker_p0-w0: min num requests: 1
+[2025-07-21 15:13:39,540][800347] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:13:39,541][800347] Starting seed is not provided
+[2025-07-21 15:13:39,541][800347] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:13:39,541][800347] Initializing actor-critic model on device cuda:0
+[2025-07-21 15:13:39,541][800347] RunningMeanStd input shape: (150,)
+[2025-07-21 15:13:39,542][800347] RunningMeanStd input shape: (1,)
+[2025-07-21 15:13:39,563][800347] Created Actor Critic model with architecture:
+[2025-07-21 15:13:39,563][800347] ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+[2025-07-21 15:13:40,000][800347] Using optimizer <class 'torch.optim.adam.Adam'>
+[2025-07-21 15:13:40,001][800347] Loading state from checkpoint ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000026_6656.pth...
+[2025-07-21 15:13:40,004][800347] Loading model from checkpoint
+[2025-07-21 15:13:40,005][800347] Loaded experiment state at self.train_step=26, self.env_steps=6656
+[2025-07-21 15:13:40,005][800347] Initialized policy 0 weights for model version 26
+[2025-07-21 15:13:40,006][800347] LearnerWorker_p0 finished initialization!
+[2025-07-21 15:13:40,006][800347] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[2025-07-21 15:13:40,007][800347] Inference worker 0-0 is ready!
+[2025-07-21 15:13:40,007][800347] All inference workers are ready! Signal rollout workers to start!
+[2025-07-21 15:13:40,007][800347] EnvRunner 0-0 uses policy 0
+[2025-07-21 15:13:43,496][800347] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 6656. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 15:13:46,725][800347] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 6656. Throughput: 0: 5.0. Samples: 16. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 15:13:46,725][800347] Avg episode reward: [(0, '-100.000')]
+[2025-07-21 15:13:51,132][800347] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 6656. Throughput: 0: 21.0. Samples: 160. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[2025-07-21 15:13:51,133][800347] Avg episode reward: [(0, '-100.998')]
+[2025-07-21 15:13:52,313][800347] Signal inference workers to stop experience collection...
+[2025-07-21 15:13:52,639][800347] InferenceWorker_p0-w0: stopping experience collection
+[2025-07-21 15:13:52,642][800347] Signal inference workers to resume experience collection...
+[2025-07-21 15:13:52,778][800347] InferenceWorker_p0-w0: resuming experience collection
+[2025-07-21 15:13:53,179][800347] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000028_7168.pth...
+[2025-07-21 15:13:53,182][800347] Removing ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000018_4608.pth
+[2025-07-21 15:13:53,182][800347] Stopping InferenceWorker_p0-w0...
+[2025-07-21 15:13:53,182][800347] Stopping RolloutWorker_w0...
+[2025-07-21 15:13:53,182][800347] Stopping Batcher_0...
+[2025-07-21 15:13:53,182][800347] Component InferenceWorker_p0-w0 stopped!
+[2025-07-21 15:13:53,182][800347] Component RolloutWorker_w0 stopped!
+[2025-07-21 15:13:53,183][800347] Saving ./train_dir/debug_gradient_quick/checkpoint_p0/checkpoint_000000028_7168.pth...
+[2025-07-21 15:13:53,185][800347] Stopping LearnerWorker_p0...
+[2025-07-21 15:13:53,185][800347] Component Batcher_0 stopped!
+[2025-07-21 15:13:53,185][800347] Component LearnerWorker_p0 stopped!
+[2025-07-21 15:13:53,185][800347] Batcher 0 profile tree view:
+batching: 0.0003, releasing_batches: 0.0004
+[2025-07-21 15:13:53,185][800347] InferenceWorker_p0-w0 profile tree view:
+update_model: 0.0002
+one_step: 0.0025
+  handle_policy_step: 0.2345
+    deserialize: 0.0003, stack: 0.0000, obs_to_device_normalize: 0.0071, forward: 0.2212, prepare_outputs: 0.0031, send_messages: 0.0007
+[2025-07-21 15:13:53,185][800347] Learner 0 profile tree view:
+misc: 0.0000, prepare_batch: 0.5122
+train: 0.1030
+  epoch_init: 0.0000, minibatch_init: 0.0000, losses_postprocess: 0.0001, kl_divergence: 0.0001, after_optimizer: 0.0015
+  calculate_losses: 0.0156
+    losses_init: 0.0000, forward_head: 0.0067, bptt_initial: 0.0043, tail: 0.0018, advantages_returns: 0.0004, losses: 0.0013
+    bptt: 0.0009
+      bptt_forward_core: 0.0008
+  update: 0.0852
+    clip: 0.0008
+[2025-07-21 15:13:53,185][800347] RolloutWorker_w0 profile tree view:
+wait_for_trajectories: 0.0001, enqueue_policy_requests: 0.0028, process_policy_outputs: 0.0029, env_step: 8.8126, finalize_trajectories: 0.0001, complete_rollouts: 0.0000
+post_env_step: 0.0081
+  process_env_step: 0.0022
+[2025-07-21 15:13:53,186][800347] Loop Runner_EvtLoop terminating...
+[2025-07-21 15:13:53,186][800347] Runner profile tree view:
+main_loop: 13.6449
+[2025-07-21 15:13:53,186][800347] Collected {0: 7168}, FPS: 37.5

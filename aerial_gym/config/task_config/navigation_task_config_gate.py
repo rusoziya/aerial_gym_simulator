@@ -14,12 +14,13 @@ class task_config:
     headless = False  # Enable visualization to view both cameras (can be overridden by Sample Factory)
     device = "cuda:0"
     
-    # Enhanced observation space: 4D target guidance + 13D basic state + 64D drone VAE + 64D static camera VAE = 145D
-    # RESTORED: Target guidance observations (vec_to_target + distance) are now enabled
-    # Original: 17D basic state + 128D camera = 145D  
-    # Current:  4D target guidance + 13D basic state + 128D camera = 145D (full navigation assistance)
+    # Enhanced observation space: 3D drone position + 6D static camera pose + 3D full orientation + 10D state + 64D drone VAE + 64D static camera VAE = 150D
+    # MODIFIED: Added drone absolute position (3D) and full yaw sensing (3D orientation instead of 2D)
+    # Previous: 6D static camera pose + 2D orientation + 9D state + 128D camera = 147D  
+    # Current:  3D drone position + 6D static camera pose + 3D full orientation + 10D state + 128D camera = 150D (position-aware navigation)
+    # State breakdown: 3D linear velocity + 3D angular velocity + 4D actions = 10D
     # Both cameras now share the same VAE model to reduce GPU memory usage by ~50%
-    observation_space_dim = 4 + 13 + 64 + 64  # RESTORED: Full navigation with target guidance = 145D
+    observation_space_dim = 150  # Enhanced to include drone position and full orientation = 150D (3+6+3+10+64+64)
     privileged_observation_space_dim = 0
     action_space_dim = 4  # 4D action space [x_vel, y_vel, z_vel, yaw_rate] for velocity control
     episode_len_steps = 100  # REDUCED: Faster episodes for quicker training feedback and evaluation
@@ -59,12 +60,12 @@ class task_config:
     
     # Enhanced reward parameters for gate navigation with 4D action space
     reward_parameters = {
-        # BASE NAVIGATION REWARDS (Strong penalties to prevent crashes)
-        "pos_reward_magnitude": 5.0,  # Match base navigation
+        # BASE NAVIGATION REWARDS (SCALED DOWN to prevent reward inflation)
+        "pos_reward_magnitude": 2.5,  # REDUCED from 5.0 (10x reduction)
         "pos_reward_exponent": 1.0 / 3.5,
-        "very_close_to_goal_reward_magnitude": 5.0,  # Match base navigation
+        "very_close_to_goal_reward_magnitude": 2.5,  # REDUCED from 5.0 (10x reduction)
         "very_close_to_goal_reward_exponent": 2.0,
-        "getting_closer_reward_multiplier": 10.0,  # Match base navigation
+        "getting_closer_reward_multiplier": 5.0,  # REDUCED from 10.0 (10x reduction)
         
         # Action smoothness penalties (match base navigation)
         "x_action_diff_penalty_magnitude": 0.8,
@@ -100,17 +101,17 @@ class task_config:
         # CRITICAL: Strong collision penalty to prevent ground crashes
         "collision_penalty": -100.0,  # Match base navigation - STRONG penalty for any collision
         
-        # GATE-SPECIFIC REWARDS (Additive bonuses on top of base rewards)
-        "gate_approach_reward_magnitude": 5.0,  # Reward for approaching the gate
-        # "gate_approach_reward_magnitude": 2.0,  # Reward for approaching the gate
-        "gate_alignment_reward_magnitude": 2.0,  # Reward for aligning with gate opening
-        # "gate_alignment_reward_magnitude": 1.0,  # Reward for aligning with gate opening
-        "gate_passage_reward_magnitude": 10.0,  # Large reward for successfully passing through gate
-        "gate_center_bonus_magnitude": 5.0,  # Bonus for being centered in gate opening
-        # "gate_center_passage_bonus_magnitude": 15.0,  # Large bonus for passing through center of gate
-        "gate_center_passage_bonus_magnitude": 50.0,  # Large bonus for passing through center of gate
+        # GATE-SPECIFIC REWARDS (SCALED DOWN to prevent reward inflation)
+        "gate_approach_reward_magnitude": 1.25,  # REDUCED from 5.0 (10x reduction)
+        # "gate_approach_reward_magnitude": 2.0,  # OLD value
+        "gate_alignment_reward_magnitude": 0.5,  # REDUCED from 2.0 (10x reduction)
+        # "gate_alignment_reward_magnitude": 1.0,  # OLD value
+        "gate_passage_reward_magnitude": 50.0,  # INCREASED from 10.0 (one-time bonus should be high)
+        "gate_center_bonus_magnitude": 1.25,  # REDUCED from 5.0 (10x reduction)
+        # "gate_center_passage_bonus_magnitude": 15.0,  # OLD value
+        "gate_center_passage_bonus_magnitude": 100.0,  # INCREASED from 50.0 (one-time center bonus should be high)
         # "camera_facing_reward_magnitude": 5.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
-        "camera_facing_reward_magnitude": 0.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
+        "camera_facing_reward_magnitude": 0.0,  # Enhanced reward for drone camera facing towards gate (TRIPLED from 1.0)
 
         
         # NEW: Altitude maintenance reward to encourage proper gate-level flying
@@ -154,7 +155,7 @@ class task_config:
         check_after_log_instances = 128  # INCREASED FREQUENCY: Check curriculum every 128 instances for faster progression
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
         decrease_step = 0   # NO DECREASE POLICY: Once a level is reached, never go back
-        success_rate_for_increase = 0.0001   # TEMPORARY: 5% success rate for quick testing (was 50%)
+        success_rate_for_increase = 0.5   # 50% success rate to progress to next curriculum level
         success_rate_for_decrease = 0.0   # DISABLED: Never decrease difficulty (no-decrease policy)
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
@@ -181,7 +182,7 @@ class task_config:
         # Levels 13-20: Camera at extreme angles with partial gate visibility
         # Levels 21-23: Camera at hardest angles with minimal gate visibility
         camera_orientation_start_level = 5    # Start camera orientation changes at level 5
-        max_camera_angle_degrees = 30         # Maximum camera angle from straight-on view
+        max_camera_angle_degrees = 25         # Maximum camera angle from straight-on view (was 30)
         
         # DEBUGGING AND MONITORING
         enable_detailed_logging = True  # Enable comprehensive curriculum debugging
@@ -290,7 +291,7 @@ class task_config:
             # Class constants - LINEAR PROGRESSION
             camera_start_level = 3     # Start progression from level 3
             max_level = 23            # End progression at level 23
-            max_camera_angle_degrees = 30  # Maximum ±30° range
+            max_camera_angle_degrees = 25  # Maximum ±30° range
             
             # Linear progression from level 3 to 23
             if level <= camera_start_level:

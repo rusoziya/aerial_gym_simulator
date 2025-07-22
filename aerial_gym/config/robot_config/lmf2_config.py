@@ -21,13 +21,13 @@ class LMF2Cfg:
         # Orientation: ±45° for reasonable randomization without curriculum complexity
         # Velocity: Minimal initial velocity for more randomization
         
-        # Position spawn: 2m behind gate center (Y=-2.0) with ±0.5m lateral (X) variation
+        # Position spawn: 2m behind gate center (Y=-2.0) with ±1.2m lateral (X) variation
         # Height: 1.5m (gate center level) with ±0.1m variation
         # Environment bounds: [-4,4] x [-4,4] x [0,4] = 8m × 8m × 4m
         # Position conversion: ratio = (position + 4) / 8 for X,Y; ratio = position / 4 for Z
         
         min_init_state = [
-            0.4375, # ratio_x: X = -0.5m → ratio = ((-0.5) + 4) / 8 = 0.4375 (left of center)
+            0.35,   # ratio_x: X = -1.2m → ratio = ((-1.2) + 4) / 8 = 0.35 (1.2m left of center)
             0.225,  # ratio_y: Y = -2.2m → ratio = ((-2.2) + 4) / 8 = 0.225 (2.2m behind gate)
             0.35,   # ratio_z: Z = 1.4m → ratio = 1.4 / 4 = 0.35 (gate level - 0.1m)
             0,      # no roll variation
@@ -42,7 +42,7 @@ class LMF2Cfg:
             -0.05,  # minimal initial yaw rate
         ]
         max_init_state = [
-            0.5625, # ratio_x: X = +0.5m → ratio = ((+0.5) + 4) / 8 = 0.5625 (right of center)
+            0.65,   # ratio_x: X = +1.2m → ratio = ((+1.2) + 4) / 8 = 0.65 (1.2m right of center)
             0.275,  # ratio_y: Y = -1.8m → ratio = ((-1.8) + 4) / 8 = 0.275 (1.8m behind gate)
             0.4,    # ratio_z: Z = 1.6m → ratio = 1.6 / 4 = 0.4 (gate level + 0.1m)
             0,      # no roll variation

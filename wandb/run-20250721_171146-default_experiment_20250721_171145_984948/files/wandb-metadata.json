@@ -1,0 +1,33 @@
+{
+    "os": "Linux-6.8.0-60-generic-x86_64-with-glibc2.10",
+    "python": "3.8.19",
+    "heartbeatAt": "2025-07-21T16:11:47.171000",
+    "startedAt": "2025-07-21T16:11:46.436274",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 4080 Laptop GPU",
+    "gpu_count": 1,
+    "cpu_count": 20,
+    "cuda": null,
+    "args": [
+        "--env=quad_with_obstacles_gate",
+        "--train_for_env_steps=2000",
+        "--enable_gradient_monitoring=True",
+        "--gradient_log_interval=10",
+        "--gradient_print_interval=10",
+        "--env_agents=16",
+        "--recurrence=32",
+        "--headless=True"
+    ],
+    "state": "running",
+    "program": "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py",
+    "codePath": "aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py",
+    "git": {
+        "remote": "git@github.com:rusoziya/aerial_gym_simulator.git",
+        "commit": "c1f2719af2dc775861344c14d98681662964662d"
+    },
+    "email": "ziya.ruso@gmail.com",
+    "root": "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator",
+    "host": "ziyar",
+    "username": "ziyar",
+    "executable": "/home/ziyar/miniforge3/envs/aerialgym/bin/python"
+}
