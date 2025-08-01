@@ -1,0 +1,71 @@
+2025-07-31 22:44:13,295 INFO    MainThread:163322 [internal.py:wandb_internal():90] W&B internal server running at pid: 163322, started at: 2025-07-31 22:44:13.294021
+2025-07-31 22:44:13,297 INFO    WriterThread:163322 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_224413-gate_config_8_NEW5_20250731_224408_108507/run-gate_config_8_NEW5_20250731_224408_108507.wandb
+2025-07-31 22:44:13,299 DEBUG   SenderThread:163322 [sender.py:send():236] send: header
+2025-07-31 22:44:13,340 DEBUG   SenderThread:163322 [sender.py:send():236] send: run
+2025-07-31 22:44:13,343 INFO    SenderThread:163322 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso-ucl/gate_navigation_dual_camera/gate_config_8_NEW5_20250731_224408_108507
+2025-07-31 22:44:43,342 DEBUG   HandlerThread:163322 [handler.py:handle_request():140] handle_request: shutdown
+2025-07-31 22:44:43,343 INFO    HandlerThread:163322 [handler.py:finish():806] shutting down handler
+2025-07-31 22:44:43,355 INFO    WriterThread:163322 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_224413-gate_config_8_NEW5_20250731_224408_108507/run-gate_config_8_NEW5_20250731_224408_108507.wandb
+2025-07-31 22:44:47,121 ERROR   SenderThread:163322 [retry.py:__call__():132] Retry attempt failed:
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    response = conn.getresponse()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/connection.py", line 507, in getresponse
+    httplib_response = super().getresponse()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/http/client.py", line 1348, in getresponse
+    response.begin()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/http/client.py", line 316, in begin
+    version, status, reason = self._read_status()
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/http/client.py", line 277, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/socket.py", line 669, in readinto
+    return self._sock.recv_into(b)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/ssl.py", line 1274, in recv_into
+    return self.read(nbytes, buffer)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/ssl.py", line 1132, in read
+    return self._sslobj.read(len, buffer)
+socket.timeout: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/connectionpool.py", line 843, in urlopen
+    retries = retries.increment(
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/util/retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/connectionpool.py", line 789, in urlopen
+    response = self._make_request(
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/connectionpool.py", line 538, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/urllib3/connectionpool.py", line 369, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='api.wandb.ai', port=443): Read timed out. (read timeout=10)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/lib/retry.py", line 108, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/sdk/internal/internal_api.py", line 158, in execute
+    return self.client.execute(*args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/transport/requests.py", line 38, in execute
+    request = requests.post(self.url, **post_args)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/requests/api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/requests/adapters.py", line 713, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.wandb.ai', port=443): Read timed out. (read timeout=10)

@@ -342,6 +342,30 @@ class NavigationTaskGate(BaseTask):
         self.num_task_steps = 0
         self.curriculum_progress_fraction = 0.0
         
+        # GATE SCALING: Track current gate scale for each environment
+        self.current_gate_scale = torch.ones(self.num_envs, dtype=torch.float32, device=self.device)
+        self.current_gate_tolerance = {
+            'width': torch.ones(self.num_envs, dtype=torch.float32, device=self.device) * 1.3,
+            'height_min': torch.ones(self.num_envs, dtype=torch.float32, device=self.device) * 0.2,
+            'height_max': torch.ones(self.num_envs, dtype=torch.float32, device=self.device) * 2.2,
+        }
+        
+        # Track which gate instance is active for each environment
+        self.active_gate_instance = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
+        
+        # Gate asset indices (will be populated during environment initialization)
+        self.gate_asset_indices = {
+            'full': None,    # Full size gate indices
+            'medium': None,  # Medium size gate indices  
+            'small': None,   # Small size gate indices
+            'minimum': None  # Minimum size gate indices
+        }
+        
+        # Initialize gate asset indices after environment is created
+        logger.warning("[GATE SCALING INIT] Starting gate asset index discovery...")
+        self._discover_gate_asset_indices()
+        logger.warning("[GATE SCALING INIT] Gate asset index discovery completed")
+        
         # EPISODE-LEVEL REWARD TRACKING: Track cumulative contributions per episode
         self.episode_pos_reward = torch.zeros(self.num_envs, device=self.device)
         self.episode_very_close_reward = torch.zeros(self.num_envs, device=self.device)
@@ -441,13 +465,41 @@ class NavigationTaskGate(BaseTask):
 
     def reset_idx(self, env_ids):
         """
-        SIMPLIFIED RESET WITH FIXED SPAWNING PARAMETERS
+        Reset environment instance at the specified indices.
         
-        Uses LMF2 robot config for spawning with fixed parameters:
-        - ±0.5m lateral variation from gate center
-        - ±45° orientation randomization  
-        - Minimal initial velocity for randomization
+        ⚠️ EMERGENCY GATE SCALING DISABLE:
+        If NaN errors persist, set EMERGENCY_DISABLE_GATE_SCALING = True below 
+        to immediately disable all gate scaling functionality and use default behavior.
         """
+        # 🚨 EMERGENCY DISABLE FLAG - Set to True to disable gate scaling immediately
+        EMERGENCY_DISABLE_GATE_SCALING = False  # ⚠️ Set to True to disable gate scaling
+        
+        if EMERGENCY_DISABLE_GATE_SCALING:
+            logger.warning("🚨 EMERGENCY: Gate scaling DISABLED via emergency flag in reset_idx")
+            logger.warning("🚨 EMERGENCY: Using original single gate behavior")
+            # Call environment reset without gate scaling
+            self.sim_env.reset_idx(env_ids)
+            return
+        
+        logger.warning(f"[RESET DEBUG] reset_idx called for {len(env_ids)} environments: {env_ids}")
+        logger.warning(f"[RESET DEBUG] Current curriculum level: {self.curriculum_level}")
+        
+        # Get scales for resetting environments for debugging
+        current_scales = []
+        for env_idx in env_ids:
+            env_idx_int = env_idx.item()
+            if env_idx_int < len(self.current_gate_scale):
+                current_scales.append(f"{self.current_gate_scale[env_idx_int]:.1f}")
+        logger.warning(f"[RESET DEBUG] Current scales for resetting envs: {current_scales}")
+        
+        # Apply curriculum-based gate scaling BEFORE environment reset
+        self._apply_curriculum_gate_scaling(env_ids)
+        
+        # Call the environment reset method (NOT super().reset_idx which is abstract)
+        self.sim_env.reset_idx(env_ids)
+        
+        # CRITICAL: Restore missing functionality that was removed during edit
+        
         # Set target positions (goals remain on front side of gate)
         target_ratio = torch_rand_float_tensor(self.target_min_ratio, self.target_max_ratio)
         self.target_position[env_ids] = torch_interpolate_ratio(
@@ -455,10 +507,6 @@ class NavigationTaskGate(BaseTask):
             max=self.obs_dict["env_bounds_max"][env_ids],
             ratio=target_ratio[env_ids],
         )
-        
-        # Robot spawning is now handled by the normal Isaac Gym reset mechanism
-        # which uses the min_init_state and max_init_state from LMF2 config
-        # This provides ±0.5m lateral variation and ±45° orientation automatically
         
         # Reset gate-specific tracking
         self.gate_passed[env_ids] = False
@@ -472,8 +520,764 @@ class NavigationTaskGate(BaseTask):
             self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids)
             logger.debug(f"Updated static camera angles for {len(env_ids)} resetting environments: {env_ids.tolist()}")
         
+        # DEBUGGING: Log final scales after reset
+        if len(env_ids) > 0:
+            final_scales = []
+            for env_idx in env_ids:
+                env_idx_int = env_idx.item()
+                if env_idx_int < len(self.current_gate_scale):
+                    final_scales.append(f"{self.current_gate_scale[env_idx_int]:.1f}")
+            logger.warning(f"[RESET DEBUG] Final scales after reset: {final_scales}")
+            
+            # Show tolerance values that were applied
+            try:
+                avg_width_tol = torch.mean(self.current_gate_tolerance['width'][env_ids]).item()
+                avg_height_range = torch.mean(self.current_gate_tolerance['height_max'][env_ids] - self.current_gate_tolerance['height_min'][env_ids]).item()
+                logger.warning(f"[RESET DEBUG] Average tolerance applied: ±{avg_width_tol:.2f}m width, {avg_height_range:.1f}m height range")
+            except Exception as e:
+                logger.warning(f"[RESET DEBUG] Could not calculate tolerance averages: {e}")
+
         self.infos = {}
-        return
+    
+    def _discover_gate_asset_indices(self):
+        """
+        Discover the asset indices for different gate types.
+        
+        This method attempts to map gate asset types to their indices in the asset state tensor
+        by examining the environment configuration and asset loading order.
+        """
+        try:
+            # Check if we can access the environment configuration through asset_loader
+            if not hasattr(self.sim_env, 'asset_loader'):
+                logger.warning("[GATE SCALING] Asset loader not available for asset index discovery")
+                logger.warning(f"[GATE SCALING] sim_env attributes: {dir(self.sim_env)}")
+                return
+                
+            asset_loader = self.sim_env.asset_loader
+            logger.warning(f"[GATE SCALING] Found asset_loader: {type(asset_loader)}")
+            
+            # Try to get environment config from asset_loader
+            env_config = None
+            if hasattr(asset_loader, 'env_config'):
+                env_config = asset_loader.env_config
+                logger.warning(f"[GATE SCALING] Found env_config in asset_loader: {type(env_config)}")
+            elif hasattr(asset_loader, 'cfg'):
+                env_config = asset_loader.cfg  
+                logger.warning(f"[GATE SCALING] Found cfg in asset_loader: {type(env_config)}")
+            else:
+                logger.warning(f"[GATE SCALING] asset_loader attributes: {dir(asset_loader)}")
+                logger.warning("[GATE SCALING] No env_config found in asset_loader")
+                return
+            
+            # Look for asset type mapping
+            if hasattr(env_config, 'asset_type_to_dict_map') and hasattr(env_config, 'include_asset_type'):
+                asset_type_map = env_config.asset_type_to_dict_map
+                include_assets = env_config.include_asset_type
+                
+                # Try to get actual asset loading information
+                gate_indices = {}
+                
+                # Check if we can access the global_asset_dicts which contains the actual loaded assets
+                if hasattr(self.sim_env, 'global_asset_dicts') and self.sim_env.global_asset_dicts:
+                    logger.warning(f"[GATE SCALING] Found global_asset_dicts with {len(self.sim_env.global_asset_dicts)} environments")
+                    
+                    # Use the first environment's asset list as reference (all envs should have same asset types)
+                    env_0_assets = self.sim_env.global_asset_dicts[0]
+                    logger.warning(f"[GATE SCALING] Environment 0 has {len(env_0_assets)} assets")
+                    
+                    # First pass: collect ONLY specific gate assets (filter out legacy 'gate' type)
+                    gate_assets = []
+                    for asset_idx, asset_info in enumerate(env_0_assets):
+                        asset_type = asset_info.get('asset_type', 'unknown')
+                        filename = asset_info.get('filename', 'unknown')
+                        logger.warning(f"[GATE SCALING] Asset {asset_idx}: type='{asset_type}', file='{filename}'")
+                        
+                        # Collect ONLY specific gate asset types (exclude legacy 'gate' type)
+                        if asset_type in ['gate_full', 'gate_medium', 'gate_small', 'gate_minimum']:
+                            gate_assets.append((asset_idx, asset_type))
+                            logger.warning(f"[GATE SCALING] ✅ Collected specific gate asset: {asset_idx} ({asset_type})")
+                        elif asset_type == 'gate':
+                            # Skip legacy 'gate' type entirely
+                            logger.warning(f"[GATE SCALING] ⚠️  Skipping legacy gate asset {asset_idx} (type='gate') - use specific gate types instead")
+                    
+                    logger.warning(f"[GATE SCALING] Found {len(gate_assets)} specific gate assets: {gate_assets}")
+                    
+                    # Ensure we have exactly 4 gate assets
+                    if len(gate_assets) != 4:
+                        logger.warning(f"[GATE SCALING] ❌ Expected exactly 4 specific gate assets, but found {len(gate_assets)}")
+                        logger.warning(f"[GATE SCALING] Available assets: {gate_assets}")
+                        logger.warning(f"[GATE SCALING] Check environment configuration - should include gate_full, gate_medium, gate_small, gate_minimum")
+                    
+                    # Map gate assets by their specific types (guaranteed to be unique)
+                    logger.warning(f"[GATE SCALING] Starting asset mapping...")
+                    filename_mapped = True  # We only accept specific types, so this is always successful
+                    
+                    for asset_idx, asset_type in gate_assets:
+                        if asset_type == 'gate_full':
+                            gate_indices['full'] = gate_indices.get('full', []) + [asset_idx]
+                            logger.warning(f"[GATE SCALING] 🔵 Mapped asset {asset_idx} -> 'full' (by type)")
+                        elif asset_type == 'gate_medium':
+                            gate_indices['medium'] = gate_indices.get('medium', []) + [asset_idx]
+                            logger.warning(f"[GATE SCALING] 🟢 Mapped asset {asset_idx} -> 'medium' (by type)")
+                        elif asset_type == 'gate_small':
+                            gate_indices['small'] = gate_indices.get('small', []) + [asset_idx]
+                            logger.warning(f"[GATE SCALING] 🟠 Mapped asset {asset_idx} -> 'small' (by type)")
+                        elif asset_type == 'gate_minimum':
+                            gate_indices['minimum'] = gate_indices.get('minimum', []) + [asset_idx]
+                            logger.warning(f"[GATE SCALING] 🔴 Mapped asset {asset_idx} -> 'minimum' (by type)")
+                    
+                    # Verify we have exactly 4 distinct gate types
+                    gate_count = sum(1 for indices in gate_indices.values() if indices)
+                    logger.warning(f"[GATE SCALING] ✅ Successfully mapped {gate_count}/4 gate types")
+                    
+                    if gate_count != 4:
+                        logger.warning(f"[GATE SCALING] ❌ Expected 4 gate types, but mapped {gate_count}")
+                        logger.warning(f"[GATE SCALING] Available gate types: {list(k for k, v in gate_indices.items() if v)}")
+                        logger.warning(f"[GATE SCALING] Missing gate types: {list(k for k, v in gate_indices.items() if not v)}")
+                    
+                    # No fallback needed - we require specific gate types
+                
+                else:
+                    # Fallback: Build mapping based on configuration order
+                    logger.warning("[GATE SCALING] Using fallback: mapping based on config order")
+                    asset_index = 0
+                    
+                    for asset_type, asset_config in asset_type_map.items():
+                        # Skip if this asset type is not included
+                        if asset_type in include_assets and not include_assets[asset_type]:
+                            continue
+                        
+                        # Check if this is a gate asset
+                        if asset_type.startswith('gate'):
+                            num_assets = getattr(asset_config, 'num_assets', 1)
+                            
+                            # Map asset type to indices
+                            if asset_type == 'gate_full':
+                                gate_indices['full'] = list(range(asset_index, asset_index + num_assets))
+                            elif asset_type == 'gate_medium':
+                                gate_indices['medium'] = list(range(asset_index, asset_index + num_assets))
+                            elif asset_type == 'gate_small':
+                                gate_indices['small'] = list(range(asset_index, asset_index + num_assets))
+                            elif asset_type == 'gate_minimum':
+                                gate_indices['minimum'] = list(range(asset_index, asset_index + num_assets))
+                            elif asset_type == 'gate':  # Original gate
+                                gate_indices['full'] = gate_indices.get('full', []) + list(range(asset_index, asset_index + num_assets))
+                            
+                            asset_index += num_assets
+                        else:
+                            # Non-gate asset
+                            num_assets = getattr(asset_config, 'num_assets', 1)
+                            asset_index += num_assets
+                
+                # Update our gate asset indices
+                for gate_type, indices in gate_indices.items():
+                    if indices:
+                        self.gate_asset_indices[gate_type] = torch.tensor(indices, device=self.device)
+                        logger.warning(f"[GATE SCALING] Discovered {gate_type} gate indices: {indices}")
+                
+                # Log summary
+                discovered = [k for k, v in self.gate_asset_indices.items() if v is not None]
+                logger.warning(f"[GATE SCALING] Discovered gate types: {discovered}")
+                
+            else:
+                logger.warning("[GATE SCALING] Asset configuration structure not as expected")
+                
+        except Exception as e:
+            logger.warning(f"[GATE SCALING] Failed to discover gate asset indices: {e}")
+            # Fallback: assume gates are the first few assets
+            logger.warning("[GATE SCALING] Using fallback gate indexing (may not work correctly)")
+            
+            # Simple fallback: assume first 4 assets are the gates in order
+            try:
+                self.gate_asset_indices['full'] = torch.tensor([0], device=self.device)
+                self.gate_asset_indices['medium'] = torch.tensor([1], device=self.device)
+                self.gate_asset_indices['small'] = torch.tensor([2], device=self.device)
+                self.gate_asset_indices['minimum'] = torch.tensor([3], device=self.device)
+                logger.warning("[GATE SCALING] Applied fallback indexing: full=0, medium=1, small=2, minimum=3")
+            except Exception as fallback_error:
+                logger.warning(f"[GATE SCALING] Fallback indexing also failed: {fallback_error}")
+    
+    def _apply_curriculum_gate_scaling(self, env_ids):
+        """
+        Apply curriculum-based gate scaling for specified environments.
+        
+        ⚠️ EMERGENCY DISABLE INSTRUCTIONS:
+        If NaN errors persist, set DISABLE_GATE_SCALING = True below to immediately disable
+        gate scaling and revert to single default gate behavior.
+        
+        For each resetting environment:
+        1. Select gate scale based on curriculum level
+        2. Hide all gate instances off-screen
+        3. Position the selected gate at environment center
+        4. Update success tolerance for the selected gate scale
+        
+        Args:
+            env_ids: Tensor of environment IDs that are resetting
+        """
+        # CRITICAL: Emergency disable flag for gate scaling (set to True to disable)
+        DISABLE_GATE_SCALING = False  # ⚠️ Set to True if NaN errors persist
+        if DISABLE_GATE_SCALING:
+            logger.warning("[GATE SCALING] ⚠️ Gate scaling is DISABLED via emergency flag")
+            logger.warning("[GATE SCALING] ⚠️ Using default gate configuration")
+            return
+        
+        if len(env_ids) == 0:
+            return
+        
+        # CRITICAL: Early validation - ensure environment is properly initialized
+        logger.warning(f"[GATE SCALING] Performing early validation before gate scaling...")
+        try:
+            # Check if basic environment components are available
+            if not hasattr(self, 'sim_env') or self.sim_env is None:
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: sim_env not available - aborting gate scaling")
+                return
+                
+            if not hasattr(self.sim_env, 'asset_manager') or self.sim_env.asset_manager is None:
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: asset_manager not available - aborting gate scaling")
+                return
+                
+            if not hasattr(self.sim_env.asset_manager, 'env_asset_state_tensor'):
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: env_asset_state_tensor not available - aborting gate scaling")
+                return
+                
+            # Check if observation dict is properly initialized
+            if not hasattr(self, 'obs_dict') or self.obs_dict is None:
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: obs_dict not available - aborting gate scaling")
+                return
+                
+            if "env_bounds_min" not in self.obs_dict or "env_bounds_max" not in self.obs_dict:
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: environment bounds not available - aborting gate scaling")
+                return
+                
+            # Validate tensor shapes and basic integrity
+            asset_state_tensor = self.sim_env.asset_manager.env_asset_state_tensor
+            if asset_state_tensor is None:
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: asset_state_tensor is None - aborting gate scaling")
+                return
+                
+            if len(asset_state_tensor.shape) != 3:
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: asset_state_tensor has invalid shape {asset_state_tensor.shape} - aborting gate scaling")
+                return
+                
+            # Check for basic tensor corruption
+            if torch.isnan(asset_state_tensor).any():
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: asset_state_tensor contains NaN values before gate scaling - aborting")
+                return
+                
+            if torch.isinf(asset_state_tensor).any():
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: asset_state_tensor contains infinite values before gate scaling - aborting")
+                return
+                
+            logger.warning(f"[GATE SCALING] ✅ Early validation passed - environment ready for gate scaling")
+            
+        except Exception as e:
+            logger.warning(f"[GATE SCALING] ❌ CRITICAL: Early validation failed: {e}")
+            logger.warning(f"[GATE SCALING] ❌ Aborting gate scaling to prevent corruption")
+            import traceback
+            logger.warning(f"[GATE SCALING] Error traceback: {traceback.format_exc()}")
+            return
+        
+        # Check if asset indices were discovered, if not try again
+        if all(indices is None for indices in self.gate_asset_indices.values()):
+            logger.warning("[GATE SCALING] Asset indices not discovered yet, retrying discovery...")
+            self._discover_gate_asset_indices()
+            
+        # Get current curriculum level
+        current_level = self.curriculum_level
+        
+        logger.warning(f"[GATE SCALING] Applying scaling for curriculum level {current_level} to {len(env_ids)} environments")
+        
+        # Select gate scales for each resetting environment
+        scales_applied = []
+        for env_idx in env_ids:
+            env_idx_int = env_idx.item()
+            
+            # Get gate scale for current curriculum level (with randomization)
+            try:
+                selected_scale = self.task_config.curriculum.get_gate_scale_for_level(current_level)
+                scales_applied.append(selected_scale)
+                logger.warning(f"[GATE SCALING] Env {env_idx_int}: Selected scale {selected_scale}")
+            except Exception as e:
+                logger.warning(f"[GATE SCALING ERROR] Failed to get scale for level {current_level}: {e}")
+                selected_scale = 1.0  # Fallback to full size
+                scales_applied.append(selected_scale)
+            
+            # DEBUG: Log asset indices info occasionally
+            if env_idx_int == 0:  # Only log for environment 0 to avoid spam
+                available_indices = {k: v for k, v in self.gate_asset_indices.items() if v is not None}
+                if available_indices:
+                    logger.warning(f"[GATE SCALING] Available gate asset indices: {available_indices}")
+                else:
+                    logger.warning(f"[GATE SCALING] No gate asset indices available for positioning")
+            
+            # Update tracking variables
+            old_scale = self.current_gate_scale[env_idx_int].item()
+            self.current_gate_scale[env_idx_int] = selected_scale
+            
+            if old_scale != selected_scale:
+                logger.debug(f"[GATE SCALING] Env {env_idx_int}: Scale changed {old_scale:.1f} -> {selected_scale:.1f}")
+            
+            # Get adaptive tolerance for this scale
+            width_tolerance, height_min, height_max = self.task_config.curriculum.get_gate_tolerance_for_scale(selected_scale)
+            self.current_gate_tolerance['width'][env_idx_int] = width_tolerance
+            self.current_gate_tolerance['height_min'][env_idx_int] = height_min
+            self.current_gate_tolerance['height_max'][env_idx_int] = height_max
+            
+            # Map scale to gate instance type
+            if selected_scale >= 1.0:
+                gate_type = 'full'
+                instance_id = 0
+            elif selected_scale >= 0.7:
+                gate_type = 'medium'
+                instance_id = 1
+            elif selected_scale >= 0.5:
+                gate_type = 'small'
+                instance_id = 2
+            else:
+                gate_type = 'minimum'
+                instance_id = 3
+            
+            self.active_gate_instance[env_idx_int] = instance_id
+            
+            logger.warning(f"[GATE SCALING] Env {env_idx_int}: Mapping scale {selected_scale} -> gate type '{gate_type}' (instance {instance_id})")
+            
+            # Position the selected gate at environment center and hide others
+            logger.warning(f"[GATE SCALING] About to call _position_gate_instances for env {env_idx_int}")
+            self._position_gate_instances(env_idx_int, gate_type, selected_scale)
+        
+        # Log gate scaling information
+        if len(env_ids) > 0:
+            unique_scales = torch.unique(self.current_gate_scale[env_ids])
+            scale_str = ", ".join([f"{scale:.1f}" for scale in unique_scales])
+            logger.debug(f"[GATE SCALING] Applied gate scaling for {len(env_ids)} environments. Scales used: {scale_str}")
+            
+            # Count scales applied this reset
+            from collections import Counter
+            scale_counts = Counter(scales_applied)
+            scale_summary = ", ".join([f"{scale:.1f}x{count}" for scale, count in sorted(scale_counts.items(), reverse=True)])
+            logger.debug(f"[GATE SCALING] Scale distribution this reset: {scale_summary}")
+            
+            # Show available scales for this level for comparison
+            try:
+                from aerial_gym.config.asset_config.gate_scaling_config import GateScalingConfig
+                available_scales = GateScalingConfig.get_available_scales_for_level(current_level)
+                logger.debug(f"[GATE SCALING] Available scales for level {current_level}: {available_scales}")
+            except Exception as e:
+                logger.warning(f"[GATE SCALING] Could not get available scales: {e}")
+        
+        # CRITICAL: Apply all gate positioning changes to Isaac Gym simulation
+        # This is called once after all environments have been processed for efficiency
+        logger.warning(f"[GATE SCALING] Applying all gate positioning changes to Isaac Gym simulation...")
+        
+        # CRITICAL: Validate tensor integrity before write_to_sim
+        logger.warning(f"[GATE SCALING] Performing critical tensor validation before write_to_sim...")
+        try:
+            asset_state_tensor = self.sim_env.asset_manager.env_asset_state_tensor
+            
+            # Check for NaN values in the entire tensor
+            if torch.isnan(asset_state_tensor).any():
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: Asset state tensor contains NaN values!")
+                logger.warning(f"[GATE SCALING] ❌ ABORTING write_to_sim to prevent simulation corruption!")
+                logger.warning(f"[GATE SCALING] ❌ Gate positioning has been completed but NOT applied to Isaac Gym")
+                logger.warning(f"[GATE SCALING] ❌ This will maintain current gate positions but prevent NaN propagation")
+                return
+            
+            # Check for infinite values
+            if torch.isinf(asset_state_tensor).any():
+                logger.warning(f"[GATE SCALING] ❌ CRITICAL: Asset state tensor contains infinite values!")
+                logger.warning(f"[GATE SCALING] ❌ ABORTING write_to_sim to prevent simulation corruption!")
+                return
+            
+            # Check for extremely large values that could cause issues
+            max_pos_magnitude = torch.abs(asset_state_tensor[:, :, 0:3]).max()
+            if max_pos_magnitude > 100.0:
+                logger.warning(f"[GATE SCALING] ⚠️ WARNING: Very large position values detected (max: {max_pos_magnitude})")
+                logger.warning(f"[GATE SCALING] ⚠️ This might indicate positioning errors")
+            
+            logger.warning(f"[GATE SCALING] ✅ Tensor validation passed - proceeding with write_to_sim")
+            
+        except Exception as e:
+            logger.warning(f"[GATE SCALING] ❌ CRITICAL: Failed to validate tensors: {e}")
+            logger.warning(f"[GATE SCALING] ❌ ABORTING write_to_sim due to validation failure")
+            return
+        
+        try:
+            # Fix #1: Corrected Isaac Gym Access Path
+            # Before: self.sim_env.write_to_sim() ❌ (doesn't exist)
+            # After: self.sim_env.IGE_env.write_to_sim() ✅ (correct path)
+            
+            # Fix #3: Added Comprehensive Debug Tracking
+            logger.warning(f"[GATE SCALING] Analyzing Isaac Gym environment structure...")
+            logger.warning(f"[GATE SCALING] sim_env type: {type(self.sim_env)}")
+            logger.warning(f"[GATE SCALING] sim_env has IGE_env: {hasattr(self.sim_env, 'IGE_env')}")
+            
+            if hasattr(self.sim_env, 'IGE_env'):
+                logger.warning(f"[GATE SCALING] IGE_env type: {type(self.sim_env.IGE_env)}")
+                logger.warning(f"[GATE SCALING] IGE_env has write_to_sim: {hasattr(self.sim_env.IGE_env, 'write_to_sim')}")
+                
+                # Correct path to Isaac Gym environment
+                if hasattr(self.sim_env.IGE_env, 'write_to_sim'):
+                    logger.warning(f"[GATE SCALING] Calling IGE_env.write_to_sim()...")
+                    self.sim_env.IGE_env.write_to_sim()
+                    logger.warning(f"[GATE SCALING] ✅ Successfully applied changes to Isaac Gym via IGE_env.write_to_sim()")
+                    
+                    # CRITICAL: Validate tensor integrity after write_to_sim
+                    logger.warning(f"[GATE SCALING] Validating tensor integrity after write_to_sim...")
+                    if torch.isnan(asset_state_tensor).any():
+                        logger.warning(f"[GATE SCALING] ❌ CRITICAL: Asset state tensor corrupted after write_to_sim!")
+                        logger.warning(f"[GATE SCALING] ❌ This indicates a serious issue with tensor synchronization")
+                    else:
+                        logger.warning(f"[GATE SCALING] ✅ Tensor integrity maintained after write_to_sim")
+                        
+                else:
+                    # Fallback: Access Isaac Gym directly via IGE_env
+                    logger.warning(f"[GATE SCALING] Using direct Isaac Gym tensor access via IGE_env...")
+                    import gymtorch
+                    if hasattr(self.sim_env.IGE_env, 'global_tensor_dict'):
+                        self.sim_env.IGE_env.gym.set_actor_root_state_tensor(
+                            self.sim_env.IGE_env.sim,
+                            gymtorch.unwrap_tensor(self.sim_env.IGE_env.global_tensor_dict["unfolded_env_asset_state_tensor"]),
+                        )
+                        logger.warning(f"[GATE SCALING] ✅ Successfully applied changes to Isaac Gym via direct IGE_env call")
+                    else:
+                        logger.warning(f"[GATE SCALING] ❌ IGE_env missing global_tensor_dict")
+                        raise Exception("Cannot access global_tensor_dict in IGE_env")
+                
+                # Force immediate graphics update for visual feedback  
+                if hasattr(self.sim_env.IGE_env, 'step_graphics'):
+                    logger.warning(f"[GATE SCALING] Calling IGE_env.step_graphics()...")
+                    self.sim_env.IGE_env.step_graphics()
+                    logger.warning(f"[GATE SCALING] ✅ Updated graphics for immediate visual feedback via IGE_env")
+                else:
+                    logger.warning(f"[GATE SCALING] ⚠️ IGE_env.step_graphics() not available")
+                    
+            elif hasattr(self.sim_env, 'write_to_sim'):
+                # Fallback to original path (shouldn't happen based on logs)
+                logger.warning(f"[GATE SCALING] Using fallback write_to_sim()...")
+                self.sim_env.write_to_sim()
+                logger.warning(f"[GATE SCALING] ✅ Successfully applied changes to Isaac Gym via fallback write_to_sim()")
+            else:
+                # Final fallback: Try to access through global_tensor_dict directly
+                logger.warning(f"[GATE SCALING] Using final fallback - direct tensor access...")
+                import gymtorch
+                
+                # Try multiple paths to find the correct tensor dict
+                tensor_dict = None
+                if hasattr(self.sim_env, 'global_tensor_dict'):
+                    tensor_dict = self.sim_env.global_tensor_dict
+                    logger.warning(f"[GATE SCALING] Found tensor dict via sim_env.global_tensor_dict")
+                elif hasattr(self.sim_env, 'IGE_env') and hasattr(self.sim_env.IGE_env, 'global_tensor_dict'):
+                    tensor_dict = self.sim_env.IGE_env.global_tensor_dict
+                    logger.warning(f"[GATE SCALING] Found tensor dict via sim_env.IGE_env.global_tensor_dict")
+                    
+                if tensor_dict and "unfolded_env_asset_state_tensor" in tensor_dict:
+                    # Try to find gym and sim objects
+                    gym_obj = None
+                    sim_obj = None
+                    
+                    if hasattr(self.sim_env, 'gym'):
+                        gym_obj = self.sim_env.gym
+                        sim_obj = self.sim_env.sim
+                    elif hasattr(self.sim_env, 'IGE_env'):
+                        gym_obj = self.sim_env.IGE_env.gym
+                        sim_obj = self.sim_env.IGE_env.sim
+                        
+                    if gym_obj and sim_obj:
+                        gym_obj.set_actor_root_state_tensor(
+                            sim_obj,
+                            gymtorch.unwrap_tensor(tensor_dict["unfolded_env_asset_state_tensor"]),
+                        )
+                        logger.warning(f"[GATE SCALING] ✅ Successfully applied changes via final fallback")
+                    else:
+                        logger.warning(f"[GATE SCALING] ❌ Cannot find gym/sim objects")
+                        raise Exception("Cannot find gym/sim objects for tensor update")
+                else:
+                    logger.warning(f"[GATE SCALING] ❌ Cannot find tensor dict or unfolded_env_asset_state_tensor")
+                    raise Exception("Cannot find required tensors for update")
+                
+        except Exception as e:
+            logger.warning(f"[GATE SCALING] ❌ Failed to apply changes to Isaac Gym: {e}")
+            import traceback
+            logger.warning(f"[GATE SCALING] Error traceback: {traceback.format_exc()}")
+            
+            # Additional debug info on failure
+            logger.warning(f"[GATE SCALING] DEBUG INFO ON FAILURE:")
+            logger.warning(f"[GATE SCALING]   sim_env attributes: {dir(self.sim_env)}")
+            if hasattr(self.sim_env, 'IGE_env'):
+                logger.warning(f"[GATE SCALING]   IGE_env attributes: {dir(self.sim_env.IGE_env)}")
+    
+    def _position_gate_instances(self, env_idx, active_gate_type, scale_factor):
+        """
+        Position gate instances for a specific environment.
+        
+        Shows the selected gate at environment center and hides all others off-screen.
+        
+        Args:
+            env_idx: Environment index
+            active_gate_type: Type of gate to show ('full', 'medium', 'small', 'minimum')
+            scale_factor: Scale factor for logging purposes
+        """
+        logger.warning(f"[GATE POSITIONING] Starting positioning for env {env_idx}, gate type {active_gate_type}, scale {scale_factor}")
+        
+        if not hasattr(self.sim_env, 'asset_manager') or not hasattr(self.sim_env.asset_manager, 'env_asset_state_tensor'):
+            logger.warning(f"[GATE POSITIONING] Asset manager not available for gate positioning in env {env_idx}")
+            return
+        
+        # Check if we have discovered gate asset indices
+        available_indices = {k: v for k, v in self.gate_asset_indices.items() if v is not None}
+        if not available_indices:
+            logger.warning(f"[GATE POSITIONING] No gate asset indices available for positioning")
+            logger.warning(f"[GATE POSITIONING] Falling back to basic gate positioning")
+            self._fallback_gate_positioning(env_idx, active_gate_type, scale_factor)
+            return
+        
+        logger.warning(f"[GATE POSITIONING] Available indices: {available_indices}")
+        
+        try:
+            # Access the asset state tensor
+            logger.warning(f"[GATE POSITIONING] Accessing asset state tensor...")
+            asset_state_tensor = self.sim_env.asset_manager.env_asset_state_tensor
+            logger.warning(f"[GATE POSITIONING] Asset state tensor shape: {asset_state_tensor.shape}")
+            
+            # CRITICAL: Add NaN validation before any tensor operations
+            logger.warning(f"[GATE POSITIONING] Validating tensor integrity before modifications...")
+            if torch.isnan(asset_state_tensor).any():
+                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Asset state tensor contains NaN values before gate positioning!")
+                logger.warning(f"[GATE POSITIONING] ❌ Aborting gate positioning to prevent corruption")
+                return
+            
+            # Validate environment index bounds
+            if env_idx < 0 or env_idx >= asset_state_tensor.shape[0]:
+                logger.warning(f"[GATE POSITIONING] ❌ Invalid environment index {env_idx}, tensor has {asset_state_tensor.shape[0]} environments")
+                return
+            
+            # Get environment bounds for this environment
+            logger.warning(f"[GATE POSITIONING] Getting environment bounds for env {env_idx}...")
+            env_bounds_min = self.obs_dict["env_bounds_min"][env_idx]
+            env_bounds_max = self.obs_dict["env_bounds_max"][env_idx]
+            logger.warning(f"[GATE POSITIONING] Env bounds: min={env_bounds_min}, max={env_bounds_max}")
+            
+            # CRITICAL: Validate environment bounds for NaN
+            if torch.isnan(env_bounds_min).any() or torch.isnan(env_bounds_max).any():
+                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Environment bounds contain NaN values!")
+                logger.warning(f"[GATE POSITIONING] ❌ Aborting gate positioning to prevent corruption")
+                return
+            
+            # Calculate environment center (ensure valid values)
+            env_center = (env_bounds_min + env_bounds_max) / 2.0
+            env_center[2] = 0.0  # Set Z to ground level for gates
+            logger.warning(f"[GATE POSITIONING] Calculated env center: {env_center}")
+            
+            # CRITICAL: Validate environment center for NaN
+            if torch.isnan(env_center).any():
+                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Environment center contains NaN values!")
+                logger.warning(f"[GATE POSITIONING] ❌ Aborting gate positioning to prevent corruption")
+                return
+            
+            # Define off-screen position (far away, but not NaN)
+            off_screen_pos = torch.tensor([-50.0, -50.0, 0.0], device=env_center.device, dtype=env_center.dtype)
+            
+            # Gate type processing order (consistent ordering)
+            gate_type_names = ['full', 'medium', 'small', 'minimum']
+            positioned_count = 0
+            
+            # Process each gate type
+            for gate_type in gate_type_names:
+                gate_indices = self.gate_asset_indices[gate_type]
+                logger.warning(f"[GATE POSITIONING] Processing gate type '{gate_type}' with indices: {gate_indices}")
+                
+                if gate_indices is not None:
+                    for i, asset_idx in enumerate(gate_indices):
+                        logger.warning(f"[GATE POSITIONING] Processing asset index {asset_idx}...")
+                        
+                        # CRITICAL: Validate asset index bounds
+                        if asset_idx < 0 or asset_idx >= asset_state_tensor.shape[1]:
+                            logger.warning(f"[GATE POSITIONING] ❌ Invalid asset index {asset_idx}, tensor has {asset_state_tensor.shape[1]} assets")
+                            continue
+                        
+                        # CRITICAL: Check current asset position for NaN before modification
+                        current_pos = asset_state_tensor[env_idx, asset_idx, 0:3].clone()
+                        if torch.isnan(current_pos).any():
+                            logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Asset {asset_idx} position contains NaN before modification!")
+                            logger.warning(f"[GATE POSITIONING] ❌ Skipping this asset to prevent further corruption")
+                            continue
+                        
+                        if gate_type == active_gate_type and i == 0:
+                            # Position ONLY THE FIRST active gate at environment center
+                            logger.warning(f"[GATE POSITIONING] Setting active gate position...")
+                            
+                            # CRITICAL: Create a copy to ensure no NaN propagation
+                            new_pos = env_center.clone()
+                            if torch.isnan(new_pos).any():
+                                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: New position contains NaN!")
+                                continue
+                                
+                            asset_state_tensor[env_idx, asset_idx, 0:3] = new_pos
+                            logger.warning(f"[GATE POSITIONING] ✅ Env {env_idx}: Positioned {gate_type} gate (idx {asset_idx}) at center {new_pos}")
+                            positioned_count += 1
+                            
+                            # CRITICAL: Validate after modification
+                            post_mod_pos = asset_state_tensor[env_idx, asset_idx, 0:3]
+                            if torch.isnan(post_mod_pos).any():
+                                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Position became NaN after modification!")
+                                # Restore original position
+                                asset_state_tensor[env_idx, asset_idx, 0:3] = current_pos
+                                logger.warning(f"[GATE POSITIONING] ✅ Restored original position to prevent corruption")
+                                continue
+                                
+                        else:
+                            # Hide inactive gates AND duplicate gates off-screen
+                            if gate_type == active_gate_type and i > 0:
+                                logger.warning(f"[GATE POSITIONING] Moving duplicate {gate_type} gate off-screen...")
+                            else:
+                                logger.warning(f"[GATE POSITIONING] Moving inactive gate off-screen...")
+                            
+                            # CRITICAL: Ensure off-screen position is valid
+                            new_pos = off_screen_pos.clone()
+                            if torch.isnan(new_pos).any():
+                                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Off-screen position contains NaN!")
+                                continue
+                                
+                            asset_state_tensor[env_idx, asset_idx, 0:3] = new_pos
+                            logger.warning(f"[GATE POSITIONING] ✅ Env {env_idx}: Moved {gate_type} gate (idx {asset_idx}) off-screen")
+                            
+                            # CRITICAL: Validate after modification
+                            post_mod_pos = asset_state_tensor[env_idx, asset_idx, 0:3]
+                            if torch.isnan(post_mod_pos).any():
+                                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Position became NaN after off-screen modification!")
+                                # Restore original position
+                                asset_state_tensor[env_idx, asset_idx, 0:3] = current_pos
+                                logger.warning(f"[GATE POSITIONING] ✅ Restored original position to prevent corruption")
+                                continue
+            
+            # Update gate position tracking for this environment
+            logger.warning(f"[GATE POSITIONING] Updating gate position tracking...")
+            
+            # CRITICAL FIX: Update gate_position to match the ACTUAL active gate position
+            # Previously: Always set to env_center [0, 0, 0] regardless of gate type
+            # Now: Get the actual position of the active gate from the asset tensor
+            try:
+                # Find the active gate index for this gate type
+                active_gate_indices = self.gate_asset_indices[active_gate_type]
+                if active_gate_indices is not None and len(active_gate_indices) > 0:
+                    # Get the position of the first (active) gate of this type
+                    active_gate_idx = active_gate_indices[0]
+                    actual_gate_position = asset_state_tensor[env_idx, active_gate_idx, 0:3].clone()
+                    
+                    # Validate the actual gate position
+                    if torch.isnan(actual_gate_position).any():
+                        logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Actual gate position contains NaN!")
+                        logger.warning(f"[GATE POSITIONING] ❌ Using fallback environment center position")
+                        self.gate_position[env_idx] = env_center
+                    else:
+                        # Use the actual gate position for reward calculations
+                        self.gate_position[env_idx] = actual_gate_position
+                        logger.warning(f"[GATE POSITIONING] ✅ Updated gate_position[{env_idx}] to actual gate position: {actual_gate_position}")
+                else:
+                    logger.warning(f"[GATE POSITIONING] ⚠️ No active gate indices found, using environment center")
+                    if torch.isnan(env_center).any():
+                        logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Environment center NaN during tracking update!")
+                        # Use a safe fallback position
+                        self.gate_position[env_idx] = torch.tensor([0.0, 0.0, 0.0], device=env_center.device, dtype=env_center.dtype)
+                    else:
+                        self.gate_position[env_idx] = env_center
+                        
+            except Exception as e:
+                logger.warning(f"[GATE POSITIONING] ❌ Failed to update gate_position tracking: {e}")
+                # Fallback to environment center
+                if not torch.isnan(env_center).any():
+                    self.gate_position[env_idx] = env_center
+                else:
+                    logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Both actual and fallback positions invalid!")
+                    # Use absolute fallback
+                    self.gate_position[env_idx] = torch.tensor([0.0, 0.0, 0.0], device=env_center.device, dtype=env_center.dtype)
+            
+            # CRITICAL: Final tensor validation
+            logger.warning(f"[GATE POSITIONING] Performing final tensor validation...")
+            if torch.isnan(asset_state_tensor).any():
+                logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Asset state tensor contains NaN values after gate positioning!")
+                logger.warning(f"[GATE POSITIONING] ❌ This indicates tensor corruption - investigation needed!")
+            else:
+                logger.warning(f"[GATE POSITIONING] ✅ Final tensor validation passed - no NaN values detected")
+            
+            # CRITICAL: Validate robot positions are not corrupted
+            logger.warning(f"[GATE POSITIONING] Validating robot positions are not corrupted...")
+            try:
+                # Robot should be at index 0 in the tensor (before environment assets)
+                if hasattr(self.sim_env, 'asset_manager') and hasattr(self.sim_env.asset_manager, 'robot_state_tensor'):
+                    robot_positions = self.sim_env.asset_manager.robot_state_tensor[:, 0:3]
+                    if torch.isnan(robot_positions).any():
+                        logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Robot positions contain NaN values!")
+                        logger.warning(f"[GATE POSITIONING] ❌ Gate positioning may have corrupted robot states")
+                    else:
+                        logger.warning(f"[GATE POSITIONING] ✅ Robot positions are valid - no corruption detected")
+                elif hasattr(self, 'obs_dict') and 'robot_position' in self.obs_dict:
+                    robot_positions = self.obs_dict['robot_position']
+                    if torch.isnan(robot_positions).any():
+                        logger.warning(f"[GATE POSITIONING] ❌ CRITICAL: Robot positions in obs_dict contain NaN values!")
+                    else:
+                        logger.warning(f"[GATE POSITIONING] ✅ Robot positions in obs_dict are valid")
+                else:
+                    logger.warning(f"[GATE POSITIONING] ⚠️ Could not validate robot positions - no access path found")
+            except Exception as e:
+                logger.warning(f"[GATE POSITIONING] ⚠️ Failed to validate robot positions: {e}")
+            
+            logger.warning(f"[GATE POSITIONING] ✅ SUCCESS: Env {env_idx} positioned {positioned_count} gates for {active_gate_type} gate (scale {scale_factor:.1f})")
+            
+        except Exception as e:
+            logger.warning(f"[GATE POSITIONING] Failed to position gate instances for env {env_idx}: {e}")
+            import traceback
+            logger.debug(f"[GATE POSITIONING] Error traceback: {traceback.format_exc()}")
+    
+    def _fallback_gate_positioning(self, env_idx, active_gate_type, scale_factor):
+        """
+        Fallback gate positioning when multiple gate instances are not available.
+        
+        This method works with a single gate asset and just updates the tracking variables.
+        The actual scaling happens through the tolerance adjustments.
+        
+        Args:
+            env_idx: Environment index
+            active_gate_type: Type of gate ('full', 'medium', 'small', 'minimum')  
+            scale_factor: Scale factor for the gate
+        """
+        try:
+            logger.warning(f"[GATE POSITIONING FALLBACK] Positioning single gate for env {env_idx}")
+            
+            # Get environment bounds for this environment
+            env_bounds_min = self.obs_dict["env_bounds_min"][env_idx]
+            env_bounds_max = self.obs_dict["env_bounds_max"][env_idx]
+            
+            # Calculate environment center position (where the gate should be)
+            env_center = (env_bounds_min + env_bounds_max) / 2.0
+            env_center[2] = 0.0  # Place gate at ground level
+            
+            # Update gate position tracking for this environment
+            self.gate_position[env_idx] = env_center
+            
+            logger.warning(f"[GATE POSITIONING FALLBACK] Env {env_idx}: Set gate position to {env_center} for {active_gate_type} gate (scale {scale_factor:.1f})")
+            logger.warning(f"[GATE POSITIONING FALLBACK] Note: Physical gate scaling handled through tolerance adjustment only")
+            
+            # Try to position the gate asset if we can find it
+            if hasattr(self.sim_env, 'asset_manager') and hasattr(self.sim_env.asset_manager, 'env_asset_state_tensor'):
+                asset_state_tensor = self.sim_env.asset_manager.env_asset_state_tensor
+                
+                # Look for any gate-like asset (could be at any index)
+                # For now, assume the gate is one of the first few assets
+                for potential_gate_idx in range(min(5, asset_state_tensor.shape[1])):
+                    try:
+                        # Set position of this potential gate asset
+                        asset_state_tensor[env_idx, potential_gate_idx, 0:3] = env_center
+                        logger.warning(f"[GATE POSITIONING FALLBACK] Env {env_idx}: Positioned asset {potential_gate_idx} at center")
+                        break  # Only position the first asset we find
+                    except Exception as e:
+                        logger.debug(f"[GATE POSITIONING FALLBACK] Could not position asset {potential_gate_idx}: {e}")
+                        continue
+            
+        except Exception as e:
+            logger.warning(f"[GATE POSITIONING FALLBACK] Failed for env {env_idx}: {e}")
+            import traceback
+            logger.debug(f"[GATE POSITIONING FALLBACK] Error traceback: {traceback.format_exc()}")
     
     # REMOVED: _apply_curriculum_drone_spawning and _apply_curriculum_orientation_randomization
     # These methods have been removed as we now use fixed parameters from LMF2 config
@@ -515,12 +1319,22 @@ class NavigationTaskGate(BaseTask):
         # More forgiving than target-based or centered passage requirements
         robot_position = self.obs_dict["robot_position"]
         
-        # Gate passage detection: crossed gate plane with proper alignment
-        # Gate dimensions: 2.5m wide × 2.3m tall, positioned at (0,0,0)
+        # ADAPTIVE GATE PASSAGE DETECTION: Use curriculum-based tolerances
+        # Tolerances automatically scale with gate size (full: ±1.3m, minimum: ±0.52m)
+        
+        # DEBUG: Log tolerance info occasionally
+        if self.num_task_steps % 1000 == 0:  # Every 1000 steps
+            avg_width_tol = torch.mean(self.current_gate_tolerance['width']).item()
+            avg_height_min = torch.mean(self.current_gate_tolerance['height_min']).item()
+            avg_height_max = torch.mean(self.current_gate_tolerance['height_max']).item()
+            avg_scale = torch.mean(self.current_gate_scale).item()
+            logger.debug(f"[TOLERANCE DEBUG] Step {self.num_task_steps}: Avg scale {avg_scale:.2f}, width ±{avg_width_tol:.2f}m, height {avg_height_min:.1f}-{avg_height_max:.1f}m")
+        
         gate_passage_success = (
             (robot_position[:, 1] > self.gate_position[:, 1]) &  # Crossed gate (Y > 0)
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.3) &  # Within gate width (±1.3m for safety margin)
-            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)  # Within gate height range
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < self.current_gate_tolerance['width']) &  # Adaptive width tolerance
+            (robot_position[:, 2] > self.current_gate_tolerance['height_min']) & 
+            (robot_position[:, 2] < self.current_gate_tolerance['height_max'])  # Adaptive height range
         )
         
         # Success when episode truncates (not crashes) and gate passage achieved
@@ -554,14 +1368,16 @@ class NavigationTaskGate(BaseTask):
         gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
         
         # Check if robot has passed gate (crossed Y = 0 plane with proper alignment)
+        # Use adaptive tolerances based on current gate scale
         gate_passed_current = (
             (robot_position[:, 1] > self.gate_position[:, 1]) &  # In front of gate
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &  # Within gate width
-            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)  # Within gate height
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < self.current_gate_tolerance['width']) &  # Adaptive width tolerance
+            (robot_position[:, 2] > self.current_gate_tolerance['height_min']) & 
+            (robot_position[:, 2] < self.current_gate_tolerance['height_max'])  # Adaptive height range
         )
         
-        # Gate alignment: check if robot is roughly aligned with gate opening
-        gate_alignment = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
+        # Gate alignment: check if robot is roughly aligned with gate opening (adaptive tolerance)
+        gate_alignment = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < self.current_gate_tolerance['width']
         
         # Camera alignment angle in degrees (convert from dot product)
         alignment_angle_deg = torch.acos(torch.clamp(camera_gate_alignment, -1.0, 1.0)) * 180.0 / 3.14159
@@ -585,6 +1401,13 @@ class NavigationTaskGate(BaseTask):
         # Add continuous curriculum tracking for wandb
         self.infos["curriculum/current_level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
         self.infos["curriculum/current_progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
+        
+        # Add gate scaling tracking for wandb
+        self.infos["gate_scaling/average_scale"] = torch.mean(self.current_gate_scale)
+        self.infos["gate_scaling/min_scale"] = torch.min(self.current_gate_scale)
+        self.infos["gate_scaling/max_scale"] = torch.max(self.current_gate_scale)
+        self.infos["gate_scaling/average_width_tolerance"] = torch.mean(self.current_gate_tolerance['width'])
+        self.infos["gate_scaling/average_height_range"] = torch.mean(self.current_gate_tolerance['height_max'] - self.current_gate_tolerance['height_min'])
 
         self.logging_sanity_check(self.infos)
         self.check_and_update_curriculum_level(
@@ -944,15 +1767,91 @@ class NavigationTaskGate(BaseTask):
         target_position = self.target_position
         robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
         
+        # CRITICAL: Add NaN validation for inputs to prevent downstream corruption
+        logger.debug(f"[REWARD CALC] Validating inputs for reward calculation...")
+        
+        # Validate robot position
+        if torch.isnan(robot_position).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: robot_position contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback positions")
+            robot_position = torch.zeros_like(robot_position)
+            
+        # Validate target position  
+        if torch.isnan(target_position).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: target_position contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback target")
+            target_position = torch.zeros_like(target_position)
+            
+        # Validate gate position
+        if torch.isnan(self.gate_position).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: gate_position contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback gate positions")
+            self.gate_position = torch.zeros_like(self.gate_position)
+            
+        # Validate robot orientation
+        if torch.isnan(robot_vehicle_orientation).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: robot_vehicle_orientation contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback orientation")
+            # Create identity quaternions [0, 0, 0, 1]
+            robot_vehicle_orientation = torch.zeros_like(robot_vehicle_orientation)
+            robot_vehicle_orientation[:, 3] = 1.0  # w component of identity quaternion
+        
         self.pos_error_vehicle_frame_prev[:] = self.pos_error_vehicle_frame
         self.pos_error_vehicle_frame[:] = quat_rotate_inverse(
             robot_vehicle_orientation, (target_position - robot_position)
         )
         
+        # CRITICAL: Validate pos_error calculations
+        if torch.isnan(self.pos_error_vehicle_frame).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: pos_error_vehicle_frame contains NaN values after calculation!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback error values")
+            self.pos_error_vehicle_frame = torch.zeros_like(self.pos_error_vehicle_frame)
+            
+        if torch.isnan(self.pos_error_vehicle_frame_prev).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: pos_error_vehicle_frame_prev contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback previous error values")
+            self.pos_error_vehicle_frame_prev = torch.zeros_like(self.pos_error_vehicle_frame_prev)
+        
         # CRITICAL FIX: Clone action tensors to break reference dependency
         # obs_dict contains direct references to global tensors that get updated simultaneously
         current_actions = obs_dict["robot_actions"].clone()
         previous_actions = obs_dict["robot_prev_actions"].clone()
+        
+        # CRITICAL: Validate action tensors
+        if torch.isnan(current_actions).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: current_actions contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback actions")
+            current_actions = torch.zeros_like(current_actions)
+            
+        if torch.isnan(previous_actions).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: previous_actions contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Using safe fallback previous actions")
+            previous_actions = torch.zeros_like(previous_actions)
+        
+        # CRITICAL: Validate gate tolerance dictionary
+        try:
+            for key, value in self.current_gate_tolerance.items():
+                if torch.isnan(value).any() if hasattr(value, 'any') else False:
+                    logger.warning(f"[REWARD CALC] ❌ CRITICAL: gate_tolerance[{key}] contains NaN values!")
+                    logger.warning(f"[REWARD CALC] ❌ Using safe fallback tolerance")
+                    # Set safe fallback tolerances
+                    self.current_gate_tolerance = {
+                        'width': torch.full_like(self.current_gate_tolerance['width'], 1.3),
+                        'height_min': torch.full_like(self.current_gate_tolerance['height_min'], 0.5), 
+                        'height_max': torch.full_like(self.current_gate_tolerance['height_max'], 2.5)
+                    }
+                    break
+        except Exception as e:
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: Failed to validate gate_tolerance: {e}")
+            # Create safe fallback tolerance dictionary
+            num_envs = robot_position.shape[0]
+            self.current_gate_tolerance = {
+                'width': torch.full((num_envs,), 1.3, device=robot_position.device),
+                'height_min': torch.full((num_envs,), 0.5, device=robot_position.device),
+                'height_max': torch.full((num_envs,), 2.5, device=robot_position.device)
+            }
+        
+        logger.debug(f"[REWARD CALC] ✅ Input validation completed - calling compute_gate_reward")
         
         rewards, crashes, camera_gate_alignment = compute_gate_reward(
             self.pos_error_vehicle_frame,
@@ -966,279 +1865,26 @@ class NavigationTaskGate(BaseTask):
             self.gate_passed,
             self.curriculum_progress_fraction,
             self.task_config.reward_parameters,
+            self.current_gate_tolerance,  # Add adaptive tolerance parameter
         )
+        
+        # CRITICAL: Validate reward outputs
+        if torch.isnan(rewards).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: rewards contains NaN values after compute_gate_reward!")
+            logger.warning(f"[REWARD CALC] ❌ Setting rewards to zero to prevent neural network crash")
+            rewards = torch.zeros_like(rewards)
+            
+        if torch.isnan(camera_gate_alignment).any():
+            logger.warning(f"[REWARD CALC] ❌ CRITICAL: camera_gate_alignment contains NaN values!")
+            logger.warning(f"[REWARD CALC] ❌ Setting alignment to zero")
+            camera_gate_alignment = torch.zeros_like(camera_gate_alignment)
+        
+        logger.debug(f"[REWARD CALC] ✅ Reward calculation completed successfully")
         
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
         self.update_episode_reward_tracking(obs_dict, rewards, crashes)
         
-        # COMPREHENSIVE REWARD DEBUGGING: Print ALL reward components every 200 steps
-        if hasattr(self, 'num_task_steps') and self.num_task_steps % 200 == 0:
-            # Recalculate components for debugging (without JIT optimization)
-            dist = torch.norm(self.pos_error_vehicle_frame, dim=1)
-            prev_dist = torch.norm(self.pos_error_vehicle_frame_prev, dim=1)
-            action = obs_dict["robot_actions"]
-            prev_action = obs_dict["robot_prev_actions"]
-            robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
-            
-            # Individual reward components (average across environments)
-            pos_reward = exponential_reward_function(
-                self.task_config.reward_parameters["pos_reward_magnitude"],
-                self.task_config.reward_parameters["pos_reward_exponent"],
-                dist,
-            )
-            
-            very_close_reward = exponential_reward_function(
-                self.task_config.reward_parameters["very_close_to_goal_reward_magnitude"],
-                self.task_config.reward_parameters["very_close_to_goal_reward_exponent"],
-                dist,
-            )
-            
-            getting_closer = prev_dist - dist
-            getting_closer_reward = torch.where(
-                getting_closer > 0,
-                self.task_config.reward_parameters["getting_closer_reward_multiplier"] * getting_closer,
-                2.0 * self.task_config.reward_parameters["getting_closer_reward_multiplier"] * getting_closer,
-            )
-            
-            gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
-            gate_approach_reward = exponential_reward_function(
-                self.task_config.reward_parameters["gate_approach_reward_magnitude"],
-                0.5,
-                gate_distance,
-            )
-            
-            # Gate alignment
-            gate_alignment_reward = torch.zeros_like(gate_distance)
-            aligned_mask = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
-            gate_alignment_reward[aligned_mask] = self.task_config.reward_parameters["gate_alignment_reward_magnitude"]
-            
-            # Camera facing reward calculation (same as in compute_gate_reward)
-            drone_to_gate = self.gate_position - robot_position
-            drone_to_gate_normalized = drone_to_gate / (torch.norm(drone_to_gate, dim=1, keepdim=True) + 1e-8)
-            
-            # Get drone's forward direction (where camera points)
-            qw, qx, qy, qz = robot_vehicle_orientation[:, 3], robot_vehicle_orientation[:, 0], robot_vehicle_orientation[:, 1], robot_vehicle_orientation[:, 2]
-            forward_x = 1.0 - 2.0 * (qy * qy + qz * qz)
-            forward_y = 2.0 * (qx * qy + qw * qz)
-            forward_z = 2.0 * (qx * qz - qw * qy)
-            drone_forward = torch.stack([forward_x, forward_y, forward_z], dim=1)
-            drone_forward_normalized = drone_forward / (torch.norm(drone_forward, dim=1, keepdim=True) + 1e-8)
-            
-            # Calculate alignment between camera direction and gate direction
-            camera_gate_alignment = torch.sum(drone_forward_normalized * drone_to_gate_normalized, dim=1)
-            camera_gate_alignment = torch.clamp(camera_gate_alignment, -1.0, 1.0)
-            
-            # Camera facing reward with same logic as compute_gate_reward
-            camera_facing_reward = torch.zeros_like(camera_gate_alignment)
-            perfect_mask = camera_gate_alignment > 0.966
-            camera_facing_reward[perfect_mask] = self.task_config.reward_parameters["camera_facing_reward_magnitude"]
-            excellent_mask = (camera_gate_alignment > 0.866) & (camera_gate_alignment <= 0.966)
-            camera_facing_reward[excellent_mask] = 0.9 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[excellent_mask]
-            good_mask = (camera_gate_alignment > 0.5) & (camera_gate_alignment <= 0.866)
-            camera_facing_reward[good_mask] = 0.8 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[good_mask]
-            moderate_mask = (camera_gate_alignment > 0.0) & (camera_gate_alignment <= 0.5)
-            camera_facing_reward[moderate_mask] = 0.4 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[moderate_mask]
-            poor_mask = (camera_gate_alignment > -0.707) & (camera_gate_alignment <= 0.0)
-            camera_facing_reward[poor_mask] = 0.2 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[poor_mask]
-            severe_mask = camera_gate_alignment <= -0.707
-            camera_facing_reward[severe_mask] = 2.0 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[severe_mask]
-            
-            # Action penalties - FIXED: Added missing Y-action penalties for 4D action space
-            action_diff = action - prev_action
-            
-            # ENHANCED ACTION DEBUG: Deep investigation of action tracking system
-            if self.num_task_steps % 200 == 0:
-                avg_action_diff = torch.mean(torch.abs(action_diff), dim=0)
-                max_action_diff = torch.max(torch.abs(action_diff), dim=0)[0]
-                
-                # Show actual action values to understand the pattern
-                avg_current = torch.mean(action, dim=0)
-                avg_previous = torch.mean(prev_action, dim=0)
-                
-                # Check if all actions are identical across environments
-                action_std = torch.std(action, dim=0)
-                prev_action_std = torch.std(prev_action, dim=0)
-                
-                # COMMENTED OUT: Verbose action debug logs (clutters training output)
-                # logger.warning(f"🔧 ACTION DEBUG - Action differences (avg): X={avg_action_diff[0]:.6f}, Y={avg_action_diff[1]:.6f}, Z={avg_action_diff[2]:.6f}, Yaw={avg_action_diff[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Action differences (max): X={max_action_diff[0]:.6f}, Y={max_action_diff[1]:.6f}, Z={max_action_diff[2]:.6f}, Yaw={max_action_diff[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Current actions (avg): X={avg_current[0]:.6f}, Y={avg_current[1]:.6f}, Z={avg_current[2]:.6f}, Yaw={avg_current[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Previous actions (avg): X={avg_previous[0]:.6f}, Y={avg_previous[1]:.6f}, Z={avg_previous[2]:.6f}, Yaw={avg_previous[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Current action std: X={action_std[0]:.6f}, Y={action_std[1]:.6f}, Z={action_std[2]:.6f}, Yaw={action_std[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Previous action std: X={prev_action_std[0]:.6f}, Y={prev_action_std[1]:.6f}, Z={prev_action_std[2]:.6f}, Yaw={prev_action_std[3]:.6f}")
-                # 
-                # # Check first environment for exact values
-                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Current: {action[0].tolist()}")
-                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Previous: {prev_action[0].tolist()}")
-                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Difference: {action_diff[0].tolist()}")
-            
-            x_diff_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["x_action_diff_penalty_magnitude"],
-                self.task_config.reward_parameters["x_action_diff_penalty_exponent"],
-                action_diff[:, 0],
-            )
-            # FIXED: Added missing Y-action difference penalty for debugging
-            y_diff_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["y_action_diff_penalty_magnitude"],
-                self.task_config.reward_parameters["y_action_diff_penalty_exponent"],
-                action_diff[:, 1],
-            )
-            z_diff_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["z_action_diff_penalty_magnitude"],
-                self.task_config.reward_parameters["z_action_diff_penalty_exponent"],
-                action_diff[:, 2],
-            )
-            yawrate_diff_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["yawrate_action_diff_penalty_magnitude"],
-                self.task_config.reward_parameters["yawrate_action_diff_penalty_exponent"],
-                action_diff[:, 3],
-            )
-            
-            # CRITICAL FIX: Add missing absolute penalties in debugging section
-            x_absolute_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["x_absolute_action_penalty_magnitude"],
-                self.task_config.reward_parameters["x_absolute_action_penalty_exponent"],
-                action[:, 0],
-            )
-            y_absolute_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["y_absolute_action_penalty_magnitude"],
-                self.task_config.reward_parameters["y_absolute_action_penalty_exponent"],
-                action[:, 1],
-            )
-            z_absolute_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["z_absolute_action_penalty_magnitude"],
-                self.task_config.reward_parameters["z_absolute_action_penalty_exponent"],
-                action[:, 2],
-            )
-            yawrate_absolute_penalty = exponential_penalty_function(
-                self.task_config.reward_parameters["yawrate_absolute_action_penalty_magnitude"],
-                self.task_config.reward_parameters["yawrate_absolute_action_penalty_exponent"],
-                action[:, 3],
-            )
-            
-            action_diff_penalty = x_diff_penalty + y_diff_penalty + z_diff_penalty + yawrate_diff_penalty
-            absolute_action_penalty = x_absolute_penalty + y_absolute_penalty + z_absolute_penalty + yawrate_absolute_penalty
-            total_action_penalty = action_diff_penalty + absolute_action_penalty
-            
-            # COMMENTED OUT: Verbose penalty breakdown logs (clutters training output)
-            # # ABSOLUTE PENALTY DEBUG: Check individual components
-            # if self.num_task_steps % 200 == 0:
-            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Diff penalties (avg): X={torch.mean(x_diff_penalty).item():.6f}, Y={torch.mean(y_diff_penalty).item():.6f}, Z={torch.mean(z_diff_penalty).item():.6f}, Yaw={torch.mean(yawrate_diff_penalty).item():.6f}")
-            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Abs penalties (avg): X={torch.mean(x_absolute_penalty).item():.6f}, Y={torch.mean(y_absolute_penalty).item():.6f}, Z={torch.mean(z_absolute_penalty).item():.6f}, Yaw={torch.mean(yawrate_absolute_penalty).item():.6f}")
-            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Total diff: {torch.mean(action_diff_penalty).item():.6f}, Total abs: {torch.mean(absolute_action_penalty).item():.6f}, Grand total: {torch.mean(total_action_penalty).item():.6f}")
-            
-            # Calculate averages for debugging
-            mult_factor = 1.0 + (0.5) * self.curriculum_progress_fraction
-            avg_total_reward = torch.mean(rewards).item()
-            avg_pos_reward = torch.mean(mult_factor * pos_reward).item()
-            avg_very_close = torch.mean(mult_factor * very_close_reward).item()
-            avg_getting_closer = torch.mean(mult_factor * getting_closer_reward).item()
-            avg_gate_approach = torch.mean(mult_factor * gate_approach_reward).item()
-            avg_gate_alignment = torch.mean(mult_factor * gate_alignment_reward).item()
-            avg_camera_facing = torch.mean(mult_factor * camera_facing_reward).item()
-            avg_action_penalty = torch.mean(total_action_penalty).item()
-            avg_distance = torch.mean(dist).item()
-            avg_gate_distance = torch.mean(gate_distance).item()
-            avg_camera_alignment = torch.mean(camera_gate_alignment).item()
-            
-            logger.warning("="*80)
-            logger.warning(f"🔍 COMPREHENSIVE REWARD BREAKDOWN (Step {self.num_task_steps}):")
-            logger.warning(f"  📊 TOTAL REWARD:           {avg_total_reward:.3f}")
-            logger.warning(f"  📍 Position Reward:        {avg_pos_reward:.3f} (dist: {avg_distance:.2f}m)")
-            logger.warning(f"  🎯 Very Close Reward:      {avg_very_close:.3f}")
-            logger.warning(f"  ⬆️  Getting Closer:         {avg_getting_closer:.3f}")
-            logger.warning(f"  🚪 Gate Approach:          {avg_gate_approach:.3f} (gate_dist: {avg_gate_distance:.2f}m)")
-            logger.warning(f"  ✅ Gate Alignment:         {avg_gate_alignment:.3f}")
-            logger.warning(f"  📹 Camera Facing:          {avg_camera_facing:.3f} (align: {avg_camera_alignment:.3f})")
-            logger.warning(f"  🎮 Action Penalty:         {avg_action_penalty:.3f}")
-            logger.warning(f"  ⚡ Multiplier Factor:      {mult_factor:.3f}")
-            
-            # Check for any gate passages
-            num_passed = torch.sum((robot_position[:, 1] > self.gate_position[:, 1]) & 
-                                 (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &
-                                 (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)).item()
-            
-            if num_passed > 0:
-                logger.warning(f"  🎉 GATE PASSAGES:          {num_passed}/16 environments!")
-                logger.warning(f"  💰 Gate Passage Reward:   {self.task_config.reward_parameters['gate_passage_reward_magnitude'].item():.1f} per passage")
-            
-            # Check for crashes
-            num_crashes = torch.sum(obs_dict["crashes"]).item()
-            if num_crashes > 0:
-                logger.warning(f"  💥 CRASHES:                {num_crashes}/16 environments")
-                logger.warning(f"  💸 Collision Penalty:     {self.task_config.reward_parameters['collision_penalty'].item():.1f} per crash")
-            
-            # EPISODE-LEVEL REWARD BREAKDOWN: Show how components contribute to episode totals
-            if len(self.completed_episodes) > 0:
-                logger.warning("-"*80)
-                logger.warning(f"📈 EPISODE REWARD ANALYSIS (Last {len(self.completed_episodes)} Episodes):")
-                
-                # Calculate averages across completed episodes
-                avg_episode_data = {}
-                for key in self.completed_episodes[0].keys():
-                    avg_episode_data[key] = sum(ep[key] for ep in self.completed_episodes) / len(self.completed_episodes)
-                
-                logger.warning(f"  🏆 EPISODE TOTAL:          {avg_episode_data['total_reward']:.1f}")
-                logger.warning(f"  📍 Position Contribution:  {avg_episode_data['pos_reward']:.1f}")
-                logger.warning(f"  🎯 Very Close Contribution: {avg_episode_data['very_close_reward']:.1f}")
-                logger.warning(f"  ⬆️  Getting Closer:         {avg_episode_data['getting_closer_reward']:.1f}")
-                logger.warning(f"  🚪 Gate Approach:          {avg_episode_data['gate_approach_reward']:.1f}")
-                logger.warning(f"  ✅ Gate Alignment:         {avg_episode_data['gate_alignment_reward']:.1f}")
-                logger.warning(f"  📹 Camera Facing:          {avg_episode_data['camera_facing_reward']:.1f}")
-                logger.warning(f"  🎮 Action Penalties:       {avg_episode_data['action_penalty']:.1f}")
-                logger.warning(f"  🎉 Gate Passage Bonuses:   {avg_episode_data['gate_passage_reward']:.1f} (basic + center)")
-                
-                # Calculate estimated passages per episode
-                basic_passage_reward = 50.0  # From config
-                center_bonus = 100.0  # From config
-                max_reward_per_passage = (basic_passage_reward + center_bonus) * 1.5  # With curriculum multiplier
-                estimated_passages = avg_episode_data['gate_passage_reward'] / max_reward_per_passage
-                logger.warning(f"  📊 Estimated Passages:     {estimated_passages:.1f} per episode (should be ≤1.0)")
-                logger.warning(f"  💥 Collision Penalties:    {avg_episode_data['collision_penalty']:.1f}")
-                logger.warning(f"  📷 Image Penalties:        {avg_episode_data['image_reward']:.1f}")
-                logger.warning(f"  📏 Average Episode Length: {avg_episode_data['episode_length']:.0f} steps")
-                
-                # Show recent trend (if we have enough episodes)
-                if len(self.completed_episodes) >= 5:
-                    recent_total = sum(ep['total_reward'] for ep in self.completed_episodes[-3:]) / 3
-                    older_total = sum(ep['total_reward'] for ep in self.completed_episodes[:3]) / 3
-                    trend = recent_total - older_total
-                    trend_emoji = "📈" if trend > 0 else "📉" if trend < 0 else "➡️"
-                    logger.warning(f"  {trend_emoji} Recent Trend:         {trend:+.1f} (last 3 vs first 3)")
-            
-            # CURRENT EPISODE PROGRESS: Show cumulative rewards for ongoing episodes
-            logger.warning("-"*80)
-            logger.warning("🔄 CURRENT EPISODE PROGRESS (Cumulative):")
-            
-            # Average current episode progress across all environments
-            avg_current_pos = torch.mean(self.episode_pos_reward).item()
-            avg_current_very_close = torch.mean(self.episode_very_close_reward).item()
-            avg_current_getting_closer = torch.mean(self.episode_getting_closer_reward).item()
-            avg_current_gate_approach = torch.mean(self.episode_gate_approach_reward).item()
-            avg_current_gate_alignment = torch.mean(self.episode_gate_alignment_reward).item()
-            avg_current_camera_facing = torch.mean(self.episode_camera_facing_reward).item()
-            avg_current_action_penalty = torch.mean(self.episode_action_penalty).item()
-            avg_current_collision_penalty = torch.mean(self.episode_collision_penalty).item()
-            avg_current_episode_length = torch.mean(self.episode_lengths).item()
-            
-            current_total = (avg_current_pos + avg_current_very_close + avg_current_getting_closer + 
-                           avg_current_gate_approach + avg_current_gate_alignment + avg_current_camera_facing + 
-                           avg_current_action_penalty + avg_current_collision_penalty)
-            
-            logger.warning(f"  🔄 Current Episode Total:  {current_total:.1f} (avg across 16 envs)")
-            logger.warning(f"  📍 Position So Far:        {avg_current_pos:.1f}")
-            logger.warning(f"  ⬆️  Getting Closer So Far:  {avg_current_getting_closer:.1f}")
-            logger.warning(f"  🚪 Gate Approach So Far:   {avg_current_gate_approach:.1f}")
-            logger.warning(f"  ✅ Gate Alignment So Far:  {avg_current_gate_alignment:.1f}")
-            logger.warning(f"  📹 Camera Facing So Far:   {avg_current_camera_facing:.1f}")
-            logger.warning(f"  💥 Collision Penalties:    {avg_current_collision_penalty:.1f}")
-            logger.warning(f"  📏 Steps So Far:           {avg_current_episode_length:.0f}")
-            
-            logger.warning("="*80)
-        
-        # Store camera alignment for debugging
-        self.camera_alignment_debug = camera_gate_alignment
-        
+        # CRITICAL: Return the computed values (this was missing!)
         return rewards, crashes, camera_gate_alignment
 
     def check_and_update_curriculum_level(self, successes, crashes, timeouts):
@@ -1363,6 +2009,41 @@ class NavigationTaskGate(BaseTask):
                 current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
             self.log_curriculum_update(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
             
+            # ===== GATE SCALING CURRICULUM DEBUG =====
+            try:
+                from aerial_gym.config.asset_config.gate_scaling_config import GateScalingConfig
+                available_scales = GateScalingConfig.get_available_scales_for_level(self.curriculum_level)
+                current_avg_scale = torch.mean(self.current_gate_scale).item()
+                
+                self.log_curriculum_update(f"   4. GATE SCALING: Level {self.curriculum_level} available scales: {available_scales}")
+                self.log_curriculum_update(f"      Current average gate scale: {current_avg_scale:.2f} (will change on next resets)")
+                
+                # Show distribution of current gate scales across environments
+                scale_counts = {}
+                for scale in [1.0, 0.7, 0.5, 0.4]:
+                    count = torch.sum(torch.abs(self.current_gate_scale - scale) < 0.05).item()
+                    if count > 0:
+                        scale_name = "Full" if scale >= 1.0 else "Medium" if scale >= 0.7 else "Small" if scale >= 0.5 else "Minimum"
+                        scale_counts[f"{scale_name}({scale})"] = count
+                
+                if scale_counts:
+                    scale_summary = ", ".join([f"{name}: {count}" for name, count in scale_counts.items()])
+                    self.log_curriculum_update(f"      Current gate distribution: {scale_summary}")
+                else:
+                    self.log_curriculum_update(f"      All gates at default scale 1.0 (expected at level {self.curriculum_level})")
+                
+                # Show sample tolerance values for the current level
+                if available_scales:
+                    sample_scale = available_scales[0]  # Show tolerance for first available scale
+                    sample_width, sample_height_min, sample_height_max = GateScalingConfig.get_gate_tolerance_for_scale(sample_scale)
+                    self.log_curriculum_update(f"      Sample tolerance (scale {sample_scale}): ±{sample_width:.2f}m width, {sample_height_min:.1f}-{sample_height_max:.1f}m height")
+                
+                self.log_curriculum_update(f"      ⚠️  IMPORTANT: Gate scaling only applies when environments RESET")
+                
+            except Exception as e:
+                self.log_curriculum_update(f"   4. GATE SCALING DEBUG ERROR: {e}")
+            
+            
             # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
             camera_gaussian_std, camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
             self.log_curriculum_update(f"   5. CAMERA NOISE: Gaussian STD={camera_gaussian_std:.4f}, Dropout={camera_dropout_rate*100:.1f}% (both drone & static)")
@@ -1468,9 +2149,9 @@ class NavigationTaskGate(BaseTask):
         )
         self.episode_gate_approach_reward += mult_factor * gate_approach_reward
         
-        # Gate alignment reward
+        # Gate alignment reward (adaptive tolerance based on gate scale)
         gate_alignment_reward = torch.zeros_like(gate_distance)
-        aligned_mask = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
+        aligned_mask = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < self.current_gate_tolerance['width']
         gate_alignment_reward[aligned_mask] = self.task_config.reward_parameters["gate_alignment_reward_magnitude"]
         self.episode_gate_alignment_reward += mult_factor * gate_alignment_reward
         
@@ -1489,7 +2170,14 @@ class NavigationTaskGate(BaseTask):
         
         # Calculate alignment and camera facing reward
         camera_gate_alignment = torch.sum(drone_forward_normalized * drone_to_gate_normalized, dim=1)
-        camera_gate_alignment = torch.clamp(camera_gate_alignment, -1.0, 1.0)
+        camera_gate_alignment = torch.clamp(camera_gate_alignment, -1.0, 1.0)  # Clamp to [-1, 1]
+        
+        # CRITICAL: Replace any NaN values in camera alignment with safe default (no alignment)
+        camera_gate_alignment = torch.where(
+            torch.isnan(camera_gate_alignment), 
+            torch.zeros_like(camera_gate_alignment), 
+            camera_gate_alignment
+        )
         
         camera_facing_reward = torch.zeros_like(camera_gate_alignment)
         perfect_mask = camera_gate_alignment > 0.966
@@ -1568,18 +2256,22 @@ class NavigationTaskGate(BaseTask):
         self.episode_collision_penalty += collision_penalty
         
         # Track gate passage rewards (check if any gate passages occurred this step)
-        # FIXED: Use the same logic as main reward system and properly update gate_passed flag
+        # ADAPTIVE: Use curriculum-based tolerances that scale with gate size
         gate_passed_this_step = (
             (robot_position[:, 1] > self.gate_position[:, 1]) &
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &
-            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2) &
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < self.current_gate_tolerance['width']) &
+            (robot_position[:, 2] > self.current_gate_tolerance['height_min']) & 
+            (robot_position[:, 2] < self.current_gate_tolerance['height_max']) &
             (~self.gate_passed)  # Haven't passed before
         )
         
-        # FIXED: Include both basic passage reward AND center bonus (like main system)
+        # ADAPTIVE: Include both basic passage reward AND center bonus (scales with gate size)
         x_distance_from_center = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
         z_distance_from_center = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + 1.2))
-        center_aligned_mask = (x_distance_from_center < 0.5) & (z_distance_from_center < 0.3)
+        # Scale center tolerance proportionally with gate scale (50% of width tolerance, 30% of height range)
+        center_width_tolerance = self.current_gate_tolerance['width'] * 0.4  # Tighter tolerance for center bonus
+        center_height_tolerance = (self.current_gate_tolerance['height_max'] - self.current_gate_tolerance['height_min']) * 0.15
+        center_aligned_mask = (x_distance_from_center < center_width_tolerance) & (z_distance_from_center < center_height_tolerance)
         
         # Basic gate passage reward
         gate_passage_reward = torch.where(
@@ -1956,8 +2648,9 @@ def compute_gate_reward(
     gate_passed,
     curriculum_progress_fraction,
     parameter_dict,
+    gate_tolerance,
 ):
-    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, float, Dict[str, Tensor]) -> Tuple[Tensor, Tensor, Tensor]
+    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, float, Dict[str, Tensor], Dict[str, Tensor]) -> Tuple[Tensor, Tensor, Tensor]
     
     # Base reward computation - REDUCED multiplication factor to prevent over-rewarding
     MULTIPLICATION_FACTOR_REWARD = 1.0 + (0.5) * curriculum_progress_fraction  # Reduced from 2.0 to 0.5
@@ -2041,6 +2734,13 @@ def compute_gate_reward(
     # Gate-specific rewards
     gate_distance = torch.norm(robot_position - gate_position, dim=1)
     
+    # CRITICAL: Add safeguards for gate distance calculation to prevent NaN propagation
+    # Clamp extremely large distances that could cause numerical instability
+    gate_distance = torch.clamp(gate_distance, 0.0, 100.0)  # Max distance 100m to prevent overflow
+    
+    # Replace any NaN values with a safe default distance
+    gate_distance = torch.where(torch.isnan(gate_distance), torch.full_like(gate_distance, 10.0), gate_distance)
+    
     # Reward for approaching gate
     gate_approach_reward = exponential_reward_function(
         parameter_dict["gate_approach_reward_magnitude"],
@@ -2051,7 +2751,26 @@ def compute_gate_reward(
     # Enhanced Camera Facing Reward System - Proportional to alignment angle
     # Calculate vector from drone to gate
     drone_to_gate = gate_position - robot_position
-    drone_to_gate_normalized = drone_to_gate / (torch.norm(drone_to_gate, dim=1, keepdim=True) + 1e-8)
+    
+    # CRITICAL: Add safeguards for drone_to_gate vector calculation
+    # Clamp extremely large vectors that could cause numerical instability
+    drone_to_gate = torch.clamp(drone_to_gate, -100.0, 100.0)
+    
+    # Replace any NaN values with safe default vector pointing forward
+    drone_to_gate_safe = torch.where(
+        torch.isnan(drone_to_gate), 
+        torch.tensor([[1.0, 0.0, 0.0]], device=drone_to_gate.device).expand_as(drone_to_gate), 
+        drone_to_gate
+    )
+    
+    drone_to_gate_normalized = drone_to_gate_safe / (torch.norm(drone_to_gate_safe, dim=1, keepdim=True) + 1e-8)
+    
+    # CRITICAL: Ensure normalized vector is valid
+    drone_to_gate_normalized = torch.where(
+        torch.isnan(drone_to_gate_normalized),
+        torch.tensor([[1.0, 0.0, 0.0]], device=drone_to_gate_normalized.device).expand_as(drone_to_gate_normalized),
+        drone_to_gate_normalized
+    )
     
     # Get drone's forward direction (where camera points)
     # Camera faces forward in drone's body frame (+X direction after orientation)
@@ -2068,6 +2787,13 @@ def compute_gate_reward(
     # Calculate alignment between camera direction and gate direction
     camera_gate_alignment = torch.sum(drone_forward_normalized * drone_to_gate_normalized, dim=1)
     camera_gate_alignment = torch.clamp(camera_gate_alignment, -1.0, 1.0)  # Clamp to [-1, 1]
+    
+    # CRITICAL: Replace any NaN values in camera alignment with safe default (no alignment)
+    camera_gate_alignment = torch.where(
+        torch.isnan(camera_gate_alignment), 
+        torch.zeros_like(camera_gate_alignment), 
+        camera_gate_alignment
+    )
     
     # Enhanced Proportional Camera Facing Reward System
     # alignment = 1.0  → facing directly toward gate (0° angle)
@@ -2105,36 +2831,39 @@ def compute_gate_reward(
     severe_mask = camera_gate_alignment <= -0.707
     camera_facing_reward[severe_mask] = 2.0 * parameter_dict["camera_facing_reward_magnitude"] * camera_gate_alignment[severe_mask]  # Strong penalty
     
-    # Reward for gate alignment (being in front of gate opening)
+    # Reward for gate alignment (being in front of gate opening) - ADAPTIVE TOLERANCE
     gate_alignment_reward = torch.zeros_like(gate_distance)
-    # Check if robot is roughly aligned with gate opening (Y direction)
-    aligned_mask = torch.abs(robot_position[:, 0] - gate_position[:, 0]) < 1.5  # Within gate width
+    # Check if robot is roughly aligned with gate opening (adaptive width tolerance)
+    aligned_mask = torch.abs(robot_position[:, 0] - gate_position[:, 0]) < gate_tolerance["width"]
     gate_alignment_reward[aligned_mask] = parameter_dict["gate_alignment_reward_magnitude"]
     
-    # Enhanced center alignment rewards for precise gate navigation
+    # Enhanced center alignment rewards for precise gate navigation - ADAPTIVE
     gate_center_bonus = torch.zeros_like(gate_distance)
     # Distance from gate center in X direction (horizontal alignment)
     x_distance_from_center = torch.abs(robot_position[:, 0] - gate_position[:, 0])
     # Distance from gate center in Z direction (vertical alignment)  
     z_distance_from_center = torch.abs(robot_position[:, 2] - (gate_position[:, 2] + 1.2))  # Gate center height ~1.2m
     
-    # Check if robot is very close to gate center (within 0.5m in both X and Z)
-    center_aligned_mask = (x_distance_from_center < 0.5) & (z_distance_from_center < 0.3)
+    # ADAPTIVE: Scale center tolerance proportionally with gate scale
+    center_width_tolerance = gate_tolerance["width"] * 0.4  # Tighter tolerance for center bonus
+    center_height_tolerance = (gate_tolerance["height_max"] - gate_tolerance["height_min"]) * 0.15
+    center_aligned_mask = (x_distance_from_center < center_width_tolerance) & (z_distance_from_center < center_height_tolerance)
     gate_center_bonus[center_aligned_mask] = parameter_dict["gate_center_bonus_magnitude"]
     
-    # Check for gate passage (crossing Y = 0 plane with proper alignment)
+    # Check for gate passage (crossing Y = 0 plane with proper alignment) - ADAPTIVE
     just_passed_gate = (
         (robot_position[:, 1] > gate_position[:, 1]) &  # In front of gate
-        (torch.abs(robot_position[:, 0] - gate_position[:, 0]) < 1.5) &  # Within gate width
-        (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2) &  # Within gate height
+        (torch.abs(robot_position[:, 0] - gate_position[:, 0]) < gate_tolerance["width"]) &  # Adaptive width tolerance
+        (robot_position[:, 2] > gate_tolerance["height_min"]) & 
+        (robot_position[:, 2] < gate_tolerance["height_max"]) &  # Adaptive height tolerance
         (~gate_passed)  # Haven't passed before
     )
     
-    # Check for center passage (more precise alignment)
+    # Check for center passage (more precise alignment) - ADAPTIVE
     just_passed_center = (
         just_passed_gate &  # Basic passage requirement
-        (x_distance_from_center < 0.5) &  # Centered horizontally
-        (z_distance_from_center < 0.3)    # Centered vertically
+        (x_distance_from_center < center_width_tolerance) &  # Adaptive center tolerance
+        (z_distance_from_center < center_height_tolerance)    # Adaptive center tolerance
     )
     
     gate_passage_reward = torch.zeros_like(gate_distance)

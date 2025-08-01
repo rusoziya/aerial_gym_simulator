@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<robot name="gate_minimum">
+
+  <!-- Minimum gate material (red color to distinguish from other gates) -->
+  <material name="gate_minimum_material">
+    <color rgba="0.8 0.1 0.1 1.0"/>
+  </material>
+
+  <!-- The base of the gate, to which all other parts are connected. -->
+  <link name="base_link"/>
+
+  <!-- Left vertical post of the gate (0.4x scale) -->
+  <link name="left_post">
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <!-- Scaled: 0.2*0.4 = 0.08, 2.5*0.4 = 1.0 -->
+        <box size="0.08 0.08 1.0"/>
+      </geometry>
+      <material name="gate_minimum_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.08 0.08 1.0"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="4"/>
+      <inertia ixx="0.8" ixy="0.0" ixz="0.0" iyy="0.8" iyz="0.0" izz="0.8"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the left post to the base (0.4x scale) -->
+  <joint name="base_to_left_post" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_post"/>
+    <!-- Scaled: 1.25*0.4 = 0.5 -->
+    <origin xyz="0 0.5 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Right vertical post of the gate (0.4x scale) -->
+  <link name="right_post">
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.08 0.08 1.0"/>
+      </geometry>
+      <material name="gate_minimum_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.08 0.08 1.0"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="4"/>
+      <inertia ixx="0.8" ixy="0.0" ixz="0.0" iyy="0.8" iyz="0.0" izz="0.8"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the right post to the base (0.4x scale) -->
+  <joint name="base_to_right_post" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_post"/>
+    <!-- Scaled: -1.25*0.4 = -0.5 -->
+    <origin xyz="0 -0.5 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Top horizontal bar of the gate (0.4x scale) -->
+  <link name="top_bar">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <!-- Scaled: 0.2*0.4 = 0.08, 2.7*0.4 = 1.08 -->
+        <box size="0.08 1.08 0.08"/>
+      </geometry>
+      <material name="gate_minimum_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.08 1.08 0.08"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="4"/>
+      <inertia ixx="0.8" ixy="0.0" ixz="0.0" iyy="0.8" iyz="0.0" izz="0.8"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the top bar to the base (0.4x scale) -->
+  <joint name="base_to_top_bar" type="fixed">
+    <parent link="base_link"/>
+    <child link="top_bar"/>
+    <!-- Scaled: 2.4*0.4 = 0.96 -->
+    <origin xyz="0 0 0.96" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Bottom horizontal bar of the gate (0.4x scale) -->
+  <link name="bottom_bar">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.08 1.08 0.08"/>
+      </geometry>
+      <material name="gate_minimum_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.08 1.08 0.08"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="4"/>
+      <inertia ixx="0.8" ixy="0.0" ixz="0.0" iyy="0.8" iyz="0.0" izz="0.8"/>
+    </inertial>
+  </link>
+
+  <!-- Connects the bottom bar to the base (0.4x scale) -->
+  <joint name="base_to_bottom_bar" type="fixed">
+    <parent link="base_link"/>
+    <child link="bottom_bar"/>
+    <!-- Scaled: 0.1*0.4 = 0.04 -->
+    <origin xyz="0 0 0.04" rpy="0 0 0"/>
+  </joint>
+
+</robot> 

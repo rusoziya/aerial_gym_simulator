@@ -155,7 +155,7 @@ class task_config:
         check_after_log_instances = 128  # INCREASED FREQUENCY: Check curriculum every 128 instances for faster progression
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
         decrease_step = 0   # NO DECREASE POLICY: Once a level is reached, never go back
-        success_rate_for_increase = 0.5   # 50% success rate to progress to next curriculum level
+        success_rate_for_increase = 0.0   # 1% success rate to progress to next curriculum level (very aggressive progression)
         success_rate_for_decrease = 0.0   # DISABLED: Never decrease difficulty (no-decrease policy)
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
@@ -308,6 +308,64 @@ class task_config:
             distance_offset = 0.0  # No distance variation - keep fixed position
             
             return max_camera_angle, height_offset, distance_offset
+        
+        @staticmethod
+        def get_gate_scale_for_level(level):
+            """
+            Get gate scale factor for current curriculum level with randomization.
+            
+            PROGRESSIVE GATE SCALING CURRICULUM:
+            - Levels 3-8: Only full size gates (scale 1.0) - easiest
+            - Levels 9-13: Mix of full and medium gates (scale 1.0, 0.7)
+            - Levels 14-18: Mix of full, medium, and small gates (scale 1.0, 0.7, 0.5)
+            - Levels 19-23: All gate sizes including minimum (scale 1.0, 0.7, 0.5, 0.4)
+            
+            Args:
+                level: Current curriculum level (3-23)
+                
+            Returns:
+                float: Selected gate scale factor for this episode
+            """
+            from aerial_gym.config.asset_config.gate_scaling_config import GateScalingConfig
+            import random
+            
+            try:
+                # Get available scales for this curriculum level
+                available_scales = GateScalingConfig.get_available_scales_for_level(level)
+                
+                # Debug logging
+                print(f"[GATE SCALE SELECT DEBUG] Level {level}: Available scales {available_scales}")
+                
+                # Randomly select from available scales
+                selected_scale = random.choice(available_scales)
+                
+                print(f"[GATE SCALE SELECT DEBUG] Level {level}: Selected scale {selected_scale}")
+                
+                return selected_scale
+                
+            except Exception as e:
+                print(f"[GATE SCALE SELECT ERROR] Level {level}: {e}")
+                return 1.0  # Fallback to full size
+        
+        @staticmethod
+        def get_gate_tolerance_for_scale(scale_factor):
+            """
+            Get adaptive success tolerance based on gate scale.
+            
+            Scales the success tolerance proportionally with gate size:
+            - Full size (1.0): ±1.3m width, 0.2-2.2m height (original)
+            - Medium size (0.7): ±0.91m width, 0.2-1.6m height
+            - Small size (0.5): ±0.65m width, 0.2-1.2m height
+            - Minimum size (0.4): ±0.52m width, 0.2-1.0m height
+            
+            Args:
+                scale_factor: Gate scale factor (0.4 to 1.0)
+                
+            Returns:
+                tuple: (width_tolerance, height_min, height_max)
+            """
+            from aerial_gym.config.asset_config.gate_scaling_config import GateScalingConfig
+            return GateScalingConfig.get_gate_tolerance_for_scale(scale_factor)
 
     # Static camera curriculum positioning based on difficulty level
     class static_camera_curriculum:

@@ -1,0 +1,35 @@
+2025-07-31 22:52:35,076 INFO    MainThread:166936 [wandb_setup.py:_flush():76] Configure stats pid to 166936
+2025-07-31 22:52:35,076 INFO    MainThread:166936 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/.config/wandb/settings
+2025-07-31 22:52:35,076 INFO    MainThread:166936 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/settings
+2025-07-31 22:52:35,076 INFO    MainThread:166936 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2025-07-31 22:52:35,076 INFO    MainThread:166936 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py', 'program': 'train_aerialgym_custom_net_gate.py'}
+2025-07-31 22:52:35,076 INFO    MainThread:166936 [wandb_init.py:_log_setup():461] Logging user logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/logs/debug.log
+2025-07-31 22:52:35,076 INFO    MainThread:166936 [wandb_init.py:_log_setup():462] Logging internal logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/logs/debug-internal.log
+2025-07-31 22:52:35,077 INFO    MainThread:166936 [wandb_init.py:init():495] calling init triggers
+2025-07-31 22:52:35,077 INFO    MainThread:166936 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {}
+2025-07-31 22:52:35,077 INFO    MainThread:166936 [wandb_init.py:init():548] starting backend
+2025-07-31 22:52:35,077 INFO    MainThread:166936 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: fork
+2025-07-31 22:52:35,079 INFO    MainThread:166936 [backend.py:ensure_launched():217] starting backend process...
+2025-07-31 22:52:35,093 INFO    MainThread:166936 [backend.py:ensure_launched():222] started backend process with pid: 167029
+2025-07-31 22:52:35,094 INFO    MainThread:166936 [wandb_init.py:init():558] backend started and connected
+2025-07-31 22:52:35,100 INFO    MainThread:166936 [wandb_init.py:init():634] updated telemetry
+2025-07-31 22:52:35,103 INFO    MainThread:167029 [internal.py:wandb_internal():90] W&B internal server running at pid: 167029, started at: 2025-07-31 22:52:35.102083
+2025-07-31 22:52:35,106 INFO    WriterThread:167029 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/run-gate_config_8_NEW8_20250731_225229_882503.wandb
+2025-07-31 22:52:35,134 INFO    MainThread:166936 [wandb_init.py:init():665] communicating run to backend with 30 second timeout
+2025-07-31 22:52:35,138 INFO    SenderThread:167029 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso-ucl/gate_navigation_dual_camera/gate_config_8_NEW8_20250731_225229_882503
+2025-07-31 22:53:05,135 INFO    MainThread:166936 [interface_shared.py:_communicate_run():326] couldn't get run from backend
+2025-07-31 22:53:05,136 ERROR   MainThread:166936 [wandb_init.py:init():674] backend process timed out
+2025-07-31 22:53:05,136 ERROR   MainThread:166936 [wandb_init.py:init():685] encountered error: Error communicating with wandb process
+2025-07-31 22:53:05,138 INFO    HandlerThread:167029 [handler.py:finish():806] shutting down handler
+2025-07-31 22:53:05,143 INFO    WriterThread:167029 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/run-gate_config_8_NEW8_20250731_225229_882503.wandb
+2025-07-31 22:53:11,437 INFO    SenderThread:167029 [dir_watcher.py:__init__():216] watching files in: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/files
+2025-07-31 22:53:11,437 INFO    SenderThread:167029 [sender.py:_start_run_threads():815] run started: gate_config_8_NEW8_20250731_225229_882503 with start time 1753998755
+2025-07-31 22:53:11,438 INFO    SenderThread:167029 [sender.py:finish():1114] shutting down sender
+2025-07-31 22:53:11,438 INFO    SenderThread:167029 [dir_watcher.py:finish():353] shutting down directory watcher
+2025-07-31 22:53:12,437 INFO    SenderThread:167029 [dir_watcher.py:finish():383] scan: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/files
+2025-07-31 22:53:12,438 INFO    SenderThread:167029 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/files/config.yaml config.yaml
+2025-07-31 22:53:12,438 INFO    SenderThread:167029 [file_pusher.py:finish():171] shutting down file pusher
+2025-07-31 22:53:12,438 INFO    SenderThread:167029 [file_pusher.py:join():176] waiting for file pusher
+2025-07-31 22:53:13,473 INFO    Thread-10 :167029 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250731_225235-gate_config_8_NEW8_20250731_225229_882503/files/config.yaml
+2025-07-31 22:53:14,444 INFO    MainThread:166936 [wandb_init.py:teardown():302] tearing down wandb.init

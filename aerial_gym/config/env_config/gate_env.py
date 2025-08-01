@@ -1,4 +1,11 @@
 from aerial_gym.config.asset_config.gate_asset_config import gate_asset_params
+from aerial_gym.config.asset_config.gate_scaling_config import (
+    GateScalingConfig,
+    full_size_gate_params,
+    medium_gate_params,
+    small_gate_params,
+    minimum_gate_params
+)
 from aerial_gym.config.asset_config.env_asset_config import (
     object_asset_params, 
     OBJECT_SEMANTIC_ID, 
@@ -72,7 +79,11 @@ class GateEnvCfg:
         
         # Asset inclusion configuration
         include_asset_type = {
-            "gate": True,  # Include the gate asset
+            # "gate": True,  # REMOVED: No longer needed, replaced by specific gate types
+            "gate_full": True,   # Full size gate (scale 1.0)
+            "gate_medium": True, # Medium size gate (scale 0.7)
+            "gate_small": True,  # Small size gate (scale 0.5)
+            "gate_minimum": True, # Minimum size gate (scale 0.4)
             "objects": True,  # Include random objects for obstacles
             "left_wall": True,  # Left boundary wall
             "right_wall": True,  # Right boundary wall
@@ -269,7 +280,10 @@ class GateEnvCfg:
         
         # Mapping of asset type names to their configuration classes
         asset_type_to_dict_map = {
-            "gate": gate_asset_params,
+            "gate_full": full_size_gate_params,    # Full size gate (scale 1.0)
+            "gate_medium": medium_gate_params,     # Medium size gate (scale 0.7)
+            "gate_small": small_gate_params,       # Small size gate (scale 0.5)
+            "gate_minimum": minimum_gate_params,   # Minimum size gate (scale 0.4)
             "objects": gate_object_params,
             "left_wall": boundary_left_wall,
             "right_wall": boundary_right_wall,
@@ -301,8 +315,12 @@ class GateEnvWithObstaclesCfg(GateEnvCfg):
         
         # Include gate plus some obstacles
         include_asset_type = {
-            "gate": True,
-            "objects": False, # Could enable for even more challenge
+            # "gate": True,  # REMOVED: No longer needed, replaced by specific gate types
+            "gate_full": True,   # Full size gate (scale 1.0)
+            "gate_medium": True, # Medium size gate (scale 0.7)
+            "gate_small": True,  # Small size gate (scale 0.5)
+            "gate_minimum": True, # Minimum size gate (scale 0.4)
+            "objects": True,
         }
         
         # Configure obstacles to be sparse and not block the gate
@@ -333,7 +351,11 @@ class GateEnvWithObstaclesCfg(GateEnvCfg):
         
         # Asset mapping
         asset_type_to_dict_map = {
-            "gate": gate_asset_params,
+            # "gate": gate_asset_params,  # REMOVED: No longer needed, replaced by specific gate types
+            "gate_full": full_size_gate_params,    # Full size gate (scale 1.0)
+            "gate_medium": medium_gate_params,     # Medium size gate (scale 0.7)
+            "gate_small": small_gate_params,       # Small size gate (scale 0.5)
+            "gate_minimum": minimum_gate_params,   # Minimum size gate (scale 0.4)
             "objects": sparse_object_params,
         }
 
@@ -372,12 +394,19 @@ class GateEnvRandomizedCfg(GateEnvCfg):
                 0.0, 0.0, 0.0           # Angular velocity
             ]
         
-        # Asset inclusion
+        # Asset inclusion configuration for randomized gate  
         include_asset_type = {
-            "gate": True,
+            # "gate": True,  # REMOVED: No longer needed, replaced by specific gate types
+            "gate_full": True,   # Full size gate (scale 1.0) - randomized position
+            "gate_medium": True, # Medium size gate (scale 0.7) - randomized position
+            "gate_small": True,  # Small size gate (scale 0.5) - randomized position  
+            "gate_minimum": True, # Minimum size gate (scale 0.4) - randomized position
         }
         
         # Asset mapping with randomized gate
         asset_type_to_dict_map = {
-            "gate": randomized_gate_params,
+            "gate_full": randomized_gate_params,    # Full size gate with randomized position
+            "gate_medium": randomized_gate_params,  # All gates use same randomization logic
+            "gate_small": randomized_gate_params, 
+            "gate_minimum": randomized_gate_params,
         } 
