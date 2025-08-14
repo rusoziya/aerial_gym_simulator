@@ -49,12 +49,20 @@ class AssetManager:
         self.reset_idx(torch.arange(self.env_asset_state_tensor.shape[0]), num_obstacles_per_env)
 
     def reset_idx(self, env_ids, num_obstacles_per_env=0):
+        # logger.warning(f"[OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids={env_ids.tolist() if hasattr(env_ids, 'tolist') else env_ids}, num_obstacles_per_env={num_obstacles_per_env}")
+        # logger.warning(f"[OBSTACLE_DEBUG] num_keep_in_env={self.num_keep_in_env}, total_asset_tensor_shape={self.env_asset_state_tensor.shape}")
+        
         if num_obstacles_per_env < self.num_keep_in_env:
+            # logger.warning(f"[OBSTACLE_DEBUG] Requested obstacles ({num_obstacles_per_env}) < minimum ({self.num_keep_in_env}), using minimum")
             logger.info(
                 "Number of obstacles required in the environment by the \
                   code is lesser than the minimum number of obstacles that the environment configuration specifies."
             )
             num_obstacles_per_env = self.num_keep_in_env
+
+        # logger.warning(f"[OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: {num_obstacles_per_env}")
+        # logger.warning(f"[OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to {num_obstacles_per_env-1}")
+        # logger.warning(f"[OBSTACLE_DEBUG] Assets that will be HIDDEN: indices {num_obstacles_per_env} to {self.env_asset_state_tensor.shape[1]-1}")
 
         sampled_asset_state_ratio = torch_rand_float_tensor(
             self.asset_min_state_ratio, self.asset_max_state_ratio
@@ -67,5 +75,19 @@ class AssetManager:
         self.env_asset_state_tensor[env_ids, :, 3:7] = quat_from_euler_xyz_tensor(
             sampled_asset_state_ratio[env_ids, :, 3:6]
         )
+        
         # put those obstacles not needed in the environment outside
+        # logger.warning(f"[OBSTACLE_DEBUG] Moving assets {num_obstacles_per_env} to {self.env_asset_state_tensor.shape[1]-1} to position (-1000, -1000, -1000)")
         self.env_asset_state_tensor[env_ids, num_obstacles_per_env:, 0:3] = -1000.0
+        
+        # Count visible obstacles per environment for debugging
+        # for env_id in (env_ids.tolist() if hasattr(env_ids, 'tolist') else [env_ids]):
+        #     visible_count = 0
+        #     hidden_count = 0
+        #     for asset_idx in range(self.env_asset_state_tensor.shape[1]):
+        #         pos = self.env_asset_state_tensor[env_id, asset_idx, 0:3]
+        #         if pos[0] > -500:  # Not hidden
+        #             visible_count += 1
+        #         else:
+        #             hidden_count += 1
+        #     logger.warning(f"[OBSTACLE_DEBUG] Env {env_id}: {visible_count} visible assets, {hidden_count} hidden assets")

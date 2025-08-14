@@ -71,6 +71,10 @@ class AssetLoader:
         logger.info(
             f"Loading asset: {selected_file} for the first time. Next use of this asset will be via the asset buffer."
         )
+        
+        # Add debugging for gate variants
+        # if "gate_scale_" in selected_file:
+        #     logger.warning(f"[GATE_DEBUG] Loading gate variant: {selected_file} from {filepath}")
 
         asset_class_dict = {
             "asset_type": asset_type,
@@ -89,6 +93,9 @@ class AssetLoader:
             "force_sensor_parent_link": asset_class_config.force_sensor_parent_link,
             "force_sensor_transform": asset_class_config.force_sensor_transform,
             "use_collision_mesh_instead_of_visual": asset_class_config.use_collision_mesh_instead_of_visual,
+            # Gate variant marking for random selection
+            "is_gate_variant": "gate_scale_" in selected_file,
+            "gate_variant_name": asset_type if "gate_scale_" in selected_file else None,
             # do stuff with position, randomization, etc
         }
         max_list_vals = 0

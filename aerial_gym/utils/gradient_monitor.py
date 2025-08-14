@@ -218,8 +218,8 @@ class CompleteObservationInfluenceTracker:
         else:
             phase = f"🎯 TRAINING PHASE (SF Step {self.step_count})"
             
-        logger.warning(f"🔧 COMPLETE OBSERVATION ANALYSIS - {phase}")
-        logger.warning(f"   Sample Factory Training Step: {self.step_count} | Forward Pass: {self.forward_pass_count}")
+        # logger.warning(f"🔧 COMPLETE OBSERVATION ANALYSIS - {phase}")  # Suppressed verbose periodic debug output
+        # logger.warning(f"   Sample Factory Training Step: {self.step_count} | Forward Pass: {self.forward_pass_count}")  # Suppressed verbose periodic debug output
         
         # Sort components by correlation strength
         sorted_components = sorted(step_data.items(), key=lambda x: x[1]['correlation'], reverse=True)
@@ -229,17 +229,18 @@ class CompleteObservationInfluenceTracker:
             corr = data['correlation']
             mag = data['magnitude']
             var = data['variance']
-            logger.warning(f"   {emoji} {component_name:20s}: Corr={corr:.3f}, Mag={mag:.1f}, Var={var:.3f}")
+            # logger.warning(f"   {emoji} {component_name:20s}: Corr={corr:.3f}, Mag={mag:.1f}, Var={var:.3f}")  # Suppressed verbose periodic debug output
         
-        logger.warning("")  # Add spacing
-    
+        # logger.warning("")  # Add spacing (suppressed)
+        
     def step(self):
         """Update step counter - now synced externally with Sample Factory."""
         # Note: step_count is now set directly by the training script
         # to match Sample Factory's actual training step count
         if self.step_count % 10 == 0:  # Log every 10 training steps
-            logger.warning(f"📈 Training milestone: Step {self.step_count} reached (Total forward passes: {self.forward_pass_count})")
-        
+            # logger.warning(f"📈 Training milestone: Step {self.step_count} reached (Total forward passes: {self.forward_pass_count})")  # Suppressed verbose periodic debug output
+            pass
+
     def should_log(self) -> bool:
         """Determine if metrics should be logged this step."""
         return self.step_count > 0 and self.step_count % self.config.get('log_interval', 100) == 0

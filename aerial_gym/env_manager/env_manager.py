@@ -173,6 +173,12 @@ class EnvManager(BaseManager):
             self.IGE_env.create_ground_plane()
             logger.info("[DONE] Creating ground plane in Isaac Gym Simulation")
 
+        # Track per-env list of gate variant asset indices after creation
+        self.global_tensor_dict["gate_variant_indices_per_env"] = [[] for _ in range(self.cfg.env.num_envs)]
+        self.global_tensor_dict["active_gate_variant_index"] = torch.full((self.cfg.env.num_envs,), -1, device=self.device, dtype=torch.long)
+        self.global_tensor_dict["active_gate_variant_array_index"] = torch.full((self.cfg.env.num_envs,), -1, device=self.device, dtype=torch.long)
+        self.global_tensor_dict["gate_variant_names_per_env"] = [[] for _ in range(self.cfg.env.num_envs)]
+
         for i in range(self.cfg.env.num_envs):
             logger.debug(f"Populating environment {i}")
             if i % 1000 == 0:
@@ -190,6 +196,9 @@ class EnvManager(BaseManager):
 
             self.num_obs_in_env = 0
             # add regular assets in the environment
+            local_gate_variant_indices = []  # LOCAL indices including robot (robot=0)
+            local_gate_variant_names = []
+            local_index_counter = 1  # robot is 0, first env asset starts at 1
             for asset_info_dict in self.global_asset_dicts[i]:
                 asset_handle, ige_seg_ctr = self.IGE_env.add_asset_to_env(
                     asset_info_dict,
@@ -198,6 +207,12 @@ class EnvManager(BaseManager):
                     self.global_asset_counter,
                     segmentation_ctr,
                 )
+                # Track gate variants using LOCAL per-env index (including robot)
+                if asset_info_dict.get("is_gate_variant", False):
+                    local_gate_variant_indices.append(local_index_counter)
+                    gate_variant_name = asset_info_dict.get("gate_variant_name", "unknown")
+                    local_gate_variant_names.append(gate_variant_name)
+                    # logger.warning(f"[GATE_DEBUG] Env {i}: Found gate variant '{gate_variant_name}' at local index {local_index_counter} (file: {asset_info_dict.get('filename', 'unknown')})")
                 self.num_obs_in_env += 1
                 warp_segmentation_ctr = 0
                 if self.cfg.env.use_warp:
@@ -207,8 +222,9 @@ class EnvManager(BaseManager):
                         self.global_asset_counter,
                         segmentation_ctr,
                     )
-                # Update this after added in WARP
+                # Update counters after adding this asset
                 self.global_asset_counter += 1
+                local_index_counter += 1
                 segmentation_ctr += max(ige_seg_ctr, warp_segmentation_ctr)
                 if self.asset_min_state_ratio is None or self.asset_max_state_ratio is None:
                     self.asset_min_state_ratio = torch.tensor(
@@ -230,6 +246,18 @@ class EnvManager(BaseManager):
                             torch.tensor(asset_info_dict["max_state_ratio"], requires_grad=False),
                         )
                     )
+            # Persist gate variant indices for this env
+            self.global_tensor_dict["gate_variant_indices_per_env"][i] = local_gate_variant_indices
+            self.global_tensor_dict["gate_variant_names_per_env"][i] = local_gate_variant_names
+            # logger.warning(f"[GateVariant] Env {i}: discovered {len(local_gate_variant_indices)} gate variants -> {local_gate_variant_names}")
+            
+            # DEBUG: Count different asset types for this environment
+            # gate_count = len([name for name in local_gate_variant_names if "gate_scale_" in name])
+            # wall_count = len([asset_dict for asset_dict in self.global_asset_dicts[i] if "wall" in asset_dict.get("asset_type", "")])
+            # object_count = len([asset_dict for asset_dict in self.global_asset_dicts[i] if asset_dict.get("asset_type", "") == "objects"])
+            # other_count = len(self.global_asset_dicts[i]) - gate_count - wall_count - object_count
+            
+            # logger.warning(f"[OBSTACLE_DEBUG] Env {i} asset breakdown: {gate_count} gates, {wall_count} walls, {object_count} objects, {other_count} other, TOTAL: {len(self.global_asset_dicts[i])}")
 
         # check if environment has 0 objects. If so, skip this step
         if self.asset_min_state_ratio is not None:
@@ -250,6 +278,10 @@ class EnvManager(BaseManager):
             )
 
         self.global_tensor_dict["num_obstacles_in_env"] = self.num_obs_in_env
+        # logger.warning(f"[OBSTACLE_DEBUG] EnvManager setting num_obstacles_in_env = {self.num_obs_in_env} (this is total loaded assets per env)")
+
+        # Initial activation: select a gate for each env
+        self.apply_gate_variant_selection(env_ids=torch.arange(self.cfg.env.num_envs, device=self.device))
 
     def prepare_sim(self):
         """
@@ -280,12 +312,118 @@ class EnvManager(BaseManager):
         # finally reset the robot manager that resets the robot state tensors and the sensors
         # logger.debug(f"Resetting environments {env_ids}.")
         self.IGE_env.reset_idx(env_ids)
-        self.asset_manager.reset_idx(env_ids, self.global_tensor_dict["num_obstacles_in_env"])
+        obstacle_count = self.global_tensor_dict["num_obstacles_in_env"]
+        # logger.warning(f"[OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count={obstacle_count}")
+        self.asset_manager.reset_idx(env_ids, obstacle_count)
+        # IMPORTANT: After asset manager randomization, activate one gate variant per env
+        self.apply_gate_variant_selection(env_ids=env_ids)
         if self.cfg.env.use_warp:
             self.warp_env.reset_idx(env_ids)
         self.robot_manager.reset_idx(env_ids)
         self.IGE_env.write_to_sim()
         self.sim_steps[env_ids] = 0
+
+    def apply_gate_variant_selection(self, env_ids):
+        """
+        Select exactly one gate variant to be visible per environment, and hide the others by moving them far away.
+        This must be called after AssetManager.reset_idx so that our visibility settings are not overwritten.
+        """
+        if env_ids is None:
+            return
+        # Guard: only apply after prepare_for_simulation sets num_assets_per_env
+        if not hasattr(self.IGE_env, 'num_assets_per_env'):
+            logger.debug("[GateVariant] Skipping selection (IGE_env not prepared yet)")
+            return
+        if isinstance(env_ids, torch.Tensor):
+            ids = env_ids.tolist()
+        else:
+            ids = list(env_ids)
+        env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
+        for env_id in ids:
+            gate_indices = self.global_tensor_dict["gate_variant_indices_per_env"][env_id]
+            gate_names = self.global_tensor_dict["gate_variant_names_per_env"][env_id]
+            if not gate_indices:
+                continue
+            
+            # Curriculum-gated unlocking of gate variants (threshold-based):
+            # At level 3: allow all scales >= 80%
+            # At level 23: allow all scales >= 40%
+            cur_level = self.global_tensor_dict.get("curriculum_level", 3)
+            try:
+                cur_level = int(cur_level.item()) if hasattr(cur_level, 'item') else int(cur_level)
+            except Exception:
+                cur_level = 3
+            
+            # Compute linear threshold from 80 -> 40 over levels 3..23
+            if cur_level <= 3:
+                min_allowed_scale = 80
+            elif cur_level >= 23:
+                min_allowed_scale = 40
+            else:
+                frac = (cur_level - 3) / (23 - 3)
+                raw = 80 - frac * (80 - 40)
+                # Quantize down to nearest 2%% step (80, 78, 76, ...)
+                min_allowed_scale = int((int(raw) // 2) * 2)
+                if min_allowed_scale < 40:
+                    min_allowed_scale = 40
+                if min_allowed_scale > 100:
+                    min_allowed_scale = 100
+            
+            # Parse (index, scale, name) and keep those meeting the threshold
+            parsed = []
+            for j, name in enumerate(gate_names):
+                scale = 100
+                if isinstance(name, str) and "gate_scale_" in name:
+                    try:
+                        scale = int(name.replace("gate_scale_", ""))
+                    except Exception:
+                        scale = 100
+                parsed.append((j, scale, name))
+            # Allowed indices are those with scale >= min_allowed_scale
+            allowed_js = [j for (j, scale, _) in parsed if scale >= min_allowed_scale]
+            # If nothing matched (e.g., unusual naming), fall back to largest scales
+            if not allowed_js:
+                parsed.sort(key=lambda x: x[1], reverse=True)
+                allowed_js = [j for (j, _, __) in parsed[:1]] if parsed else []
+            
+            # Choose uniformly across unique scales to avoid duplicate weighting
+            if allowed_js:
+                allowed_pairs = [(j, scale) for (j, scale, _) in parsed if j in allowed_js]
+                unique_scales = sorted({scale for (_, scale) in allowed_pairs}, reverse=True)
+                chosen_scale = random.choice(unique_scales)
+                candidates = [j for (j, scale) in allowed_pairs if scale == chosen_scale]
+                chosen_idx = random.choice(candidates)
+            else:
+                chosen_idx = 0
+            chosen_local_index = gate_indices[chosen_idx]
+            active_name = gate_names[chosen_idx] if gate_names and chosen_idx < len(gate_names) else "unknown"
+            
+            # Extract scale from gate name for debugging
+            scale_info = "unknown"
+            if "gate_scale_" in active_name:
+                scale_info = active_name.replace("gate_scale_", "") + "%"
+            
+            # logger.warning(f"[GATE_RANDOM_SELECT] Env {env_id}: RANDOMLY SELECTED gate variant '{active_name}' (scale: {scale_info}, local index {chosen_local_index}) from {len(allowed_js)} allowed / {len(gate_indices)} total")
+            
+            self.global_tensor_dict["active_gate_variant_index"][env_id] = chosen_local_index  # Asset index
+            self.global_tensor_dict["active_gate_variant_array_index"][env_id] = chosen_idx  # Index in gate variant arrays
+            # Iterate all gate variants and place only the chosen at center; others moved far away
+            for j, local_index in enumerate(gate_indices):
+                if local_index < 0 or local_index >= env_asset_state.shape[1]:
+                    logger.debug(f"[GateVariant] Env {env_id}: local_index {local_index} out of bounds for assets {env_asset_state.shape[1]}")
+                    continue
+                gate_name = gate_names[j] if gate_names and j < len(gate_names) else f"gate_{j}"
+                if j == chosen_idx:
+                    # place at center (already configured by min/max), but ensure visible by mirroring center pose
+                    env_asset_state[env_id, local_index, 0:3] = torch.tensor([0.0, 0.0, 0.0], device=self.device)
+                    # logger.warning(f"[GATE_VISIBILITY] Env {env_id}: SHOWING gate '{gate_name}' at center (0,0,0)")
+                else:
+                    # move out of bounds to hide
+                    env_asset_state[env_id, local_index, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
+                    # logger.warning(f"[GATE_VISIBILITY] Env {env_id}: HIDING gate '{gate_name}' at (-1000,-1000,-1000)")
+        # Write back the unfolded state tensor
+        self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
+        # logger.warning("[GateVariant] Applied gate variant selection for env_ids: {}".format(ids))
 
     def log_memory_use(self):
         """

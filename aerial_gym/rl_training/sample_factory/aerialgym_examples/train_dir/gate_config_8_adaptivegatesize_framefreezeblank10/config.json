@@ -2,7 +2,7 @@
   "help": false,
   "algo": "APPO",
   "env": "quad_with_obstacles_gate",
-  "experiment": "gate_config_7_commit_TEST3",
+  "experiment": "gate_config_8_adaptivegatesize_framefreezeblank10",
   "train_dir": "./train_dir",
   "restart_behavior": "resume",
   "device": "gpu",
@@ -139,10 +139,10 @@
   "ige_api_version": "preview4",
   "eval_stats": false,
   "action_space_dim": 4,
-  "command_line": "--env=quad_with_obstacles_gate --experiment=gate_config_7_commit_TEST3 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100",
+  "command_line": "--env=quad_with_obstacles_gate --experiment=gate_config_8_adaptivegatesize_framefreezeblank10 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100",
   "cli_args": {
     "env": "quad_with_obstacles_gate",
-    "experiment": "gate_config_7_commit_TEST3",
+    "experiment": "gate_config_8_adaptivegatesize_framefreezeblank10",
     "train_dir": "./train_dir",
     "async_rl": true,
     "num_batches_to_accumulate": 2,
@@ -189,7 +189,7 @@
     "gradient_print_interval": 100,
     "obs_key": "observations"
   },
-  "git_hash": "9ea7e82188d35c6d920d2992173ea3269367f825",
+  "git_hash": "ec9e1c81d1f204c3d3cdfc58418d02aa727ab2c7",
   "git_repo_name": "git@github.com:rusoziya/aerial_gym_simulator.git",
-  "wandb_unique_id": "gate_config_7_commit_TEST3_20250722_151209_345638"
+  "wandb_unique_id": "gate_config_8_adaptivegatesize_framefreezeblank10_20250814_131329_178518"
 }

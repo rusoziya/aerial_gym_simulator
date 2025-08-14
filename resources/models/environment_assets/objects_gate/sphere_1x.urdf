@@ -11,6 +11,9 @@
         <sphere radius="0.3"/>
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="object_color">
+        <color rgba="0.6 0.9 0 1"/>
+      </material>
     </visual>
     <collision name="base_link_collision">
       <geometry>
