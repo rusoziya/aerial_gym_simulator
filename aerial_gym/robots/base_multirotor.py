@@ -179,11 +179,88 @@ class BaseMultirotor(BaseRobot):
             return
         # robot_state is defined as a tensor of shape (num_envs, 13)
         # init_state tensor if of the format [ratio_x, ratio_y, ratio_z, roll, pitch, yaw, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
-        random_state = torch_rand_float_tensor(self.min_init_state, self.max_init_state)
+        # Curriculum-controlled spawn if task provides curriculum_level and helper; else fallback to fixed
+        use_curriculum_spawn = False
+        try:
+            # Try to read curriculum from global tensors
+            if hasattr(self, '_global_tensor_dict') and ('curriculum_level' in self._global_tensor_dict):
+                from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+                level = int(self._global_tensor_dict['curriculum_level'])
+                sr = task_config.curriculum.get_spawn_ranges(level)
+                # Convert meters to ratios using env bounds
+                # Use environment bounds to set center and scale
+                env_x_min = float(self.env_bounds_min[0, 0].item())
+                env_x_max = float(self.env_bounds_max[0, 0].item())
+                env_y_min = float(self.env_bounds_min[0, 1].item())
+                env_y_max = float(self.env_bounds_max[0, 1].item())
+                env_z_min = float(self.env_bounds_min[0, 2].item())
+                env_z_max = float(self.env_bounds_max[0, 2].item())
+                x_center = 0.5 * (env_x_min + env_x_max)  # center of X
+                y_center = float(sr['y_center_m'])
+                x_half = float(sr['x_half_span_m'])
+                y_half = float(sr['y_half_span_m'])
+                z_center = float(sr['z_center_m'])
+                z_half = float(sr['z_half_span_m'])
+                # Build min/max ratios (positions first three entries)
+                # Clamp spans to env bounds
+                x_min_m = max(env_x_min, x_center - x_half)
+                x_max_m = min(env_x_max, x_center + x_half)
+                y_min_m = max(env_y_min, y_center - y_half)
+                y_max_m = min(env_y_max, y_center + y_half)
+                z_min_m = max(env_z_min, z_center - z_half)
+                z_max_m = min(env_z_max, z_center + z_half)
+                # Convert meters to ratios based on env bounds
+                min_ratio_x = (x_min_m - env_x_min) / (env_x_max - env_x_min)
+                max_ratio_x = (x_max_m - env_x_min) / (env_x_max - env_x_min)
+                min_ratio_y = (y_min_m - env_y_min) / (env_y_max - env_y_min)
+                max_ratio_y = (y_max_m - env_y_min) / (env_y_max - env_y_min)
+                min_ratio_z = (z_min_m - env_z_min) / (env_z_max - env_z_min)
+                max_ratio_z = (z_max_m - env_z_min) / (env_z_max - env_z_min)
+                # Yaw in radians
+                yaw_abs = float(sr['yaw_abs_rad'])
+                min_yaw = -yaw_abs
+                max_yaw = +yaw_abs
+                # Clone base ranges and override pos/orient
+                min_init = self.min_init_state.clone()
+                max_init = self.max_init_state.clone()
+                min_init[:, 0] = min_ratio_x
+                max_init[:, 0] = max_ratio_x
+                min_init[:, 1] = min_ratio_y
+                max_init[:, 1] = max_ratio_y
+                min_init[:, 2] = min_ratio_z
+                max_init[:, 2] = max_ratio_z
+                # roll, pitch kept from config (0). yaw override
+                min_init[:, 5] = min_yaw
+                max_init[:, 5] = max_yaw
+                random_state = torch_rand_float_tensor(min_init, max_init)
+                use_curriculum_spawn = True
+                logger.debug(f"[SPAWN_CURRICULUM] Level {level}: X∈[{x_min_m:.2f},{x_max_m:.2f}] m, Y∈[{y_min_m:.2f},{y_max_m:.2f}] m, Z∈[{z_min_m:.2f},{z_max_m:.2f}] m; yaw∈[{min_yaw:.2f},{max_yaw:.2f}]rad")
+        except Exception as e:
+            logger.warning(f"[SPAWN_CURRICULUM] Disabled due to exception: {e}")
+        if not use_curriculum_spawn:
+            random_state = torch_rand_float_tensor(self.min_init_state, self.max_init_state)
 
         self.robot_state[env_ids, 0:3] = torch_interpolate_ratio(
             self.env_bounds_min, self.env_bounds_max, random_state[:, 0:3]
         )[env_ids]
+
+        # Optional debug: print a few spawned positions and yaw to verify ranges
+        try:
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+            do_debug = bool(getattr(task_config.curriculum, 'enable_detailed_logging', False))
+        except Exception:
+            do_debug = False
+        if do_debug:
+            try:
+                sample_n = min(3, env_ids.shape[0] if hasattr(env_ids, 'shape') else int(len(env_ids)))
+                sample_envs = env_ids[:sample_n] if hasattr(env_ids, 'shape') else env_ids[:sample_n]
+                pos_samples = self.robot_state[sample_envs, 0:3].detach().cpu()
+                yaw_samples = random_state[sample_envs, 5].detach().cpu()
+                # logger.warning(f"[SPAWN_DEBUG] Sampled positions (envs {sample_envs.tolist()}): {pos_samples.numpy().round(3).tolist()}")
+                # logger.warning(f"[SPAWN_DEBUG] Sampled yaw (rad): {yaw_samples.numpy().round(3).tolist()}")
+            except Exception as e:
+                # logger.warning(f"[SPAWN_DEBUG] Failed to log spawn samples: {e}")
+                pass
 
         # logger.debug(
         #     f"Random state: {random_state[0]}, min init state: {self.min_init_state[0]}, max init state: {self.max_init_state[0]}"

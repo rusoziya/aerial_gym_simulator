@@ -284,7 +284,15 @@ class NavigationTaskGate(BaseTask):
         # ===== CURRICULUM LOGGING =====
         logger.info(f"INITIAL CURRICULUM (Level {self.curriculum_level}):")
         logger.info(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
-        logger.info(f"   2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency)")
+        try:
+            sr = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
+            logger.info(
+                f"   2. SPAWN: X∈[{(-sr['x_half_span_m']):.1f}, {(+sr['x_half_span_m']):.1f}] m, "
+                f"Y∈[{(sr['y_center_m']-sr['y_half_span_m']):.1f}, {(sr['y_center_m']+sr['y_half_span_m']):.1f}] m, "
+                f"Z∈[{(sr['z_center_m']-sr['z_half_span_m']):.1f}, {(sr['z_center_m']+sr['z_half_span_m']):.1f}] m; yaw ±{(sr['yaw_abs_rad']*57.2958):.1f}°"
+            )
+        except Exception as e:
+            logger.info(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
         logger.info(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
         
         # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
@@ -293,17 +301,27 @@ class NavigationTaskGate(BaseTask):
         
         # 6. CAMERA FRAME DROPOUT (entire-frame)
         fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
-        logger.info(f"   6. CAMERA FRAME DROPOUT: drone={fd['drone_total']*100:.2f}% (freeze {fd['drone_freeze']*100:.2f}%, blank {fd['drone_blank']*100:.2f}%), static={fd['static_total']*100:.2f}% (freeze {fd['static_freeze']*100:.2f}%, blank {fd['static_blank']*100:.2f}%)")
+        logger.info(f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total']*100:.1f}% (freeze {fd['drone_freeze']*100:.1f}%, blank {fd['drone_blank']*100:.1f}%), static_total={fd['static_total']*100:.1f}% (freeze {fd['static_freeze']*100:.1f}%, blank {fd['static_blank']*100:.1f}%)")
         
-        logger.info(f"   7. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
+        # 7. STATE NOISE (pose) — new
+        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+            sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+            logger.info(
+                f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad']*57.2958:.3f} deg, "
+                f"static_pos_std={sn['static_pos_std_m']:.4f} m, static_orient_std={sn['static_orient_std_rad']*57.2958:.3f} deg"
+            )
+        else:
+            logger.info("   7. STATE NOISE: disabled")
+        
+        logger.info(f"   8. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
         
         # Calculate progress fraction
         self.curriculum_progress_fraction = (
             self.curriculum_level - self.task_config.curriculum.min_level
         ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
         
-        logger.info(f"   7. PROGRESS: {self.curriculum_progress_fraction:.3f} (level {self.curriculum_level}/{self.task_config.curriculum.max_level})")
-        logger.info(f"   8. EVALUATION: Check every {self.task_config.curriculum.check_after_log_instances} instances (success rate threshold: {self.task_config.curriculum.success_rate_for_increase:.3f})")
+        logger.info(f"   8. PROGRESS: {self.curriculum_progress_fraction:.3f} (level {self.curriculum_level}/{self.task_config.curriculum.max_level})")
+        logger.info(f"   9. EVALUATION: Check every {self.task_config.curriculum.check_after_log_instances} instances (success rate threshold: {self.task_config.curriculum.success_rate_for_increase:.3f})")
         
         self.log_curriculum_update(f"[INIT] Multi-aspect curriculum initialized at level {self.curriculum_level}")
 
@@ -882,20 +900,22 @@ class NavigationTaskGate(BaseTask):
         # Entire-frame dropout (curriculum-driven)
         if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
             fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
-            p_freeze = fd.get('drone_freeze', 0.0)
-            p_blank = fd.get('drone_blank', 0.0)
-            if p_freeze > 0.0 or p_blank > 0.0:
+            p_blank = fd.get("drone_blank", 0.0)
+            p_freeze = fd.get("drone_freeze", 0.0)
+            if (p_blank > 0.0) or (p_freeze > 0.0):
+                # Ensure buffer exists
                 if not hasattr(self, "_prev_drone_depth"):
                     self._prev_drone_depth = noised_image_obs.clone()
-                # Two independent Bernoulli masks (cap total by ordering: apply blank first, then freeze)
-                blank_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_blank).view(-1, 1, 1)
-                freeze_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_freeze).view(-1, 1, 1)
-                # Apply BLANK replacement (1.0) first
-                noised_image_obs = torch.where(blank_mask, torch.ones_like(noised_image_obs), noised_image_obs)
-                # Apply FREEZE replacement (prev frame) where not already blanked
-                effective_freeze_mask = freeze_mask & (~blank_mask)
-                noised_image_obs = torch.where(effective_freeze_mask, self._prev_drone_depth, noised_image_obs)
-                # Update previous buffer
+                # Draw per-env Bernoulli masks
+                if p_blank > 0.0:
+                    blank_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_blank).view(-1, 1, 1)
+                    noised_image_obs = torch.where(blank_mask, torch.ones_like(noised_image_obs), noised_image_obs)
+                if p_freeze > 0.0:
+                    freeze_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_freeze).view(-1, 1, 1)
+                    # Apply freeze only where not already blanked
+                    apply_freeze = freeze_mask if p_blank == 0.0 else (freeze_mask & (~blank_mask))
+                    noised_image_obs = torch.where(apply_freeze, self._prev_drone_depth, noised_image_obs)
+                # Update previous buffer after potential dropout
                 self._prev_drone_depth = noised_image_obs.clone()
         else:
             # Maintain previous buffer if feature disabled
@@ -961,27 +981,31 @@ class NavigationTaskGate(BaseTask):
                 # Entire-frame dropout (curriculum-driven)
                 if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
                     fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
-                    p_freeze = fd.get('static_freeze', 0.0)
-                    p_blank = fd.get('static_blank', 0.0)
-                    if (p_freeze > 0.0) or (p_blank > 0.0):
+                    p_blank = fd.get("static_blank", 0.0)
+                    p_freeze = fd.get("static_freeze", 0.0)
+                    if (p_blank > 0.0) or (p_freeze > 0.0):
                         # Initialize previous static buffer
                         if not hasattr(self, "_prev_static_depth"):
+                            # Use per-env shared static image
                             if isinstance(static_depth_noised, np.ndarray):
                                 self._prev_static_depth = static_depth_noised.copy()
                             else:
                                 self._prev_static_depth = static_depth_noised.clone()
-                        # Draw Bernoulli decisions
-                        blank = (np.random.rand() < p_blank) if isinstance(static_depth_noised, np.ndarray) else (torch.rand(1, device=static_depth_noised.device).item() < p_blank)
-                        freeze = (np.random.rand() < p_freeze) if isinstance(static_depth_noised, np.ndarray) else (torch.rand(1, device=static_depth_noised.device).item() < p_freeze)
-                        # Apply blank first
-                        if blank:
-                            if isinstance(static_depth_noised, np.ndarray):
-                                static_depth_noised = np.ones_like(static_depth_noised)
-                            else:
+                        # Apply blank then freeze
+                        if isinstance(static_depth_noised, np.ndarray):
+                            if p_blank > 0.0 and (np.random.rand() < p_blank):
+                                static_depth_noised[...] = 1.0
+                            elif p_freeze > 0.0 and (np.random.rand() < p_freeze):
+                                static_depth_noised = self._prev_static_depth.copy()
+                        else:
+                            # tensor case
+                            do_blank = (torch.rand(1, device=static_depth_noised.device).item() < p_blank)
+                            if do_blank:
                                 static_depth_noised = torch.ones_like(static_depth_noised)
-                        # Apply freeze if not blanked
-                        elif freeze:
-                            static_depth_noised = self._prev_static_depth.copy() if isinstance(static_depth_noised, np.ndarray) else self._prev_static_depth.clone()
+                            else:
+                                do_freeze = (torch.rand(1, device=static_depth_noised.device).item() < p_freeze)
+                                if do_freeze:
+                                    static_depth_noised = self._prev_static_depth.clone()
                         # update buffer
                         if isinstance(static_depth_noised, np.ndarray):
                             self._prev_static_depth = static_depth_noised.copy()
@@ -1017,19 +1041,15 @@ class NavigationTaskGate(BaseTask):
                             logger.warning(f"✅ VAE encoding successful: output_shape={encoded_latents.shape}, range=[{encoded_latents.min().item():.3f}, {encoded_latents.max().item():.3f}]")
                         
                     else:
-                        # If already tensor
-                        if static_depth_noised.dim() == 2:
-                            static_depth_noised = static_depth_noised.unsqueeze(0)
-                        static_depth_expanded = static_depth_noised.expand(self.sim_env.num_envs, -1, -1)
-                        
+                        # Direct tensor path with per-env identical static image
+                        static_depth_tensor = static_depth_noised
+                        if static_depth_tensor.dim() == 2:
+                            static_depth_tensor = static_depth_tensor.unsqueeze(0)
+                        static_depth_expanded = static_depth_tensor.expand(self.sim_env.num_envs, -1, -1)
                         encoded_latents = self.shared_vae_model.encode(static_depth_expanded)
                         self.static_image_latents[:] = encoded_latents
-                        
-                except Exception as vae_error:
-                    logger.error(f"❌ VAE encoding failed: {vae_error}")
-                    # Fallback to zeros if VAE fails
-                    self.static_image_latents.fill_(0.0)
-                    
+                except Exception as e:
+                    logger.warning(f"VAE encoding of static camera failed: {e}")
             else:
                 # No static camera data or VAE disabled
                 if not hasattr(self, '_no_static_logged'):
@@ -1168,11 +1188,33 @@ class NavigationTaskGate(BaseTask):
         
         # ===== DRONE ABSOLUTE POSITION OBSERVATIONS (3D) =====
         # [0:3] = Drone absolute position in world coordinates (x, y, z)
-        self.task_obs["observations"][:, 0:3] = self.obs_dict["robot_position"]
+        drone_pos_clean = self.obs_dict["robot_position"]
+        # Apply curriculum-driven state noise (drone position)
+        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+            noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+            dp_std = float(noise_cfg.get("drone_pos_std_m", 0.0))
+            if dp_std > 0.0:
+                drone_pos_noised = drone_pos_clean + torch.randn_like(drone_pos_clean) * dp_std
+            else:
+                drone_pos_noised = drone_pos_clean
+        else:
+            drone_pos_noised = drone_pos_clean
+        self.task_obs["observations"][:, 0:3] = drone_pos_noised
         
         # ===== STATIC CAMERA POSE OBSERVATIONS (6D) =====
         # Get static camera pose information relative to drone
         static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
+        # Apply curriculum-driven noise to static camera pose copies (not altering sim)
+        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+            noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+            sp_std = float(noise_cfg.get("static_pos_std_m", 0.0))
+            so_std = float(noise_cfg.get("static_orient_std_rad", 0.0))
+            if sp_std > 0.0:
+                static_camera_pos = static_camera_pos + torch.randn_like(static_camera_pos) * sp_std
+            if so_std > 0.0:
+                static_camera_orientation = static_camera_orientation + torch.randn_like(static_camera_orientation) * so_std
+                # Wrap yaw-ish components into [-pi, pi] if needed (approx, for stability)
+                static_camera_orientation = torch.atan2(torch.sin(static_camera_orientation), torch.cos(static_camera_orientation))
         
         # [3:6] = Static camera position relative to drone (x, y, z in drone's reference frame)
         self.task_obs["observations"][:, 3:6] = static_camera_pos
@@ -1183,6 +1225,13 @@ class NavigationTaskGate(BaseTask):
         # ===== DRONE FULL ORIENTATION OBSERVATIONS (3D) =====
         # [9:12] = Full drone orientation including yaw (roll, pitch, yaw)
         euler_angles = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))
+        # Apply curriculum-driven noise to drone orientation copy
+        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+            noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+            do_std = float(noise_cfg.get("drone_orient_std_rad", 0.0))
+            if do_std > 0.0:
+                euler_angles = euler_angles + torch.randn_like(euler_angles) * do_std
+                euler_angles = torch.atan2(torch.sin(euler_angles), torch.cos(euler_angles))
         self.task_obs["observations"][:, 9:12] = euler_angles  # MODIFIED: Include full yaw instead of setting to 0.0
         
         # ===== DRONE STATE OBSERVATIONS (10D) =====
@@ -1636,7 +1685,15 @@ class NavigationTaskGate(BaseTask):
             
             self.log_curriculum_update(f"\nCURRICULUM APPLIED:")
             self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
-            self.log_curriculum_update(f"   2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)")
+            try:
+                sr = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
+                self.log_curriculum_update(
+                    f"   2. SPAWN: X∈[{(-sr['x_half_span_m']):.1f}, {(+sr['x_half_span_m']):.1f}] m, "
+                    f"Y∈[{(sr['y_center_m']-sr['y_half_span_m']):.1f}, {(sr['y_center_m']+sr['y_half_span_m']):.1f}] m, "
+                    f"Z∈[{(sr['z_center_m']-sr['z_half_span_m']):.1f}, {(sr['z_center_m']+sr['z_half_span_m']):.1f}] m; yaw ±{(sr['yaw_abs_rad']*57.2958):.1f}°"
+                )
+            except Exception as e:
+                self.log_curriculum_update(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
             # Get current randomized angle for first environment (representative)
             current_angle = 0.0
             if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
@@ -1682,9 +1739,19 @@ class NavigationTaskGate(BaseTask):
             # 6. CAMERA FRAME DROPOUT (entire-frame)
             fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
             self.log_curriculum_update(
-                f"   6. CAMERA FRAME DROPOUT: drone={fd['drone_total']*100:.2f}% (freeze {fd['drone_freeze']*100:.2f}%, blank {fd['drone_blank']*100:.2f}%), "
-                f"static={fd['static_total']*100:.2f}% (freeze {fd['static_freeze']*100:.2f}%, blank {fd['static_blank']*100:.2f}%)"
+                f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total']*100:.1f}% (freeze {fd['drone_freeze']*100:.1f}%, blank {fd['drone_blank']*100:.1f}%), "
+                f"static_total={fd['static_total']*100:.1f}% (freeze {fd['static_freeze']*100:.1f}%, blank {fd['static_blank']*100:.1f}%)"
             )
+            
+            # 7. STATE NOISE (pose)
+            if getattr(self.task_config.curriculum, "enable_state_noise", False):
+                sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+                self.log_curriculum_update(
+                    f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad']*57.2958:.3f} deg, "
+                    f"static_pos_std={sn['static_pos_std_m']:.4f} m, static_orient_std={sn['static_orient_std_rad']*57.2958:.3f} deg"
+                )
+            else:
+                self.log_curriculum_update("   7. STATE NOISE: disabled")
             
             # ===== CURRICULUM DEBUGGING: Final state after update =====
             self.log_curriculum_update(f"[CURRICULUM UPDATE] FINAL STATE:")
@@ -1715,12 +1782,12 @@ class NavigationTaskGate(BaseTask):
             self.infos["curriculum/camera_dropout_rate"] = torch.tensor(camera_dropout_rate, dtype=torch.float32)
             # Add camera frame dropout metrics
             fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
-            self.infos["curriculum/camera_frame_dropout_drone"] = torch.tensor(fd['drone_total'], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_dropout_static"] = torch.tensor(fd['static_total'], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_freeze_drone"] = torch.tensor(fd['drone_freeze'], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_blank_drone"] = torch.tensor(fd['drone_blank'], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_freeze_static"] = torch.tensor(fd['static_freeze'], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_blank_static"] = torch.tensor(fd['static_blank'], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_dropout_drone_total"] = torch.tensor(fd["drone_total"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_dropout_static_total"] = torch.tensor(fd["static_total"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_freeze_drone"] = torch.tensor(fd["drone_freeze"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_blank_drone"] = torch.tensor(fd["drone_blank"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_freeze_static"] = torch.tensor(fd["static_freeze"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_blank_static"] = torch.tensor(fd["static_blank"], dtype=torch.float32)
             
             # Add camera angle metrics
             self.infos["curriculum/camera_max_angle"] = torch.tensor(self.max_camera_angle, dtype=torch.float32)
@@ -1729,6 +1796,14 @@ class NavigationTaskGate(BaseTask):
             if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
                 current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
             self.infos["curriculum/camera_current_angle"] = torch.tensor(current_angle, dtype=torch.float32)
+            
+            # Add state noise metrics
+            if getattr(self.task_config.curriculum, "enable_state_noise", False):
+                sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+                self.infos["curriculum/state_noise_drone_pos_std_m"] = torch.tensor(sn["drone_pos_std_m"], dtype=torch.float32)
+                self.infos["curriculum/state_noise_drone_orient_std_deg"] = torch.tensor(sn["drone_orient_std_rad"]*57.2958, dtype=torch.float32)
+                self.infos["curriculum/state_noise_static_pos_std_m"] = torch.tensor(sn["static_pos_std_m"], dtype=torch.float32)
+                self.infos["curriculum/state_noise_static_orient_std_deg"] = torch.tensor(sn["static_orient_std_rad"]*57.2958, dtype=torch.float32)
             
             self.log_curriculum_update(f"[CURRICULUM UPDATE] RESETTING counters for next evaluation period")
             self.success_aggregate = 0
@@ -2177,7 +2252,7 @@ class StaticCameraManager:
             self.gym.render_all_camera_sensors(self.sim)
             self.gym.start_access_image_tensors(self.sim)
             
-            # Get images from first camera
+            # Get images from camera 0 (any env, all envs share same viewpoint)
             env_handle = self.env_handles[0]
             cam_handle = self.camera_handles[0]
             

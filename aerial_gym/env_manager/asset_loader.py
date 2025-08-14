@@ -1,5 +1,6 @@
 import os
 import random
+import os.path
 
 from isaacgym import gymapi
 from aerial_gym.assets.warp_asset import WarpAsset
@@ -95,7 +96,7 @@ class AssetLoader:
             "use_collision_mesh_instead_of_visual": asset_class_config.use_collision_mesh_instead_of_visual,
             # Gate variant marking for random selection
             "is_gate_variant": "gate_scale_" in selected_file,
-            "gate_variant_name": asset_type if "gate_scale_" in selected_file else None,
+            "gate_variant_name": os.path.splitext(selected_file)[0] if "gate_scale_" in selected_file else None,
             # do stuff with position, randomization, etc
         }
         max_list_vals = 0

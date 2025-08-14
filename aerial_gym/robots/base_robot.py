@@ -49,6 +49,8 @@ class BaseRobot(ABC):
 
         self.env_bounds_min = global_tensor_dict["env_bounds_min"]
         self.env_bounds_max = global_tensor_dict["env_bounds_max"]
+        # Keep a reference for optional features (e.g., curriculum level)
+        self._global_tensor_dict = global_tensor_dict
 
     @abstractmethod
     def reset(self):

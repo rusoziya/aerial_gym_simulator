@@ -96,7 +96,7 @@ class LMF2Cfg:
         max_linear_velocity = 100.0
         armature = 0.001
 
-        semantic_id = 0
+        semantic_id = 1
         per_link_semantic = False
 
         min_state_ratio = [
