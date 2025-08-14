@@ -145,9 +145,14 @@ class AerialGymVecEnv(gym.Env):
         elif camera_type == "segmentation":
             # Process segmentation image with colormap
             seg_image = image_data.cpu().numpy()
-            seg_image[seg_image <= 0] = seg_image[seg_image > 0].min() if seg_image[seg_image > 0].size > 0 else 1
-            seg_image_normalized = (seg_image - seg_image.min()) / (seg_image.max() - seg_image.min() + 1e-8)
-            seg_image_plasma = matplotlib.cm.plasma(seg_image_normalized)
+            # Preserve zero IDs (e.g., background) so we can see if any actor uses 0
+            # If all values are the same, avoid divide-by-zero
+            seg_min, seg_max = seg_image.min(), seg_image.max()
+            if seg_max - seg_min < 1e-8:
+                seg_norm = np.zeros_like(seg_image, dtype=np.float32)
+            else:
+                seg_norm = (seg_image - seg_min) / (seg_max - seg_min)
+            seg_image_plasma = matplotlib.cm.plasma(seg_norm)
             return Image.fromarray((seg_image_plasma * 255.0).astype(np.uint8))
         return None
 
@@ -614,6 +619,7 @@ def add_extra_params_func(parser):
     parser.add_argument("--enable_gradient_monitoring", type=lambda x: x.lower() == 'true', default=False, help="Enable complete observation influence tracking")
     parser.add_argument("--gradient_log_interval", default=100, type=int, help="Log influence metrics every N steps")
     parser.add_argument("--gradient_print_interval", default=100, type=int, help="Print analysis summary every N steps")
+    parser.add_argument("--enable_grad_attribution", type=lambda x: x.lower() == 'true', default=True, help="Enable gradient-based attribution alongside correlation analysis")
     
     p = parser
     p.add_argument(
@@ -1197,15 +1203,14 @@ def main():
 def run_with_influence_tracking(cfg: Config):
     """Enhanced training with complete observation influence tracking."""
     
-    # Import the complete observation influence tracker
+    # Import the complete observation influence tracker and gradient attribution
     try:
         from aerial_gym.utils.gradient_monitor import create_influence_tracker, INFLUENCE_MONITOR_AVAILABLE
-        # For compatibility during transition
-        GRADIENT_MONITOR_AVAILABLE = INFLUENCE_MONITOR_AVAILABLE
+        from aerial_gym.utils.gradient_attribution import create_gradient_tracker, GRAD_ATTR_AVAILABLE
     except ImportError:
-        print("❌ Complete observation influence tracker not available")
+        print("❌ Influence/gradient trackers not available")
         INFLUENCE_MONITOR_AVAILABLE = False
-        GRADIENT_MONITOR_AVAILABLE = False
+        GRAD_ATTR_AVAILABLE = False
     
     if not INFLUENCE_MONITOR_AVAILABLE:
         print("❌ Complete observation influence tracker not available - falling back to standard training")
@@ -1226,8 +1231,9 @@ def run_with_influence_tracking(cfg: Config):
         except ImportError:
             pass
 
-    # Create influence tracker instance (will be attached to model later)
+    # Create tracker instances (attached to model later)
     influence_tracker = None
+    grad_tracker = None
 
     def enhanced_wandb_log(metrics, **kwargs):
         """Enhanced wandb logging that includes influence monitoring metrics"""
@@ -1239,6 +1245,9 @@ def run_with_influence_tracking(cfg: Config):
             if hasattr(influence_tracker, 'step_count'):
                 if influence_tracker.step_count % getattr(cfg, 'gradient_print_interval', 100) == 0:
                     influence_tracker.print_analysis_summary()
+        if grad_tracker and grad_tracker.should_log():
+            grad_metrics = grad_tracker.get_logging_metrics()
+            metrics.update(grad_metrics)
         if original_wandb_log:
             original_wandb_log(metrics, **kwargs)
 
@@ -1252,10 +1261,15 @@ def run_with_influence_tracking(cfg: Config):
         'log_interval': getattr(cfg, 'gradient_log_interval', 100),
         'print_interval': getattr(cfg, 'gradient_print_interval', 100),
     }
+    grad_config = {
+        'log_interval': getattr(cfg, 'gradient_log_interval', 100),
+        'print_interval': getattr(cfg, 'gradient_print_interval', 100),
+    }
 
     def enhanced_learner_init(self):
         """Enhanced learner init that attaches influence tracker to the model"""
         nonlocal influence_tracker
+        nonlocal grad_tracker
         result = original_learner_init(self)
         
         print(f"🔧 Enhanced learner init called")
@@ -1287,15 +1301,79 @@ def run_with_influence_tracking(cfg: Config):
             except Exception as e:
                 print(f"❌ Error creating influence tracker: {e}")
                 influence_tracker = None
+            
+            # Optionally create gradient attribution tracker
+            try:
+                if getattr(cfg, 'enable_grad_attribution', True):
+                    grad_tracker = create_gradient_tracker(self.actor_critic, grad_config)
+                    if grad_tracker and grad_tracker.enabled:
+                        print("✅ Gradient attribution tracker successfully attached")
+                    else:
+                        print("❌ Failed to attach gradient attribution tracker")
+            except Exception as e:
+                print(f"❌ Error creating gradient attribution tracker: {e}")
+                grad_tracker = None
+
+            # Attach a small forward hook to the actor_critic input path to mirror the obs tensor and capture its grad
+            try:
+                tracker_ref = grad_tracker
+                if tracker_ref and tracker_ref.enabled:
+                    def _ac_forward_hook(mod, inp):
+                        # Try to locate the 150D obs inside Sample Factory's normalized_obs_dict
+                        try:
+                            arg = inp[0] if isinstance(inp, tuple) and len(inp) > 0 else inp
+                            # Case 1: dict input with key 'obs'
+                            if isinstance(arg, dict):
+                                t = arg.get('obs', None)
+                                if torch.is_tensor(t) and t.dim() == 2 and t.shape[1] == 150:
+                                    x = t.detach().requires_grad_(True)
+                                    # Stash proxy for backward hook
+                                    mod._obs_proxy = x
+                                    # Replace in a shallow-copied dict to avoid in-place side-effects
+                                    new_arg = dict(arg)
+                                    new_arg['obs'] = x
+                                    if isinstance(inp, tuple):
+                                        return (new_arg,) + tuple(inp[1:])
+                                    else:
+                                        return new_arg
+                                return None
+                            # Case 2: raw tensor input
+                            if torch.is_tensor(arg) and arg.dim() == 2 and arg.shape[1] == 150:
+                                x = arg.detach().requires_grad_(True)
+                                mod._obs_proxy = x
+                                if isinstance(inp, tuple):
+                                    lst = list(inp)
+                                    lst[0] = x
+                                    return tuple(lst)
+                                else:
+                                    return x
+                            return None
+                        except Exception:
+                            return None
+                    # Register on the encoder if present; otherwise on actor_critic itself
+                    target = getattr(self.actor_critic, 'encoder', self.actor_critic)
+                    self._grad_attr_forward_handle = target.register_forward_pre_hook(_ac_forward_hook)
+
+                    def _ac_backward_hook(mod, grad_in, grad_out):
+                        try:
+                            x = getattr(mod, '_obs_proxy', None)
+                            if x is not None and x.grad is not None and hasattr(self, '_grad_tracker') and self._grad_tracker:
+                                self._grad_tracker.consume_grad(x.grad)
+                        except Exception:
+                            pass
+                    self._grad_attr_backward_handle = target.register_full_backward_hook(_ac_backward_hook)
+            except Exception as e:
+                print(f"❌ Failed to attach actor_critic grad mirror hooks: {e}")
         else:
-            print("🔧 Cannot create influence tracker - model not available")
+            print("🔧 Cannot create influence/gradient trackers - model not available")
             if hasattr(self, 'actor_critic'):
                 print(f"   • actor_critic exists but is None: {self.actor_critic is None}")
             else:
                 print("   • actor_critic attribute doesn't exist")
         
-        # Store tracker reference on learner for access in train method
+        # Store tracker references on learner for access in train method
         self._influence_tracker = influence_tracker
+        self._grad_tracker = grad_tracker
         return result
 
     def enhanced_train(self, *args, **kwargs):
@@ -1328,6 +1406,12 @@ def run_with_influence_tracking(cfg: Config):
         else:
             print(f"🔧 No influence tracker available for step {current_step_after}")
         
+        # Optionally print gradient summary at intervals
+        if hasattr(self, '_grad_tracker') and self._grad_tracker and self._grad_tracker.enabled:
+            if current_step_after > 0 and current_step_after % cfg.gradient_print_interval == 0:
+                print(f"🔧 Gradient attribution analysis at training step {current_step_after}")
+                self._grad_tracker.print_gradient_summary()
+        
         return result
 
     # Apply monkey patches
@@ -1354,6 +1438,16 @@ def run_with_influence_tracking(cfg: Config):
             influence_tracker.cleanup()
         else:
             print("❌ No influence tracker was created - analysis unavailable")
+        
+        # Gradient attribution final summary
+        print("=" * 80)
+        print("🧮 GRADIENT-BASED ATTRIBUTION - FINAL SUMMARY")
+        print("=" * 80)
+        if grad_tracker:
+            grad_tracker.print_gradient_summary()
+            grad_tracker.cleanup()
+        else:
+            print("❌ No gradient attribution tracker was created - analysis unavailable")
             
         print("=" * 80)
         
@@ -1363,6 +1457,14 @@ def run_with_influence_tracking(cfg: Config):
         # Restore original functions
         Learner.init = original_learner_init
         Learner.train = original_learner_train
+        # Remove grad mirror hooks if present
+        try:
+            if hasattr(self, '_grad_attr_forward_handle'):
+                self._grad_attr_forward_handle.remove()
+            if hasattr(self, '_grad_attr_backward_handle'):
+                self._grad_attr_backward_handle.remove()
+        except Exception:
+            pass
         if original_wandb_log:
             import wandb
             wandb.log = original_wandb_log
