@@ -1,0 +1,1544 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-08-14 11:50:24,824][732327] Queried available GPUs: 0
+[37m[1m[2025-08-14 11:50:24,825][732327] Environment var CUDA_VISIBLE_DEVICES is 0
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 4
+[SUBPROCESS] Target Sample Factory action space: 4D
+[SUBPROCESS] Setting num_envs to 16 based on env_agents=16
+[SUBPROCESS] Set SF_ENV_AGENTS=16 environment variable
+[SUBPROCESS] Config batch_size: 2048
+[SUBPROCESS] Using STANDARD CONFIG (16 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_8_adaptivegatesize_framefreeze5', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true', '--enable_gradient_monitoring=true', '--gradient_log_interval=100', '--gradient_print_interval=100']
+Not connected to PVD
++++ Using GPU PhysX
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[1909 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[1909 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[1909 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[1909 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[1909 ms][base_task] - INFO : Setting seed: 570362793 (base_task.py:38)
+[33m[1910 ms][navigation_task_gate] - WARNING : ============================================================ (navigation_task_gate.py:54)
+[33m[1910 ms][navigation_task_gate] - WARNING : CONFIG VERIFICATION - REWARD PARAMETERS: (navigation_task_gate.py:55)
+[33m[1910 ms][navigation_task_gate] - WARNING : pos_reward_magnitude: 2.5 (navigation_task_gate.py:56)
+[33m[1910 ms][navigation_task_gate] - WARNING : very_close_to_goal_reward_magnitude: 2.5 (navigation_task_gate.py:57)
+[33m[1910 ms][navigation_task_gate] - WARNING : getting_closer_reward_multiplier: 5.0 (navigation_task_gate.py:58)
+[33m[1910 ms][navigation_task_gate] - WARNING : gate_approach_reward_magnitude: 1.25 (navigation_task_gate.py:59)
+[33m[1910 ms][navigation_task_gate] - WARNING : gate_passage_reward_magnitude: 50.0 (navigation_task_gate.py:60)
+[33m[1910 ms][navigation_task_gate] - WARNING : camera_facing_reward_magnitude: 0.0 (navigation_task_gate.py:61)
+[33m[1910 ms][navigation_task_gate] - WARNING : collision_penalty: -100.0 (navigation_task_gate.py:62)
+[33m[1910 ms][navigation_task_gate] - WARNING : ============================================================ (navigation_task_gate.py:63)
+[37m[1910 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:65)
+[37m[1910 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task_gate.py:66)
+[37m[1910 ms][navigation_task_gate] - INFO : PRE-INIT: Setting curriculum level 3 with 3 curriculum obstacles (navigation_task_gate.py:89)
+[37m[1910 ms][navigation_task_gate] - INFO : PRE-INIT: Visible assets (env assets only): 0 gate + 6 walls + 3 curriculum = 9 total (navigation_task_gate.py:90)
+[37m[1910 ms][navigation_task_gate] - INFO : PRE-INIT: Total obstacle count for asset manager: 9 (navigation_task_gate.py:92)
+[37m[1910 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[1910 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[1910 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[1910 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[1910 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[1910 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[1912 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[1912 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[1912 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[1912 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[1912 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[1912 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[1912 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+[37m[2941 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[2941 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[3154 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[3154 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[3154 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[3154 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[3154 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[3154 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[3154 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[3155 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[3155 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[3155 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3155 ms][asset_loader] - INFO : Loading asset: gate_scale_052.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3158 ms][asset_loader] - INFO : Loading asset: gate_scale_078.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3161 ms][asset_loader] - INFO : Loading asset: gate_scale_076.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3163 ms][asset_loader] - INFO : Loading asset: gate_scale_040.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3166 ms][asset_loader] - INFO : Loading asset: rectangular_box_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3167 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3168 ms][asset_loader] - INFO : Loading asset: trapezoid_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3169 ms][asset_loader] - INFO : Loading asset: small_cube_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3170 ms][asset_loader] - INFO : Loading asset: sphere_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3172 ms][asset_loader] - INFO : Loading asset: triangular_prism_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3173 ms][asset_loader] - INFO : Loading asset: triangular_prism_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3175 ms][asset_loader] - INFO : Loading asset: cylinder_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3176 ms][asset_loader] - INFO : Loading asset: small_cube_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3177 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3178 ms][asset_loader] - INFO : Loading asset: trapezoid_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3179 ms][asset_loader] - INFO : Loading asset: cylinder_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3180 ms][asset_loader] - INFO : Loading asset: sphere_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3182 ms][asset_loader] - INFO : Loading asset: cylinder_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3184 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3185 ms][asset_loader] - INFO : Loading asset: trapezoid_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3186 ms][asset_loader] - INFO : Loading asset: sphere_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3188 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3189 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3190 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3191 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3192 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3193 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3194 ms][asset_loader] - INFO : Loading asset: gate_scale_080.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3197 ms][asset_loader] - INFO : Loading asset: gate_scale_048.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3200 ms][asset_loader] - INFO : Loading asset: gate_scale_098.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3203 ms][asset_loader] - INFO : Loading asset: gate_scale_050.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3205 ms][asset_loader] - INFO : Loading asset: rectangular_box_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3206 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3207 ms][asset_loader] - INFO : Loading asset: gate_scale_068.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3210 ms][asset_loader] - INFO : Loading asset: gate_scale_064.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3212 ms][asset_loader] - INFO : Loading asset: gate_scale_090.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3214 ms][asset_loader] - INFO : Loading asset: gate_scale_042.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3217 ms][asset_loader] - INFO : Loading asset: triangular_prism_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3219 ms][asset_loader] - INFO : Loading asset: gate_scale_062.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3222 ms][asset_loader] - INFO : Loading asset: gate_scale_058.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3225 ms][asset_loader] - INFO : Loading asset: gate_scale_074.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3227 ms][asset_loader] - INFO : Loading asset: gate_scale_054.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3230 ms][asset_loader] - INFO : Loading asset: rectangular_box_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3231 ms][asset_loader] - INFO : Loading asset: gate_scale_096.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3234 ms][asset_loader] - INFO : Loading asset: gate_scale_046.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3236 ms][asset_loader] - INFO : Loading asset: gate_scale_044.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3239 ms][asset_loader] - INFO : Loading asset: gate_scale_088.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3241 ms][asset_loader] - INFO : Loading asset: gate_scale_072.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3243 ms][asset_loader] - INFO : Loading asset: gate_scale_094.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3246 ms][asset_loader] - INFO : Loading asset: gate_scale_082.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3248 ms][asset_loader] - INFO : Loading asset: gate_scale_056.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3251 ms][asset_loader] - INFO : Loading asset: gate_scale_100.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[3254 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:185)
+[33m[3649 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[3649 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[3650 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[3804 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[3821 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:426)
+[37m[3821 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:428)
+[33m[3920 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[3920 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:434)
+[33m[4209 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4404 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4405 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.44 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 7.92 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.44 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 6.03 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 150D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (150D = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[33m[4971 ms][navigation_task_gate] - WARNING : [GateVariant] Initial selection after build (one-time) (navigation_task_gate.py:108)
+[37m[4973 ms][navigation_task_gate] - INFO : POST-INIT: Updated global_tensor_dict with obstacle count: 9 (navigation_task_gate.py:114)
+[37m[5050 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:2031)
+[37m[5051 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:2050)
+[37m[5051 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:2051)
+[37m[5055 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:2059)
+[37m[5060 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:2059)
+[37m[5064 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:2059)
+[37m[5067 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:2059)
+[37m[5071 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:2059)
+[37m[5075 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:2059)
+[37m[5079 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:2059)
+[37m[5083 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:2059)
+[37m[5088 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:2059)
+[37m[5093 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:2059)
+[37m[5097 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:2059)
+[37m[5101 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:2059)
+[37m[5105 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:2059)
+[37m[5109 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:2059)
+[37m[5113 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:2059)
+[37m[5117 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:2059)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[5117 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:2077)
+[33m[5117 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:174)
+[33m[5117 ms][navigation_task_gate] - WARNING : 🔍 AVAILABLE OBSERVATIONS AT INITIALIZATION: (navigation_task_gate.py:175)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 crashes: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 truncations: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 num_env_actions: <class 'int'> = 0 (navigation_task_gate.py:180)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 env_actions: <class 'NoneType'> = None (navigation_task_gate.py:180)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 prev_env_actions: <class 'NoneType'> = None (navigation_task_gate.py:180)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 gate_variant_indices_per_env: <class 'list'> = [[7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10]] (navigation_task_gate.py:180)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 active_gate_variant_index: shape=torch.Size([16]), dtype=torch.int64 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 active_gate_variant_array_index: shape=torch.Size([16]), dtype=torch.int64 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 gate_variant_names_per_env: <class 'list'> = [['gate_scale_040', 'gate_scale_076', 'gate_scale_078', 'gate_scale_052'], ['gate_scale_050', 'gate_scale_098', 'gate_scale_048', 'gate_scale_080'], ['gate_scale_042', 'gate_scale_090', 'gate_scale_064', 'gate_scale_068'], ['gate_scale_042', 'gate_scale_062', 'gate_scale_042', 'gate_scale_042'], ['gate_scale_062', 'gate_scale_058', 'gate_scale_058', 'gate_scale_040'], ['gate_scale_068', 'gate_scale_054', 'gate_scale_058', 'gate_scale_074'], ['gate_scale_046', 'gate_scale_078', 'gate_scale_096', 'gate_scale_058'], ['gate_scale_042', 'gate_scale_044', 'gate_scale_080', 'gate_scale_064'], ['gate_scale_094', 'gate_scale_096', 'gate_scale_072', 'gate_scale_088'], ['gate_scale_082', 'gate_scale_098', 'gate_scale_088', 'gate_scale_082'], ['gate_scale_056', 'gate_scale_050', 'gate_scale_046', 'gate_scale_082'], ['gate_scale_062', 'gate_scale_088', 'gate_scale_076', 'gate_scale_054'], ['gate_scale_082', 'gate_scale_096', 'gate_scale_098', 'gate_scale_076'], ['gate_scale_100', 'gate_scale_072', 'gate_scale_098', 'gate_scale_040'], ['gate_scale_078', 'gate_scale_052', 'gate_scale_068', 'gate_scale_056'], ['gate_scale_096', 'gate_scale_062', 'gate_scale_082', 'gate_scale_080']] (navigation_task_gate.py:180)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 asset_min_state_ratio: shape=torch.Size([16, 40, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 asset_max_state_ratio: shape=torch.Size([16, 40, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 num_obstacles_in_env: <class 'int'> = 9 (navigation_task_gate.py:180)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 vec_root_tensor: shape=torch.Size([16, 41, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_state_tensor: shape=torch.Size([16, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 env_asset_state_tensor: shape=torch.Size([16, 40, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor: shape=torch.Size([656, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor_const: shape=torch.Size([656, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 rigid_body_state_tensor: shape=torch.Size([720, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 global_force_tensor: shape=torch.Size([720, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 global_torque_tensor: shape=torch.Size([720, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 unfolded_dof_state_tensor: <class 'NoneType'> = None (navigation_task_gate.py:180)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 global_contact_force_tensor: shape=torch.Size([16, 45, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_contact_force_tensor: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_position: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_orientation: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_angvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_body_angvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_body_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_euler_angles: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_force_tensor: shape=torch.Size([16, 5, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 robot_torque_tensor: shape=torch.Size([16, 5, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_position: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_orientation: shape=torch.Size([16, 40, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_linvel: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_angvel: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_body_angvel: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_body_linvel: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_euler_angles: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_force_tensor: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 obstacle_torque_tensor: shape=torch.Size([16, 40, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5117 ms][navigation_task_gate] - WARNING :   📊 env_bounds_max: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 env_bounds_min: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 gravity: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 dt: <class 'float'> = 0.01 (navigation_task_gate.py:180)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 CONST_WARP_MESH_ID_LIST: <class 'list'> = [129076313550336, 129076313934848, 129076313544704, 129076313546240, 129076313547776, 129076313549312, 129076314502144, 129076314503680, 129076352246272, 129076352247808, 129076352249344, 129076352250880, 129076352252416, 129076354345984, 129076356445184, 129076356446720] (navigation_task_gate.py:180)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 CONST_WARP_MESH_PER_ENV: <class 'list'> = [<warp.types.Mesh object at 0x75650dc66fd0>, <warp.types.Mesh object at 0x75650dc67160>, <warp.types.Mesh object at 0x75650dc67280>, <warp.types.Mesh object at 0x75650dc673a0>, <warp.types.Mesh object at 0x75650dc674c0>, <warp.types.Mesh object at 0x75650dc675e0>, <warp.types.Mesh object at 0x75650dc67700>, <warp.types.Mesh object at 0x75650dc67820>, <warp.types.Mesh object at 0x75650dc67940>, <warp.types.Mesh object at 0x75650dc67af0>, <warp.types.Mesh object at 0x75650dc67d00>, <warp.types.Mesh object at 0x75650dc67f10>, <warp.types.Mesh object at 0x75650dc74130>, <warp.types.Mesh object at 0x75650dc74340>, <warp.types.Mesh object at 0x75650dc74550>, <warp.types.Mesh object at 0x75650dc74760>] (navigation_task_gate.py:180)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 CONST_GLOBAL_VERTEX_TO_ASSET_INDEX_TENSOR: shape=torch.Size([56190]), dtype=torch.int64 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 VERTEX_MAPS_PER_ENV_ORIGINAL: shape=torch.Size([56190, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 robot_mass: shape=torch.Size([16]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 robot_inertia: shape=torch.Size([16, 3, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 robot_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 robot_prev_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 dof_control_mode: <class 'str'> = none (navigation_task_gate.py:180)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_orientation: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 num_robot_actions: <class 'int'> = 4 (navigation_task_gate.py:180)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 depth_range_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING :   📊 segmentation_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.int32 (navigation_task_gate.py:178)
+[33m[5118 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:181)
+[33m[5118 ms][navigation_task_gate] - WARNING : 🧪 TESTING OBSERVATION PROCESSING AT INITIALIZATION: (navigation_task_gate.py:184)
+[33m[5118 ms][navigation_task_gate] - WARNING : ❌ Error in process_obs_for_task(): 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs' (navigation_task_gate.py:234)
+[33m[5118 ms][navigation_task_gate] - WARNING : Traceback: Traceback (most recent call last):
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 196, in __init__
+[33m    self.process_obs_for_task()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 65, in process_obs_for_task
+[33m    static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 139, in _get_static_camera_pose_relative_to_drone
+[33m    static_camera_world_pos = torch.tensor([0.0, -3.0, 1.5], device=self.device).expand(self.num_envs, -1)
+[33mAttributeError: 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs'
+[33m (navigation_task_gate.py:236)
+[33m[5118 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:238)
+[37m[5118 ms][navigation_task_gate] - INFO : Curriculum logging setup successful: ./train_dir/curriculum_gate_navigation_20250814_115030.log (navigation_task_gate.py:442)
+[37m[5118 ms][navigation_task_gate] - INFO : CURRICULUM: Visible assets: 1 gate + 6 walls + 1 robot + 3 curriculum = 11 total (navigation_task_gate.py:263)
+[33m[5118 ms][navigation_task_gate] - WARNING : [OBSTACLE_FIX] CURRICULUM: Level 3 should spawn 3 curriculum obstacles (navigation_task_gate.py:264)
+[33m[5118 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = 11 (navigation_task_gate.py:268)
+[33m[5118 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: 11 (navigation_task_gate.py:277)
+[37m[5118 ms][navigation_task_gate] - INFO : FINAL: Visible assets: 8, Curriculum obstacles: 3, Total: 11 (navigation_task_gate.py:279)
+[37m[5118 ms][navigation_task_gate] - INFO : INITIAL CURRICULUM (Level 3): (navigation_task_gate.py:285)
+[37m[5118 ms][navigation_task_gate] - INFO :    1. OBSTACLES: 3 behind gate (total assets: 11 = 8 visible + 3 curriculum) (navigation_task_gate.py:286)
+[37m[5118 ms][navigation_task_gate] - INFO :    2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:287)
+[37m[5118 ms][navigation_task_gate] - INFO :    3. CAMERA ANGLE: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:288)
+[37m[5118 ms][navigation_task_gate] - INFO :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:292)
+[37m[5118 ms][navigation_task_gate] - INFO :    6. CAMERA FRAME DROPOUT: drone=0.0%, static=0.0% (both drone & static) (navigation_task_gate.py:296)
+[37m[5118 ms][navigation_task_gate] - INFO :    7. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count 11 (navigation_task_gate.py:298)
+[37m[5118 ms][navigation_task_gate] - INFO :    7. PROGRESS: 0.000 (level 3/23) (navigation_task_gate.py:305)
+[37m[5118 ms][navigation_task_gate] - INFO :    8. EVALUATION: Check every 128 instances (success rate threshold: 0.500) (navigation_task_gate.py:306)
+[33m[5118 ms][navigation_task_gate] - WARNING : [INIT] Multi-aspect curriculum initialized at level 3 (navigation_task_gate.py:454)
+[33m[5119 ms][navigation_task_gate] - WARNING : [GATE_ADAPTIVE] Initializing gate dimensions for all environments (navigation_task_gate.py:392)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-08-14 11:50:30,158][732498] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-08-14 11:50:30,969][732327] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-08-14 11:50:30,969][732327] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gate_config_8_adaptivegatesize_framefreeze5
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=2048
+[36mnum_batches_per_epoch=8
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 64]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=64
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=16
+[36mheadless=False
+[36msave_gifs=True
+[36menable_gradient_monitoring=True
+[36mgradient_log_interval=100
+[36mgradient_print_interval=100
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=4
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gate_config_8_adaptivegatesize_framefreeze5 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gate_config_8_adaptivegatesize_framefreeze5', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 64], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 16, 'headless': False, 'save_gifs': True, 'enable_gradient_monitoring': True, 'gradient_log_interval': 100, 'gradient_print_interval': 100, 'obs_key': 'observations'}
+[36mgit_hash=ec9e1c81d1f204c3d3cdfc58418d02aa727ab2c7
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gate_config_8_adaptivegatesize_framefreeze5_20250814_115021_223179
+[36m[2025-08-14 11:50:30,970][732327] Saving configuration to ./train_dir/gate_config_8_adaptivegatesize_framefreeze5/config.json...
+[36m[2025-08-14 11:50:31,121][732327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-08-14 11:50:31,121][732327] Rollout worker 0 uses device cuda:0
+[36m[2025-08-14 11:50:31,142][732327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-08-14 11:50:31,142][732327] InferenceWorker_p0-w0: min num requests: 1
+[36m[2025-08-14 11:50:31,143][732327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-08-14 11:50:31,144][732327] Starting seed is not provided
+[36m[2025-08-14 11:50:31,144][732327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-08-14 11:50:31,144][732327] Initializing actor-critic model on device cuda:0
+[36m[2025-08-14 11:50:31,145][732327] RunningMeanStd input shape: (150,)
+[36m[2025-08-14 11:50:31,145][732327] RunningMeanStd input shape: (1,)
+[36m[2025-08-14 11:50:31,179][732327] Created Actor Critic model with architecture:
+[36m[2025-08-14 11:50:31,179][732327] ActorCriticSharedWeights(
+[36m  (obs_normalizer): ObservationNormalizer(
+[36m    (running_mean_std): RunningMeanStdDictInPlace(
+[36m      (running_mean_std): ModuleDict(
+[36m        (obs): RunningMeanStdInPlace()
+[36m      )
+[36m    )
+[36m  )
+[36m  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+[36m  (encoder): MultiInputEncoder(
+[36m    (encoders): ModuleDict(
+[36m      (obs): MlpEncoder(
+[36m        (mlp_head): RecursiveScriptModule(
+[36m          original_name=Sequential
+[36m          (0): RecursiveScriptModule(original_name=Linear)
+[36m          (1): RecursiveScriptModule(original_name=ELU)
+[36m          (2): RecursiveScriptModule(original_name=Linear)
+[36m          (3): RecursiveScriptModule(original_name=ELU)
+[36m          (4): RecursiveScriptModule(original_name=Linear)
+[36m          (5): RecursiveScriptModule(original_name=ELU)
+[36m        )
+[36m      )
+[36m    )
+[36m  )
+[36m  (core): ModelCoreRNN(
+[36m    (core): GRU(64, 64)
+[36m  )
+[36m  (decoder): MlpDecoder(
+[36m    (mlp): Identity()
+[36m  )
+[36m  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+[36m  (action_parameterization): ActionParameterizationDefault(
+[36m    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+[36m  )
+[36m)
+[36m[2025-08-14 11:50:31,625][732327] Using optimizer <class 'torch.optim.adam.Adam'>
+[33m[2025-08-14 11:50:31,625][732327] No checkpoints found
+[36m[2025-08-14 11:50:31,626][732327] Did not load from checkpoint, starting from scratch!
+[36m[2025-08-14 11:50:31,626][732327] Initialized policy 0 weights for model version 0
+✅ Complete observation tracker attached to Obs Encoder (non-compiled)
+✅ Complete observation influence tracker created successfully
+[36m[2025-08-14 11:50:31,627][732327] LearnerWorker_p0 finished initialization!
+[36m[2025-08-14 11:50:31,627][732327] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[37m[1m[2025-08-14 11:50:31,643][732327] Inference worker 0-0 is ready!
+[37m[1m[2025-08-14 11:50:31,643][732327] All inference workers are ready! Signal rollout workers to start!
+[36m[2025-08-14 11:50:31,644][732327] EnvRunner 0-0 uses policy 0
+[37m[13221 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[13221 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[13221 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[13221 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[13221 ms][base_task] - INFO : Setting seed: 974299181 (base_task.py:38)
+[33m[13222 ms][navigation_task_gate] - WARNING : ============================================================ (navigation_task_gate.py:54)
+[33m[13222 ms][navigation_task_gate] - WARNING : CONFIG VERIFICATION - REWARD PARAMETERS: (navigation_task_gate.py:55)
+[33m[13222 ms][navigation_task_gate] - WARNING : pos_reward_magnitude: 2.5 (navigation_task_gate.py:56)
+[33m[13222 ms][navigation_task_gate] - WARNING : very_close_to_goal_reward_magnitude: 2.5 (navigation_task_gate.py:57)
+[33m[13222 ms][navigation_task_gate] - WARNING : getting_closer_reward_multiplier: 5.0 (navigation_task_gate.py:58)
+[33m[13222 ms][navigation_task_gate] - WARNING : gate_approach_reward_magnitude: 1.25 (navigation_task_gate.py:59)
+[33m[13222 ms][navigation_task_gate] - WARNING : gate_passage_reward_magnitude: 50.0 (navigation_task_gate.py:60)
+[33m[13222 ms][navigation_task_gate] - WARNING : camera_facing_reward_magnitude: 0.0 (navigation_task_gate.py:61)
+[33m[13222 ms][navigation_task_gate] - WARNING : collision_penalty: -100.0 (navigation_task_gate.py:62)
+[33m[13222 ms][navigation_task_gate] - WARNING : ============================================================ (navigation_task_gate.py:63)
+[37m[13222 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:65)
+[37m[13222 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task_gate.py:66)
+[37m[13222 ms][navigation_task_gate] - INFO : PRE-INIT: Setting curriculum level 3 with 3 curriculum obstacles (navigation_task_gate.py:89)
+[37m[13222 ms][navigation_task_gate] - INFO : PRE-INIT: Visible assets (env assets only): 0 gate + 6 walls + 3 curriculum = 9 total (navigation_task_gate.py:90)
+[37m[13222 ms][navigation_task_gate] - INFO : PRE-INIT: Total obstacle count for asset manager: 9 (navigation_task_gate.py:92)
+[37m[13222 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[13223 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[13223 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[13223 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[13223 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[13223 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[13224 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[13225 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[13225 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[13225 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[13225 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[13225 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[13225 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+[37m[14336 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[14336 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[14560 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[14560 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[14560 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[14560 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[14560 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[14560 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[14560 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[14560 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[14560 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[14560 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14561 ms][asset_loader] - INFO : Loading asset: gate_scale_088.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14565 ms][asset_loader] - INFO : Loading asset: gate_scale_098.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14567 ms][asset_loader] - INFO : Loading asset: gate_scale_064.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14570 ms][asset_loader] - INFO : Loading asset: gate_scale_050.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14572 ms][asset_loader] - INFO : Loading asset: sphere_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14574 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14575 ms][asset_loader] - INFO : Loading asset: rectangular_box_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14576 ms][asset_loader] - INFO : Loading asset: rectangular_box_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14577 ms][asset_loader] - INFO : Loading asset: small_cube_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14579 ms][asset_loader] - INFO : Loading asset: cylinder_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14580 ms][asset_loader] - INFO : Loading asset: cylinder_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14582 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14583 ms][asset_loader] - INFO : Loading asset: sphere_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14586 ms][asset_loader] - INFO : Loading asset: trapezoid_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14587 ms][asset_loader] - INFO : Loading asset: triangular_prism_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14588 ms][asset_loader] - INFO : Loading asset: triangular_prism_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14589 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14657 ms][asset_loader] - INFO : Loading asset: trapezoid_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14659 ms][asset_loader] - INFO : Loading asset: rectangular_box_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14661 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14662 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14664 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14665 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14666 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14667 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14668 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14670 ms][asset_loader] - INFO : Loading asset: gate_scale_100.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14673 ms][asset_loader] - INFO : Loading asset: gate_scale_070.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14676 ms][asset_loader] - INFO : Loading asset: gate_scale_052.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14681 ms][asset_loader] - INFO : Loading asset: gate_scale_096.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14685 ms][asset_loader] - INFO : Loading asset: cylinder_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14687 ms][asset_loader] - INFO : Loading asset: triangular_prism_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14688 ms][asset_loader] - INFO : Loading asset: small_cube_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14689 ms][asset_loader] - INFO : Loading asset: sphere_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14692 ms][asset_loader] - INFO : Loading asset: gate_scale_062.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14695 ms][asset_loader] - INFO : Loading asset: gate_scale_080.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14698 ms][asset_loader] - INFO : Loading asset: gate_scale_082.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14700 ms][asset_loader] - INFO : Loading asset: trapezoid_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14702 ms][asset_loader] - INFO : Loading asset: gate_scale_056.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14704 ms][asset_loader] - INFO : Loading asset: gate_scale_094.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14706 ms][asset_loader] - INFO : Loading asset: gate_scale_066.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14708 ms][asset_loader] - INFO : Loading asset: gate_scale_084.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14711 ms][asset_loader] - INFO : Loading asset: gate_scale_074.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14713 ms][asset_loader] - INFO : Loading asset: gate_scale_092.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14716 ms][asset_loader] - INFO : Loading asset: gate_scale_060.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14718 ms][asset_loader] - INFO : Loading asset: gate_scale_040.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14721 ms][asset_loader] - INFO : Loading asset: gate_scale_046.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14723 ms][asset_loader] - INFO : Loading asset: gate_scale_090.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14726 ms][asset_loader] - INFO : Loading asset: gate_scale_068.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14729 ms][asset_loader] - INFO : Loading asset: gate_scale_048.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14731 ms][asset_loader] - INFO : Loading asset: gate_scale_058.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14737 ms][asset_loader] - INFO : Loading asset: gate_scale_072.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14741 ms][asset_loader] - INFO : Loading asset: gate_scale_076.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14744 ms][asset_loader] - INFO : Loading asset: gate_scale_078.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14747 ms][asset_loader] - INFO : Loading asset: gate_scale_086.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14751 ms][asset_loader] - INFO : Loading asset: gate_scale_042.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:71)
+[37m[14755 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:185)
+[33m[14771 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[14771 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[14771 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[37m[14954 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[14974 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:426)
+[37m[14974 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:428)
+[33m[15082 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[15083 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:434)
+[33m[15336 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 10 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[15536 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[15536 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[33m[16088 ms][navigation_task_gate] - WARNING : [GateVariant] Initial selection after build (one-time) (navigation_task_gate.py:108)
+[37m[16089 ms][navigation_task_gate] - INFO : POST-INIT: Updated global_tensor_dict with obstacle count: 9 (navigation_task_gate.py:114)
+[37m[16166 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:2031)
+[37m[16166 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:2050)
+[37m[16166 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:2051)
+[37m[16170 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:2059)
+[37m[16175 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:2059)
+[37m[16179 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:2059)
+[37m[16183 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:2059)
+[37m[16188 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:2059)
+[37m[16191 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:2059)
+[37m[16195 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:2059)
+[37m[16199 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:2059)
+[37m[16203 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:2059)
+[37m[16207 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:2059)
+[37m[16212 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:2059)
+[37m[16216 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:2059)
+[37m[16219 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:2059)
+[37m[16223 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:2059)
+[37m[16228 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:2059)
+[37m[16232 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:2059)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:2075)
+[37m[16232 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:2077)
+[33m[16232 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:174)
+[33m[16232 ms][navigation_task_gate] - WARNING : 🔍 AVAILABLE OBSERVATIONS AT INITIALIZATION: (navigation_task_gate.py:175)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 crashes: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 truncations: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 num_env_actions: <class 'int'> = 0 (navigation_task_gate.py:180)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 env_actions: <class 'NoneType'> = None (navigation_task_gate.py:180)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 prev_env_actions: <class 'NoneType'> = None (navigation_task_gate.py:180)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 gate_variant_indices_per_env: <class 'list'> = [[7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10], [7, 8, 9, 10]] (navigation_task_gate.py:180)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 active_gate_variant_index: shape=torch.Size([16]), dtype=torch.int64 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 active_gate_variant_array_index: shape=torch.Size([16]), dtype=torch.int64 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 gate_variant_names_per_env: <class 'list'> = [['gate_scale_050', 'gate_scale_064', 'gate_scale_098', 'gate_scale_088'], ['gate_scale_096', 'gate_scale_052', 'gate_scale_070', 'gate_scale_100'], ['gate_scale_096', 'gate_scale_082', 'gate_scale_080', 'gate_scale_062'], ['gate_scale_084', 'gate_scale_066', 'gate_scale_094', 'gate_scale_056'], ['gate_scale_040', 'gate_scale_060', 'gate_scale_092', 'gate_scale_074'], ['gate_scale_096', 'gate_scale_090', 'gate_scale_084', 'gate_scale_046'], ['gate_scale_068', 'gate_scale_062', 'gate_scale_050', 'gate_scale_094'], ['gate_scale_094', 'gate_scale_048', 'gate_scale_092', 'gate_scale_080'], ['gate_scale_076', 'gate_scale_072', 'gate_scale_058', 'gate_scale_062'], ['gate_scale_094', 'gate_scale_040', 'gate_scale_050', 'gate_scale_078'], ['gate_scale_068', 'gate_scale_078', 'gate_scale_092', 'gate_scale_098'], ['gate_scale_048', 'gate_scale_046', 'gate_scale_086', 'gate_scale_086'], ['gate_scale_058', 'gate_scale_100', 'gate_scale_086', 'gate_scale_048'], ['gate_scale_042', 'gate_scale_062', 'gate_scale_070', 'gate_scale_074'], ['gate_scale_050', 'gate_scale_080', 'gate_scale_048', 'gate_scale_068'], ['gate_scale_074', 'gate_scale_094', 'gate_scale_046', 'gate_scale_100']] (navigation_task_gate.py:180)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 asset_min_state_ratio: shape=torch.Size([16, 40, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 asset_max_state_ratio: shape=torch.Size([16, 40, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 num_obstacles_in_env: <class 'int'> = 9 (navigation_task_gate.py:180)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 vec_root_tensor: shape=torch.Size([16, 41, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 robot_state_tensor: shape=torch.Size([16, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 env_asset_state_tensor: shape=torch.Size([16, 40, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor: shape=torch.Size([656, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor_const: shape=torch.Size([656, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 rigid_body_state_tensor: shape=torch.Size([720, 13]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 global_force_tensor: shape=torch.Size([720, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 global_torque_tensor: shape=torch.Size([720, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 unfolded_dof_state_tensor: <class 'NoneType'> = None (navigation_task_gate.py:180)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 global_contact_force_tensor: shape=torch.Size([16, 45, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16232 ms][navigation_task_gate] - WARNING :   📊 robot_contact_force_tensor: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+🔧 Enhanced learner init called
+🔧 actor_critic type: <class 'sample_factory.model.actor_critic.ActorCriticSharedWeights'>
+🔧 actor_critic is None: False
+🔧 Creating influence tracker with actual model...
+🔧 Model structure: ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+🔧 Created influence tracker: <class 'aerial_gym.utils.gradient_monitor.CompleteObservationInfluenceTracker'>
+🔧 Influence tracker enabled: True
+✅ Influence tracker successfully attached to model
+   🔍 Monitoring ALL observation components based on 150D observation structure:
+      • [0:3] Drone position | [3:9] Static camera pose | [9:12] Drone orientation
+      • [12:18] Velocities | [18:22] Actions | [22:86] Drone camera | [86:150] Static camera
+   📊 Complete 150D observation breakdown:
+      🎯 Spatial: 15D (position + pose + orientation)
+      ⚡ Kinematic: 10D (velocities + actions)
+      📹 Visual: 128D (dual camera VAE latents)
+   📊 Logging every 100 steps
+   📺 Analysis summary every 100 steps
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_8_adaptivegatesize_framefreeze5', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true', '--enable_gradient_monitoring=true', '--gradient_log_interval=100', '--gradient_print_interval=100']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.53 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.06 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.92 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 5.87 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 150D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (150D = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 CONST_GLOBAL_VERTEX_TO_ASSET_INDEX_TENSOR: shape=torch.Size([55324]), dtype=torch.int64 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 VERTEX_MAPS_PER_ENV_ORIGINAL: shape=torch.Size([55324, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 robot_mass: shape=torch.Size([16]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 robot_inertia: shape=torch.Size([16, 3, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 robot_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 robot_prev_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 dof_control_mode: <class 'str'> = none (navigation_task_gate.py:180)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_orientation: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 num_robot_actions: <class 'int'> = 4 (navigation_task_gate.py:180)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 depth_range_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.float32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING :   📊 segmentation_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.int32 (navigation_task_gate.py:178)
+[33m[16233 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:181)
+[33m[16233 ms][navigation_task_gate] - WARNING : 🧪 TESTING OBSERVATION PROCESSING AT INITIALIZATION: (navigation_task_gate.py:184)
+[33m[16233 ms][navigation_task_gate] - WARNING : ❌ Error in process_obs_for_task(): 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs' (navigation_task_gate.py:234)
+[33m[16233 ms][navigation_task_gate] - WARNING : Traceback: Traceback (most recent call last):
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 196, in __init__
+[33m    self.process_obs_for_task()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 65, in process_obs_for_task
+[33m    static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 139, in _get_static_camera_pose_relative_to_drone
+[33m    static_camera_world_pos = torch.tensor([0.0, -3.0, 1.5], device=self.device).expand(self.num_envs, -1)
+[33mAttributeError: 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs'
+[33m (navigation_task_gate.py:236)
+[33m[16233 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:238)
+[37m[16233 ms][navigation_task_gate] - INFO : Curriculum logging setup successful: ./train_dir/curriculum_gate_navigation_20250814_115034.log (navigation_task_gate.py:442)
+[37m[16233 ms][navigation_task_gate] - INFO : CURRICULUM: Visible assets: 1 gate + 6 walls + 1 robot + 3 curriculum = 11 total (navigation_task_gate.py:263)
+[33m[16233 ms][navigation_task_gate] - WARNING : [OBSTACLE_FIX] CURRICULUM: Level 3 should spawn 3 curriculum obstacles (navigation_task_gate.py:264)
+[33m[16233 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = 11 (navigation_task_gate.py:268)
+[33m[16233 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: 11 (navigation_task_gate.py:277)
+[37m[16233 ms][navigation_task_gate] - INFO : FINAL: Visible assets: 8, Curriculum obstacles: 3, Total: 11 (navigation_task_gate.py:279)
+[37m[16233 ms][navigation_task_gate] - INFO : INITIAL CURRICULUM (Level 3): (navigation_task_gate.py:285)
+[37m[16233 ms][navigation_task_gate] - INFO :    1. OBSTACLES: 3 behind gate (total assets: 11 = 8 visible + 3 curriculum) (navigation_task_gate.py:286)
+[37m[16233 ms][navigation_task_gate] - INFO :    2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:287)
+[37m[16233 ms][navigation_task_gate] - INFO :    3. CAMERA ANGLE: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:288)
+[37m[16233 ms][navigation_task_gate] - INFO :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:292)
+[37m[16234 ms][navigation_task_gate] - INFO :    6. CAMERA FRAME DROPOUT: drone=0.0%, static=0.0% (both drone & static) (navigation_task_gate.py:296)
+[37m[16234 ms][navigation_task_gate] - INFO :    7. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count 11 (navigation_task_gate.py:298)
+[37m[16234 ms][navigation_task_gate] - INFO :    7. PROGRESS: 0.000 (level 3/23) (navigation_task_gate.py:305)
+[37m[16234 ms][navigation_task_gate] - INFO :    8. EVALUATION: Check every 128 instances (success rate threshold: 0.500) (navigation_task_gate.py:306)
+[33m[16234 ms][navigation_task_gate] - WARNING : [INIT] Multi-aspect curriculum initialized at level 3 (navigation_task_gate.py:454)
+[33m[16234 ms][navigation_task_gate] - WARNING : [GATE_ADAPTIVE] Initializing gate dimensions for all environments (navigation_task_gate.py:392)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[33m[16246 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:153)
+[33m[16246 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : 🌍 COORDINATE TRANSFORMATION DEBUG: (dce_navigation_task_gate.py:154)
+[33m[16246 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   📍 Static Camera World Position (FIXED): [ 0.  -3.   1.5] (dce_navigation_task_gate.py:155)
+[33m[16247 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🤖 Drone World Position (DYNAMIC): [0. 0. 0.] (dce_navigation_task_gate.py:156)
+[33m[16247 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🧭 Drone World Orientation (Quaternion): [0. 0. 0. 0.] (dce_navigation_task_gate.py:157)
+[33m[16247 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🧭 Drone World Orientation (Euler deg): [0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:158)
+[33m[16247 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   ↔️  World Vector (camera - drone): [ 0.  -3.   1.5] (dce_navigation_task_gate.py:162)
+[33m[16248 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🔄 After Quaternion Transform: [ 0.   3.  -1.5] (dce_navigation_task_gate.py:166)
+[33m[16248 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   📏 Distance from drone to camera: 3.354m (dce_navigation_task_gate.py:167)
+[33m[16248 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:168)
+[33m[16717 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:116)
+[33m[16717 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : 🎯 SPAWN DETECTION: Found 16 likely spawned environments (dce_navigation_task_gate.py:117)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🚁 Env 0: Pos=[0.000, 0.000, 0.000], Vel=[0.000, 0.000, 0.000] (dce_navigation_task_gate.py:123)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Orient=[0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:124)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Static Rel=[0.000, 3.000, -1.500] (dce_navigation_task_gate.py:125)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🚁 Env 1: Pos=[0.000, 0.000, 0.000], Vel=[0.000, 0.000, 0.000] (dce_navigation_task_gate.py:123)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Orient=[0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:124)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Static Rel=[0.000, 3.000, -1.500] (dce_navigation_task_gate.py:125)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🚁 Env 2: Pos=[0.000, 0.000, 0.000], Vel=[0.000, 0.000, 0.000] (dce_navigation_task_gate.py:123)
+[33m[16718 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Orient=[0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:124)
+[33m[16719 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Static Rel=[0.000, 3.000, -1.500] (dce_navigation_task_gate.py:125)
+[33m[16719 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:126)
+[33m[16719 ms][navigation_task_gate] - WARNING : 🎯 OBSERVATION VERIFICATION IN get_return_tuple(): (navigation_task_gate.py:1107)
+[33m[16719 ms][navigation_task_gate] - WARNING : 📊 Final task_obs shape: torch.Size([16, 150]) (navigation_task_gate.py:1111)
+[33m[16719 ms][navigation_task_gate] - WARNING : 🔍 FINAL VERIFICATION: (navigation_task_gate.py:1121)
+[33m[16719 ms][navigation_task_gate] - WARNING :   Static pos: [ 0.   3.  -1.5] (navigation_task_gate.py:1122)
+[33m[16719 ms][navigation_task_gate] - WARNING :   Static orient: [0. 0. 0.] (navigation_task_gate.py:1123)
+[33m[16719 ms][navigation_task_gate] - WARNING :   Static VAE range: [0.000, 0.000] (navigation_task_gate.py:1124)
+[33m[16720 ms][navigation_task_gate] - WARNING :   ✅ Static camera working: pos=True, orient=False, vae=False (navigation_task_gate.py:1131)
+[31m[16720 ms][navigation_task_gate] - ERROR : ❌ CRITICAL: Static camera data is missing! (navigation_task_gate.py:1134)
+[36m[2025-08-14 11:50:35,195][732327] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[GIF] Episode 0 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0000_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0000_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0000_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0000_static_seg.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0000_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0000_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0000_merged_dual_camera_D455_NOISED.gif
+[33m[18541 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1412)
+[33m[18542 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 0): (navigation_task_gate.py:1413)
+[33m[18542 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           -100.000 (navigation_task_gate.py:1414)
+[33m[18542 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.009 (dist: 4.48m) (navigation_task_gate.py:1415)
+[33m[18542 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1416)
+[33m[18542 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -44.797 (navigation_task_gate.py:1417)
+[33m[18542 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          1.247 (gate_dist: 0.07m) (navigation_task_gate.py:1418)
+[33m[18542 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1419)
+[33m[18542 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: 0.053) (navigation_task_gate.py:1420)
+[33m[18542 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.171 (navigation_task_gate.py:1421)
+[33m[18542 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1422)
+[33m[18542 ms][navigation_task_gate] - WARNING :   💥 CRASHES:                16/16 environments (navigation_task_gate.py:1440)
+[33m[18542 ms][navigation_task_gate] - WARNING :   💸 Collision Penalty:     -100.0 per crash (navigation_task_gate.py:1441)
+[33m[18542 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1482)
+[33m[18542 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1483)
+[33m[18542 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  -143.2 (avg across 16 envs) (navigation_task_gate.py:1500)
+[33m[18542 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1501)
+[33m[18542 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -44.8 (navigation_task_gate.py:1502)
+[33m[18542 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   1.2 (navigation_task_gate.py:1503)
+[33m[18542 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  0.5 (navigation_task_gate.py:1504)
+[33m[18542 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1505)
+[33m[18542 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1506)
+[33m[18542 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           1 (navigation_task_gate.py:1507)
+[33m[18542 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1509)
+[33m[19805 ms][navigation_task_gate] - WARNING : ✅ Static camera capture successful: shape=(270, 480), type=<class 'numpy.ndarray'> (navigation_task_gate.py:922)
+[33m[19805 ms][navigation_task_gate] - WARNING : 🔧 VAE encoding static camera: input_shape=torch.Size([16, 270, 480]), device=cuda:0 (navigation_task_gate.py:1010)
+[33m[19808 ms][navigation_task_gate] - WARNING : ✅ VAE encoding successful: output_shape=torch.Size([16, 64]), range=[-16.734, 17.171] (navigation_task_gate.py:1018)
+[33m[19808 ms][navigation_task_gate] - WARNING : 🎯 FINAL STATIC CAMERA VERIFICATION (AFTER PROCESSING): (navigation_task_gate.py:816)
+[33m[19809 ms][navigation_task_gate] - WARNING :   📍 Final static pos: [-0.83564097 -1.0160453   0.02863407] (navigation_task_gate.py:828)
+[33m[19810 ms][navigation_task_gate] - WARNING :   🧭 Final static orient: [0.         0.         0.18642259] (navigation_task_gate.py:829)
+[33m[19810 ms][navigation_task_gate] - WARNING :   📷 Final static VAE: range=[-16.720, 17.169] (navigation_task_gate.py:830)
+[33m[19810 ms][navigation_task_gate] - WARNING :   ✅ FINAL RESULTS: pos=True, orient=True, vae=True (navigation_task_gate.py:837)
+[33m[19810 ms][navigation_task_gate] - WARNING : 🎉 SUCCESS: All 150D static camera observations verified! (navigation_task_gate.py:840)
+[33m[19810 ms][navigation_task_gate] - WARNING : 🤖 RL TRAINING USAGE VERIFICATION: (navigation_task_gate.py:843)
+[33m[19810 ms][navigation_task_gate] - WARNING :   ⚠️  IMPORTANT: This verifies DATA PIPELINE, not RL training usage! (navigation_task_gate.py:844)
+[33m[19810 ms][navigation_task_gate] - WARNING :   📋 To verify RL training usage, check: (navigation_task_gate.py:845)
+[33m[19810 ms][navigation_task_gate] - WARNING :      1. Neural network receives 150D input (not 128D or other) (navigation_task_gate.py:846)
+[33m[19810 ms][navigation_task_gate] - WARNING :      2. Policy network architecture matches observation space (navigation_task_gate.py:847)
+[33m[19810 ms][navigation_task_gate] - WARNING :      3. Static camera indices [3:6] and [86:150] affect policy decisions (navigation_task_gate.py:848)
+[33m[19810 ms][navigation_task_gate] - WARNING :      4. Ablation test: performance difference with vs without static camera (navigation_task_gate.py:849)
+[33m[19810 ms][navigation_task_gate] - WARNING :   🔍 Current verification: Environment correctly provides 150D observations (navigation_task_gate.py:850)
+[33m[19810 ms][navigation_task_gate] - WARNING :   ❓ Next step needed: Verify Sample Factory & neural network usage (navigation_task_gate.py:851)
+[36m[2025-08-14 11:50:40,116][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 6.5. Samples: 32. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:50:40,116][732327] Avg episode reward: [(0, '-100.000')]
+[36m[2025-08-14 11:50:44,378][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 41.8. Samples: 384. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:50:44,378][732327] Avg episode reward: [(0, '-101.119')]
+[36m[2025-08-14 11:50:49,211][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 44.5. Samples: 624. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:50:49,212][732327] Avg episode reward: [(0, '-100.286')]
+[37m[1m[2025-08-14 11:50:51,477][732327] Heartbeat connected on Batcher_0
+[37m[1m[2025-08-14 11:50:51,477][732327] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-08-14 11:50:51,478][732327] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-08-14 11:50:51,478][732327] Heartbeat connected on RolloutWorker_w0
+[36m[2025-08-14 11:50:54,189][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 63.2. Samples: 1200. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:50:54,189][732327] Avg episode reward: [(0, '-95.647')]
+[36m[2025-08-14 11:50:59,164][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 74.8. Samples: 1792. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:50:59,164][732327] Avg episode reward: [(0, '-94.786')]
+[36m[2025-08-14 11:51:04,244][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 71.6. Samples: 2080. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:04,244][732327] Avg episode reward: [(0, '-93.290')]
+[36m[2025-08-14 11:51:09,221][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 79.0. Samples: 2688. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:09,221][732327] Avg episode reward: [(0, '-91.805')]
+[33m[54820 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1412)
+[33m[54821 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 200): (navigation_task_gate.py:1413)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           -0.107 (navigation_task_gate.py:1414)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.000 (dist: 6.12m) (navigation_task_gate.py:1415)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1416)
+[33m[54821 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -0.639 (navigation_task_gate.py:1417)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          0.105 (gate_dist: 2.32m) (navigation_task_gate.py:1418)
+[33m[54821 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1419)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: 0.088) (navigation_task_gate.py:1420)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.276 (navigation_task_gate.py:1421)
+[33m[54821 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1422)
+[33m[54821 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1445)
+[33m[54821 ms][navigation_task_gate] - WARNING : 📈 EPISODE REWARD ANALYSIS (Last 10 Episodes): (navigation_task_gate.py:1446)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🏆 EPISODE TOTAL:          -96.3 (navigation_task_gate.py:1453)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📍 Position Contribution:  0.0 (navigation_task_gate.py:1454)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🎯 Very Close Contribution: 0.0 (navigation_task_gate.py:1455)
+[33m[54821 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -4.1 (navigation_task_gate.py:1456)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          2.4 (navigation_task_gate.py:1457)
+[33m[54821 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         14.3 (navigation_task_gate.py:1458)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.0 (navigation_task_gate.py:1459)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🎮 Action Penalties:       -8.9 (navigation_task_gate.py:1460)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🎉 Gate Passage Bonuses:   0.0 (basic + center) (navigation_task_gate.py:1461)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📊 Estimated Passages:     0.0 per episode (should be ≤1.0) (navigation_task_gate.py:1468)
+[33m[54821 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1469)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📷 Image Penalties:        0.0 (navigation_task_gate.py:1470)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📏 Average Episode Length: 30 steps (navigation_task_gate.py:1471)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📈 Recent Trend:         +3.3 (last 3 vs first 3) (navigation_task_gate.py:1479)
+[33m[54821 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1482)
+[33m[54821 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1483)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  2.3 (avg across 16 envs) (navigation_task_gate.py:1500)
+[33m[54821 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1501)
+[33m[54821 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -1.1 (navigation_task_gate.py:1502)
+[33m[54821 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   1.1 (navigation_task_gate.py:1503)
+[33m[54821 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  6.6 (navigation_task_gate.py:1504)
+[33m[54822 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1505)
+[33m[54822 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    0.0 (navigation_task_gate.py:1506)
+[33m[54822 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           13 (navigation_task_gate.py:1507)
+[33m[54822 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1509)
+[36m[2025-08-14 11:51:14,219][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 83.6. Samples: 3264. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:14,219][732327] Avg episode reward: [(0, '-90.620')]
+[33m[57939 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:454)
+[33m[57939 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:454)
+[33m[57939 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:454)
+[33m[57939 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:454)
+[33m[57939 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:454)
+[33m[57940 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[57940 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING :    4. GATE SIZE: unlocked scales >= 80% -> [98, 88] (uniform across unique scales) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING :    6. CAMERA FRAME DROPOUT: drone=0.0%, static=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:454)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:1702: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:1703: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py:1704: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
+[33m[57941 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:454)
+[36m[2025-08-14 11:51:19,188][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 80.4. Samples: 3536. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:19,193][732327] Avg episode reward: [(0, '-89.215')]
+[36m[2025-08-14 11:51:24,213][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 92.5. Samples: 4112. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:24,213][732327] Avg episode reward: [(0, '-89.139')]
+[36m[2025-08-14 11:51:29,164][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 95.7. Samples: 4672. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:29,164][732327] Avg episode reward: [(0, '-89.133')]
+[36m[2025-08-14 11:51:34,259][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 95.5. Samples: 4928. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:34,259][732327] Avg episode reward: [(0, '-89.069')]
+[36m[2025-08-14 11:51:39,200][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 96.0. Samples: 5520. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:39,200][732327] Avg episode reward: [(0, '-89.292')]
+[36m[2025-08-14 11:51:44,274][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 95.4. Samples: 6096. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:44,281][732327] Avg episode reward: [(0, '-88.801')]
+[33m[88751 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1412)
+[33m[88752 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 400): (navigation_task_gate.py:1413)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           0.500 (navigation_task_gate.py:1414)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.000 (dist: 6.00m) (navigation_task_gate.py:1415)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1416)
+[33m[88752 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -0.196 (navigation_task_gate.py:1417)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          0.100 (gate_dist: 2.34m) (navigation_task_gate.py:1418)
+[33m[88752 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1419)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: 0.133) (navigation_task_gate.py:1420)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.138 (navigation_task_gate.py:1421)
+[33m[88752 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1422)
+[33m[88752 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1445)
+[33m[88752 ms][navigation_task_gate] - WARNING : 📈 EPISODE REWARD ANALYSIS (Last 10 Episodes): (navigation_task_gate.py:1446)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🏆 EPISODE TOTAL:          -90.2 (navigation_task_gate.py:1453)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📍 Position Contribution:  0.0 (navigation_task_gate.py:1454)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🎯 Very Close Contribution: 0.0 (navigation_task_gate.py:1455)
+[33m[88752 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         0.4 (navigation_task_gate.py:1456)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          3.8 (navigation_task_gate.py:1457)
+[33m[88752 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         15.3 (navigation_task_gate.py:1458)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.0 (navigation_task_gate.py:1459)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🎮 Action Penalties:       -9.8 (navigation_task_gate.py:1460)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🎉 Gate Passage Bonuses:   0.0 (basic + center) (navigation_task_gate.py:1461)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📊 Estimated Passages:     0.0 per episode (should be ≤1.0) (navigation_task_gate.py:1468)
+[33m[88752 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1469)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📷 Image Penalties:        0.0 (navigation_task_gate.py:1470)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📏 Average Episode Length: 31 steps (navigation_task_gate.py:1471)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📉 Recent Trend:         -3.1 (last 3 vs first 3) (navigation_task_gate.py:1479)
+[33m[88752 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1482)
+[33m[88752 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1483)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  2.6 (avg across 16 envs) (navigation_task_gate.py:1500)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1501)
+[33m[88752 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -2.0 (navigation_task_gate.py:1502)
+[33m[88752 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   1.1 (navigation_task_gate.py:1503)
+[33m[88752 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  8.2 (navigation_task_gate.py:1504)
+[33m[88752 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1505)
+[33m[88753 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    0.0 (navigation_task_gate.py:1506)
+[33m[88753 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           16 (navigation_task_gate.py:1507)
+[33m[88753 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1509)
+[36m[2025-08-14 11:51:49,202][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 95.7. Samples: 6384. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:49,203][732327] Avg episode reward: [(0, '-87.770')]
+[GIF] Episode 15 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0001_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0001_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0001_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0001_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0001_merged_dual_camera_CLEAN.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0001_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0001_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0001_merged_dual_camera_D455_NOISED.gif
+[36m[2025-08-14 11:51:54,166][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.6. Samples: 6896. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:54,166][732327] Avg episode reward: [(0, '-87.658')]
+[33m[97707 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:454)
+[33m[97707 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:454)
+[33m[97707 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:454)
+[33m[97707 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:454)
+[33m[97708 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:454)
+[33m[97708 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[97708 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING :    4. GATE SIZE: unlocked scales >= 80% -> [98, 88] (uniform across unique scales) (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[97712 ms][navigation_task_gate] - WARNING :    6. CAMERA FRAME DROPOUT: drone=0.0%, static=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:454)
+[33m[97713 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:454)
+[36m[2025-08-14 11:51:59,159][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.3. Samples: 7456. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:51:59,159][732327] Avg episode reward: [(0, '-87.171')]
+[36m[2025-08-14 11:52:04,249][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.4. Samples: 7744. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:04,249][732327] Avg episode reward: [(0, '-87.855')]
+[36m[2025-08-14 11:52:09,139][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 94.0. Samples: 8336. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:09,140][732327] Avg episode reward: [(0, '-88.127')]
+[36m[2025-08-14 11:52:14,243][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.7. Samples: 8896. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:14,243][732327] Avg episode reward: [(0, '-88.428')]
+[36m[2025-08-14 11:52:19,256][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 94.2. Samples: 9168. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:19,256][732327] Avg episode reward: [(0, '-88.887')]
+[33m[123415 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1412)
+[33m[123415 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 600): (navigation_task_gate.py:1413)
+[33m[123415 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           0.363 (navigation_task_gate.py:1414)
+[33m[123415 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.000 (dist: 6.07m) (navigation_task_gate.py:1415)
+[33m[123415 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1416)
+[33m[123415 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -0.116 (navigation_task_gate.py:1417)
+[33m[123415 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          0.094 (gate_dist: 2.39m) (navigation_task_gate.py:1418)
+[33m[123415 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1419)
+[33m[123415 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: -0.152) (navigation_task_gate.py:1420)
+[33m[123415 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.349 (navigation_task_gate.py:1421)
+[33m[123415 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1422)
+[33m[123415 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1445)
+[33m[123415 ms][navigation_task_gate] - WARNING : 📈 EPISODE REWARD ANALYSIS (Last 10 Episodes): (navigation_task_gate.py:1446)
+[33m[123415 ms][navigation_task_gate] - WARNING :   🏆 EPISODE TOTAL:          -97.5 (navigation_task_gate.py:1453)
+[33m[123415 ms][navigation_task_gate] - WARNING :   📍 Position Contribution:  0.0 (navigation_task_gate.py:1454)
+[33m[123415 ms][navigation_task_gate] - WARNING :   🎯 Very Close Contribution: 0.0 (navigation_task_gate.py:1455)
+[33m[123415 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -4.3 (navigation_task_gate.py:1456)
+[33m[123415 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          2.1 (navigation_task_gate.py:1457)
+[33m[123415 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         13.2 (navigation_task_gate.py:1458)
+[33m[123415 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.0 (navigation_task_gate.py:1459)
+[33m[123416 ms][navigation_task_gate] - WARNING :   🎮 Action Penalties:       -8.5 (navigation_task_gate.py:1460)
+[33m[123416 ms][navigation_task_gate] - WARNING :   🎉 Gate Passage Bonuses:   0.0 (basic + center) (navigation_task_gate.py:1461)
+[33m[123416 ms][navigation_task_gate] - WARNING :   📊 Estimated Passages:     0.0 per episode (should be ≤1.0) (navigation_task_gate.py:1468)
+[33m[123416 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1469)
+[33m[123416 ms][navigation_task_gate] - WARNING :   📷 Image Penalties:        0.0 (navigation_task_gate.py:1470)
+[33m[123416 ms][navigation_task_gate] - WARNING :   📏 Average Episode Length: 27 steps (navigation_task_gate.py:1471)
+[33m[123416 ms][navigation_task_gate] - WARNING :   📉 Recent Trend:         -0.5 (last 3 vs first 3) (navigation_task_gate.py:1479)
+[33m[123416 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1482)
+[33m[123416 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1483)
+[33m[123416 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  3.2 (avg across 16 envs) (navigation_task_gate.py:1500)
+[33m[123416 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1501)
+[33m[123416 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -0.7 (navigation_task_gate.py:1502)
+[33m[123416 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   1.0 (navigation_task_gate.py:1503)
+[33m[123416 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  6.8 (navigation_task_gate.py:1504)
+[33m[123416 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1505)
+[33m[123416 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    0.0 (navigation_task_gate.py:1506)
+[33m[123416 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           14 (navigation_task_gate.py:1507)
+[33m[123416 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1509)
+[36m[2025-08-14 11:52:24,132][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.3. Samples: 9712. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:24,133][732327] Avg episode reward: [(0, '-89.741')]
+[37m[1m[2025-08-14 11:52:24,298][732327] Saving ./train_dir/gate_config_8_adaptivegatesize_framefreeze5/checkpoint_p0/checkpoint_000000000_0.pth...
+[36m[2025-08-14 11:52:29,171][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.4. Samples: 10288. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:29,171][732327] Avg episode reward: [(0, '-89.671')]
+[36m[2025-08-14 11:52:34,299][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.0. Samples: 10576. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:34,299][732327] Avg episode reward: [(0, '-88.656')]
+[33m[136135 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:454)
+[33m[136135 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:454)
+[33m[136135 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:454)
+[33m[136135 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:454)
+[33m[136135 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:454)
+[33m[136135 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[136135 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING :    4. GATE SIZE: unlocked scales >= 80% -> [98, 88] (uniform across unique scales) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING :    6. CAMERA FRAME DROPOUT: drone=0.0%, static=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[136137 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:454)
+[33m[136138 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:454)
+[36m[2025-08-14 11:52:39,245][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 94.4. Samples: 11152. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:39,245][732327] Avg episode reward: [(0, '-89.493')]
+[36m[2025-08-14 11:52:44,217][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 94.8. Samples: 11728. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:44,217][732327] Avg episode reward: [(0, '-88.868')]
+[36m[2025-08-14 11:52:49,243][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.9. Samples: 11968. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:49,243][732327] Avg episode reward: [(0, '-88.784')]
+[36m[2025-08-14 11:52:54,213][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.4. Samples: 12544. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:54,214][732327] Avg episode reward: [(0, '-89.238')]
+[33m[157329 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1412)
+[33m[157329 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 800): (navigation_task_gate.py:1413)
+[33m[157329 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           -12.009 (navigation_task_gate.py:1414)
+[33m[157329 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.000 (dist: 6.03m) (navigation_task_gate.py:1415)
+[33m[157329 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1416)
+[33m[157329 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -0.012 (navigation_task_gate.py:1417)
+[33m[157329 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          0.124 (gate_dist: 2.25m) (navigation_task_gate.py:1418)
+[33m[157329 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1419)
+[33m[157329 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: -0.183) (navigation_task_gate.py:1420)
+[33m[157330 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.226 (navigation_task_gate.py:1421)
+[33m[157330 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1422)
+[33m[157330 ms][navigation_task_gate] - WARNING :   💥 CRASHES:                2/16 environments (navigation_task_gate.py:1440)
+[33m[157330 ms][navigation_task_gate] - WARNING :   💸 Collision Penalty:     -100.0 per crash (navigation_task_gate.py:1441)
+[33m[157330 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1445)
+[33m[157330 ms][navigation_task_gate] - WARNING : 📈 EPISODE REWARD ANALYSIS (Last 10 Episodes): (navigation_task_gate.py:1446)
+[33m[157330 ms][navigation_task_gate] - WARNING :   🏆 EPISODE TOTAL:          -94.8 (navigation_task_gate.py:1453)
+[33m[157330 ms][navigation_task_gate] - WARNING :   📍 Position Contribution:  0.0 (navigation_task_gate.py:1454)
+[33m[157330 ms][navigation_task_gate] - WARNING :   🎯 Very Close Contribution: 0.0 (navigation_task_gate.py:1455)
+[33m[157330 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -2.2 (navigation_task_gate.py:1456)
+[33m[157330 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          2.5 (navigation_task_gate.py:1457)
+[33m[157330 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         12.7 (navigation_task_gate.py:1458)
+[33m[157330 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.0 (navigation_task_gate.py:1459)
+[33m[157330 ms][navigation_task_gate] - WARNING :   🎮 Action Penalties:       -7.7 (navigation_task_gate.py:1460)
+[33m[157330 ms][navigation_task_gate] - WARNING :   🎉 Gate Passage Bonuses:   0.0 (basic + center) (navigation_task_gate.py:1461)
+[33m[157330 ms][navigation_task_gate] - WARNING :   📊 Estimated Passages:     0.0 per episode (should be ≤1.0) (navigation_task_gate.py:1468)
+[33m[157330 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1469)
+[33m[157330 ms][navigation_task_gate] - WARNING :   📷 Image Penalties:        0.0 (navigation_task_gate.py:1470)
+[33m[157330 ms][navigation_task_gate] - WARNING :   📏 Average Episode Length: 28 steps (navigation_task_gate.py:1471)
+[33m[157330 ms][navigation_task_gate] - WARNING :   📉 Recent Trend:         -0.3 (last 3 vs first 3) (navigation_task_gate.py:1479)
+[33m[157330 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1482)
+[33m[157330 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1483)
+[33m[157330 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  -7.7 (avg across 16 envs) (navigation_task_gate.py:1500)
+[33m[157331 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1501)
+[33m[157331 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -0.7 (navigation_task_gate.py:1502)
+[33m[157331 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   1.6 (navigation_task_gate.py:1503)
+[33m[157331 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  8.4 (navigation_task_gate.py:1504)
+[33m[157331 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1505)
+[33m[157331 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -12.5 (navigation_task_gate.py:1506)
+[33m[157331 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           17 (navigation_task_gate.py:1507)
+[33m[157331 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1509)
+[36m[2025-08-14 11:52:59,165][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.3. Samples: 13088. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:52:59,165][732327] Avg episode reward: [(0, '-89.891')]
+[36m[2025-08-14 11:53:04,137][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 93.4. Samples: 13360. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:53:04,137][732327] Avg episode reward: [(0, '-89.608')]
+[GIF] Episode 30 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0002_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0002_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0002_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0002_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0002_merged_dual_camera_CLEAN.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0002_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0002_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0002_merged_dual_camera_D455_NOISED.gif
+[36m[2025-08-14 11:53:09,616][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 92.9. Samples: 13936. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:53:09,616][732327] Avg episode reward: [(0, '-89.589')]
+[33m[175312 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:454)
+[33m[175312 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:454)
+[33m[175312 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:454)
+[33m[175312 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:454)
+[33m[175312 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:454)
+[33m[175312 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[175312 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING :    4. GATE SIZE: unlocked scales >= 80% -> [98, 88] (uniform across unique scales) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING :    6. CAMERA FRAME DROPOUT: drone=0.0%, static=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:454)
+[33m[175314 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:454)
+[36m[2025-08-14 11:53:14,234][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 92.3. Samples: 14448. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:53:14,234][732327] Avg episode reward: [(0, '-89.031')]
+[36m[2025-08-14 11:53:19,199][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 92.3. Samples: 14720. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:53:19,199][732327] Avg episode reward: [(0, '-88.523')]
+[36m[2025-08-14 11:53:24,162][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 92.3. Samples: 15296. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:53:24,162][732327] Avg episode reward: [(0, '-87.857')]
+[36m[2025-08-14 11:53:29,177][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 91.1. Samples: 15824. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:53:29,177][732327] Avg episode reward: [(0, '-87.958')]
+[33m[192434 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1412)
+[33m[192434 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 1000): (navigation_task_gate.py:1413)
+[33m[192434 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           0.457 (navigation_task_gate.py:1414)
+[33m[192434 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.000 (dist: 6.01m) (navigation_task_gate.py:1415)
+[33m[192434 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1416)
+[33m[192434 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         0.030 (navigation_task_gate.py:1417)
+[33m[192434 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          0.086 (gate_dist: 2.41m) (navigation_task_gate.py:1418)
+[33m[192434 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1419)
+[33m[192434 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: -0.011) (navigation_task_gate.py:1420)
+[33m[192434 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.315 (navigation_task_gate.py:1421)
+[33m[192434 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1422)
+[33m[192434 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1445)
+[33m[192434 ms][navigation_task_gate] - WARNING : 📈 EPISODE REWARD ANALYSIS (Last 10 Episodes): (navigation_task_gate.py:1446)
+[33m[192434 ms][navigation_task_gate] - WARNING :   🏆 EPISODE TOTAL:          -96.3 (navigation_task_gate.py:1453)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📍 Position Contribution:  0.0 (navigation_task_gate.py:1454)
+[33m[192435 ms][navigation_task_gate] - WARNING :   🎯 Very Close Contribution: 0.0 (navigation_task_gate.py:1455)
+[33m[192435 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -3.6 (navigation_task_gate.py:1456)
+[33m[192435 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          2.1 (navigation_task_gate.py:1457)
+[33m[192435 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         12.6 (navigation_task_gate.py:1458)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.0 (navigation_task_gate.py:1459)
+[33m[192435 ms][navigation_task_gate] - WARNING :   🎮 Action Penalties:       -7.3 (navigation_task_gate.py:1460)
+[33m[192435 ms][navigation_task_gate] - WARNING :   🎉 Gate Passage Bonuses:   0.0 (basic + center) (navigation_task_gate.py:1461)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📊 Estimated Passages:     0.0 per episode (should be ≤1.0) (navigation_task_gate.py:1468)
+[33m[192435 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1469)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📷 Image Penalties:        0.0 (navigation_task_gate.py:1470)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📏 Average Episode Length: 25 steps (navigation_task_gate.py:1471)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📉 Recent Trend:         -3.3 (last 3 vs first 3) (navigation_task_gate.py:1479)
+[33m[192435 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1482)
+[33m[192435 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1483)
+[33m[192435 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  4.1 (avg across 16 envs) (navigation_task_gate.py:1500)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1501)
+[33m[192435 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -0.4 (navigation_task_gate.py:1502)
+[33m[192435 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   1.0 (navigation_task_gate.py:1503)
+[33m[192435 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  7.2 (navigation_task_gate.py:1504)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1505)
+[33m[192435 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    0.0 (navigation_task_gate.py:1506)
+[33m[192435 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           14 (navigation_task_gate.py:1507)
+[33m[192435 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1509)
+[36m[2025-08-14 11:53:34,181][732327] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 91.9. Samples: 16096. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-14 11:53:34,182][732327] Avg episode reward: [(0, '-88.812')]
+🔧 enhanced_train() called - current step BEFORE: 0
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/nn/modules/module.py:1194: UserWarning: operator() profile_node %104 : int[] = prim::profile_ivalue(%102)
+ does not have profile information (Triggered internally at /opt/conda/conda-bld/pytorch_1670525541702/work/torch/csrc/jit/codegen/cuda/graph_fuser.cpp:105.)
+  return forward_call(*input, **kwargs)
+🔧 enhanced_train() finished - current step AFTER: 32
+🔧 Calling tracker.step() - Sample Factory training step 32
+🔧 Tracker synced to step 32 - collected 1058 influence samples
+[36m[2025-08-14 11:53:39,158][732327] Fps is (10 sec: 1641.5, 60 sec: 273.5, 300 sec: 89.1). Total num frames: 16384. Throughput: 0: 86.9. Samples: 16448. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:53:39,158][732327] Avg episode reward: [(0, '-88.434')]
+[36m[2025-08-14 11:53:44,263][732327] Fps is (10 sec: 1625.2, 60 sec: 272.9, 300 sec: 86.7). Total num frames: 16384. Throughput: 0: 85.9. Samples: 16960. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:53:44,263][732327] Avg episode reward: [(0, '-88.515')]
+[36m[2025-08-14 11:53:49,278][732327] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 84.4). Total num frames: 16384. Throughput: 0: 86.1. Samples: 17248. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:53:49,278][732327] Avg episode reward: [(0, '-89.578')]
+[36m[2025-08-14 11:53:54,231][732327] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 82.3). Total num frames: 16384. Throughput: 0: 85.7. Samples: 17760. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:53:54,231][732327] Avg episode reward: [(0, '-90.216')]
+[33m[219650 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances: (navigation_task_gate.py:454)
+[33m[219651 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Success rate: 0.000 (navigation_task_gate.py:454)
+[33m[219651 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Crash rate: 1.000 (navigation_task_gate.py:454)
+[33m[219651 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Timeout rate: 0.000 (navigation_task_gate.py:454)
+[33m[219651 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Current level: 3 (max reached: 3) (navigation_task_gate.py:454)
+[33m[219651 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[219651 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed) (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING : [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING : [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged) (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING : Gate Navigation Curriculum Level: 3, Progress: 0.000 (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING : 
+[33mSuccess Rate: 0.000
+[33mCrash Rate: 1.000
+[33mTimeout Rate: 0.000 (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING : 
+[33mCURRICULUM APPLIED: (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING :    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING :    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING :    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode) (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING :    4. GATE SIZE: unlocked scales >= 80% -> [98, 88] (uniform across unique scales) (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[219653 ms][navigation_task_gate] - WARNING :    6. CAMERA FRAME DROPOUT: drone=0.0%, static=0.0% (both drone & static) (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] FINAL STATE: (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Level: 3 (range: 3-23) (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY) (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Progress: 0.000 (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum) (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10 (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:454)
+[33m[219654 ms][navigation_task_gate] - WARNING : [CURRICULUM UPDATE] RESETTING counters for next evaluation period (navigation_task_gate.py:454)
+[36m[2025-08-14 11:53:59,223][732327] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 80.3). Total num frames: 16384. Throughput: 0: 86.1. Samples: 18320. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:53:59,224][732327] Avg episode reward: [(0, '-89.967')]
+[36m[2025-08-14 11:54:04,191][732327] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 78.4). Total num frames: 16384. Throughput: 0: 85.7. Samples: 18576. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:54:04,191][732327] Avg episode reward: [(0, '-89.587')]
+[33m[230253 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1412)
+[33m[230253 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 1200): (navigation_task_gate.py:1413)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           -5.909 (navigation_task_gate.py:1414)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.000 (dist: 5.98m) (navigation_task_gate.py:1415)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1416)
+[33m[230253 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -0.092 (navigation_task_gate.py:1417)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          0.132 (gate_dist: 2.25m) (navigation_task_gate.py:1418)
+[33m[230253 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1419)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: -0.178) (navigation_task_gate.py:1420)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.219 (navigation_task_gate.py:1421)
+[33m[230253 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1422)
+[33m[230253 ms][navigation_task_gate] - WARNING :   💥 CRASHES:                1/16 environments (navigation_task_gate.py:1440)
+[33m[230253 ms][navigation_task_gate] - WARNING :   💸 Collision Penalty:     -100.0 per crash (navigation_task_gate.py:1441)
+[33m[230253 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1445)
+[33m[230253 ms][navigation_task_gate] - WARNING : 📈 EPISODE REWARD ANALYSIS (Last 10 Episodes): (navigation_task_gate.py:1446)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🏆 EPISODE TOTAL:          -93.6 (navigation_task_gate.py:1453)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📍 Position Contribution:  0.0 (navigation_task_gate.py:1454)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🎯 Very Close Contribution: 0.0 (navigation_task_gate.py:1455)
+[33m[230253 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -1.7 (navigation_task_gate.py:1456)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          2.6 (navigation_task_gate.py:1457)
+[33m[230253 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         13.2 (navigation_task_gate.py:1458)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.0 (navigation_task_gate.py:1459)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🎮 Action Penalties:       -7.8 (navigation_task_gate.py:1460)
+[33m[230253 ms][navigation_task_gate] - WARNING :   🎉 Gate Passage Bonuses:   0.0 (basic + center) (navigation_task_gate.py:1461)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📊 Estimated Passages:     0.0 per episode (should be ≤1.0) (navigation_task_gate.py:1468)
+[33m[230253 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1469)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📷 Image Penalties:        0.0 (navigation_task_gate.py:1470)
+[33m[230253 ms][navigation_task_gate] - WARNING :   📏 Average Episode Length: 28 steps (navigation_task_gate.py:1471)
+[33m[230254 ms][navigation_task_gate] - WARNING :   📈 Recent Trend:         +5.0 (last 3 vs first 3) (navigation_task_gate.py:1479)
+[33m[230254 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1482)
+[33m[230254 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1483)
+[33m[230254 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  -2.3 (avg across 16 envs) (navigation_task_gate.py:1500)
+[33m[230254 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1501)
+[33m[230254 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -2.2 (navigation_task_gate.py:1502)
+[33m[230254 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   2.0 (navigation_task_gate.py:1503)
+[33m[230254 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  10.0 (navigation_task_gate.py:1504)
+[33m[230254 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1505)
+[33m[230254 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -6.2 (navigation_task_gate.py:1506)
+[33m[230254 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           20 (navigation_task_gate.py:1507)
+[33m[230254 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1509)
+[36m[2025-08-14 11:54:09,310][732327] Fps is (10 sec: 0.0, 60 sec: 274.5, 300 sec: 76.5). Total num frames: 16384. Throughput: 0: 84.7. Samples: 19120. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:54:09,310][732327] Avg episode reward: [(0, '-88.838')]
+[36m[2025-08-14 11:54:14,237][732327] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 74.8). Total num frames: 16384. Throughput: 0: 86.3. Samples: 19712. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:54:14,237][732327] Avg episode reward: [(0, '-88.595')]
+[36m[2025-08-14 11:54:19,199][732327] Fps is (10 sec: 0.0, 60 sec: 273.1, 300 sec: 73.1). Total num frames: 16384. Throughput: 0: 86.4. Samples: 19984. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:54:19,199][732327] Avg episode reward: [(0, '-88.002')]
+[36m[2025-08-14 11:54:24,171][732327] Fps is (10 sec: 0.0, 60 sec: 273.0, 300 sec: 71.6). Total num frames: 16384. Throughput: 0: 91.0. Samples: 20544. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:54:24,172][732327] Avg episode reward: [(0, '-88.120')]
+[37m[1m[2025-08-14 11:54:24,392][732327] Saving ./train_dir/gate_config_8_adaptivegatesize_framefreeze5/checkpoint_p0/checkpoint_000000032_16384.pth...
+[GIF] Episode 45 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0003_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0003_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0003_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0003_static_seg.gif
+[GIF] Saved merged dual camera (CLEAN): ./gif_episodes/episode_0003_merged_dual_camera_CLEAN.gif
+[36m[2025-08-14 11:54:29,227][732327] Fps is (10 sec: 0.0, 60 sec: 272.8, 300 sec: 70.0). Total num frames: 16384. Throughput: 0: 91.8. Samples: 21088. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:54:29,227][732327] Avg episode reward: [(0, '-87.710')]
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0003_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0003_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0003_merged_dual_camera_D455_NOISED.gif
+[36m[2025-08-14 11:54:34,209][732327] Fps is (10 sec: 0.0, 60 sec: 272.9, 300 sec: 68.5). Total num frames: 16384. Throughput: 0: 91.9. Samples: 21376. Policy #0 lag: (min: 31.0, avg: 31.0, max: 31.0)
+[36m[2025-08-14 11:54:34,209][732327] Avg episode reward: [(0, '-87.192')]
+================================================================================
+🎯 COMPLETE OBSERVATION INFLUENCE ANALYSIS - FINAL SUMMARY
+================================================================================
+📊 Training completed with 32 analysis steps
+================================================================================
+[37m[1m[2025-08-14 11:54:35,802][732327] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 732327], exiting...
+[37m[1m[2025-08-14 11:54:35,803][732327] Runner profile tree view:
+[37m[1mmain_loop: 244.6589
+[37m[1m[2025-08-14 11:54:35,803][732327] Collected {0: 16384}, FPS: 67.0
+================================================================================
+📊 COMPLETE OBSERVATION INFLUENCE ANALYSIS
+================================================================================
+📊 Analysis based on 32 Sample Factory training steps and 1392 forward passes
+    (Note: Sample Factory processes multiple rollout steps per training step)
+📊 INDIVIDUAL OBSERVATION COMPONENT INFLUENCE:
+ 1. 🎯 DRONE_POSITION       | Correlation: 0.3044 ( 13.0%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 1392
+     Magnitude:      2.2 | Variance:    1.571
+     Description: Drone absolute position in world coordinates
+ 2. 🧭 STATIC_CAMERA_ORIENT | Correlation: 0.2977 ( 12.7%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 1392
+     Magnitude:      0.6 | Variance:    0.223
+     Description: Static camera orientation relative to drone
+ 3. ✈️ DRONE_ORIENTATION    | Correlation: 0.2977 ( 12.7%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 1392
+     Magnitude:      0.6 | Variance:    0.223
+     Description: Drone full orientation (roll, pitch, yaw)
+ 4. 📍 STATIC_CAMERA_POS    | Correlation: 0.2898 ( 12.4%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 1392
+     Magnitude:      1.5 | Variance:    0.818
+     Description: Static camera position relative to drone
+ 5. 📷 DRONE_CAMERA_VAE     | Correlation: 0.2758 ( 11.8%)
+     🔥 CRITICAL | ████████████ | Dimensions: 64D | Samples: 1392
+     Magnitude:     17.3 | Variance:    5.377
+     Description: Drone camera VAE encoded features
+ 6. ⚡ DRONE_LINEAR_VEL     | Correlation: 0.2280 (  9.8%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 1392
+     Magnitude:      0.8 | Variance:    0.321
+     Description: Drone linear velocity in body frame
+ 7. 🌀 DRONE_ANGULAR_VEL    | Correlation: 0.2221 (  9.5%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 1392
+     Magnitude:      1.5 | Variance:    0.962
+     Description: Drone angular velocity in body frame
+ 8. 🎮 DRONE_ACTIONS        | Correlation: 0.2153 (  9.2%)
+     🔥 CRITICAL | ████████████ | Dimensions: 4D | Samples: 1392
+     Magnitude:      1.2 | Variance:    0.482
+     Description: Previous drone actions (action history)
+ 9. 📹 STATIC_CAMERA_VAE    | Correlation: 0.2075 (  8.9%)
+     🔥 CRITICAL | ████████████ | Dimensions: 64D | Samples: 1392
+     Magnitude:     19.0 | Variance:    6.284
+     Description: Static camera VAE encoded features
+🎯 DETAILED BREAKDOWN BY COMPONENT:
+   🎯 drone_position      : 0.3044 correlation ( 13.0% of total influence)
+   🧭 static_camera_orient: 0.2977 correlation ( 12.7% of total influence)
+   ✈️ drone_orientation   : 0.2977 correlation ( 12.7% of total influence)
+   📍 static_camera_pos   : 0.2898 correlation ( 12.4% of total influence)
+   📷 drone_camera_vae    : 0.2758 correlation ( 11.8% of total influence)
+   ⚡ drone_linear_vel    : 0.2280 correlation (  9.8% of total influence)
+   🌀 drone_angular_vel   : 0.2221 correlation (  9.5% of total influence)
+   🎮 drone_actions       : 0.2153 correlation (  9.2% of total influence)
+   📹 static_camera_vae   : 0.2075 correlation (  8.9% of total influence)
+📊 MODALITY GROUPINGS (for reference):
+   📹 Visual Information:    20.7% (0.483 total correlation)
+      └─ 📷 Drone Camera:    0.2758
+      └─ 📹 Static Camera:   0.2075
+   ⚡ Kinematic State:       28.5% (0.665 total correlation)
+      └─ ⚡ Linear Velocity:  0.2280
+      └─ 🌀 Angular Velocity: 0.2221
+      └─ 🎮 Action History:   0.2153
+   🧭 Spatial Awareness:     50.9% (1.189 total correlation)
+      └─ 🎯 Drone Position:   0.3044
+      └─ 📍 Static Cam Pos:   0.2898
+      └─ 🧭 Static Cam Orient:0.2977
+      └─ ✈️ Drone Orientation:0.2977
+💡 OPTIMIZATION INSIGHTS:
+   🏆 Most influential: 🎯 drone_position (0.3044 correlation)
+   🔥 Critical components (9): drone_position, static_camera_pos, static_camera_orient, drone_orientation, drone_linear_vel, drone_angular_vel, drone_actions, drone_camera_vae, static_camera_vae
+      ✅ These are essential for decision-making
+================================================================================
+🧹 Complete observation tracker cleaned up

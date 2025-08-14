@@ -239,17 +239,19 @@ class IsaacGymEnv(BaseManager):
                     env_handle, asset_handle, index, segmentation_value
                 )
 
-        color = asset_info_dict["color"]
-        if asset_info_dict["color"] is None:
-            color = np.random.randint(low=50, high=200, size=3)
-
-        self.gym.set_rigid_body_color(
-            env_handle,
-            asset_handle,
-            0,
-            gymapi.MESH_VISUAL,
-            gymapi.Vec3(color[0] / 255, color[1] / 255, color[2] / 255),
-        )
+        # Respect URDF material colors for dynamic objects; only override color for non-object assets
+        asset_type = asset_info_dict.get("asset_type", "")
+        if asset_type not in ["objects", "object", "objects_gate"]:
+            color = asset_info_dict["color"]
+            if asset_info_dict["color"] is None:
+                color = np.random.randint(low=50, high=200, size=3)
+            self.gym.set_rigid_body_color(
+                env_handle,
+                asset_handle,
+                0,
+                gymapi.MESH_VISUAL,
+                gymapi.Vec3(color[0] / 255, color[1] / 255, color[2] / 255),
+            )
 
         self.asset_handles[env_id].append(asset_handle)
         return (

@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<robot name="gate_scale_046">
+  <material name="gate_material">
+    <color rgba="0.1 0.4 0.8 1.0"/>
+  </material>
+  <link name="base_link"/>
+  <link name="left_post">
+    <visual>
+      <origin xyz="0.000 0.000 0.575" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.200 0.200 1.150"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0.000 0.000 0.575" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.200 0.200 1.150"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10.000"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+  <joint name="base_to_left_post" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_post"/>
+    <origin xyz="0.000 0.575 0.000" rpy="0 0 0"/>
+  </joint>
+  <link name="right_post">
+    <visual>
+      <origin xyz="0.000 0.000 0.575" rpy="0 0 0"/>
+      <geometry>
+      <box size="0.200 0.200 1.150"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0.000 0.000 0.575" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.200 0.200 1.150"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10.000"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+  <joint name="base_to_right_post" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_post"/>
+    <origin xyz="0.000 -0.575 0.000" rpy="0 0 0"/>
+  </joint>
+  <link name="top_bar">
+    <visual>
+      <origin xyz="0.000 0.000 0.000" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.200 1.242 0.200"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0.000 0.000 0.000" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.200 1.242 0.200"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10.000"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+  <joint name="base_to_top_bar" type="fixed">
+    <parent link="base_link"/>
+    <child link="top_bar"/>
+    <origin xyz="0.000 0.000 1.104" rpy="0 0 0"/>
+  </joint>
+  <link name="bottom_bar">
+    <visual>
+      <origin xyz="0.000 0.000 0.000" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.200 1.242 0.200"/>
+      </geometry>
+      <material name="gate_material"/>
+    </visual>
+    <collision>
+      <origin xyz="0.000 0.000 0.000" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.200 1.242 0.200"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10.000"/>
+      <inertia ixx="2.0" ixy="0.0" ixz="0.0" iyy="2.0" iyz="0.0" izz="2.0"/>
+    </inertial>
+  </link>
+  <joint name="base_to_bottom_bar" type="fixed">
+    <parent link="base_link"/>
+    <child link="bottom_bar"/>
+    <origin xyz="0.000 0.000 0.046" rpy="0 0 0"/>
+  </joint>
+</robot> 

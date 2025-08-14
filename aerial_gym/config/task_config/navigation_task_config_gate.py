@@ -149,13 +149,26 @@ class task_config:
         camera_noise_start_level = 3             # Start minimal noise from level 3 
         camera_noise_end_level = 23              # Reach maximum noise at level 23
         max_gaussian_noise_std = 0.0125          # Maximum Gaussian noise: 1.25% of depth range
-        max_pixel_dropout_rate = 0.025           # Maximum pixel dropout: 2.5% of pixels
+        max_pixel_dropout_rate = 0.0125          # Halved: 1.25% of pixels
         
+        # 6. CAMERA FRAME DROPOUT (entire-frame) parameters
+        enable_camera_frame_dropout = True
+        # Max at level 23: 5% freeze + 0.5% blank (≈5.475% effective total)
+        max_frame_dropout_prob_drone = 0.055     # Backward-compat: total (freeze+blank)
+        max_frame_dropout_prob_static = 0.055    # Backward-compat: total (freeze+blank)
+        max_frame_freeze_prob_drone = 0.05
+        max_frame_blank_prob_drone  = 0.005
+        max_frame_freeze_prob_static = 0.05
+        max_frame_blank_prob_static  = 0.005
+        frame_dropout_start_level = 3
+        frame_dropout_end_level = 23
+        frame_dropout_mode = "freeze"            # default fallback if single-mode is used elsewhere
+ 
         # EVALUATION PARAMETERS
         check_after_log_instances = 128  # INCREASED FREQUENCY: Check curriculum every 128 instances for faster progression
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
         decrease_step = 0   # NO DECREASE POLICY: Once a level is reached, never go back
-        success_rate_for_increase = 0.5   # 50% success rate to progress to next curriculum level
+        success_rate_for_increase = 0.50  # 50% success rate to progress to next curriculum level
         success_rate_for_decrease = 0.0   # DISABLED: Never decrease difficulty (no-decrease policy)
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
@@ -255,7 +268,7 @@ class task_config:
             camera_noise_start_level = 3       # Start at level 3 with 0 noise
             camera_noise_end_level = 23        # End at level 23 with max noise
             max_gaussian_noise_std = 0.0125    # Maximum Gaussian noise: 1.25% of depth range
-            max_pixel_dropout_rate = 0.025     # Maximum pixel dropout: 2.5% of pixels
+            max_pixel_dropout_rate = 0.0125    # Halved: 1.25% of pixels
             
             # Linear progression from level 3 to 23
             if level <= camera_noise_start_level:
@@ -269,6 +282,45 @@ class task_config:
                 dropout_rate = level_progress * max_pixel_dropout_rate
                 return gaussian_std, dropout_rate
 
+        @staticmethod
+        def get_camera_frame_dropout(level):
+            """
+            Linear schedules for entire-frame dropouts with separate freeze and blank probabilities
+            for both drone and static cameras. At level 23: 9% freeze, 1% blank.
+            Returns a dict to allow future extensions while keeping backward compat.
+            """
+            start = task_config.curriculum.frame_dropout_start_level
+            end = task_config.curriculum.frame_dropout_end_level
+            # Maxima
+            max_freeze_drone = getattr(task_config.curriculum, 'max_frame_freeze_prob_drone', 0.05)
+            max_blank_drone  = getattr(task_config.curriculum, 'max_frame_blank_prob_drone', 0.005)
+            max_freeze_static = getattr(task_config.curriculum, 'max_frame_freeze_prob_static', 0.05)
+            max_blank_static  = getattr(task_config.curriculum, 'max_frame_blank_prob_static', 0.005)
+            if level <= start:
+                return {
+                    'drone_freeze': 0.0, 'drone_blank': 0.0,
+                    'static_freeze': 0.0, 'static_blank': 0.0,
+                    'drone_total': 0.0, 'static_total': 0.0,
+                }
+            if level >= end:
+                return {
+                    'drone_freeze': max_freeze_drone, 'drone_blank': max_blank_drone,
+                    'static_freeze': max_freeze_static, 'static_blank': max_blank_static,
+                    'drone_total': max_freeze_drone + max_blank_drone,
+                    'static_total': max_freeze_static + max_blank_static,
+                }
+            progress = (level - start) / float(end - start)
+            d_freeze = progress * max_freeze_drone
+            d_blank  = progress * max_blank_drone
+            s_freeze = progress * max_freeze_static
+            s_blank  = progress * max_blank_static
+            return {
+                'drone_freeze': d_freeze, 'drone_blank': d_blank,
+                'static_freeze': s_freeze, 'static_blank': s_blank,
+                'drone_total': d_freeze + d_blank,
+                'static_total': s_freeze + s_blank,
+            }
+ 
         # REMOVED: get_drone_lateral_offset and get_drone_orientation_randomization
         # These methods have been removed as we now use fixed parameters in LMF2 config
         # with ±0.5m lateral variation and ±45° orientation without curriculum dependency

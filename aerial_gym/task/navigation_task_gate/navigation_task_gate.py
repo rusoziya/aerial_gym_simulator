@@ -2,6 +2,8 @@ from aerial_gym.task.base_task import BaseTask
 from aerial_gym.sim.sim_builder import SimBuilder
 import torch
 import numpy as np
+import os
+import math
 
 from aerial_gym.utils.math import *
 
@@ -75,11 +77,18 @@ class NavigationTaskGate(BaseTask):
         self.curriculum_level = self.task_config.curriculum.min_level
         obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
         
-        # Estimate fixed assets: gate (1) + walls (6) + robot (1) = 8 base assets
-        estimated_fixed_assets = 8
-        total_obstacles_in_env = estimated_fixed_assets + obstacles_behind_gate
+        # FIXED: Calculate visible assets: 1 visible gate + walls (6) + curriculum obstacles + robot (1)
+        # NOTE: Even though 11 gate variants are loaded, only 1 will be visible at any time
+        # The other 10 gates are hidden by moving them to (-1000, -1000, -1000)
+        visible_gates = 0  # Only 1 gate visible at a time (others hidden by gate selection system)
+        walls = 6  # 6 boundary walls
+        robot = 0  # Robot is NOT part of env_asset_state_tensor (handled separately)
+        fixed_assets_visible = visible_gates + walls  # = 7 visible fixed assets
+        total_obstacles_in_env = fixed_assets_visible + obstacles_behind_gate
         
         logger.info(f"PRE-INIT: Setting curriculum level {self.curriculum_level} with {obstacles_behind_gate} curriculum obstacles")
+        logger.info(f"PRE-INIT: Visible assets (env assets only): {visible_gates} gate + {walls} walls + {obstacles_behind_gate} curriculum = {total_obstacles_in_env} total")
+        # logger.warning(f"[OBSTACLE_FIX] PRE-INIT: Level {self.curriculum_level} should spawn {obstacles_behind_gate} curriculum obstacles")
         logger.info(f"PRE-INIT: Total obstacle count for asset manager: {total_obstacles_in_env}")
 
         self.sim_env = SimBuilder().build_env(
@@ -93,6 +102,11 @@ class NavigationTaskGate(BaseTask):
             use_warp=self.task_config.use_warp,
             headless=self.task_config.headless,
         )
+        
+        # Immediately select a random gate variant once after creation (safety)
+        if hasattr(self.sim_env, 'apply_gate_variant_selection'):
+            logger.warning("[GateVariant] Initial selection after build (one-time)")
+            self.sim_env.apply_gate_variant_selection(env_ids=torch.arange(self.sim_env.num_envs, device=self.device))
         
         # CRITICAL FIX: Immediately update the environment's obstacle count after creation
         if hasattr(self.sim_env, 'global_tensor_dict'):
@@ -114,9 +128,17 @@ class NavigationTaskGate(BaseTask):
         self.crashes_aggregate = 0
         self.timeouts_aggregate = 0
 
-        # Gate-specific tracking
+        # Gate-specific tracking and adaptive dimensions
         self.gate_position = torch.zeros((self.sim_env.num_envs, 3), device=self.device)
         self.gate_approach_distance = torch.zeros(self.sim_env.num_envs, device=self.device)
+        
+        # Gate dimensions for adaptive rewards (updated per environment based on selected gate)
+        self.gate_width = torch.zeros((self.sim_env.num_envs,), device=self.device)  # Y-axis width
+        self.gate_height = torch.zeros((self.sim_env.num_envs,), device=self.device)  # Z-axis height  
+        self.gate_center_height = torch.zeros((self.sim_env.num_envs,), device=self.device)  # Center height for rewards
+        
+        # Gate scale factors for each environment (will be updated when gate is selected)
+        self.gate_scale_factors = torch.ones((self.sim_env.num_envs,), device=self.device)
 
         # Initialize single shared VAE model for both drone and static cameras
         # This optimization reduces GPU memory usage by ~50% compared to loading two separate models
@@ -229,36 +251,39 @@ class NavigationTaskGate(BaseTask):
         self.curriculum_log_file = None  # Initialize to None
         self.setup_curriculum_logging()  # Set up logging before using it
         
-        # Get the actual number of assets that are always kept from the asset manager
-        if hasattr(self.sim_env, 'asset_manager') and hasattr(self.sim_env.asset_manager, 'num_keep_in_env'):
-            fixed_assets_always_kept = self.sim_env.asset_manager.num_keep_in_env
-            logger.info(f"ACTUAL: Asset manager reports {fixed_assets_always_kept} fixed assets")
-        else:
-            # Use the estimated value from pre-initialization
-            fixed_assets_always_kept = 8  # Gate + 6 walls + robot (estimated)
-            logger.warning(f"FALLBACK: Using estimated {fixed_assets_always_kept} fixed assets")
+        # FIXED CALCULATION: Account for visible assets only (not all loaded assets)
+        # Even though 11 gate variants are loaded, only 1 is visible at any time
+        visible_gates = 1  # Only 1 gate visible at a time (others hidden by gate selection system)
+        walls = 6  # 6 boundary walls  
+        robot = 1  # 1 robot
+        fixed_assets_visible = visible_gates + walls + robot  # = 8 visible fixed assets
         
-        total_obstacles_in_env = fixed_assets_always_kept + obstacles_behind_gate
+        total_obstacles_in_env = fixed_assets_visible + obstacles_behind_gate
+        
+        logger.info(f"CURRICULUM: Visible assets: {visible_gates} gate + {walls} walls + {robot} robot + {obstacles_behind_gate} curriculum = {total_obstacles_in_env} total")
+        logger.warning(f"[OBSTACLE_FIX] CURRICULUM: Level {self.curriculum_level} should spawn {obstacles_behind_gate} curriculum obstacles")
         
         # Update observation dictionary with obstacle count
         self.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
+        logger.warning(f"[OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = {total_obstacles_in_env}")
         
         # Confirm the environment manager has the correct count
         if hasattr(self.sim_env, 'global_tensor_dict'):
-            if self.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0) != total_obstacles_in_env:
-                logger.warning(f"MISMATCH: Updating global_tensor_dict from {self.sim_env.global_tensor_dict.get('num_obstacles_in_env', 0)} to {total_obstacles_in_env}")
+            old_count = self.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
+            if old_count != total_obstacles_in_env:
+                logger.warning(f"[OBSTACLE_DEBUG] MISMATCH: Updating global_tensor_dict from {old_count} to {total_obstacles_in_env}")
                 self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
             else:
-                logger.info(f"CONFIRMED: Global tensor dict already has correct obstacle count: {total_obstacles_in_env}")
+                logger.warning(f"[OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: {total_obstacles_in_env}")
         
-        logger.info(f"FINAL: Fixed assets: {fixed_assets_always_kept}, Curriculum obstacles: {obstacles_behind_gate}, Total: {total_obstacles_in_env}")
+        logger.info(f"FINAL: Visible assets: {fixed_assets_visible}, Curriculum obstacles: {obstacles_behind_gate}, Total: {total_obstacles_in_env}")
         
         # Initialize camera difficulty parameters (only static camera curriculum remains)
         self.max_camera_angle, self.camera_height_offset, self.camera_distance_offset = self.task_config.curriculum.get_static_camera_difficulty(self.curriculum_level)
         
         # ===== CURRICULUM LOGGING =====
         logger.info(f"INITIAL CURRICULUM (Level {self.curriculum_level}):")
-        logger.info(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_always_kept} fixed + {obstacles_behind_gate} curriculum)")
+        logger.info(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
         logger.info(f"   2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency)")
         logger.info(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
         
@@ -266,7 +291,11 @@ class NavigationTaskGate(BaseTask):
         initial_camera_gaussian_std, initial_camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
         logger.info(f"   5. CAMERA NOISE: Gaussian STD={initial_camera_gaussian_std:.4f}, Dropout={initial_camera_dropout_rate*100:.1f}% (both drone & static)")
         
-        logger.info(f"   6. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
+        # 6. CAMERA FRAME DROPOUT (entire-frame)
+        fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+        logger.info(f"   6. CAMERA FRAME DROPOUT: drone={fd['drone_total']*100:.2f}% (freeze {fd['drone_freeze']*100:.2f}%, blank {fd['drone_blank']*100:.2f}%), static={fd['static_total']*100:.2f}% (freeze {fd['static_freeze']*100:.2f}%, blank {fd['static_blank']*100:.2f}%)")
+        
+        logger.info(f"   7. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
         
         # Calculate progress fraction
         self.curriculum_progress_fraction = (
@@ -358,6 +387,10 @@ class NavigationTaskGate(BaseTask):
         self.episode_lengths = torch.zeros(self.num_envs, device=self.device)
         self.completed_episodes = []  # Store last 10 episode breakdowns
         self.max_stored_episodes = 10
+        
+        # Initialize gate dimensions for all environments after full initialization
+        logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
+        self.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
 
     def close(self):
         try:
@@ -472,8 +505,176 @@ class NavigationTaskGate(BaseTask):
             self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids)
             logger.debug(f"Updated static camera angles for {len(env_ids)} resetting environments: {env_ids.tolist()}")
         
+        # Add debugging for gate randomization on reset
+        # logger.warning(f"[GATE_RESET_DEBUG] Episode reset for environments {env_ids.tolist()} - new random gate sizes will be selected")
+        
+        # Persist curriculum level for env manager (for gated gate randomization)
+        self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
+        # Update gate dimensions for adaptive rewards after gate selection
+        self.update_gate_dimensions_for_environments(env_ids)
+        
         self.infos = {}
         return
+    
+    def extract_gate_dimensions_from_urdf(self, urdf_path):
+        """
+        Extract gate dimensions from URDF file.
+        Returns (width, height, center_height, scale_factor)
+        """
+        import xml.etree.ElementTree as ET
+        import os
+        
+        try:
+            if not os.path.exists(urdf_path):
+                logger.warning(f"[GATE_ADAPTIVE] URDF file not found: {urdf_path}, using default dimensions")
+                return 2.5, 2.4, 1.2, 1.0  # Default 100% scale gate
+            
+            tree = ET.parse(urdf_path)
+            root = tree.getroot()
+            
+            # Extract scale factor from filename
+            filename = os.path.basename(urdf_path)
+            scale_factor = 1.0
+            if "gate_scale_" in filename:
+                try:
+                    scale_str = filename.replace("gate_scale_", "").replace(".urdf", "")
+                    scale_factor = int(scale_str) / 100.0
+                except:
+                    scale_factor = 1.0
+            
+            # Find left and right post positions to calculate width
+            width = 2.5 * scale_factor  # Default scaled width
+            height = 2.4 * scale_factor  # Default scaled height
+            center_height = 1.2 * scale_factor  # Default scaled center height
+            
+            # Parse joint positions for more accurate dimensions
+            for joint in root.iter('joint'):
+                if joint.get('name') == 'base_to_left_post':
+                    origin = joint.find('origin')
+                    if origin is not None:
+                        xyz = origin.get('xyz', '0 0 0').split()
+                        left_y = abs(float(xyz[1]))
+                        width = left_y * 2  # Total width = 2 * distance from center
+                
+                elif joint.get('name') == 'base_to_top_bar':
+                    origin = joint.find('origin')
+                    if origin is not None:
+                        xyz = origin.get('xyz', '0 0 0').split()
+                        top_z = float(xyz[2])
+                        height = top_z  # Height to top bar
+                        center_height = top_z / 2  # Center height
+            
+            # logger.warning(f"[GATE_ADAPTIVE] Extracted dimensions from {filename}: width={width:.3f}m, height={height:.3f}m, center_height={center_height:.3f}m, scale={scale_factor:.2f}")
+            return width, height, center_height, scale_factor
+            
+        except Exception as e:
+            logger.warning(f"[GATE_ADAPTIVE] Error parsing URDF {urdf_path}: {e}, using default dimensions")
+            return 2.5, 2.4, 1.2, 1.0
+    
+    def calculate_gate_dimensions_from_name(self, gate_name):
+        """
+        Calculate gate dimensions from the gate name (e.g., gate_scale_060 -> 60% scale).
+        Returns (width, height, center_height, scale_factor)
+        """
+        try:
+            # Extract scale factor from gate name
+            if "gate_scale_" in gate_name:
+                scale_str = gate_name.replace("gate_scale_", "")
+                scale_factor = int(scale_str) / 100.0
+            else:
+                scale_factor = 1.0
+            
+            # Base dimensions for 100% gate
+            base_width = 2.5
+            base_height = 2.4
+            base_center_height = 1.2
+            
+            # Calculate scaled dimensions
+            width = base_width * scale_factor
+            height = base_height * scale_factor
+            center_height = base_center_height * scale_factor
+            
+            logger.warning(f"[GATE_ADAPTIVE] Calculated dimensions from name '{gate_name}': width={width:.3f}m, height={height:.3f}m, center_height={center_height:.3f}m, scale={scale_factor:.2f}")
+            return width, height, center_height, scale_factor
+            
+        except Exception as e:
+            logger.warning(f"[GATE_ADAPTIVE] Error calculating dimensions from name '{gate_name}': {e}, using default")
+            return 2.5, 2.4, 1.2, 1.0
+    
+    def update_gate_dimensions_for_environments(self, env_ids):
+        """
+        Update gate dimensions for specified environments based on their selected gate variants.
+        """
+        if not hasattr(self.sim_env, 'global_tensor_dict'):
+            return
+            
+        # Safety check: ensure gate dimension attributes exist
+        if not hasattr(self, 'gate_width') or not hasattr(self, 'gate_height'):
+            logger.warning("[GATE_ADAPTIVE] Gate dimension attributes not initialized yet, skipping update")
+            return
+            
+        gate_variant_names = self.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])
+        active_gate_array_indices = self.sim_env.global_tensor_dict.get("active_gate_variant_array_index", torch.zeros(self.sim_env.num_envs))
+        
+        for env_id in (env_ids.tolist() if hasattr(env_ids, 'tolist') else [env_ids]):
+            if env_id >= len(gate_variant_names):
+                continue
+                
+            env_gate_names = gate_variant_names[env_id]
+            active_idx = active_gate_array_indices[env_id].item()
+            
+            if active_idx >= 0 and active_idx < len(env_gate_names):
+                # Get the active gate variant name
+                active_gate_name = env_gate_names[active_idx] if env_gate_names else "gate_scale_100"
+                
+                # Construct URDF path - find the correct base directory
+                urdf_filename = f"{active_gate_name}.urdf"
+                
+                # Try multiple possible base directories to find the URDF files
+                possible_base_dirs = [
+                    os.getcwd(),  # Current working directory
+                    os.path.dirname(os.path.abspath(__file__)),  # Directory of this file
+                    "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator",  # Known project root
+                ]
+                
+                # Add parent directories up to 5 levels
+                current_dir = os.getcwd()
+                for _ in range(5):
+                    current_dir = os.path.dirname(current_dir)
+                    possible_base_dirs.append(current_dir)
+                
+                urdf_path = None
+                for base_dir in possible_base_dirs:
+                    test_path = os.path.join(base_dir, "resources/models/environment_assets/gates", urdf_filename)
+                    if os.path.exists(test_path):
+                        urdf_path = test_path
+                        break
+                
+                if urdf_path is None:
+                    # Fallback: construct path anyway for the error message
+                    urdf_path = os.path.join(possible_base_dirs[0], "resources/models/environment_assets/gates", urdf_filename)
+                
+                # Extract dimensions from URDF or calculate from filename
+                if urdf_path and os.path.exists(urdf_path):
+                    width, height, center_height, scale_factor = self.extract_gate_dimensions_from_urdf(urdf_path)
+                else:
+                    # Fallback: calculate dimensions from scale factor in filename
+                    width, height, center_height, scale_factor = self.calculate_gate_dimensions_from_name(active_gate_name)
+                
+                # Update environment-specific dimensions
+                self.gate_width[env_id] = width
+                self.gate_height[env_id] = height
+                self.gate_center_height[env_id] = center_height
+                self.gate_scale_factors[env_id] = scale_factor
+                
+                # logger.warning(f"[GATE_ADAPTIVE] Env {env_id}: Updated to gate '{active_gate_name}' - width={width:.3f}m, height={height:.3f}m, scale={scale_factor:.2f}")
+            else:
+                # Default dimensions if no active gate found
+                self.gate_width[env_id] = 2.5
+                self.gate_height[env_id] = 2.4
+                self.gate_center_height[env_id] = 1.2
+                self.gate_scale_factors[env_id] = 1.0
+                logger.warning(f"[GATE_ADAPTIVE] Env {env_id}: No active gate found (active_idx={active_idx}, num_gates={len(env_gate_names)}), using default gate dimensions")
     
     # REMOVED: _apply_curriculum_drone_spawning and _apply_curriculum_orientation_randomization
     # These methods have been removed as we now use fixed parameters from LMF2 config
@@ -515,12 +716,16 @@ class NavigationTaskGate(BaseTask):
         # More forgiving than target-based or centered passage requirements
         robot_position = self.obs_dict["robot_position"]
         
-        # Gate passage detection: crossed gate plane with proper alignment
-        # Gate dimensions: 2.5m wide × 2.3m tall, positioned at (0,0,0)
+        # Gate passage detection: crossed gate plane with proper alignment - ADAPTIVE to gate dimensions
+        # Gate dimensions are now adaptive based on the selected gate variant per environment
+        gate_success_width_tolerance = self.gate_width * 0.52  # 52% of gate width for success detection (safety margin)
+        gate_success_min_height = self.gate_position[:, 2] + self.gate_height * 0.08  # 8% above ground
+        gate_success_max_height = self.gate_position[:, 2] + self.gate_height * 0.92  # 92% of gate height
+        
         gate_passage_success = (
             (robot_position[:, 1] > self.gate_position[:, 1]) &  # Crossed gate (Y > 0)
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.3) &  # Within gate width (±1.3m for safety margin)
-            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)  # Within gate height range
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_success_width_tolerance) &  # Within gate width
+            (robot_position[:, 2] > gate_success_min_height) & (robot_position[:, 2] < gate_success_max_height)  # Within gate height range
         )
         
         # Success when episode truncates (not crashes) and gate passage achieved
@@ -553,15 +758,19 @@ class NavigationTaskGate(BaseTask):
         robot_position = self.obs_dict["robot_position"]
         gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
         
-        # Check if robot has passed gate (crossed Y = 0 plane with proper alignment)
+        # Check if robot has passed gate (crossed Y = 0 plane with proper alignment) - ADAPTIVE
+        gate_tracking_width_tolerance = self.gate_width * 0.6  # 60% of gate width for tracking
+        gate_tracking_min_height = self.gate_position[:, 2] + self.gate_height * 0.08  # 8% above ground
+        gate_tracking_max_height = self.gate_position[:, 2] + self.gate_height * 0.92  # 92% of gate height
+        
         gate_passed_current = (
             (robot_position[:, 1] > self.gate_position[:, 1]) &  # In front of gate
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &  # Within gate width
-            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)  # Within gate height
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_tracking_width_tolerance) &  # Within gate width
+            (robot_position[:, 2] > gate_tracking_min_height) & (robot_position[:, 2] < gate_tracking_max_height)  # Within gate height
         )
         
-        # Gate alignment: check if robot is roughly aligned with gate opening
-        gate_alignment = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
+        # Gate alignment: check if robot is roughly aligned with gate opening - ADAPTIVE
+        gate_alignment = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_tracking_width_tolerance
         
         # Camera alignment angle in degrees (convert from dot product)
         alignment_angle_deg = torch.acos(torch.clamp(camera_gate_alignment, -1.0, 1.0)) * 180.0 / 3.14159
@@ -670,6 +879,31 @@ class NavigationTaskGate(BaseTask):
                 # Clamp values to valid range [0, 1]
                 noised_image_obs = torch.clamp(noised_image_obs, 0.0, 1.0)
         
+        # Entire-frame dropout (curriculum-driven)
+        if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
+            fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+            p_freeze = fd.get('drone_freeze', 0.0)
+            p_blank = fd.get('drone_blank', 0.0)
+            if p_freeze > 0.0 or p_blank > 0.0:
+                if not hasattr(self, "_prev_drone_depth"):
+                    self._prev_drone_depth = noised_image_obs.clone()
+                # Two independent Bernoulli masks (cap total by ordering: apply blank first, then freeze)
+                blank_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_blank).view(-1, 1, 1)
+                freeze_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_freeze).view(-1, 1, 1)
+                # Apply BLANK replacement (1.0) first
+                noised_image_obs = torch.where(blank_mask, torch.ones_like(noised_image_obs), noised_image_obs)
+                # Apply FREEZE replacement (prev frame) where not already blanked
+                effective_freeze_mask = freeze_mask & (~blank_mask)
+                noised_image_obs = torch.where(effective_freeze_mask, self._prev_drone_depth, noised_image_obs)
+                # Update previous buffer
+                self._prev_drone_depth = noised_image_obs.clone()
+        else:
+            # Maintain previous buffer if feature disabled
+            if not hasattr(self, "_prev_drone_depth"):
+                self._prev_drone_depth = noised_image_obs.clone()
+            else:
+                self._prev_drone_depth = noised_image_obs.clone()
+        
         # Store noised drone camera image for GIF generation (add channel dimension back)
         self.obs_dict["depth_range_pixels_noised"] = noised_image_obs.unsqueeze(1)  # shape: (num_envs, 1, H, W)
         
@@ -723,6 +957,36 @@ class NavigationTaskGate(BaseTask):
                                 static_depth_noised = static_depth_noised.masked_fill(dropout_mask, 1.0)
                             
                             static_depth_noised = torch.clamp(static_depth_noised, 0.0, 1.0)
+
+                # Entire-frame dropout (curriculum-driven)
+                if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
+                    fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+                    p_freeze = fd.get('static_freeze', 0.0)
+                    p_blank = fd.get('static_blank', 0.0)
+                    if (p_freeze > 0.0) or (p_blank > 0.0):
+                        # Initialize previous static buffer
+                        if not hasattr(self, "_prev_static_depth"):
+                            if isinstance(static_depth_noised, np.ndarray):
+                                self._prev_static_depth = static_depth_noised.copy()
+                            else:
+                                self._prev_static_depth = static_depth_noised.clone()
+                        # Draw Bernoulli decisions
+                        blank = (np.random.rand() < p_blank) if isinstance(static_depth_noised, np.ndarray) else (torch.rand(1, device=static_depth_noised.device).item() < p_blank)
+                        freeze = (np.random.rand() < p_freeze) if isinstance(static_depth_noised, np.ndarray) else (torch.rand(1, device=static_depth_noised.device).item() < p_freeze)
+                        # Apply blank first
+                        if blank:
+                            if isinstance(static_depth_noised, np.ndarray):
+                                static_depth_noised = np.ones_like(static_depth_noised)
+                            else:
+                                static_depth_noised = torch.ones_like(static_depth_noised)
+                        # Apply freeze if not blanked
+                        elif freeze:
+                            static_depth_noised = self._prev_static_depth.copy() if isinstance(static_depth_noised, np.ndarray) else self._prev_static_depth.clone()
+                        # update buffer
+                        if isinstance(static_depth_noised, np.ndarray):
+                            self._prev_static_depth = static_depth_noised.copy()
+                        else:
+                            self._prev_static_depth = static_depth_noised.clone()
                 
                 # Store noised static camera images for GIF generation
                 self.obs_dict["static_depth_clean"] = static_depth_clean
@@ -966,6 +1230,9 @@ class NavigationTaskGate(BaseTask):
             self.gate_passed,
             self.curriculum_progress_fraction,
             self.task_config.reward_parameters,
+            self.gate_width,
+            self.gate_height,
+            self.gate_center_height,
         )
         
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
@@ -1153,10 +1420,14 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"  🎮 Action Penalty:         {avg_action_penalty:.3f}")
             logger.warning(f"  ⚡ Multiplier Factor:      {mult_factor:.3f}")
             
-            # Check for any gate passages
+            # Check for any gate passages - ADAPTIVE to gate dimensions
+            curriculum_width_tolerance = self.gate_width * 0.6  # 60% of gate width
+            curriculum_min_height = self.gate_position[:, 2] + self.gate_height * 0.08  # 8% above ground
+            curriculum_max_height = self.gate_position[:, 2] + self.gate_height * 0.92  # 92% of gate height
+            
             num_passed = torch.sum((robot_position[:, 1] > self.gate_position[:, 1]) & 
-                                 (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &
-                                 (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2)).item()
+                                 (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < curriculum_width_tolerance) &
+                                 (robot_position[:, 2] > curriculum_min_height) & (robot_position[:, 2] < curriculum_max_height)).item()
             
             if num_passed > 0:
                 logger.warning(f"  🎉 GATE PASSAGES:          {num_passed}/16 environments!")
@@ -1290,26 +1561,35 @@ class NavigationTaskGate(BaseTask):
             )
             self.obs_dict["curriculum_level"] = self.curriculum_level
             
+            # Propagate curriculum level to env manager for gate unlocking
+            if hasattr(self, 'sim_env') and hasattr(self.sim_env, 'global_tensor_dict'):
+                self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
+                # Re-apply gate selection so changes take effect immediately on next reset
+                if hasattr(self.sim_env, 'apply_gate_variant_selection'):
+                    self.sim_env.apply_gate_variant_selection(env_ids=torch.arange(self.sim_env.num_envs, device=self.device))
+            
             # ===== MULTI-ASPECT CURRICULUM APPLICATION =====
             
             # 1. OBSTACLE COUNT PROGRESSION: Apply new obstacle count behind gate
             obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
             
-            # CRITICAL FIX: Get the actual number of assets that are always kept from the asset manager
-            # instead of hardcoding it as 7. The asset manager determines this based on keep_in_env flags.
-            if hasattr(self.sim_env, 'asset_manager') and hasattr(self.sim_env.asset_manager, 'num_keep_in_env'):
-                fixed_assets_always_kept = self.sim_env.asset_manager.num_keep_in_env
-            else:
-                # Fallback: Gate + 6 walls + possibly robot = estimate 8-9, use safe default
-                fixed_assets_always_kept = 9  # Updated fallback based on asset manager logs
+            # FIXED CALCULATION: Account for visible assets only (not all loaded assets)
+            # Even though 11 gate variants are loaded, only 1 is visible at any time
+            visible_gates = 1  # Only 1 gate visible at a time (others hidden by gate selection system)
+            walls = 6  # 6 boundary walls  
+            robot = 0  # Robot is NOT part of env_asset_state_tensor (handled separately)
+            fixed_assets_visible = visible_gates + walls  # = 7 visible fixed assets
                 
-            total_obstacles_in_env = fixed_assets_always_kept + obstacles_behind_gate
+            total_obstacles_in_env = fixed_assets_visible + obstacles_behind_gate
             self.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            # logger.warning(f"[OBSTACLE_DEBUG] Curriculum update: Level {self.curriculum_level} -> fixed {fixed_assets_visible} (1 gate + 6 walls), curriculum {obstacles_behind_gate}, total {total_obstacles_in_env}")
             
             # CRITICAL: Also update the environment manager's global tensor dict for asset management
             # This ensures the asset manager gets the updated obstacle count when environments reset
             if hasattr(self.sim_env, 'global_tensor_dict'):
+                old_count = self.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
                 self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+                # logger.warning(f"[OBSTACLE_DEBUG] Curriculum update: Updated global_tensor_dict from {old_count} to {total_obstacles_in_env}")
             
             # CRITICAL FIX: Force asset manager to update obstacle count
             # The asset manager may be caching the initial obstacle count, so we need to force it to update
@@ -1355,7 +1635,7 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update(f"\nSuccess Rate: {success_rate:.3f}\nCrash Rate: {crash_rate:.3f}\nTimeout Rate: {timeout_rate:.3f}")
             
             self.log_curriculum_update(f"\nCURRICULUM APPLIED:")
-            self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_always_kept} fixed + {obstacles_behind_gate} curriculum)")
+            self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
             self.log_curriculum_update(f"   2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)")
             # Get current randomized angle for first environment (representative)
             current_angle = 0.0
@@ -1363,16 +1643,55 @@ class NavigationTaskGate(BaseTask):
                 current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
             self.log_curriculum_update(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
             
+            # 4. GATE SIZE UNLOCKS (Curriculum-gated randomization)
+            if hasattr(self.sim_env, 'global_tensor_dict'):
+                gate_names = []
+                if len(self.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])) > 0:
+                    gate_names = self.sim_env.global_tensor_dict["gate_variant_names_per_env"][0]
+                # Compute linear threshold from 80 -> 40 over levels 3..23
+                if self.curriculum_level <= 3:
+                    min_scale = 80
+                elif self.curriculum_level >= 23:
+                    min_scale = 40
+                else:
+                    frac = (self.curriculum_level - 3) / (23 - 3)
+                    raw = 80 - frac * (80 - 40)
+                    min_scale = int((int(raw) // 2) * 2)
+                    if min_scale < 40:
+                        min_scale = 40
+                    if min_scale > 100:
+                        min_scale = 100
+                # Collect scales meeting threshold
+                scales = []
+                for n in gate_names:
+                    if isinstance(n, str) and "gate_scale_" in n:
+                        try:
+                            s = int(n.replace("gate_scale_", ""))
+                            if s >= min_scale:
+                                scales.append(s)
+                        except:
+                            pass
+                # Report unique scales only (avoid duplicates from config classes)
+                scales = sorted(list(set(scales)), reverse=True)
+                self.log_curriculum_update(f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> {scales if scales else [100]} (uniform across unique scales)")
+            
             # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
             camera_gaussian_std, camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
             self.log_curriculum_update(f"   5. CAMERA NOISE: Gaussian STD={camera_gaussian_std:.4f}, Dropout={camera_dropout_rate*100:.1f}% (both drone & static)")
+            
+            # 6. CAMERA FRAME DROPOUT (entire-frame)
+            fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+            self.log_curriculum_update(
+                f"   6. CAMERA FRAME DROPOUT: drone={fd['drone_total']*100:.2f}% (freeze {fd['drone_freeze']*100:.2f}%, blank {fd['drone_blank']*100:.2f}%), "
+                f"static={fd['static_total']*100:.2f}% (freeze {fd['static_freeze']*100:.2f}%, blank {fd['static_blank']*100:.2f}%)"
+            )
             
             # ===== CURRICULUM DEBUGGING: Final state after update =====
             self.log_curriculum_update(f"[CURRICULUM UPDATE] FINAL STATE:")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Level: {self.curriculum_level} (range: {self.task_config.curriculum.min_level}-{self.task_config.curriculum.max_level})")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Max level reached: {self.max_curriculum_level_reached} (NO-DECREASE POLICY)")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Progress: {self.curriculum_progress_fraction:.3f}")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Obstacles behind gate: {obstacles_behind_gate} (total assets: {total_obstacles_in_env} = {fixed_assets_always_kept} fixed + {obstacles_behind_gate} curriculum)")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Obstacles behind gate: {obstacles_behind_gate} (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Camera angle: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
@@ -1394,6 +1713,14 @@ class NavigationTaskGate(BaseTask):
             # Add camera noise metrics (D455 simulation)
             self.infos["curriculum/camera_gaussian_std"] = torch.tensor(camera_gaussian_std, dtype=torch.float32)
             self.infos["curriculum/camera_dropout_rate"] = torch.tensor(camera_dropout_rate, dtype=torch.float32)
+            # Add camera frame dropout metrics
+            fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+            self.infos["curriculum/camera_frame_dropout_drone"] = torch.tensor(fd['drone_total'], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_dropout_static"] = torch.tensor(fd['static_total'], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_freeze_drone"] = torch.tensor(fd['drone_freeze'], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_blank_drone"] = torch.tensor(fd['drone_blank'], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_freeze_static"] = torch.tensor(fd['static_freeze'], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_blank_static"] = torch.tensor(fd['static_blank'], dtype=torch.float32)
             
             # Add camera angle metrics
             self.infos["curriculum/camera_max_angle"] = torch.tensor(self.max_camera_angle, dtype=torch.float32)
@@ -1567,19 +1894,27 @@ class NavigationTaskGate(BaseTask):
         )
         self.episode_collision_penalty += collision_penalty
         
-        # Track gate passage rewards (check if any gate passages occurred this step)
-        # FIXED: Use the same logic as main reward system and properly update gate_passed flag
+        # Track gate passage rewards (check if any gate passages occurred this step) - ADAPTIVE
+        # Use the same logic as main reward system with adaptive dimensions
+        tracking_width_tolerance = self.gate_width * 0.6  # 60% of gate width
+        tracking_min_height = self.gate_position[:, 2] + self.gate_height * 0.08  # 8% above ground
+        tracking_max_height = self.gate_position[:, 2] + self.gate_height * 0.92  # 92% of gate height
+        
         gate_passed_this_step = (
             (robot_position[:, 1] > self.gate_position[:, 1]) &
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5) &
-            (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2) &
+            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < tracking_width_tolerance) &
+            (robot_position[:, 2] > tracking_min_height) & (robot_position[:, 2] < tracking_max_height) &
             (~self.gate_passed)  # Haven't passed before
         )
         
-        # FIXED: Include both basic passage reward AND center bonus (like main system)
+        # Center passage detection with adaptive dimensions (like main system)
         x_distance_from_center = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
-        z_distance_from_center = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + 1.2))
-        center_aligned_mask = (x_distance_from_center < 0.5) & (z_distance_from_center < 0.3)
+        z_distance_from_center = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + self.gate_center_height))
+        
+        # Adaptive center thresholds
+        center_x_threshold = self.gate_width * 0.2  # 20% of gate width for center alignment
+        center_z_threshold = self.gate_height * 0.125  # 12.5% of gate height for center alignment
+        center_aligned_mask = (x_distance_from_center < center_x_threshold) & (z_distance_from_center < center_z_threshold)
         
         # Basic gate passage reward
         gate_passage_reward = torch.where(
@@ -1956,8 +2291,11 @@ def compute_gate_reward(
     gate_passed,
     curriculum_progress_fraction,
     parameter_dict,
+    gate_width,
+    gate_height,
+    gate_center_height,
 ):
-    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, float, Dict[str, Tensor]) -> Tuple[Tensor, Tensor, Tensor]
+    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, float, Dict[str, Tensor], Tensor, Tensor, Tensor) -> Tuple[Tensor, Tensor, Tensor]
     
     # Base reward computation - REDUCED multiplication factor to prevent over-rewarding
     MULTIPLICATION_FACTOR_REWARD = 1.0 + (0.5) * curriculum_progress_fraction  # Reduced from 2.0 to 0.5
@@ -2107,34 +2445,44 @@ def compute_gate_reward(
     
     # Reward for gate alignment (being in front of gate opening)
     gate_alignment_reward = torch.zeros_like(gate_distance)
-    # Check if robot is roughly aligned with gate opening (Y direction)
-    aligned_mask = torch.abs(robot_position[:, 0] - gate_position[:, 0]) < 1.5  # Within gate width
+    # Check if robot is roughly aligned with gate opening (Y direction) - ADAPTIVE to gate width
+    gate_width_tolerance = gate_width * 0.6  # 60% of gate width for alignment tolerance
+    aligned_mask = torch.abs(robot_position[:, 0] - gate_position[:, 0]) < gate_width_tolerance
     gate_alignment_reward[aligned_mask] = parameter_dict["gate_alignment_reward_magnitude"]
     
-    # Enhanced center alignment rewards for precise gate navigation
+    # Enhanced center alignment rewards for precise gate navigation - ADAPTIVE to gate size
     gate_center_bonus = torch.zeros_like(gate_distance)
     # Distance from gate center in X direction (horizontal alignment)
     x_distance_from_center = torch.abs(robot_position[:, 0] - gate_position[:, 0])
-    # Distance from gate center in Z direction (vertical alignment)  
-    z_distance_from_center = torch.abs(robot_position[:, 2] - (gate_position[:, 2] + 1.2))  # Gate center height ~1.2m
+    # Distance from gate center in Z direction (vertical alignment) - ADAPTIVE to gate center height
+    z_distance_from_center = torch.abs(robot_position[:, 2] - (gate_position[:, 2] + gate_center_height))
     
-    # Check if robot is very close to gate center (within 0.5m in both X and Z)
-    center_aligned_mask = (x_distance_from_center < 0.5) & (z_distance_from_center < 0.3)
+    # Check if robot is very close to gate center - ADAPTIVE thresholds
+    x_threshold = gate_width * 0.2  # 20% of gate width for precise X alignment
+    z_threshold = gate_height * 0.125  # 12.5% of gate height for precise Z alignment
+    center_aligned_mask = (x_distance_from_center < x_threshold) & (z_distance_from_center < z_threshold)
     gate_center_bonus[center_aligned_mask] = parameter_dict["gate_center_bonus_magnitude"]
     
-    # Check for gate passage (crossing Y = 0 plane with proper alignment)
+    # Check for gate passage (crossing Y = 0 plane with proper alignment) - ADAPTIVE to gate dimensions
+    gate_passage_width_tolerance = gate_width * 0.6  # 60% of gate width for passage detection
+    gate_min_height = gate_position[:, 2] + gate_height * 0.1  # 10% above ground
+    gate_max_height = gate_position[:, 2] + gate_height * 0.9  # 90% of gate height
+    
     just_passed_gate = (
         (robot_position[:, 1] > gate_position[:, 1]) &  # In front of gate
-        (torch.abs(robot_position[:, 0] - gate_position[:, 0]) < 1.5) &  # Within gate width
-        (robot_position[:, 2] > 0.2) & (robot_position[:, 2] < 2.2) &  # Within gate height
+        (torch.abs(robot_position[:, 0] - gate_position[:, 0]) < gate_passage_width_tolerance) &  # Within gate width
+        (robot_position[:, 2] > gate_min_height) & (robot_position[:, 2] < gate_max_height) &  # Within gate height
         (~gate_passed)  # Haven't passed before
     )
     
-    # Check for center passage (more precise alignment)
+    # Check for center passage (more precise alignment) - ADAPTIVE thresholds
+    center_passage_x_tolerance = gate_width * 0.2  # 20% of gate width for center passage
+    center_passage_z_tolerance = gate_height * 0.125  # 12.5% of gate height for center passage
+    
     just_passed_center = (
         just_passed_gate &  # Basic passage requirement
-        (x_distance_from_center < 0.5) &  # Centered horizontally
-        (z_distance_from_center < 0.3)    # Centered vertically
+        (x_distance_from_center < center_passage_x_tolerance) &  # Centered horizontally
+        (z_distance_from_center < center_passage_z_tolerance)    # Centered vertically
     )
     
     gate_passage_reward = torch.zeros_like(gate_distance)

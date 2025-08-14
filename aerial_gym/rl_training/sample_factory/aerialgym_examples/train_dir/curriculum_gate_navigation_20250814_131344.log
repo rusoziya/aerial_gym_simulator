@@ -1,0 +1,407 @@
+=== CURRICULUM LOGGING STARTED ===
+Timestamp: 20250814_131344
+Log file: ./train_dir/curriculum_gate_navigation_20250814_131344.log
+[2025-08-14 13:13:44] [INIT] Multi-aspect curriculum initialized at level 3
+[2025-08-14 13:14:42] [CURRICULUM UPDATE] EVALUATING curriculum after 130 instances:
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:14:42] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:14:42] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:14:42] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:14:42] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:14:42] 
+CURRICULUM APPLIED:
+[2025-08-14 13:14:42]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:14:42]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:14:42]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:14:42]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:14:42]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:14:42]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:14:42] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:15:33] [CURRICULUM UPDATE] EVALUATING curriculum after 129 instances:
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:15:33] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:15:33] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:15:33] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:15:33] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:15:33] 
+CURRICULUM APPLIED:
+[2025-08-14 13:15:33]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:15:33]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:15:33]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:15:33]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:15:33]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:15:33]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:15:33] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:16:25] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:16:25] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:16:25] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:16:25] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:16:25] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:16:25] 
+CURRICULUM APPLIED:
+[2025-08-14 13:16:25]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:16:25]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:16:25]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:16:25]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:16:25]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:16:25]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:16:25] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:17:17] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:17:17] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:17:17] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:17:17] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:17:17] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:17:17] 
+CURRICULUM APPLIED:
+[2025-08-14 13:17:17]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:17:17]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:17:17]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:17:17]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:17:17]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:17:17]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:17:17] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:18:13] [CURRICULUM UPDATE] EVALUATING curriculum after 130 instances:
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:18:13] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:18:13] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:18:13] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:18:13] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:18:13] 
+CURRICULUM APPLIED:
+[2025-08-14 13:18:13]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:18:13]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:18:13]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:18:13]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:18:13]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:18:13]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:18:13] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:19:09] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:19:09] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:19:09] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:19:09] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:19:09] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:19:09] 
+CURRICULUM APPLIED:
+[2025-08-14 13:19:09]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:19:09]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:19:09]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:19:09]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:19:09]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:19:09]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:19:09] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:20:04] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:20:04] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:20:04] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:20:04] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:20:04] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:20:04] 
+CURRICULUM APPLIED:
+[2025-08-14 13:20:04]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:20:04]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:20:04]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:20:04]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:20:04]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:20:04]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:20:04] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:20:57] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:20:57] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:20:57] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:20:57] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:20:57] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:20:57] 
+CURRICULUM APPLIED:
+[2025-08-14 13:20:57]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:20:57]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:20:57]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:20:57]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:20:57]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:20:57]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:20:57] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:22:00] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:22:00] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:22:00] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:22:00] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:22:00] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:22:00] 
+CURRICULUM APPLIED:
+[2025-08-14 13:22:00]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:22:00]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:22:00]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:22:00]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:22:00]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:22:00]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:22:00] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:23:05] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:23:05] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:23:05] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:23:05] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:23:05] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:23:05] 
+CURRICULUM APPLIED:
+[2025-08-14 13:23:05]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:23:05]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:23:05]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:23:05]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:23:05]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:23:05]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:23:05] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:24:07] [CURRICULUM UPDATE] EVALUATING curriculum after 128 instances:
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:24:07] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:24:07] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:24:07] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:24:07] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:24:07] 
+CURRICULUM APPLIED:
+[2025-08-14 13:24:07]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:24:07]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:24:07]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:24:07]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:24:07]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:24:07]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:24:07] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:25:07] [CURRICULUM UPDATE] EVALUATING curriculum after 129 instances:
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Crash rate: 1.000
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Timeout rate: 0.000
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:25:07] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:25:07] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:25:07] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:25:07] 
+Success Rate: 0.000
+Crash Rate: 1.000
+Timeout Rate: 0.000
+[2025-08-14 13:25:07] 
+CURRICULUM APPLIED:
+[2025-08-14 13:25:07]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:25:07]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:25:07]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:25:07]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:25:07]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:25:07]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:25:07] [CURRICULUM UPDATE] RESETTING counters for next evaluation period
+[2025-08-14 13:26:28] [CURRICULUM UPDATE] EVALUATING curriculum after 129 instances:
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Success rate: 0.000
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Crash rate: 0.992
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Timeout rate: 0.008
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Current level: 3 (max reached: 3)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Threshold for increase: >0.500 (NO DECREASE POLICY)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE] LEVEL UNCHANGED: 3 (success rate 0.000 <= threshold, no decrease allowed)
+[2025-08-14 13:26:28] [CRITICAL FIX] Asset manager updated - changes will apply on next environment reset
+[2025-08-14 13:26:28] [CAMERA UPDATE] Camera max angle updated for NEW episodes: ±0.0° (existing episodes unchanged)
+[2025-08-14 13:26:28] Gate Navigation Curriculum Level: 3, Progress: 0.000
+[2025-08-14 13:26:28] 
+Success Rate: 0.000
+Crash Rate: 0.992
+Timeout Rate: 0.008
+[2025-08-14 13:26:28] 
+CURRICULUM APPLIED:
+[2025-08-14 13:26:28]    1. OBSTACLES: 3 behind gate (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:26:28]    2. SPAWN: Using LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:26:28]    3. CAMERA ANGLE: ±0.0deg max range, env0: 0.0deg (fixed per episode)
+[2025-08-14 13:26:28]    4. GATE SIZE: unlocked scales >= 80% -> [100, 98, 96, 94, 92, 90, 88, 86, 84, 82, 80] (uniform across unique scales)
+[2025-08-14 13:26:28]    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static)
+[2025-08-14 13:26:28]    6. CAMERA FRAME DROPOUT: drone=25.0% (freeze 20.0%, blank 5.0%), static=25.0% (freeze 20.0%, blank 5.0%)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE] FINAL STATE:
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Level: 3 (range: 3-23)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Max level reached: 3 (NO-DECREASE POLICY)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Progress: 0.000
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Obstacles behind gate: 3 (total assets: 10 = 7 visible + 3 curriculum)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count 10
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Spawn difficulty: LMF2 config with ±0.5m lateral, ±45° orientation (no curriculum dependency)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE]   Camera angle: ±0.0deg max range (randomized per episode reset, fixed during episode)
+[2025-08-14 13:26:28] [CURRICULUM UPDATE] RESETTING counters for next evaluation period

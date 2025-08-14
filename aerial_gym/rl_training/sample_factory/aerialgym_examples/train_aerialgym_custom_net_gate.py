@@ -571,6 +571,18 @@ def make_aerialgym_env(
     # Create the environment and force correct action space for inference compatibility
     env = AerialGymVecEnv(task_registry.make_task(task_name=full_task_name), "obs", save_gifs=save_gifs)
     
+    # Debug: list available gate variants if present
+    try:
+        gd = getattr(env.env, 'global_tensor_dict', {})
+        names0 = gd.get('gate_variant_names_per_env', [])
+        if names0 and len(names0) > 0:
+            print(f"[GateVariant] Available gate variants for env0: {names0[0]}")
+        active = gd.get('active_gate_variant_index', None)
+        if active is not None:
+            print(f"[GateVariant] Active gate variant index tensor: {active}")
+    except Exception as e:
+        print(f"[GateVariant] Debug listing failed: {e}")
+    
     # CRITICAL FIX: Force action space to exactly match inference expectations
     # Override action space after environment creation to ensure it sticks
     import gymnasium as gym

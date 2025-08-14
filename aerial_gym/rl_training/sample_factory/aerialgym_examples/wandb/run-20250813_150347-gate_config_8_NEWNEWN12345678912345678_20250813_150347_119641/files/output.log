@@ -1,0 +1,1419 @@
+Importing module 'gym_38' (/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/gym_38.so)
+Setting GYM_USD_PLUG_INFO_PATH to /home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/linux-x86_64/usd/plugInfo.json
+[36m[2025-08-13 15:03:49,963][105870] Queried available GPUs: 0
+[37m[1m[2025-08-13 15:03:49,963][105870] Environment var CUDA_VISIBLE_DEVICES is 0
+PyTorch version 1.13.1
+Device count 1
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/_bindings/src/gymtorch
+ninja: no work to do.
+Warp 1.0.0-beta.5 initialized:
+   CUDA Toolkit: 11.5, Driver: 12.4
+   Devices:
+     "cpu"    | x86_64
+     "cuda:0" | NVIDIA GeForce RTX 4080 Laptop GPU (sm_89)
+   Kernel cache: /home/ziyar/.cache/warp/1.0.0-beta.5
+[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless=True
+[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes
+[SUBPROCESS] Task action_space_dim: 4
+[SUBPROCESS] Target Sample Factory action space: 4D
+[SUBPROCESS] Setting num_envs to 16 based on env_agents=16
+[SUBPROCESS] Set SF_ENV_AGENTS=16 environment variable
+[SUBPROCESS] Config batch_size: 2048
+[SUBPROCESS] Using STANDARD CONFIG (16 environments)
+Registered quad_with_obstacles_gate and dce_navigation_task_gate in subprocess
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_8_NEWNEWN12345678912345678', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true', '--enable_gradient_monitoring=true', '--gradient_log_interval=100', '--gradient_print_interval=100']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/torch/utils/cpp_extension.py:25: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import packaging  # type: ignore[attr-defined]
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('mpl_toolkits')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/pkg_resources/__init__.py:3154: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+  declare_namespace(pkg)
+Using /home/ziyar/.cache/torch_extensions/py38_cu117 as PyTorch extensions root...
+Emitting ninja build file /home/ziyar/.cache/torch_extensions/py38_cu117/gymtorch/build.ninja...
+Building extension module gymtorch...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Loading extension module gymtorch...
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/graph.py:23: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/classes/reportviews.py:95: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.10 it will stop working
+  from collections import Mapping, Set, Iterable
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/networkx/readwrite/graphml.py:346: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  (np.int, "int"), (np.int8, "int"),
+/home/ziyar/aerialgym/IsaacGym_Preview_4_Package/isaacgym/python/isaacgym/torch_utils.py:135: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  def get_axis_params(value, axis_idx, x_value=0., dtype=np.float, n_dims=3):
+[37m[1802 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Using SF_HEADLESS environment variable: False (dce_navigation_task_gate.py:22)
+[37m[1802 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : DCE Gate Navigation Task - Final headless mode: False (dce_navigation_task_gate.py:29)
+[37m[1802 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Found SF_ENV_AGENTS environment variable: 16 (dce_navigation_task_gate.py:39)
+[37m[1802 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - INFO : Detected env_agents=16 from environment - setting environment count. (dce_navigation_task_gate.py:45)
+[37m[1802 ms][base_task] - INFO : Setting seed: 2437567426 (base_task.py:38)
+[33m[1802 ms][navigation_task_gate] - WARNING : ============================================================ (navigation_task_gate.py:52)
+[33m[1803 ms][navigation_task_gate] - WARNING : CONFIG VERIFICATION - REWARD PARAMETERS: (navigation_task_gate.py:53)
+[33m[1803 ms][navigation_task_gate] - WARNING : pos_reward_magnitude: 2.5 (navigation_task_gate.py:54)
+[33m[1803 ms][navigation_task_gate] - WARNING : very_close_to_goal_reward_magnitude: 2.5 (navigation_task_gate.py:55)
+[33m[1803 ms][navigation_task_gate] - WARNING : getting_closer_reward_multiplier: 5.0 (navigation_task_gate.py:56)
+[33m[1803 ms][navigation_task_gate] - WARNING : gate_approach_reward_magnitude: 1.25 (navigation_task_gate.py:57)
+[33m[1803 ms][navigation_task_gate] - WARNING : gate_passage_reward_magnitude: 50.0 (navigation_task_gate.py:58)
+[33m[1803 ms][navigation_task_gate] - WARNING : camera_facing_reward_magnitude: 0.0 (navigation_task_gate.py:59)
+[33m[1803 ms][navigation_task_gate] - WARNING : collision_penalty: -100.0 (navigation_task_gate.py:60)
+[33m[1803 ms][navigation_task_gate] - WARNING : ============================================================ (navigation_task_gate.py:61)
+[37m[1803 ms][navigation_task_gate] - INFO : Building environment for gate navigation task. (navigation_task_gate.py:63)
+[37m[1803 ms][navigation_task_gate] - INFO : Sim Name: base_sim, Env Name: gate_env, Robot Name: lmf2, Controller Name: lmf2_velocity_control (navigation_task_gate.py:64)
+[37m[1803 ms][navigation_task_gate] - INFO : PRE-INIT: Setting curriculum level 3 with 3 curriculum obstacles (navigation_task_gate.py:85)
+[37m[1803 ms][navigation_task_gate] - INFO : PRE-INIT: Visible assets: 7 fixed (gate+walls) + 1 robot + 3 curriculum = 11 total (navigation_task_gate.py:86)
+[33m[1803 ms][navigation_task_gate] - WARNING : [OBSTACLE_FIX] PRE-INIT: Level 3 should spawn 3 curriculum obstacles (navigation_task_gate.py:87)
+[37m[1803 ms][navigation_task_gate] - INFO : PRE-INIT: Total obstacle count for asset manager: 11 (navigation_task_gate.py:88)
+[37m[1803 ms][env_manager] - INFO : Populating environments. (env_manager.py:73)
+[37m[1803 ms][env_manager] - INFO : Creating simulation instance. (env_manager.py:87)
+[37m[1803 ms][env_manager] - INFO : Instantiating IGE object. (env_manager.py:88)
+[37m[1803 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Environment (IGE_env_manager.py:41)
+[37m[1803 ms][IsaacGymEnvManager] - INFO : Acquiring gym object (IGE_env_manager.py:73)
+[37m[1803 ms][IsaacGymEnvManager] - INFO : Acquired gym object (IGE_env_manager.py:75)
+[37m[1804 ms][IsaacGymEnvManager] - INFO : Fixing devices (IGE_env_manager.py:89)
+[37m[1804 ms][IsaacGymEnvManager] - INFO : Using GPU pipeline for simulation. (IGE_env_manager.py:102)
+[37m[1804 ms][IsaacGymEnvManager] - INFO : Sim Device type: cuda, Sim Device ID: 0 (IGE_env_manager.py:105)
+[37m[1804 ms][IsaacGymEnvManager] - INFO : Graphics Device ID: 0 (IGE_env_manager.py:119)
+[37m[1804 ms][IsaacGymEnvManager] - INFO : Creating Isaac Gym Simulation Object (IGE_env_manager.py:120)
+[33m[1804 ms][IsaacGymEnvManager] - WARNING : If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it
+[33mto a particular one that works for your system to use the viewer or Isaac Gym cameras.
+[33mIf you want to run parallel simulations on multiple GPUs with camera sensors,
+[33mplease disable Isaac Gym and use warp (by setting use_warp=True), set the viewer to headless. (IGE_env_manager.py:127)
+[33m[1804 ms][IsaacGymEnvManager] - WARNING : If you see a segfault in the next lines, it is because of the discrepancy between the CUDA device and the graphics device.
+[33mPlease ensure that the CUDA device and the graphics device are the same. (IGE_env_manager.py:132)
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.30 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 8.00 ms
+[37m[2788 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[2788 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[2990 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[2990 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[2990 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[2990 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[2990 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[2990 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[2990 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[2990 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[2990 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[2990 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[2990 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_064.urdf'] (asset_loader.py:60)
+[37m[2990 ms][asset_loader] - INFO : Loading asset: gate_scale_064.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[2994 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[2995 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[2996 ms][asset_loader] - INFO : Loading asset: cylinder_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[2997 ms][asset_loader] - INFO : Loading asset: rectangular_box_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[2998 ms][asset_loader] - INFO : Loading asset: rectangular_box_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[2999 ms][asset_loader] - INFO : Loading asset: sphere_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3001 ms][asset_loader] - INFO : Loading asset: triangular_prism_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3002 ms][asset_loader] - INFO : Loading asset: sphere_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3004 ms][asset_loader] - INFO : Loading asset: cylinder_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3005 ms][asset_loader] - INFO : Loading asset: small_cube_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3006 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3007 ms][asset_loader] - INFO : Loading asset: small_cube_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3008 ms][asset_loader] - INFO : Loading asset: sphere_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3010 ms][asset_loader] - INFO : Loading asset: triangular_prism_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3011 ms][asset_loader] - INFO : Loading asset: rectangular_box_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3012 ms][asset_loader] - INFO : Loading asset: cylinder_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3013 ms][asset_loader] - INFO : Loading asset: trapezoid_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3014 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3015 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3016 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3017 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3018 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3019 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3020 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_072.urdf'] (asset_loader.py:60)
+[37m[3020 ms][asset_loader] - INFO : Loading asset: gate_scale_072.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3022 ms][asset_loader] - INFO : Loading asset: triangular_prism_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3023 ms][asset_loader] - INFO : Loading asset: trapezoid_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3024 ms][asset_loader] - INFO : Loading asset: trapezoid_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3025 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3026 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_068.urdf'] (asset_loader.py:60)
+[37m[3026 ms][asset_loader] - INFO : Loading asset: gate_scale_068.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3028 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_068.urdf'] (asset_loader.py:60)
+[33m[3028 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_076.urdf'] (asset_loader.py:60)
+[37m[3028 ms][asset_loader] - INFO : Loading asset: gate_scale_076.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3031 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_076.urdf'] (asset_loader.py:60)
+[33m[3031 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_092.urdf'] (asset_loader.py:60)
+[37m[3031 ms][asset_loader] - INFO : Loading asset: gate_scale_092.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3033 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_100.urdf'] (asset_loader.py:60)
+[37m[3033 ms][asset_loader] - INFO : Loading asset: gate_scale_100.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3036 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_100.urdf'] (asset_loader.py:60)
+[33m[3036 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_060.urdf'] (asset_loader.py:60)
+[37m[3036 ms][asset_loader] - INFO : Loading asset: gate_scale_060.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3038 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_096.urdf'] (asset_loader.py:60)
+[37m[3038 ms][asset_loader] - INFO : Loading asset: gate_scale_096.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3041 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_080.urdf'] (asset_loader.py:60)
+[37m[3041 ms][asset_loader] - INFO : Loading asset: gate_scale_080.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[3043 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_096.urdf'] (asset_loader.py:60)
+[33m[3043 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_072.urdf'] (asset_loader.py:60)
+[33m[3044 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_080.urdf'] (asset_loader.py:60)
+[33m[3044 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_088.urdf'] (asset_loader.py:60)
+[37m[3044 ms][asset_loader] - INFO : Loading asset: gate_scale_088.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[3046 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:184)
+[33m[3418 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[3418 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[3418 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[33m[3419 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: Found gate 'gate_scale_064.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_064.urdf) (env_manager.py:214)
+[33m[3428 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 0 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3429 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 1: Found gate 'gate_scale_072.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_072.urdf) (env_manager.py:214)
+[33m[3436 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 1 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3436 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: Found gate 'gate_scale_068.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_068.urdf) (env_manager.py:214)
+[33m[3444 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 2 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3445 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: Found gate 'gate_scale_068.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_068.urdf) (env_manager.py:214)
+[33m[3452 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 3 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3453 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: Found gate 'gate_scale_076.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_076.urdf) (env_manager.py:214)
+[33m[3461 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 4 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3462 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 5: Found gate 'gate_scale_076.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_076.urdf) (env_manager.py:214)
+[33m[3468 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 5 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3469 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: Found gate 'gate_scale_092.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_092.urdf) (env_manager.py:214)
+[33m[3476 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 6 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3477 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 7: Found gate 'gate_scale_100.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_100.urdf) (env_manager.py:214)
+[33m[3483 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 7 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3484 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 8: Found gate 'gate_scale_100.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_100.urdf) (env_manager.py:214)
+[33m[3492 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 8 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3492 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 9: Found gate 'gate_scale_060.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_060.urdf) (env_manager.py:214)
+[33m[3499 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 9 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3500 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 10: Found gate 'gate_scale_096.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_096.urdf) (env_manager.py:214)
+[33m[3509 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 10 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3510 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: Found gate 'gate_scale_080.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_080.urdf) (env_manager.py:214)
+[33m[3515 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 11 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3517 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: Found gate 'gate_scale_096.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_096.urdf) (env_manager.py:214)
+[33m[3529 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 12 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3530 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: Found gate 'gate_scale_072.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_072.urdf) (env_manager.py:214)
+[33m[3539 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 13 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3540 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: Found gate 'gate_scale_080.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_080.urdf) (env_manager.py:214)
+[33m[3548 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 14 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3549 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: Found gate 'gate_scale_088.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_088.urdf) (env_manager.py:214)
+[33m[3557 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 15 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[3557 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager setting num_obstacles_in_env = 37 (this is total loaded assets per env) (env_manager.py:280)
+[33m[3557 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] (env_manager.py:335)
+[37m[3557 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[3572 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[3572 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[3661 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[3661 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[3914 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], num_obstacles_per_env=7 (asset_manager.py:52)
+[33m[3914 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[3914 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 7 (asset_manager.py:63)
+[33m[3914 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 6 (asset_manager.py:64)
+[33m[3914 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 7 to 36 (asset_manager.py:65)
+[33m[3924 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 7 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[3925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 1: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3926 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3926 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3927 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3927 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 5: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3928 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3928 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 7: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3929 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 8: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3929 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 9: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3930 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 10: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3930 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3931 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3931 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3932 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3932 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[3932 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 7 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[4127 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[4128 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+[33m[4663 ms][navigation_task_gate] - WARNING : [GateVariant] Initial selection after build (one-time) (navigation_task_gate.py:104)
+[33m[4663 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] (env_manager.py:335)
+[37m[4663 ms][navigation_task_gate] - INFO : POST-INIT: Updated global_tensor_dict with obstacle count: 11 (navigation_task_gate.py:110)
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.28 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 5.42 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 150D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (150D = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[37m[4737 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:1718)
+[37m[4737 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:1737)
+[37m[4737 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:1738)
+[37m[4742 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:1746)
+[37m[4746 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:1746)
+[37m[4750 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:1746)
+[37m[4754 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:1746)
+[37m[4757 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:1746)
+[37m[4761 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:1746)
+[37m[4764 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:1746)
+[37m[4768 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:1746)
+[37m[4772 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:1746)
+[37m[4775 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:1746)
+[37m[4779 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:1746)
+[37m[4782 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:1746)
+[37m[4785 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:1746)
+[37m[4789 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:1746)
+[37m[4793 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:1746)
+[37m[4796 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:1746)
+[37m[4796 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[4797 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:1764)
+[33m[4797 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:162)
+[33m[4797 ms][navigation_task_gate] - WARNING : 🔍 AVAILABLE OBSERVATIONS AT INITIALIZATION: (navigation_task_gate.py:163)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 crashes: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 truncations: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 num_env_actions: <class 'int'> = 0 (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 env_actions: <class 'NoneType'> = None (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 prev_env_actions: <class 'NoneType'> = None (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 gate_variant_indices_per_env: <class 'list'> = [[7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7]] (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 active_gate_variant_index: shape=torch.Size([16]), dtype=torch.int64 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 gate_variant_names_per_env: <class 'list'> = [['gate_scale_064.urdf'], ['gate_scale_072.urdf'], ['gate_scale_068.urdf'], ['gate_scale_068.urdf'], ['gate_scale_076.urdf'], ['gate_scale_076.urdf'], ['gate_scale_092.urdf'], ['gate_scale_100.urdf'], ['gate_scale_100.urdf'], ['gate_scale_060.urdf'], ['gate_scale_096.urdf'], ['gate_scale_080.urdf'], ['gate_scale_096.urdf'], ['gate_scale_072.urdf'], ['gate_scale_080.urdf'], ['gate_scale_088.urdf']] (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 asset_min_state_ratio: shape=torch.Size([16, 37, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 asset_max_state_ratio: shape=torch.Size([16, 37, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 num_obstacles_in_env: <class 'int'> = 11 (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 vec_root_tensor: shape=torch.Size([16, 38, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_state_tensor: shape=torch.Size([16, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 env_asset_state_tensor: shape=torch.Size([16, 37, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor: shape=torch.Size([608, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor_const: shape=torch.Size([608, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 rigid_body_state_tensor: shape=torch.Size([672, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 global_force_tensor: shape=torch.Size([672, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 global_torque_tensor: shape=torch.Size([672, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 unfolded_dof_state_tensor: <class 'NoneType'> = None (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 global_contact_force_tensor: shape=torch.Size([16, 42, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_contact_force_tensor: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_position: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_orientation: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_angvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_body_angvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_body_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_euler_angles: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_force_tensor: shape=torch.Size([16, 5, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_torque_tensor: shape=torch.Size([16, 5, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_position: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_orientation: shape=torch.Size([16, 37, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_linvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_angvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_body_angvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_body_linvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_euler_angles: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_force_tensor: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 obstacle_torque_tensor: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 env_bounds_max: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 env_bounds_min: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 gravity: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 dt: <class 'float'> = 0.01 (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 CONST_WARP_MESH_ID_LIST: <class 'list'> = [135151612028416, 135151612493824, 135151612834816, 135151612836352, 135151612837888, 135151612839424, 135151612840960, 135151650598400, 135151650599936, 135151650601472, 135151612841472, 135151652698112, 135151652699648, 135151612843008, 135151612844544, 135151612846080] (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 CONST_WARP_MESH_PER_ENV: <class 'list'> = [<warp.types.Mesh object at 0x7aeb8984e6d0>, <warp.types.Mesh object at 0x7aeb8984e8e0>, <warp.types.Mesh object at 0x7aeb8984ea00>, <warp.types.Mesh object at 0x7aeb8984eb20>, <warp.types.Mesh object at 0x7aeb8984ec40>, <warp.types.Mesh object at 0x7aeb8984ed60>, <warp.types.Mesh object at 0x7aeb8984ee80>, <warp.types.Mesh object at 0x7aeb8984efa0>, <warp.types.Mesh object at 0x7aeb898600d0>, <warp.types.Mesh object at 0x7aeb89860250>, <warp.types.Mesh object at 0x7aeb89860460>, <warp.types.Mesh object at 0x7aeb89860670>, <warp.types.Mesh object at 0x7aeb89860880>, <warp.types.Mesh object at 0x7aeb89860a90>, <warp.types.Mesh object at 0x7aeb89860ca0>, <warp.types.Mesh object at 0x7aeb89860eb0>] (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 CONST_GLOBAL_VERTEX_TO_ASSET_INDEX_TENSOR: shape=torch.Size([53900]), dtype=torch.int64 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 VERTEX_MAPS_PER_ENV_ORIGINAL: shape=torch.Size([53900, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_mass: shape=torch.Size([16]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_inertia: shape=torch.Size([16, 3, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_prev_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 dof_control_mode: <class 'str'> = none (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_orientation: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 num_robot_actions: <class 'int'> = 4 (navigation_task_gate.py:168)
+[33m[4797 ms][navigation_task_gate] - WARNING :   📊 depth_range_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[4798 ms][navigation_task_gate] - WARNING :   📊 segmentation_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.int32 (navigation_task_gate.py:166)
+[33m[4798 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:169)
+[33m[4798 ms][navigation_task_gate] - WARNING : 🧪 TESTING OBSERVATION PROCESSING AT INITIALIZATION: (navigation_task_gate.py:172)
+[33m[4798 ms][navigation_task_gate] - WARNING : ❌ Error in process_obs_for_task(): 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs' (navigation_task_gate.py:222)
+[33m[4798 ms][navigation_task_gate] - WARNING : Traceback: Traceback (most recent call last):
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 184, in __init__
+[33m    self.process_obs_for_task()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 65, in process_obs_for_task
+[33m    static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 139, in _get_static_camera_pose_relative_to_drone
+[33m    static_camera_world_pos = torch.tensor([0.0, -3.0, 1.5], device=self.device).expand(self.num_envs, -1)
+[33mAttributeError: 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs'
+[33m (navigation_task_gate.py:224)
+[33m[4798 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:226)
+[37m[4798 ms][navigation_task_gate] - INFO : Curriculum logging setup successful: ./train_dir/curriculum_gate_navigation_20250813_150354.log (navigation_task_gate.py:421)
+[37m[4798 ms][navigation_task_gate] - INFO : CURRICULUM: Visible assets: 7 fixed (gate+walls) + 1 robot + 3 curriculum = 11 total (navigation_task_gate.py:250)
+[33m[4798 ms][navigation_task_gate] - WARNING : [OBSTACLE_FIX] CURRICULUM: Level 3 should spawn 3 curriculum obstacles (navigation_task_gate.py:251)
+[33m[4798 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = 11 (navigation_task_gate.py:255)
+[33m[4798 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: 11 (navigation_task_gate.py:264)
+[37m[4798 ms][navigation_task_gate] - INFO : FINAL: Fixed assets: 8, Curriculum obstacles: 3, Total: 11 (navigation_task_gate.py:266)
+[37m[4798 ms][navigation_task_gate] - INFO : INITIAL CURRICULUM (Level 3): (navigation_task_gate.py:272)
+[37m[4798 ms][navigation_task_gate] - INFO :    1. OBSTACLES: 3 behind gate (total assets: 11 = 8 fixed + 3 curriculum) (navigation_task_gate.py:273)
+[37m[4798 ms][navigation_task_gate] - INFO :    2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:274)
+[37m[4798 ms][navigation_task_gate] - INFO :    3. CAMERA ANGLE: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:275)
+[37m[4798 ms][navigation_task_gate] - INFO :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:279)
+[37m[4798 ms][navigation_task_gate] - INFO :    6. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count 11 (navigation_task_gate.py:281)
+[37m[4798 ms][navigation_task_gate] - INFO :    7. PROGRESS: 0.000 (level 3/23) (navigation_task_gate.py:288)
+[37m[4798 ms][navigation_task_gate] - INFO :    8. EVALUATION: Check every 128 instances (success rate threshold: 0.500) (navigation_task_gate.py:289)
+[33m[4798 ms][navigation_task_gate] - WARNING : [INIT] Multi-aspect curriculum initialized at level 3 (navigation_task_gate.py:433)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[36m[2025-08-13 15:03:54,954][105986] Env info: EnvInfo(obs_space=Dict('obs': Box(-inf, inf, (150,), float32)), action_space=Box(-1.0, 1.0, (4,), float32), num_agents=16, gpu_actions=True, gpu_observations=True, action_splits=None, all_discrete=None, frameskip=1, reward_shaping_scheme=None, env_info_protocol_version=1)
+[33m[2025-08-13 15:03:55,736][105870] In serial mode all components run on the same process. Only use async_rl and serial mode together for debugging.
+[36m[2025-08-13 15:03:55,736][105870] Starting experiment with the following configuration:
+[36mhelp=False
+[36malgo=APPO
+[36menv=quad_with_obstacles_gate
+[36mexperiment=gate_config_8_NEWNEWN12345678912345678
+[36mtrain_dir=./train_dir
+[36mrestart_behavior=resume
+[36mdevice=gpu
+[36mseed=None
+[36mnum_policies=1
+[36masync_rl=True
+[36mserial_mode=True
+[36mbatched_sampling=True
+[36mnum_batches_to_accumulate=2
+[36mworker_num_splits=1
+[36mpolicy_workers_per_policy=1
+[36mmax_policy_lag=1000
+[36mnum_workers=1
+[36mnum_envs_per_worker=1
+[36mbatch_size=2048
+[36mnum_batches_per_epoch=8
+[36mnum_epochs=4
+[36mrollout=32
+[36mrecurrence=32
+[36mshuffle_minibatches=False
+[36mgamma=0.98
+[36mreward_scale=0.1
+[36mreward_clip=1000.0
+[36mvalue_bootstrap=True
+[36mnormalize_returns=True
+[36mexploration_loss_coeff=0.001
+[36mvalue_loss_coeff=2.0
+[36mkl_loss_coeff=0.1
+[36mexploration_loss=entropy
+[36mgae_lambda=0.95
+[36mppo_clip_ratio=0.2
+[36mppo_clip_value=1.0
+[36mwith_vtrace=False
+[36mvtrace_rho=1.0
+[36mvtrace_c=1.0
+[36moptimizer=adam
+[36madam_eps=1e-06
+[36madam_beta1=0.9
+[36madam_beta2=0.999
+[36mmax_grad_norm=1.0
+[36mlearning_rate=0.0003
+[36mlr_schedule=kl_adaptive_epoch
+[36mlr_schedule_kl_threshold=0.016
+[36mlr_adaptive_min=1e-06
+[36mlr_adaptive_max=0.01
+[36mobs_subtract_mean=0.0
+[36mobs_scale=1.0
+[36mnormalize_input=True
+[36mnormalize_input_keys=None
+[36mdecorrelate_experience_max_seconds=0
+[36mdecorrelate_envs_on_one_worker=True
+[36mactor_worker_gpus=[0]
+[36mset_workers_cpu_affinity=True
+[36mforce_envs_single_thread=False
+[36mdefault_niceness=0
+[36mlog_to_file=True
+[36mexperiment_summaries_interval=10
+[36mflush_summaries_interval=30
+[36mstats_avg=100
+[36msummaries_use_frameskip=True
+[36mheartbeat_interval=20
+[36mheartbeat_reporting_interval=180
+[36mtrain_for_env_steps=100000000
+[36mtrain_for_seconds=10000000000
+[36msave_every_sec=120
+[36mkeep_checkpoints=5
+[36mload_checkpoint_kind=latest
+[36msave_milestones_sec=-1
+[36msave_best_every_sec=5
+[36msave_best_metric=reward
+[36msave_best_after=100000
+[36mbenchmark=False
+[36mencoder_mlp_layers=[512, 256, 64]
+[36mencoder_conv_architecture=convnet_simple
+[36mencoder_conv_mlp_layers=[]
+[36muse_rnn=True
+[36mrnn_size=64
+[36mrnn_type=gru
+[36mrnn_num_layers=1
+[36mdecoder_mlp_layers=[]
+[36mnonlinearity=elu
+[36mpolicy_initialization=torch_default
+[36mpolicy_init_gain=1.0
+[36mactor_critic_share_weights=True
+[36madaptive_stddev=True
+[36mcontinuous_tanh_scale=0.0
+[36minitial_stddev=1.0
+[36muse_env_info_cache=False
+[36menv_gpu_actions=True
+[36menv_gpu_observations=True
+[36menv_frameskip=1
+[36menv_framestack=1
+[36mpixel_format=CHW
+[36muse_record_episode_statistics=False
+[36mwith_wandb=True
+[36mwandb_user=ziya-ruso-ucl
+[36mwandb_project=gate_navigation_dual_camera
+[36mwandb_group=gate_navigation_training
+[36mwandb_job_type=SF
+[36mwandb_tags=['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized']
+[36mwith_pbt=False
+[36mpbt_mix_policies_in_one_env=True
+[36mpbt_period_env_steps=5000000
+[36mpbt_start_mutation=20000000
+[36mpbt_replace_fraction=0.3
+[36mpbt_mutation_rate=0.15
+[36mpbt_replace_reward_gap=0.1
+[36mpbt_replace_reward_gap_absolute=1e-06
+[36mpbt_optimize_gamma=False
+[36mpbt_target_objective=true_objective
+[36mpbt_perturb_min=1.1
+[36mpbt_perturb_max=1.5
+[36menv_agents=16
+[36mheadless=False
+[36msave_gifs=True
+[36menable_gradient_monitoring=True
+[36mgradient_log_interval=100
+[36mgradient_print_interval=100
+[36mobs_key=observations
+[36msubtask=None
+[36mige_api_version=preview4
+[36meval_stats=False
+[36maction_space_dim=4
+[36mcommand_line=--env=quad_with_obstacles_gate --experiment=gate_config_8_NEWNEWN12345678912345678 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100
+[36mcli_args={'env': 'quad_with_obstacles_gate', 'experiment': 'gate_config_8_NEWNEWN12345678912345678', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 64], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 16, 'headless': False, 'save_gifs': True, 'enable_gradient_monitoring': True, 'gradient_log_interval': 100, 'gradient_print_interval': 100, 'obs_key': 'observations'}
+[36mgit_hash=ec9e1c81d1f204c3d3cdfc58418d02aa727ab2c7
+[36mgit_repo_name=git@github.com:rusoziya/aerial_gym_simulator.git
+[36mwandb_unique_id=gate_config_8_NEWNEWN12345678912345678_20250813_150347_119641
+[36m[2025-08-13 15:03:55,737][105870] Saving configuration to ./train_dir/gate_config_8_NEWNEWN12345678912345678/config.json...
+[36m[2025-08-13 15:03:55,882][105870] Using GPUs [0] for process 0 (actually maps to GPUs [0])
+[36m[2025-08-13 15:03:55,882][105870] Rollout worker 0 uses device cuda:0
+🔧 Enhanced learner init called
+🔧 actor_critic type: <class 'sample_factory.model.actor_critic.ActorCriticSharedWeights'>
+🔧 actor_critic is None: False
+🔧 Creating influence tracker with actual model...
+🔧 Model structure: ActorCriticSharedWeights(
+  (obs_normalizer): ObservationNormalizer(
+    (running_mean_std): RunningMeanStdDictInPlace(
+      (running_mean_std): ModuleDict(
+        (obs): RunningMeanStdInPlace()
+      )
+    )
+  )
+  (returns_normalizer): RecursiveScriptModule(original_name=RunningMeanStdInPlace)
+  (encoder): MultiInputEncoder(
+    (encoders): ModuleDict(
+      (obs): MlpEncoder(
+        (mlp_head): RecursiveScriptModule(
+          original_name=Sequential
+          (0): RecursiveScriptModule(original_name=Linear)
+          (1): RecursiveScriptModule(original_name=ELU)
+          (2): RecursiveScriptModule(original_name=Linear)
+          (3): RecursiveScriptModule(original_name=ELU)
+          (4): RecursiveScriptModule(original_name=Linear)
+          (5): RecursiveScriptModule(original_name=ELU)
+        )
+      )
+    )
+  )
+  (core): ModelCoreRNN(
+    (core): GRU(64, 64)
+  )
+  (decoder): MlpDecoder(
+    (mlp): Identity()
+  )
+  (critic_linear): Linear(in_features=64, out_features=1, bias=True)
+  (action_parameterization): ActionParameterizationDefault(
+    (distribution_linear): Linear(in_features=64, out_features=8, bias=True)
+  )
+)
+🔧 Created influence tracker: <class 'aerial_gym.utils.gradient_monitor.CompleteObservationInfluenceTracker'>
+🔧 Influence tracker enabled: True
+✅ Influence tracker successfully attached to model
+   🔍 Monitoring ALL observation components based on 150D observation structure:
+      • [0:3] Drone position | [3:9] Static camera pose | [9:12] Drone orientation
+      • [12:18] Velocities | [18:22] Actions | [22:86] Drone camera | [86:150] Static camera
+   📊 Complete 150D observation breakdown:
+      🎯 Spatial: 15D (position + pose + orientation)
+      ⚡ Kinematic: 10D (velocities + actions)
+      📹 Visual: 128D (dual camera VAE latents)
+   📊 Logging every 100 steps
+   📺 Analysis summary every 100 steps
+[isaacgym:gymutil.py] Unknown args:  ['--env=quad_with_obstacles_gate', '--experiment=gate_config_8_NEWNEWN12345678912345678', '--train_dir=./train_dir', '--num_workers=1', '--num_envs_per_worker=1', '--env_agents=16', '--obs_key=observations', '--batch_size=2048', '--num_batches_to_accumulate=2', '--num_batches_per_epoch=8', '--num_epochs=4', '--rollout=32', '--learning_rate=0.0003', '--use_rnn=true', '--rnn_size=64', '--rnn_num_layers=1', '--encoder_mlp_layers', '512', '256', '64', '--gamma=0.98', '--reward_scale=0.1', '--max_grad_norm=1.0', '--async_rl=true', '--normalize_input=true', '--use_env_info_cache=false', '--with_wandb=true', '--wandb_project=gate_navigation_dual_camera', '--wandb_user=ziya-ruso-ucl', '--wandb_group=gate_navigation_training', '--wandb_tags', 'aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized', '--save_every_sec=120', '--save_best_every_sec=5', '--train_for_env_steps=100000000', '--save_gifs=true', '--enable_gradient_monitoring=true', '--gradient_log_interval=100', '--gradient_print_interval=100']
+Not connected to PVD
++++ Using GPU PhysX
+Physics Engine: PhysX
+Physics Device: cuda:0
+GPU Pipeline: enabled
+*** Can't create empty tensor
+WARNING: allocation matrix is not full rank. Rank: 4
+[37m[12876 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Simulation Object (IGE_env_manager.py:136)
+[37m[12881 ms][IsaacGymEnvManager] - INFO : Created Isaac Gym Environment (IGE_env_manager.py:43)
+[37m[13090 ms][env_manager] - INFO : IGE object instantiated. (env_manager.py:109)
+[37m[13090 ms][env_manager] - INFO : Creating warp environment. (env_manager.py:112)
+[37m[13090 ms][env_manager] - INFO : Warp environment created. (env_manager.py:114)
+[37m[13090 ms][env_manager] - INFO : Creating robot manager. (env_manager.py:118)
+[37m[13090 ms][BaseRobot] - INFO : [DONE] Initializing controller (base_robot.py:26)
+[37m[13090 ms][BaseRobot] - INFO : Initializing controller lmf2_velocity_control (base_robot.py:29)
+[33m[13090 ms][base_multirotor] - WARNING : Creating 16 multirotors. (base_multirotor.py:32)
+[37m[13091 ms][env_manager] - INFO : [DONE] Creating robot manager. (env_manager.py:123)
+[37m[13091 ms][env_manager] - INFO : [DONE] Creating simulation instance. (env_manager.py:125)
+[37m[13091 ms][asset_loader] - INFO : Loading asset: model.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13091 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_092.urdf'] (asset_loader.py:60)
+[37m[13091 ms][asset_loader] - INFO : Loading asset: gate_scale_092.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13095 ms][asset_loader] - INFO : Loading asset: small_cube.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13096 ms][asset_loader] - INFO : Loading asset: rectangular_box_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13097 ms][asset_loader] - INFO : Loading asset: cylinder_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13098 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13099 ms][asset_loader] - INFO : Loading asset: rectangular_box_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13100 ms][asset_loader] - INFO : Loading asset: sphere_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13102 ms][asset_loader] - INFO : Loading asset: sphere_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13104 ms][asset_loader] - INFO : Loading asset: triangular_prism_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13105 ms][asset_loader] - INFO : Loading asset: trapezoid_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13106 ms][asset_loader] - INFO : Loading asset: cuboidal_rod_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13107 ms][asset_loader] - INFO : Loading asset: rectangular_box_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13108 ms][asset_loader] - INFO : Loading asset: cylinder_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13109 ms][asset_loader] - INFO : Loading asset: trapezoid_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13110 ms][asset_loader] - INFO : Loading asset: triangular_prism_1x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13111 ms][asset_loader] - INFO : Loading asset: trapezoid_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13112 ms][asset_loader] - INFO : Loading asset: triangular_prism_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13113 ms][asset_loader] - INFO : Loading asset: cuboidal_rod.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13114 ms][asset_loader] - INFO : Loading asset: left_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13115 ms][asset_loader] - INFO : Loading asset: right_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13116 ms][asset_loader] - INFO : Loading asset: front_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13117 ms][asset_loader] - INFO : Loading asset: back_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13118 ms][asset_loader] - INFO : Loading asset: bottom_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13119 ms][asset_loader] - INFO : Loading asset: top_wall.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13120 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_092.urdf'] (asset_loader.py:60)
+[37m[13120 ms][asset_loader] - INFO : Loading asset: sphere_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13122 ms][asset_loader] - INFO : Loading asset: cylinder_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13123 ms][asset_loader] - INFO : Loading asset: small_cube_2x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[37m[13124 ms][asset_loader] - INFO : Loading asset: small_cube_1_5x.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13125 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_076.urdf'] (asset_loader.py:60)
+[37m[13126 ms][asset_loader] - INFO : Loading asset: gate_scale_076.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13128 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_060.urdf'] (asset_loader.py:60)
+[37m[13128 ms][asset_loader] - INFO : Loading asset: gate_scale_060.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13131 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_092.urdf'] (asset_loader.py:60)
+[33m[13131 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_088.urdf'] (asset_loader.py:60)
+[37m[13131 ms][asset_loader] - INFO : Loading asset: gate_scale_088.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13133 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_096.urdf'] (asset_loader.py:60)
+[37m[13133 ms][asset_loader] - INFO : Loading asset: gate_scale_096.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13136 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_068.urdf'] (asset_loader.py:60)
+[37m[13136 ms][asset_loader] - INFO : Loading asset: gate_scale_068.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13138 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_096.urdf'] (asset_loader.py:60)
+[33m[13138 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_080.urdf'] (asset_loader.py:60)
+[37m[13138 ms][asset_loader] - INFO : Loading asset: gate_scale_080.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13141 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_064.urdf'] (asset_loader.py:60)
+[37m[13141 ms][asset_loader] - INFO : Loading asset: gate_scale_064.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13143 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_068.urdf'] (asset_loader.py:60)
+[33m[13143 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_072.urdf'] (asset_loader.py:60)
+[37m[13143 ms][asset_loader] - INFO : Loading asset: gate_scale_072.urdf for the first time. Next use of this asset will be via the asset buffer. (asset_loader.py:76)
+[33m[13146 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_064.urdf'] (asset_loader.py:60)
+[33m[13146 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_072.urdf'] (asset_loader.py:60)
+[33m[13146 ms][asset_loader] - WARNING : [OBSTACLE_DEBUG] Randomly selected gate variant(s): ['gate_scale_076.urdf'] (asset_loader.py:60)
+[37m[13147 ms][env_manager] - INFO : Populating environment 0 (env_manager.py:184)
+[33m[13164 ms][robot_manager] - WARNING : 
+[33mRobot mass: 1.2400000467896461,
+[33mInertia: tensor([[0.0134, 0.0000, 0.0000],
+[33m        [0.0000, 0.0144, 0.0000],
+[33m        [0.0000, 0.0000, 0.0138]], device='cuda:0'),
+[33mRobot COM: tensor([[0., 0., 0., 1.]], device='cuda:0') (robot_manager.py:437)
+[33m[13164 ms][robot_manager] - WARNING : Calculated robot mass and inertia for this robot. This code assumes that your robot is the same across environments. (robot_manager.py:440)
+[31m[13164 ms][robot_manager] - CRITICAL : If your robot differs across environments you need to perform this computation for each different robot here. (robot_manager.py:443)
+[33m[13165 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: Found gate 'gate_scale_092.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_092.urdf) (env_manager.py:214)
+[33m[13171 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 0 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13172 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 1: Found gate 'gate_scale_092.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_092.urdf) (env_manager.py:214)
+[33m[13181 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 1 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13182 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: Found gate 'gate_scale_076.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_076.urdf) (env_manager.py:214)
+[33m[13189 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 2 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13190 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: Found gate 'gate_scale_060.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_060.urdf) (env_manager.py:214)
+[33m[13198 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 3 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13198 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: Found gate 'gate_scale_092.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_092.urdf) (env_manager.py:214)
+[33m[13208 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 4 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13209 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 5: Found gate 'gate_scale_088.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_088.urdf) (env_manager.py:214)
+[33m[13219 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 5 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13220 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: Found gate 'gate_scale_096.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_096.urdf) (env_manager.py:214)
+[33m[13227 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 6 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13228 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 7: Found gate 'gate_scale_068.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_068.urdf) (env_manager.py:214)
+[33m[13234 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 7 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13235 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 8: Found gate 'gate_scale_096.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_096.urdf) (env_manager.py:214)
+[33m[13240 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 8 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13241 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 9: Found gate 'gate_scale_080.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_080.urdf) (env_manager.py:214)
+[33m[13250 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 9 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13251 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 10: Found gate 'gate_scale_064.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_064.urdf) (env_manager.py:214)
+[33m[13255 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 10 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13256 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: Found gate 'gate_scale_068.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_068.urdf) (env_manager.py:214)
+[33m[13262 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 11 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13263 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: Found gate 'gate_scale_072.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_072.urdf) (env_manager.py:214)
+[33m[13268 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 12 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13269 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: Found gate 'gate_scale_064.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_064.urdf) (env_manager.py:214)
+[33m[13278 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 13 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13279 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: Found gate 'gate_scale_072.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_072.urdf) (env_manager.py:214)
+[33m[13285 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 14 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13286 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: Found gate 'gate_scale_076.urdf' at local index 7 (file: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/resources/models/environment_assets/gates/gate_scale_076.urdf) (env_manager.py:214)
+[33m[13294 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Env 15 asset breakdown: 1 gates, 6 walls, 30 objects, 0 other, TOTAL: 37 (env_manager.py:259)
+[33m[13294 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager setting num_obstacles_in_env = 37 (this is total loaded assets per env) (env_manager.py:280)
+[33m[13294 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] (env_manager.py:335)
+[37m[13294 ms][env_manager] - INFO : [DONE] Populating environments. (env_manager.py:75)
+[33m[13310 ms][IsaacGymEnvManager] - WARNING : Headless: False (IGE_env_manager.py:424)
+[37m[13310 ms][IsaacGymEnvManager] - INFO : Creating viewer (IGE_env_manager.py:426)
+[33m[13388 ms][IGE_viewer_control] - WARNING : Instructions for using the viewer with the keyboard:
+[33mESC: Quit
+[33mV: Toggle Viewer Sync
+[33mS: Sync Frame Time
+[33mF: Toggle Camera Follow
+[33mP: Toggle Camera Follow Type
+[33mR: Reset All Environments
+[33mUP: Switch Target Environment Up
+[33mDOWN: Switch Target Environment Down
+[33mSPACE: Pause Simulation
+[33m (IGE_viewer_control.py:153)
+[37m[13388 ms][IsaacGymEnvManager] - INFO : Created viewer (IGE_env_manager.py:432)
+[33m[13658 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], num_obstacles_per_env=7 (asset_manager.py:52)
+[33m[13658 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[13658 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 7 (asset_manager.py:63)
+[33m[13658 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 6 (asset_manager.py:64)
+[33m[13658 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 7 to 36 (asset_manager.py:65)
+[33m[13675 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 7 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[13676 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13676 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 1: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13677 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13677 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13678 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13678 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 5: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13679 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13679 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 7: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13680 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 8: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13681 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 9: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13681 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 10: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13682 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13682 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13683 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13683 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13684 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: 7 visible assets, 30 hidden assets (asset_manager.py:93)
+[33m[13684 ms][asset_manager] - WARNING : Number of obstacles to be kept in the environment: 7 (asset_manager.py:32)
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:45: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
+/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/control/motor_model.py:48: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  torch.tensor(self.max_thrust, device=self.device, dtype=torch.float32).expand(
+[33m[13879 ms][control_allocation] - WARNING : Control allocation does not account for actuator limits. This leads to suboptimal allocation (control_allocation.py:48)
+[37m[13880 ms][WarpSensor] - INFO : Camera sensor initialized (warp_sensor.py:50)
+creating render graph
+Module warp.utils load on device 'cuda:0' took 1.40 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels load on device 'cuda:0' took 7.69 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels load on device 'cuda:0' took 11.50 ms
+Module aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels load on device 'cuda:0' took 5.98 ms
+finishing capture of render graph
+Encoder network initialized.
+Defined encoder.
+[ImgDecoder] Starting create_model
+[ImgDecoder] Done with create_model
+Defined decoder.
+Loading weights from file:  /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth
+[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)
+[AerialGymVecEnv] Forced action space shape: (4,)
+[AerialGymVecEnv] is_multiagent: True, num_agents: 16
+[AerialGymVecEnv] Detected observation space: 150D
+[AerialGymVecEnv] Using GATE NAVIGATION configuration (150D = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)
+[make_aerialgym_env] Final action space shape: (4,)
+[make_aerialgym_env] Expected 4D action space: Box(-1.0, 1.0, (4,), float32)
+[33m[14428 ms][navigation_task_gate] - WARNING : [GateVariant] Initial selection after build (one-time) (navigation_task_gate.py:104)
+[33m[14428 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] (env_manager.py:335)
+[37m[14428 ms][navigation_task_gate] - INFO : POST-INIT: Updated global_tensor_dict with obstacle count: 11 (navigation_task_gate.py:110)
+[37m[14503 ms][navigation_task_gate] - INFO : Setting up static camera for gate navigation... (navigation_task_gate.py:1718)
+[37m[14503 ms][navigation_task_gate] - INFO : Static camera properties (D455 specs): 480x270, FOV: 87.0° (navigation_task_gate.py:1737)
+[37m[14503 ms][navigation_task_gate] - INFO : Static camera depth range: 0.4000000059604645m - 20.0m (navigation_task_gate.py:1738)
+[37m[14508 ms][navigation_task_gate] - INFO : Created static camera sensor 0 in environment 0 (navigation_task_gate.py:1746)
+[37m[14512 ms][navigation_task_gate] - INFO : Created static camera sensor 1 in environment 1 (navigation_task_gate.py:1746)
+[37m[14516 ms][navigation_task_gate] - INFO : Created static camera sensor 2 in environment 2 (navigation_task_gate.py:1746)
+[37m[14520 ms][navigation_task_gate] - INFO : Created static camera sensor 3 in environment 3 (navigation_task_gate.py:1746)
+[37m[14523 ms][navigation_task_gate] - INFO : Created static camera sensor 4 in environment 4 (navigation_task_gate.py:1746)
+[37m[14527 ms][navigation_task_gate] - INFO : Created static camera sensor 5 in environment 5 (navigation_task_gate.py:1746)
+[37m[14530 ms][navigation_task_gate] - INFO : Created static camera sensor 6 in environment 6 (navigation_task_gate.py:1746)
+[37m[14534 ms][navigation_task_gate] - INFO : Created static camera sensor 7 in environment 7 (navigation_task_gate.py:1746)
+[37m[14537 ms][navigation_task_gate] - INFO : Created static camera sensor 8 in environment 8 (navigation_task_gate.py:1746)
+[37m[14541 ms][navigation_task_gate] - INFO : Created static camera sensor 9 in environment 9 (navigation_task_gate.py:1746)
+[37m[14544 ms][navigation_task_gate] - INFO : Created static camera sensor 10 in environment 10 (navigation_task_gate.py:1746)
+[37m[14548 ms][navigation_task_gate] - INFO : Created static camera sensor 11 in environment 11 (navigation_task_gate.py:1746)
+[37m[14552 ms][navigation_task_gate] - INFO : Created static camera sensor 12 in environment 12 (navigation_task_gate.py:1746)
+[37m[14555 ms][navigation_task_gate] - INFO : Created static camera sensor 13 in environment 13 (navigation_task_gate.py:1746)
+[37m[14559 ms][navigation_task_gate] - INFO : Created static camera sensor 14 in environment 14 (navigation_task_gate.py:1746)
+[37m[14562 ms][navigation_task_gate] - INFO : Created static camera sensor 15 in environment 15 (navigation_task_gate.py:1746)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 0 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 1 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 2 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 3 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 4 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 5 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 6 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14562 ms][navigation_task_gate] - INFO : Set static camera 7 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 8 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 9 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 10 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 11 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 12 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 13 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 14 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : Set static camera 15 to look from (0.0, -3.0, 1.5) toward (0.0, 0.0, 1.5) (navigation_task_gate.py:1762)
+[37m[14563 ms][navigation_task_gate] - INFO : ✓ Static camera setup complete with fixed positioning (navigation_task_gate.py:1764)
+[33m[14563 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:162)
+[33m[14563 ms][navigation_task_gate] - WARNING : 🔍 AVAILABLE OBSERVATIONS AT INITIALIZATION: (navigation_task_gate.py:163)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 crashes: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 truncations: shape=torch.Size([16]), dtype=torch.bool (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 num_env_actions: <class 'int'> = 0 (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 env_actions: <class 'NoneType'> = None (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 prev_env_actions: <class 'NoneType'> = None (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 gate_variant_indices_per_env: <class 'list'> = [[7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7], [7]] (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 active_gate_variant_index: shape=torch.Size([16]), dtype=torch.int64 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 gate_variant_names_per_env: <class 'list'> = [['gate_scale_092.urdf'], ['gate_scale_092.urdf'], ['gate_scale_076.urdf'], ['gate_scale_060.urdf'], ['gate_scale_092.urdf'], ['gate_scale_088.urdf'], ['gate_scale_096.urdf'], ['gate_scale_068.urdf'], ['gate_scale_096.urdf'], ['gate_scale_080.urdf'], ['gate_scale_064.urdf'], ['gate_scale_068.urdf'], ['gate_scale_072.urdf'], ['gate_scale_064.urdf'], ['gate_scale_072.urdf'], ['gate_scale_076.urdf']] (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 asset_min_state_ratio: shape=torch.Size([16, 37, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 asset_max_state_ratio: shape=torch.Size([16, 37, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 num_obstacles_in_env: <class 'int'> = 11 (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 vec_root_tensor: shape=torch.Size([16, 38, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_state_tensor: shape=torch.Size([16, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 env_asset_state_tensor: shape=torch.Size([16, 37, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor: shape=torch.Size([608, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 unfolded_env_asset_state_tensor_const: shape=torch.Size([608, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 rigid_body_state_tensor: shape=torch.Size([672, 13]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 global_force_tensor: shape=torch.Size([672, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 global_torque_tensor: shape=torch.Size([672, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 unfolded_dof_state_tensor: <class 'NoneType'> = None (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 global_contact_force_tensor: shape=torch.Size([16, 42, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_contact_force_tensor: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_position: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_orientation: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_angvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_body_angvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_body_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_euler_angles: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_force_tensor: shape=torch.Size([16, 5, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_torque_tensor: shape=torch.Size([16, 5, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_position: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_orientation: shape=torch.Size([16, 37, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_linvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_angvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_body_angvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_body_linvel: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_euler_angles: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_force_tensor: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 obstacle_torque_tensor: shape=torch.Size([16, 37, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 env_bounds_max: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 env_bounds_min: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 gravity: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 dt: <class 'float'> = 0.01 (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 CONST_WARP_MESH_ID_LIST: <class 'list'> = [125649160306176, 125649161008128, 125649161255424, 125649161256960, 125649161258496, 125649161260032, 125649161261568, 125649301788672, 125649301790208, 125649301791744, 125649161287680, 125649161289216, 125649301793280, 125649301794816, 125649301796352, 125649301797888] (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 CONST_WARP_MESH_PER_ENV: <class 'list'> = [<warp.types.Mesh object at 0x724716b5d100>, <warp.types.Mesh object at 0x724716b5d310>, <warp.types.Mesh object at 0x724716b5d430>, <warp.types.Mesh object at 0x724716b5d550>, <warp.types.Mesh object at 0x724716b5d670>, <warp.types.Mesh object at 0x724716b5d790>, <warp.types.Mesh object at 0x724716b5d8b0>, <warp.types.Mesh object at 0x724716b5d9d0>, <warp.types.Mesh object at 0x724716b5daf0>, <warp.types.Mesh object at 0x724716b5dc70>, <warp.types.Mesh object at 0x724716b5de80>, <warp.types.Mesh object at 0x724716b690d0>, <warp.types.Mesh object at 0x724716b692e0>, <warp.types.Mesh object at 0x724716b694f0>, <warp.types.Mesh object at 0x724716b69700>, <warp.types.Mesh object at 0x724716b69910>] (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 CONST_GLOBAL_VERTEX_TO_ASSET_INDEX_TENSOR: shape=torch.Size([50332]), dtype=torch.int64 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 VERTEX_MAPS_PER_ENV_ORIGINAL: shape=torch.Size([50332, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_mass: shape=torch.Size([16]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_inertia: shape=torch.Size([16, 3, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_prev_actions: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 dof_control_mode: <class 'str'> = none (navigation_task_gate.py:168)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_orientation: shape=torch.Size([16, 4]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 robot_vehicle_linvel: shape=torch.Size([16, 3]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14563 ms][navigation_task_gate] - WARNING :   📊 num_robot_actions: <class 'int'> = 4 (navigation_task_gate.py:168)
+[33m[14564 ms][navigation_task_gate] - WARNING :   📊 depth_range_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.float32 (navigation_task_gate.py:166)
+[33m[14564 ms][navigation_task_gate] - WARNING :   📊 segmentation_pixels: shape=torch.Size([16, 1, 135, 240]), dtype=torch.int32 (navigation_task_gate.py:166)
+[33m[14564 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:169)
+[33m[14564 ms][navigation_task_gate] - WARNING : 🧪 TESTING OBSERVATION PROCESSING AT INITIALIZATION: (navigation_task_gate.py:172)
+[33m[14564 ms][navigation_task_gate] - WARNING : ❌ Error in process_obs_for_task(): 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs' (navigation_task_gate.py:222)
+[33m[14564 ms][navigation_task_gate] - WARNING : Traceback: Traceback (most recent call last):
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/task/navigation_task_gate/navigation_task_gate.py", line 184, in __init__
+[33m    self.process_obs_for_task()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 65, in process_obs_for_task
+[33m    static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
+[33m  File "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/examples/dce_rl_navigation/dce_navigation_task_gate.py", line 139, in _get_static_camera_pose_relative_to_drone
+[33m    static_camera_world_pos = torch.tensor([0.0, -3.0, 1.5], device=self.device).expand(self.num_envs, -1)
+[33mAttributeError: 'DCE_RL_Navigation_Task_Gate' object has no attribute 'num_envs'
+[33m (navigation_task_gate.py:224)
+[33m[14564 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:226)
+[37m[14564 ms][navigation_task_gate] - INFO : Curriculum logging setup successful: ./train_dir/curriculum_gate_navigation_20250813_150359.log (navigation_task_gate.py:421)
+[37m[14564 ms][navigation_task_gate] - INFO : CURRICULUM: Visible assets: 7 fixed (gate+walls) + 1 robot + 3 curriculum = 11 total (navigation_task_gate.py:250)
+[33m[14564 ms][navigation_task_gate] - WARNING : [OBSTACLE_FIX] CURRICULUM: Level 3 should spawn 3 curriculum obstacles (navigation_task_gate.py:251)
+[33m[14564 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = 11 (navigation_task_gate.py:255)
+[33m[14564 ms][navigation_task_gate] - WARNING : [OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: 11 (navigation_task_gate.py:264)
+[37m[14564 ms][navigation_task_gate] - INFO : FINAL: Fixed assets: 8, Curriculum obstacles: 3, Total: 11 (navigation_task_gate.py:266)
+[37m[14564 ms][navigation_task_gate] - INFO : INITIAL CURRICULUM (Level 3): (navigation_task_gate.py:272)
+[37m[14564 ms][navigation_task_gate] - INFO :    1. OBSTACLES: 3 behind gate (total assets: 11 = 8 fixed + 3 curriculum) (navigation_task_gate.py:273)
+[37m[14564 ms][navigation_task_gate] - INFO :    2. SPAWN: Using LMF2 config with ±0.5m in all directions, ±45° orientation (no curriculum dependency) (navigation_task_gate.py:274)
+[37m[14564 ms][navigation_task_gate] - INFO :    3. CAMERA ANGLE: ±0.0deg max range (randomized per episode reset, fixed during episode) (navigation_task_gate.py:275)
+[37m[14564 ms][navigation_task_gate] - INFO :    5. CAMERA NOISE: Gaussian STD=0.0000, Dropout=0.0% (both drone & static) (navigation_task_gate.py:279)
+[37m[14564 ms][navigation_task_gate] - INFO :    6. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count 11 (navigation_task_gate.py:281)
+[37m[14564 ms][navigation_task_gate] - INFO :    7. PROGRESS: 0.000 (level 3/23) (navigation_task_gate.py:288)
+[37m[14564 ms][navigation_task_gate] - INFO :    8. EVALUATION: Check every 128 instances (success rate threshold: 0.500) (navigation_task_gate.py:289)
+[33m[14564 ms][navigation_task_gate] - WARNING : [INIT] Multi-aspect curriculum initialized at level 3 (navigation_task_gate.py:433)
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.num_agents to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.num_agents` for environment variables or `env.get_wrapper_attr('num_agents')` that will search the reminding wrappers.
+  logger.warn(
+/home/ziyar/miniforge3/envs/aerialgym/lib/python3.8/site-packages/gymnasium/core.py:311: UserWarning: [33mWARN: env.is_multiagent to get variables from other wrappers is deprecated and will be removed in v1.0, to get this variable you can do `env.unwrapped.is_multiagent` for environment variables or `env.get_wrapper_attr('is_multiagent')` that will search the reminding wrappers.
+  logger.warn(
+[33m[14570 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[14572 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:153)
+[33m[14572 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : 🌍 COORDINATE TRANSFORMATION DEBUG: (dce_navigation_task_gate.py:154)
+[33m[14573 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   📍 Static Camera World Position (FIXED): [ 0.  -3.   1.5] (dce_navigation_task_gate.py:155)
+[33m[14573 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🤖 Drone World Position (DYNAMIC): [0. 0. 0.] (dce_navigation_task_gate.py:156)
+[33m[14573 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🧭 Drone World Orientation (Quaternion): [0. 0. 0. 0.] (dce_navigation_task_gate.py:157)
+[33m[14573 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🧭 Drone World Orientation (Euler deg): [0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:158)
+[33m[14573 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   ↔️  World Vector (camera - drone): [ 0.  -3.   1.5] (dce_navigation_task_gate.py:162)
+[33m[14574 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🔄 After Quaternion Transform: [ 0.   3.  -1.5] (dce_navigation_task_gate.py:166)
+[33m[14574 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   📏 Distance from drone to camera: 3.354m (dce_navigation_task_gate.py:167)
+[33m[14574 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:168)
+[33m[15031 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:116)
+[33m[15031 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : 🎯 SPAWN DETECTION: Found 16 likely spawned environments (dce_navigation_task_gate.py:117)
+[33m[15032 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🚁 Env 0: Pos=[0.000, 0.000, 0.000], Vel=[0.000, 0.000, 0.000] (dce_navigation_task_gate.py:123)
+[33m[15032 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Orient=[0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:124)
+[33m[15032 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Static Rel=[0.000, 3.000, -1.500] (dce_navigation_task_gate.py:125)
+[33m[15032 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🚁 Env 1: Pos=[0.000, 0.000, 0.000], Vel=[0.000, 0.000, 0.000] (dce_navigation_task_gate.py:123)
+[33m[15032 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Orient=[0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:124)
+[33m[15032 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Static Rel=[0.000, 3.000, -1.500] (dce_navigation_task_gate.py:125)
+[33m[15032 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :   🚁 Env 2: Pos=[0.000, 0.000, 0.000], Vel=[0.000, 0.000, 0.000] (dce_navigation_task_gate.py:123)
+[33m[15033 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Orient=[0.0°, 0.0°, 0.0°] (dce_navigation_task_gate.py:124)
+[33m[15033 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING :             Static Rel=[0.000, 3.000, -1.500] (dce_navigation_task_gate.py:125)
+[33m[15033 ms][aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate] - WARNING : ================================================================================ (dce_navigation_task_gate.py:126)
+[33m[15033 ms][navigation_task_gate] - WARNING : 🎯 OBSERVATION VERIFICATION IN get_return_tuple(): (navigation_task_gate.py:857)
+[33m[15033 ms][navigation_task_gate] - WARNING : 📊 Final task_obs shape: torch.Size([16, 150]) (navigation_task_gate.py:861)
+[33m[15033 ms][navigation_task_gate] - WARNING : 🔍 FINAL VERIFICATION: (navigation_task_gate.py:871)
+[33m[15033 ms][navigation_task_gate] - WARNING :   Static pos: [ 0.   3.  -1.5] (navigation_task_gate.py:872)
+[33m[15033 ms][navigation_task_gate] - WARNING :   Static orient: [0. 0. 0.] (navigation_task_gate.py:873)
+[33m[15033 ms][navigation_task_gate] - WARNING :   Static VAE range: [0.000, 0.000] (navigation_task_gate.py:874)
+[33m[15034 ms][navigation_task_gate] - WARNING :   ✅ Static camera working: pos=True, orient=False, vae=False (navigation_task_gate.py:881)
+[31m[15034 ms][navigation_task_gate] - ERROR : ❌ CRITICAL: Static camera data is missing! (navigation_task_gate.py:884)
+[36m[2025-08-13 15:03:59,666][105870] Fps is (10 sec: nan, 60 sec: nan, 300 sec: nan). Total num frames: 0. Throughput: 0: nan. Samples: 0. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[GIF] Episode 0 terminated - saving GIFs (every 15 episodes)
+[GIF] Saved drone depth: ./gif_episodes/episode_0000_drone_depth.gif
+[GIF] Saved drone segmentation: ./gif_episodes/episode_0000_drone_seg.gif
+[GIF] Saved static depth: ./gif_episodes/episode_0000_static_depth.gif
+[GIF] Saved static segmentation: ./gif_episodes/episode_0000_static_seg.gif
+[GIF] Saved drone depth (D455 NOISED): ./gif_episodes/episode_0000_drone_depth_D455_NOISED.gif
+[GIF] Saved static depth (D455 NOISED): ./gif_episodes/episode_0000_static_depth_D455_NOISED.gif
+[GIF] Saved merged dual camera (D455 NOISED): ./gif_episodes/episode_0000_merged_dual_camera_D455_NOISED.gif
+[33m[16715 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1159)
+[33m[16715 ms][navigation_task_gate] - WARNING : 🔍 COMPREHENSIVE REWARD BREAKDOWN (Step 0): (navigation_task_gate.py:1160)
+[33m[16715 ms][navigation_task_gate] - WARNING :   📊 TOTAL REWARD:           -100.000 (navigation_task_gate.py:1161)
+[33m[16715 ms][navigation_task_gate] - WARNING :   📍 Position Reward:        0.012 (dist: 4.37m) (navigation_task_gate.py:1162)
+[33m[16715 ms][navigation_task_gate] - WARNING :   🎯 Very Close Reward:      0.000 (navigation_task_gate.py:1163)
+[33m[16715 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer:         -43.733 (navigation_task_gate.py:1164)
+[33m[16715 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach:          1.246 (gate_dist: 0.08m) (navigation_task_gate.py:1165)
+[33m[16715 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment:         0.500 (navigation_task_gate.py:1166)
+[33m[16715 ms][navigation_task_gate] - WARNING :   📹 Camera Facing:          0.000 (align: -0.224) (navigation_task_gate.py:1167)
+[33m[16715 ms][navigation_task_gate] - WARNING :   🎮 Action Penalty:         -0.292 (navigation_task_gate.py:1168)
+[33m[16715 ms][navigation_task_gate] - WARNING :   ⚡ Multiplier Factor:      1.000 (navigation_task_gate.py:1169)
+[33m[16715 ms][navigation_task_gate] - WARNING :   💥 CRASHES:                16/16 environments (navigation_task_gate.py:1183)
+[33m[16715 ms][navigation_task_gate] - WARNING :   💸 Collision Penalty:     -100.0 per crash (navigation_task_gate.py:1184)
+[33m[16715 ms][navigation_task_gate] - WARNING : -------------------------------------------------------------------------------- (navigation_task_gate.py:1225)
+[33m[16715 ms][navigation_task_gate] - WARNING : 🔄 CURRENT EPISODE PROGRESS (Cumulative): (navigation_task_gate.py:1226)
+[33m[16715 ms][navigation_task_gate] - WARNING :   🔄 Current Episode Total:  -142.3 (avg across 16 envs) (navigation_task_gate.py:1243)
+[33m[16715 ms][navigation_task_gate] - WARNING :   📍 Position So Far:        0.0 (navigation_task_gate.py:1244)
+[33m[16715 ms][navigation_task_gate] - WARNING :   ⬆️  Getting Closer So Far:  -43.7 (navigation_task_gate.py:1245)
+[33m[16715 ms][navigation_task_gate] - WARNING :   🚪 Gate Approach So Far:   1.2 (navigation_task_gate.py:1246)
+[33m[16715 ms][navigation_task_gate] - WARNING :   ✅ Gate Alignment So Far:  0.5 (navigation_task_gate.py:1247)
+[33m[16715 ms][navigation_task_gate] - WARNING :   📹 Camera Facing So Far:   0.0 (navigation_task_gate.py:1248)
+[33m[16715 ms][navigation_task_gate] - WARNING :   💥 Collision Penalties:    -100.0 (navigation_task_gate.py:1249)
+[33m[16715 ms][navigation_task_gate] - WARNING :   📏 Steps So Far:           1 (navigation_task_gate.py:1250)
+[33m[16715 ms][navigation_task_gate] - WARNING : ================================================================================ (navigation_task_gate.py:1252)
+[33m[16717 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[16717 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[16717 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[16717 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[16717 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[16717 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[17118 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[17118 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17119 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 1: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17119 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17120 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17121 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17121 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 5: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17122 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17122 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 7: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17123 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 8: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17123 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 9: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17124 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 10: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17124 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17125 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17125 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17126 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17127 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[17127 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] (env_manager.py:335)
+[33m[17623 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[17899 ms][navigation_task_gate] - WARNING : ✅ Static camera capture successful: shape=(270, 480), type=<class 'numpy.ndarray'> (navigation_task_gate.py:704)
+[33m[17900 ms][navigation_task_gate] - WARNING : 🔧 VAE encoding static camera: input_shape=torch.Size([16, 270, 480]), device=cuda:0 (navigation_task_gate.py:760)
+[33m[17902 ms][navigation_task_gate] - WARNING : ✅ VAE encoding successful: output_shape=torch.Size([16, 64]), range=[-16.401, 17.223] (navigation_task_gate.py:768)
+[33m[17903 ms][navigation_task_gate] - WARNING : 🎯 FINAL STATIC CAMERA VERIFICATION (AFTER PROCESSING): (navigation_task_gate.py:622)
+[33m[17904 ms][navigation_task_gate] - WARNING :   📍 Final static pos: [-1.3174936  -0.73797256  0.03793084] (navigation_task_gate.py:634)
+[33m[17904 ms][navigation_task_gate] - WARNING :   🧭 Final static orient: [ 0.         0.        -0.3782158] (navigation_task_gate.py:635)
+[33m[17904 ms][navigation_task_gate] - WARNING :   📷 Final static VAE: range=[-16.352, 17.222] (navigation_task_gate.py:636)
+[33m[17904 ms][navigation_task_gate] - WARNING :   ✅ FINAL RESULTS: pos=True, orient=True, vae=True (navigation_task_gate.py:643)
+[33m[17904 ms][navigation_task_gate] - WARNING : 🎉 SUCCESS: All 150D static camera observations verified! (navigation_task_gate.py:646)
+[33m[17904 ms][navigation_task_gate] - WARNING : 🤖 RL TRAINING USAGE VERIFICATION: (navigation_task_gate.py:649)
+[33m[17904 ms][navigation_task_gate] - WARNING :   ⚠️  IMPORTANT: This verifies DATA PIPELINE, not RL training usage! (navigation_task_gate.py:650)
+[33m[17904 ms][navigation_task_gate] - WARNING :   📋 To verify RL training usage, check: (navigation_task_gate.py:651)
+[33m[17904 ms][navigation_task_gate] - WARNING :      1. Neural network receives 150D input (not 128D or other) (navigation_task_gate.py:652)
+[33m[17904 ms][navigation_task_gate] - WARNING :      2. Policy network architecture matches observation space (navigation_task_gate.py:653)
+[33m[17904 ms][navigation_task_gate] - WARNING :      3. Static camera indices [3:6] and [86:150] affect policy decisions (navigation_task_gate.py:654)
+[33m[17904 ms][navigation_task_gate] - WARNING :      4. Ablation test: performance difference with vs without static camera (navigation_task_gate.py:655)
+[33m[17904 ms][navigation_task_gate] - WARNING :   🔍 Current verification: Environment correctly provides 150D observations (navigation_task_gate.py:656)
+[33m[17904 ms][navigation_task_gate] - WARNING :   ❓ Next step needed: Verify Sample Factory & neural network usage (navigation_task_gate.py:657)
+[36m[2025-08-13 15:04:04,496][105870] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 6.6. Samples: 32. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-13 15:04:04,496][105870] Avg episode reward: [(0, '-100.000')]
+[33m[22765 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[22765 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[5, 15], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[22765 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[22766 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[22766 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[22766 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[22767 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[22767 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 5: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[22768 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[22768 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [5, 15] (env_manager.py:335)
+[33m[23093 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [5, 15] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[23197 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[23198 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[4, 6], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[23198 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[23198 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[23198 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[23198 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[23198 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[23199 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[23200 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[23200 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [4, 6] (env_manager.py:335)
+[33m[23262 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [4, 6] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[23365 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[23365 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[13], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[23365 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[23365 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[23365 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[23365 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[23366 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[23367 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[23367 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [13] (env_manager.py:335)
+[33m[23636 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [13] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[23745 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[23745 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[2], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[23745 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[23745 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[23745 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[23745 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[23920 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[23920 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[23920 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [2] (env_manager.py:335)
+[33m[24046 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [2] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[24288 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[24288 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[8], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[24288 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[24288 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[24288 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[24288 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[24289 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[24289 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 8: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[24289 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [8] (env_manager.py:335)
+[33m[24352 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [8] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[24452 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[24452 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[0, 3], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[24452 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[24452 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[24452 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[24452 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[24452 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[24453 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[24454 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[24454 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0, 3] (env_manager.py:335)
+[33m[24505 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [0, 3] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[24608 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[24608 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[12], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[24608 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[24608 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[24608 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[24608 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[24609 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[24609 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[24609 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [12] (env_manager.py:335)
+[33m[24672 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [12] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[36m[2025-08-13 15:04:09,406][105870] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 46.0. Samples: 448. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-13 15:04:09,407][105870] Avg episode reward: [(0, '-102.406')]
+[33m[25215 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[25215 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[10], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[25215 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[25215 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[25215 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[25216 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[25216 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[25217 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 10: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[25218 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [10] (env_manager.py:335)
+[33m[25283 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [10] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[25383 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[25383 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[14], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[25383 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[25383 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[25383 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[25383 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[25383 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[25384 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[25384 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [14] (env_manager.py:335)
+[33m[25447 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [14] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[25815 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[25815 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[9, 11], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[25815 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[25815 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[25815 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[25815 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[25815 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[25816 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 9: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[25816 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[25817 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [9, 11] (env_manager.py:335)
+[33m[25870 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [9, 11] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[26110 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[26110 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[15], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[26110 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[26110 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[26110 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[26110 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[26110 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[26111 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[26111 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [15] (env_manager.py:335)
+[33m[26174 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [15] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[26684 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[26684 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[7], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[26684 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[26684 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[26684 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[26684 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[26685 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[26686 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 7: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[26686 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [7] (env_manager.py:335)
+[33m[26756 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [7] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[26852 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[26852 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[1, 13], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[26852 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[26852 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[26852 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[26852 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[26853 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[26853 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 1: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[26854 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[26854 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [1, 13] (env_manager.py:335)
+[33m[26912 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [1, 13] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[27445 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[27445 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[3], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[27445 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[27445 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[27445 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[27445 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[27445 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[27446 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[27446 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [3] (env_manager.py:335)
+[33m[27509 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [3] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[27755 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[27756 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[4], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[27756 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[27756 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[27756 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[27756 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[27756 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[27757 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[27757 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [4] (env_manager.py:335)
+[33m[27823 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [4] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[28222 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[28222 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[0, 2], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[28222 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[28222 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[28222 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[28222 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[28222 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[28223 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[28224 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[28224 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0, 2] (env_manager.py:335)
+[33m[28277 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [0, 2] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[28390 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[28390 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[12], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[28390 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[28391 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[28391 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[28391 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[28391 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[28392 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[28392 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [12] (env_manager.py:335)
+[33m[28456 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [12] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[28904 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[28904 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[6], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[28904 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[28904 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[28904 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[28904 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[28905 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[28905 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[28905 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [6] (env_manager.py:335)
+[33m[28955 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [6] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[29200 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[29200 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[10], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[29200 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[29200 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[29200 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[29200 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[29200 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[29201 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 10: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[29201 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [10] (env_manager.py:335)
+[33m[29245 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [10] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[29343 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[29343 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[11, 14], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[29343 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[29343 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[29343 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[29343 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[29343 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[29344 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[29345 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[29345 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [11, 14] (env_manager.py:335)
+[33m[29395 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [11, 14] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[29494 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[29494 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[8], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[29494 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[29494 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[29494 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[29494 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[29495 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[29495 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 8: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[29495 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [8] (env_manager.py:335)
+[33m[29539 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [8] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[29773 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[29773 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[5], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[29773 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[29773 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[29773 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[29773 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[29774 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[29774 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 5: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[29774 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [5] (env_manager.py:335)
+[33m[29825 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [5] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[36m[2025-08-13 15:04:14,418][105870] Fps is (10 sec: 0.0, 60 sec: 0.0, 300 sec: 0.0). Total num frames: 0. Throughput: 0: 51.0. Samples: 752. Policy #0 lag: (min: -1.0, avg: -1.0, max: -1.0)
+[36m[2025-08-13 15:04:14,418][105870] Avg episode reward: [(0, '-98.521')]
+[33m[29925 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[29925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[9, 13], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[29925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[29925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[29925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[29925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[29925 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[29926 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 9: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[29926 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 13: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[29926 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [9, 13] (env_manager.py:335)
+[33m[29985 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [9, 13] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[30399 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[30399 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[15], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[30399 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[30399 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[30399 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[30400 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[30400 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[30401 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 15: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[30401 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [15] (env_manager.py:335)
+[33m[30449 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [15] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[30897 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[30898 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[1, 4], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[30898 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[30898 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[30898 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[30898 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[30898 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[30899 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 1: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[30899 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 4: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[30900 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [1, 4] (env_manager.py:335)
+[33m[30960 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [1, 4] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[31088 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[31088 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[7], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[31088 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[31088 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[31088 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[31088 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[31089 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[31089 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 7: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[31089 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [7] (env_manager.py:335)
+[33m[31138 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [7] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[31407 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[31408 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[0], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[31408 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[31408 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[31408 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[31408 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[31408 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[31409 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 0: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[31409 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [0] (env_manager.py:335)
+[33m[31455 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [0] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[37m[1m[2025-08-13 15:04:16,086][105870] Heartbeat connected on Batcher_0
+[37m[1m[2025-08-13 15:04:16,086][105870] Heartbeat connected on LearnerWorker_p0
+[37m[1m[2025-08-13 15:04:16,086][105870] Heartbeat connected on InferenceWorker_p0-w0
+[37m[1m[2025-08-13 15:04:16,086][105870] Heartbeat connected on RolloutWorker_w0
+[33m[31842 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[31842 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[12], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[31842 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[31842 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[31842 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[31842 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[31842 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[31843 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 12: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[31843 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [12] (env_manager.py:335)
+[33m[31886 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [12] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[32539 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[32539 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[3], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[32539 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[32539 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[32539 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[32539 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[32539 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[32540 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 3: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[32540 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [3] (env_manager.py:335)
+[33m[32593 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [3] - new random gate sizes will be selected (navigation_task_gate.py:488)
+================================================================================
+🎯 COMPLETE OBSERVATION INFLUENCE ANALYSIS - FINAL SUMMARY
+================================================================================
+📊 Training completed with 0 analysis steps
+================================================================================
+[33m[32961 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[32961 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[2], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[32961 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[32961 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[32961 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[32961 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[32961 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[32962 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 2: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[32962 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [2] (env_manager.py:335)
+[33m[33012 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [2] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[33388 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[33388 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[14], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[33388 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[33388 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[33388 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[33388 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[33388 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[33389 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 14: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[33389 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [14] (env_manager.py:335)
+[33m[33436 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [14] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[33m[33536 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count=11 (env_manager.py:315)
+[33m[33536 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids=[6, 11], num_obstacles_per_env=11 (asset_manager.py:52)
+[33m[33536 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] num_keep_in_env=7, total_asset_tensor_shape=torch.Size([16, 37, 13]) (asset_manager.py:53)
+[33m[33536 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: 11 (asset_manager.py:63)
+[33m[33536 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to 10 (asset_manager.py:64)
+[33m[33536 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Assets that will be HIDDEN: indices 11 to 36 (asset_manager.py:65)
+[33m[33537 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Moving assets 11 to 36 to position (-1000, -1000, -1000) (asset_manager.py:80)
+[33m[33537 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 6: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[33538 ms][asset_manager] - WARNING : [OBSTACLE_DEBUG] Env 11: 11 visible assets, 26 hidden assets (asset_manager.py:93)
+[33m[33538 ms][env_manager] - WARNING : [OBSTACLE_DEBUG] Gate variant selection skipped - already handled during asset loading for envs [6, 11] (env_manager.py:335)
+[33m[33593 ms][navigation_task_gate] - WARNING : [GATE_RESET_DEBUG] Episode reset for environments [6, 11] - new random gate sizes will be selected (navigation_task_gate.py:488)
+[37m[1m[2025-08-13 15:04:18,178][105870] Keyboard interrupt detected in the event loop EvtLoop [Runner_EvtLoop, process=main process 105870], exiting...
+[37m[1m[2025-08-13 15:04:18,178][105870] Runner profile tree view:
+[37m[1mmain_loop: 22.2735
+[37m[1m[2025-08-13 15:04:18,178][105870] Collected {0: 0}, FPS: 0.0
+================================================================================
+📊 COMPLETE OBSERVATION INFLUENCE ANALYSIS
+================================================================================
+📊 Analysis based on 0 Sample Factory training steps and 90 forward passes
+    (Note: Sample Factory processes multiple rollout steps per training step)
+📊 INDIVIDUAL OBSERVATION COMPONENT INFLUENCE:
+ 1. 🧭 STATIC_CAMERA_ORIENT | Correlation: 0.3052 ( 13.7%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 90
+     Magnitude:      0.5 | Variance:    0.151
+     Description: Static camera orientation relative to drone
+ 2. ✈️ DRONE_ORIENTATION    | Correlation: 0.3052 ( 13.7%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 90
+     Magnitude:      0.5 | Variance:    0.151
+     Description: Drone full orientation (roll, pitch, yaw)
+ 3. 📷 DRONE_CAMERA_VAE     | Correlation: 0.2896 ( 13.0%)
+     🔥 CRITICAL | ████████████ | Dimensions: 64D | Samples: 90
+     Magnitude:     20.5 | Variance:    6.744
+     Description: Drone camera VAE encoded features
+ 4. 📍 STATIC_CAMERA_POS    | Correlation: 0.2509 ( 11.3%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 90
+     Magnitude:      1.4 | Variance:    0.645
+     Description: Static camera position relative to drone
+ 5. 🎯 DRONE_POSITION       | Correlation: 0.2320 ( 10.4%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 90
+     Magnitude:      2.3 | Variance:    1.810
+     Description: Drone absolute position in world coordinates
+ 6. 🎮 DRONE_ACTIONS        | Correlation: 0.2170 (  9.7%)
+     🔥 CRITICAL | ████████████ | Dimensions: 4D | Samples: 90
+     Magnitude:      1.0 | Variance:    0.309
+     Description: Previous drone actions (action history)
+ 7. ⚡ DRONE_LINEAR_VEL     | Correlation: 0.2152 (  9.7%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 90
+     Magnitude:      0.5 | Variance:    0.109
+     Description: Drone linear velocity in body frame
+ 8. 🌀 DRONE_ANGULAR_VEL    | Correlation: 0.2100 (  9.4%)
+     🔥 CRITICAL | ████████████ | Dimensions: 3D | Samples: 90
+     Magnitude:      1.5 | Variance:    0.919
+     Description: Drone angular velocity in body frame
+ 9. 📹 STATIC_CAMERA_VAE    | Correlation: 0.2004 (  9.0%)
+     🔥 CRITICAL | ████████████ | Dimensions: 64D | Samples: 90
+     Magnitude:     22.7 | Variance:    7.941
+     Description: Static camera VAE encoded features
+🎯 DETAILED BREAKDOWN BY COMPONENT:
+   🧭 static_camera_orient: 0.3052 correlation ( 13.7% of total influence)
+   ✈️ drone_orientation   : 0.3052 correlation ( 13.7% of total influence)
+   📷 drone_camera_vae    : 0.2896 correlation ( 13.0% of total influence)
+   📍 static_camera_pos   : 0.2509 correlation ( 11.3% of total influence)
+   🎯 drone_position      : 0.2320 correlation ( 10.4% of total influence)
+   🎮 drone_actions       : 0.2170 correlation (  9.7% of total influence)
+   ⚡ drone_linear_vel    : 0.2152 correlation (  9.7% of total influence)
+   🌀 drone_angular_vel   : 0.2100 correlation (  9.4% of total influence)
+   📹 static_camera_vae   : 0.2004 correlation (  9.0% of total influence)
+📊 MODALITY GROUPINGS (for reference):
+   📹 Visual Information:    22.0% (0.490 total correlation)
+      └─ 📷 Drone Camera:    0.2896
+      └─ 📹 Static Camera:   0.2004
+   ⚡ Kinematic State:       28.9% (0.642 total correlation)
+      └─ ⚡ Linear Velocity:  0.2152
+      └─ 🌀 Angular Velocity: 0.2100
+      └─ 🎮 Action History:   0.2170
+   🧭 Spatial Awareness:     49.1% (1.093 total correlation)
+      └─ 🎯 Drone Position:   0.2320
+      └─ 📍 Static Cam Pos:   0.2509
+      └─ 🧭 Static Cam Orient:0.3052
+      └─ ✈️ Drone Orientation:0.3052
+💡 OPTIMIZATION INSIGHTS:
+   🏆 Most influential: 🧭 static_camera_orient (0.3052 correlation)
+   🔥 Critical components (9): drone_position, static_camera_pos, static_camera_orient, drone_orientation, drone_linear_vel, drone_angular_vel, drone_actions, drone_camera_vae, static_camera_vae
+      ✅ These are essential for decision-making
+================================================================================
+🧹 Complete observation tracker cleaned up

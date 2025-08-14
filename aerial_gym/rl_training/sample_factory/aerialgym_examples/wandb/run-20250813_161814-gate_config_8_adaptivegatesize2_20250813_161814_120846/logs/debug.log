@@ -1,0 +1,296 @@
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_setup.py:_flush():76] Configure stats pid to 146912
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/.config/wandb/settings
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_setup.py:_flush():76] Loading settings from /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/settings
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'aerial_gym/rl_training/sample_factory/aerialgym_examples/train_aerialgym_custom_net_gate.py', 'program': 'train_aerialgym_custom_net_gate.py'}
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_init.py:_log_setup():461] Logging user logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/logs/debug.log
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_init.py:_log_setup():462] Logging internal logs to /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/logs/debug-internal.log
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_init.py:init():495] calling init triggers
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {}
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [wandb_init.py:init():548] starting backend
+2025-08-13 16:18:14,591 INFO    MainThread:146912 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: fork
+2025-08-13 16:18:14,595 INFO    MainThread:146912 [backend.py:ensure_launched():217] starting backend process...
+2025-08-13 16:18:14,617 INFO    MainThread:146912 [backend.py:ensure_launched():222] started backend process with pid: 146980
+2025-08-13 16:18:14,619 INFO    MainThread:146912 [wandb_init.py:init():558] backend started and connected
+2025-08-13 16:18:14,627 INFO    MainThread:146912 [wandb_init.py:init():634] updated telemetry
+2025-08-13 16:18:14,631 INFO    MainThread:146980 [internal.py:wandb_internal():90] W&B internal server running at pid: 146980, started at: 2025-08-13 16:18:14.630301
+2025-08-13 16:18:14,635 INFO    WriterThread:146980 [datastore.py:open_for_write():75] open: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/run-gate_config_8_adaptivegatesize2_20250813_161814_120846.wandb
+2025-08-13 16:18:14,682 INFO    MainThread:146912 [wandb_init.py:init():665] communicating run to backend with 30 second timeout
+2025-08-13 16:18:14,690 INFO    SenderThread:146980 [sender.py:_maybe_setup_resume():493] checking resume status for ziya-ruso-ucl/gate_navigation_dual_camera/gate_config_8_adaptivegatesize2_20250813_161814_120846
+2025-08-13 16:18:15,350 INFO    SenderThread:146980 [dir_watcher.py:__init__():216] watching files in: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files
+2025-08-13 16:18:15,350 INFO    SenderThread:146980 [sender.py:_start_run_threads():815] run started: gate_config_8_adaptivegatesize2_20250813_161814_120846 with start time 1755098294
+2025-08-13 16:18:15,350 INFO    SenderThread:146980 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-08-13 16:18:15,350 INFO    MainThread:146912 [wandb_run.py:_on_init():1919] communicating current version
+2025-08-13 16:18:15,392 INFO    MainThread:146912 [wandb_run.py:_on_init():1923] got version response upgrade_message: "wandb version 0.21.1 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2025-08-13 16:18:15,392 INFO    MainThread:146912 [wandb_init.py:init():700] starting run threads in backend
+2025-08-13 16:18:16,352 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/conda-environment.yaml
+2025-08-13 16:18:16,353 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/requirements.txt
+2025-08-13 16:18:16,353 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/wandb-summary.json
+2025-08-13 16:18:16,679 INFO    SenderThread:146980 [sender.py:_save_file():952] saving file wandb-metadata.json with policy now
+2025-08-13 16:18:16,683 INFO    MainThread:146912 [wandb_run.py:_console_start():1893] atexit reg
+2025-08-13 16:18:16,684 INFO    MainThread:146912 [wandb_run.py:_redirect():1766] redirect: SettingsConsole.REDIRECT
+2025-08-13 16:18:16,685 INFO    MainThread:146912 [wandb_run.py:_redirect():1771] Redirecting console.
+2025-08-13 16:18:16,686 INFO    MainThread:146912 [wandb_run.py:_redirect():1827] Redirects installed.
+2025-08-13 16:18:16,687 INFO    MainThread:146912 [wandb_init.py:init():732] run started, returning control to user process
+2025-08-13 16:18:16,697 INFO    MainThread:146912 [wandb_run.py:_config_callback():1131] config_cb None None {'help': False, 'algo': 'APPO', 'env': 'quad_with_obstacles_gate', 'experiment': 'gate_config_8_adaptivegatesize2', 'train_dir': './train_dir', 'restart_behavior': 'resume', 'device': 'gpu', 'seed': None, 'num_policies': 1, 'async_rl': True, 'serial_mode': True, 'batched_sampling': True, 'num_batches_to_accumulate': 2, 'worker_num_splits': 1, 'policy_workers_per_policy': 1, 'max_policy_lag': 1000, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'recurrence': 32, 'shuffle_minibatches': False, 'gamma': 0.98, 'reward_scale': 0.1, 'reward_clip': 1000.0, 'value_bootstrap': True, 'normalize_returns': True, 'exploration_loss_coeff': 0.001, 'value_loss_coeff': 2.0, 'kl_loss_coeff': 0.1, 'exploration_loss': 'entropy', 'gae_lambda': 0.95, 'ppo_clip_ratio': 0.2, 'ppo_clip_value': 1.0, 'with_vtrace': False, 'vtrace_rho': 1.0, 'vtrace_c': 1.0, 'optimizer': 'adam', 'adam_eps': 1e-06, 'adam_beta1': 0.9, 'adam_beta2': 0.999, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'lr_schedule': 'kl_adaptive_epoch', 'lr_schedule_kl_threshold': 0.016, 'lr_adaptive_min': 1e-06, 'lr_adaptive_max': 0.01, 'obs_subtract_mean': 0.0, 'obs_scale': 1.0, 'normalize_input': True, 'normalize_input_keys': None, 'decorrelate_experience_max_seconds': 0, 'decorrelate_envs_on_one_worker': True, 'actor_worker_gpus': [0], 'set_workers_cpu_affinity': True, 'force_envs_single_thread': False, 'default_niceness': 0, 'log_to_file': True, 'experiment_summaries_interval': 10, 'flush_summaries_interval': 30, 'stats_avg': 100, 'summaries_use_frameskip': True, 'heartbeat_interval': 20, 'heartbeat_reporting_interval': 180, 'train_for_env_steps': 100000000, 'train_for_seconds': 10000000000, 'save_every_sec': 120, 'keep_checkpoints': 5, 'load_checkpoint_kind': 'latest', 'save_milestones_sec': -1, 'save_best_every_sec': 5, 'save_best_metric': 'reward', 'save_best_after': 100000, 'benchmark': False, 'encoder_mlp_layers': [512, 256, 64], 'encoder_conv_architecture': 'convnet_simple', 'encoder_conv_mlp_layers': [], 'use_rnn': True, 'rnn_size': 64, 'rnn_type': 'gru', 'rnn_num_layers': 1, 'decoder_mlp_layers': [], 'nonlinearity': 'elu', 'policy_initialization': 'torch_default', 'policy_init_gain': 1.0, 'actor_critic_share_weights': True, 'adaptive_stddev': True, 'continuous_tanh_scale': 0.0, 'initial_stddev': 1.0, 'use_env_info_cache': False, 'env_gpu_actions': True, 'env_gpu_observations': True, 'env_frameskip': 1, 'env_framestack': 1, 'pixel_format': 'CHW', 'use_record_episode_statistics': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_job_type': 'SF', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'with_pbt': False, 'pbt_mix_policies_in_one_env': True, 'pbt_period_env_steps': 5000000, 'pbt_start_mutation': 20000000, 'pbt_replace_fraction': 0.3, 'pbt_mutation_rate': 0.15, 'pbt_replace_reward_gap': 0.1, 'pbt_replace_reward_gap_absolute': 1e-06, 'pbt_optimize_gamma': False, 'pbt_target_objective': 'true_objective', 'pbt_perturb_min': 1.1, 'pbt_perturb_max': 1.5, 'env_agents': 16, 'headless': False, 'save_gifs': True, 'enable_gradient_monitoring': True, 'gradient_log_interval': 100, 'gradient_print_interval': 100, 'obs_key': 'observations', 'subtask': None, 'ige_api_version': 'preview4', 'eval_stats': False, 'action_space_dim': 4, 'command_line': '--env=quad_with_obstacles_gate --experiment=gate_config_8_adaptivegatesize2 --train_dir=./train_dir --num_workers=1 --num_envs_per_worker=1 --env_agents=16 --obs_key=observations --batch_size=2048 --num_batches_to_accumulate=2 --num_batches_per_epoch=8 --num_epochs=4 --rollout=32 --learning_rate=0.0003 --use_rnn=true --rnn_size=64 --rnn_num_layers=1 --encoder_mlp_layers 512 256 64 --gamma=0.98 --reward_scale=0.1 --max_grad_norm=1.0 --async_rl=true --normalize_input=true --use_env_info_cache=false --with_wandb=true --wandb_project=gate_navigation_dual_camera --wandb_user=ziya-ruso-ucl --wandb_group=gate_navigation_training --wandb_tags aerial_gym gate_navigation dual_camera x500 sample_factory memory_optimized --save_every_sec=120 --save_best_every_sec=5 --train_for_env_steps=100000000 --headless=false --save_gifs=true --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100', 'cli_args': {'env': 'quad_with_obstacles_gate', 'experiment': 'gate_config_8_adaptivegatesize2', 'train_dir': './train_dir', 'async_rl': True, 'num_batches_to_accumulate': 2, 'num_workers': 1, 'num_envs_per_worker': 1, 'batch_size': 2048, 'num_batches_per_epoch': 8, 'num_epochs': 4, 'rollout': 32, 'gamma': 0.98, 'reward_scale': 0.1, 'max_grad_norm': 1.0, 'learning_rate': 0.0003, 'normalize_input': True, 'train_for_env_steps': 100000000, 'save_every_sec': 120, 'save_best_every_sec': 5, 'encoder_mlp_layers': [512, 256, 64], 'use_rnn': True, 'rnn_size': 64, 'rnn_num_layers': 1, 'use_env_info_cache': False, 'with_wandb': True, 'wandb_user': 'ziya-ruso-ucl', 'wandb_project': 'gate_navigation_dual_camera', 'wandb_group': 'gate_navigation_training', 'wandb_tags': ['aerial_gym', 'gate_navigation', 'dual_camera', 'x500', 'sample_factory', 'memory_optimized'], 'env_agents': 16, 'headless': False, 'save_gifs': True, 'enable_gradient_monitoring': True, 'gradient_log_interval': 100, 'gradient_print_interval': 100, 'obs_key': 'observations'}, 'git_hash': 'ec9e1c81d1f204c3d3cdfc58418d02aa727ab2c7', 'git_repo_name': 'git@github.com:rusoziya/aerial_gym_simulator.git', 'wandb_unique_id': 'gate_config_8_adaptivegatesize2_20250813_161814_120846'}
+2025-08-13 16:18:16,698 INFO    MainThread:146912 [wandb_run.py:_tensorboard_callback():1239] tensorboard callback: ./train_dir/gate_config_8_adaptivegatesize2/.summary/0, True
+2025-08-13 16:18:16,699 INFO    HandlerThread:146980 [handler.py:handle_tbrecord():723] handling tbrecord: tbrecord {
+  log_dir: "./train_dir/gate_config_8_adaptivegatesize2/.summary/0"
+  save: true
+}
+
+2025-08-13 16:18:16,986 INFO    SenderThread:146980 [sender.py:_save_file():952] saving file events.out.tfevents.1755098296.ziyar with policy live
+2025-08-13 16:18:17,221 INFO    Thread-12 :146980 [upload_job.py:push():138] Uploaded file /tmp/tmpy8rn3egewandb/3akf17qh-wandb-metadata.json
+2025-08-13 16:18:17,351 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/conda-environment.yaml
+2025-08-13 16:18:17,351 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar
+2025-08-13 16:18:17,351 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/wandb-metadata.json
+2025-08-13 16:18:17,351 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_created():269] file/dir created: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:19,352 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:21,352 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:23,353 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:25,354 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:27,355 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:29,356 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar
+2025-08-13 16:18:29,356 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:29,783 INFO    Thread-15 :146980 [upload_job.py:push():138] Uploaded file /tmp/tmpy8rn3egewandb/w5yhfqgr-events.out.tfevents.1755098296.ziyar
+2025-08-13 16:18:31,357 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:33,358 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:35,358 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:37,359 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar
+2025-08-13 16:18:37,359 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:39,360 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:41,360 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:43,361 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:45,362 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/config.yaml
+2025-08-13 16:18:45,362 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:47,363 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar
+2025-08-13 16:18:47,363 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:49,364 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:51,364 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:53,365 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:55,366 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:57,367 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar
+2025-08-13 16:18:57,367 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:18:59,368 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:01,369 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:03,370 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:05,370 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:07,371 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar
+2025-08-13 16:19:07,372 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:09,372 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:10,966 WARNING MainThread:146980 [internal.py:wandb_internal():153] Internal process interrupt: 1
+2025-08-13 16:19:10,969 INFO    MainThread:146912 [wandb_run.py:_atexit_cleanup():1862] got exitcode: 0
+2025-08-13 16:19:10,969 INFO    MainThread:146912 [wandb_run.py:_restore():1834] restore
+2025-08-13 16:19:11,373 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar
+2025-08-13 16:19:11,373 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:13,374 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:13,514 INFO    SenderThread:146980 [sender.py:send_exit():372] handling exit code: 0
+2025-08-13 16:19:13,514 INFO    SenderThread:146980 [sender.py:send_exit():374] handling runtime: 58
+2025-08-13 16:19:13,516 INFO    SenderThread:146980 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-08-13 16:19:13,516 INFO    SenderThread:146980 [sender.py:send_exit():380] send defer
+2025-08-13 16:19:13,517 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 0
+2025-08-13 16:19:13,517 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 1
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 2352
+  total_bytes: 2352
+}
+
+2025-08-13 16:19:13,517 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 0
+2025-08-13 16:19:13,517 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 1
+2025-08-13 16:19:13,518 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 1
+2025-08-13 16:19:13,584 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 1
+2025-08-13 16:19:13,585 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 2
+2025-08-13 16:19:13,585 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 2
+2025-08-13 16:19:13,585 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 2
+2025-08-13 16:19:13,586 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 3
+2025-08-13 16:19:13,586 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 3
+2025-08-13 16:19:14,374 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/wandb-summary.json
+2025-08-13 16:19:14,375 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:16,375 INFO    Thread-8  :146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/config.yaml
+2025-08-13 16:19:18,618 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: None
+2025-08-13 16:19:19,776 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 3
+2025-08-13 16:19:19,776 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 4
+2025-08-13 16:19:19,779 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 4
+2025-08-13 16:19:19,779 INFO    SenderThread:146980 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-08-13 16:19:19,779 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 1
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 2352
+  total_bytes: 2352
+}
+
+2025-08-13 16:19:19,789 INFO    SenderThread:146980 [sender.py:_save_file():952] saving file wandb-summary.json with policy end
+2025-08-13 16:19:19,789 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 4
+2025-08-13 16:19:19,789 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 5
+2025-08-13 16:19:19,790 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 5
+2025-08-13 16:19:19,790 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 5
+2025-08-13 16:19:19,790 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 6
+2025-08-13 16:19:19,791 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 6
+2025-08-13 16:19:19,791 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 6
+2025-08-13 16:19:19,791 INFO    SenderThread:146980 [dir_watcher.py:finish():353] shutting down directory watcher
+2025-08-13 16:19:20,377 INFO    SenderThread:146980 [dir_watcher.py:_on_file_modified():286] file/dir modified: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/wandb-summary.json
+2025-08-13 16:19:20,377 INFO    SenderThread:146980 [dir_watcher.py:finish():383] scan: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files
+2025-08-13 16:19:20,377 INFO    SenderThread:146980 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/conda-environment.yaml conda-environment.yaml
+2025-08-13 16:19:20,377 INFO    SenderThread:146980 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/requirements.txt requirements.txt
+2025-08-13 16:19:20,378 INFO    SenderThread:146980 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/wandb-summary.json wandb-summary.json
+2025-08-13 16:19:20,382 INFO    SenderThread:146980 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/config.yaml config.yaml
+2025-08-13 16:19:20,384 INFO    SenderThread:146980 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log output.log
+2025-08-13 16:19:20,390 INFO    SenderThread:146980 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/wandb-metadata.json wandb-metadata.json
+2025-08-13 16:19:20,390 INFO    SenderThread:146980 [dir_watcher.py:finish():397] scan save: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/events.out.tfevents.1755098296.ziyar events.out.tfevents.1755098296.ziyar
+2025-08-13 16:19:20,392 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 7
+2025-08-13 16:19:20,396 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 7
+2025-08-13 16:19:20,396 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 7
+2025-08-13 16:19:20,396 INFO    SenderThread:146980 [file_pusher.py:finish():171] shutting down file pusher
+2025-08-13 16:19:20,397 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 2352
+  total_bytes: 271607
+}
+
+2025-08-13 16:19:20,500 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 2312
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:20,603 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 4094
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:20,706 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 272955
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:20,808 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:20,856 INFO    Thread-17 :146980 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/requirements.txt
+2025-08-13 16:19:20,856 INFO    Thread-19 :146980 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/config.yaml
+2025-08-13 16:19:20,900 INFO    Thread-21 :146980 [upload_job.py:push():138] Uploaded file /tmp/tmpy8rn3egewandb/izybptia-events.out.tfevents.1755098296.ziyar
+2025-08-13 16:19:20,910 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:21,008 INFO    Thread-18 :146980 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/wandb-summary.json
+2025-08-13 16:19:21,012 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:21,114 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:21,149 INFO    Thread-20 :146980 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/output.log
+2025-08-13 16:19:21,217 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:21,248 INFO    Thread-16 :146980 [upload_job.py:push():138] Uploaded file /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/files/conda-environment.yaml
+2025-08-13 16:19:21,319 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:21,421 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:21,448 INFO    Thread-7  :146980 [sender.py:transition_state():393] send defer: 8
+2025-08-13 16:19:21,450 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 8
+2025-08-13 16:19:21,450 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 8
+2025-08-13 16:19:22,075 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 9
+2025-08-13 16:19:22,076 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 9
+2025-08-13 16:19:22,076 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+
+2025-08-13 16:19:22,077 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 9
+2025-08-13 16:19:22,077 INFO    SenderThread:146980 [sender.py:transition_state():393] send defer: 10
+2025-08-13 16:19:22,077 INFO    HandlerThread:146980 [handler.py:handle_request_defer():163] handle defer: 10
+2025-08-13 16:19:22,077 INFO    SenderThread:146980 [sender.py:send_request_defer():389] handle sender defer: 10
+2025-08-13 16:19:22,178 INFO    SenderThread:146980 [file_pusher.py:join():176] waiting for file pusher
+2025-08-13 16:19:22,463 INFO    MainThread:146912 [wandb_run.py:_on_finish():1991] got exit ret: done: true
+exit_result {
+}
+file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 273349
+  total_bytes: 273349
+}
+local_info {
+}
+
+2025-08-13 16:19:22,567 INFO    HandlerThread:146980 [handler.py:finish():806] shutting down handler
+2025-08-13 16:19:23,077 INFO    WriterThread:146980 [datastore.py:close():279] close: /home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator/aerial_gym/rl_training/sample_factory/aerialgym_examples/wandb/run-20250813_161814-gate_config_8_adaptivegatesize2_20250813_161814_120846/run-gate_config_8_adaptivegatesize2_20250813_161814_120846.wandb
+2025-08-13 16:19:23,462 INFO    SenderThread:146980 [sender.py:finish():1114] shutting down sender
+2025-08-13 16:19:23,462 INFO    SenderThread:146980 [file_pusher.py:finish():171] shutting down file pusher
+2025-08-13 16:19:23,462 INFO    SenderThread:146980 [file_pusher.py:join():176] waiting for file pusher
+2025-08-13 16:19:23,568 INFO    MainThread:146912 [wandb_run.py:_footer_history_summary_info():3099] rendering history
+2025-08-13 16:19:23,569 INFO    MainThread:146912 [wandb_run.py:_footer_history_summary_info():3131] rendering summary
+2025-08-13 16:19:23,572 INFO    MainThread:146912 [wandb_run.py:_footer_sync_info():3055] logging synced files

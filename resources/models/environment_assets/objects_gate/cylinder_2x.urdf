@@ -11,6 +11,9 @@
         <cylinder radius="0.4" length="2.0"/>
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="object_color">
+        <color rgba="0.8 0.2 0.2 1"/>
+      </material>
     </visual>
     <collision name="base_link_collision">
       <geometry>
