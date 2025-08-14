@@ -75,7 +75,7 @@ class task_config:
         # "z_action_diff_penalty_magnitude": 0.8,  # REDUCED from 0.8 to allow necessary altitude adjustments
         # "z_action_diff_penalty_exponent": 5.0,  # REDUCED from 3.333 for gentler Z-smoothness
         "z_action_diff_penalty_magnitude": 0.4,  # REDUCED from 0.8 to allow necessary altitude adjustments
-        "z_action_diff_penalty_exponent": 2.0,  # REDUCED from 3.333 for gentler Z-smoothness
+        "z_action_diff_penalty_exponent": 2.0,  # REDUCED from 3.333 for even gentler Z-smoothness
 
         # "yawrate_action_diff_penalty_magnitude": 0.8,
         # "yawrate_action_diff_penalty_exponent": 3.33,
@@ -151,24 +151,50 @@ class task_config:
         max_gaussian_noise_std = 0.0125          # Maximum Gaussian noise: 1.25% of depth range
         max_pixel_dropout_rate = 0.0125          # Halved: 1.25% of pixels
         
-        # 6. CAMERA FRAME DROPOUT (entire-frame) parameters
+        # 6. CAMERA FRAME DROPOUT (entire-frame) parameters (split freeze/blank)
         enable_camera_frame_dropout = True
-        # Max at level 23: 5% freeze + 0.5% blank (≈5.475% effective total)
-        max_frame_dropout_prob_drone = 0.055     # Backward-compat: total (freeze+blank)
-        max_frame_dropout_prob_static = 0.055    # Backward-compat: total (freeze+blank)
-        max_frame_freeze_prob_drone = 0.05
-        max_frame_blank_prob_drone  = 0.005
-        max_frame_freeze_prob_static = 0.05
-        max_frame_blank_prob_static  = 0.005
+        max_frame_freeze_prob_drone = 0.05       # 5% freeze at level 23
+        max_frame_blank_prob_drone = 0.005       # 0.5% blank at level 23
+        max_frame_freeze_prob_static = 0.05      # 5% freeze at level 23
+        max_frame_blank_prob_static = 0.005      # 0.5% blank at level 23
         frame_dropout_start_level = 3
         frame_dropout_end_level = 23
-        frame_dropout_mode = "freeze"            # default fallback if single-mode is used elsewhere
+        # Back-compat flag; when split is used, freeze is default when not blank
+        frame_dropout_mode = "freeze"
  
+        # 7. STATE/POSE NOISE (drone & static) parameters
+        enable_state_noise = True
+        state_noise_start_level = 3
+        state_noise_end_level = 23
+        # Maxima at level 23
+        max_drone_pos_noise_m = 0.02                # per-axis std in meters
+        max_static_pos_noise_m = 0.05               # per-axis std in meters
+        max_static_orient_noise_rad = 0.017453292519943295  # 1.0 deg
+        max_drone_orient_noise_rad = 0.008726646259971648   # 0.5 deg
+
+        # 8. SPAWN RANGE PROGRESSION (Levels 3-23) — curriculum-controlled spawn
+        spawn_start_level = 3
+        spawn_end_level = 23
+        # Easy (level 3) spawn: tight
+        spawn_easy_x_half_span_m = 0.20
+        spawn_easy_y_center_m = -2.0
+        spawn_easy_y_half_span_m = 0.05
+        spawn_easy_z_center_m = 1.5
+        spawn_easy_z_half_span_m = 0.05
+        spawn_easy_yaw_abs_rad = 10.0 * 3.141592653589793 / 180.0
+        # Hard (level 23) spawn: matches prior LMF2
+        spawn_hard_x_half_span_m = 1.20
+        spawn_hard_y_center_m = -2.0
+        spawn_hard_y_half_span_m = 0.20
+        spawn_hard_z_center_m = 1.5
+        spawn_hard_z_half_span_m = 0.10
+        spawn_hard_yaw_abs_rad = 45.0 * 3.141592653589793 / 180.0
+        
         # EVALUATION PARAMETERS
         check_after_log_instances = 128  # INCREASED FREQUENCY: Check curriculum every 128 instances for faster progression
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
         decrease_step = 0   # NO DECREASE POLICY: Once a level is reached, never go back
-        success_rate_for_increase = 0.50  # 50% success rate to progress to next curriculum level
+        success_rate_for_increase = 0.01  # TEMP: 1% success threshold to progress faster
         success_rate_for_decrease = 0.0   # DISABLED: Never decrease difficulty (no-decrease policy)
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
@@ -285,46 +311,124 @@ class task_config:
         @staticmethod
         def get_camera_frame_dropout(level):
             """
-            Linear schedules for entire-frame dropouts with separate freeze and blank probabilities
-            for both drone and static cameras. At level 23: 9% freeze, 1% blank.
-            Returns a dict to allow future extensions while keeping backward compat.
+            Linear schedules for entire-frame dropouts with split freeze/blank probabilities.
+            Returns a dict with keys:
+              - 'drone_freeze', 'drone_blank', 'static_freeze', 'static_blank'
+              - 'drone_total' (freeze+blank), 'static_total' (freeze+blank)
             """
             start = task_config.curriculum.frame_dropout_start_level
             end = task_config.curriculum.frame_dropout_end_level
-            # Maxima
-            max_freeze_drone = getattr(task_config.curriculum, 'max_frame_freeze_prob_drone', 0.05)
-            max_blank_drone  = getattr(task_config.curriculum, 'max_frame_blank_prob_drone', 0.005)
-            max_freeze_static = getattr(task_config.curriculum, 'max_frame_freeze_prob_static', 0.05)
-            max_blank_static  = getattr(task_config.curriculum, 'max_frame_blank_prob_static', 0.005)
             if level <= start:
                 return {
-                    'drone_freeze': 0.0, 'drone_blank': 0.0,
-                    'static_freeze': 0.0, 'static_blank': 0.0,
-                    'drone_total': 0.0, 'static_total': 0.0,
+                    "drone_freeze": 0.0,
+                    "drone_blank": 0.0,
+                    "static_freeze": 0.0,
+                    "static_blank": 0.0,
+                    "drone_total": 0.0,
+                    "static_total": 0.0,
+                }
+            if level >= end:
+                df = task_config.curriculum.max_frame_freeze_prob_drone
+                db = task_config.curriculum.max_frame_blank_prob_drone
+                sf = task_config.curriculum.max_frame_freeze_prob_static
+                sb = task_config.curriculum.max_frame_blank_prob_static
+                return {
+                    "drone_freeze": df,
+                    "drone_blank": db,
+                    "static_freeze": sf,
+                    "static_blank": sb,
+                    "drone_total": df + db,
+                    "static_total": sf + sb,
+                }
+            # Linear interpolation between start and end levels
+            progress = (level - start) / float(end - start)
+            df = progress * task_config.curriculum.max_frame_freeze_prob_drone
+            db = progress * task_config.curriculum.max_frame_blank_prob_drone
+            sf = progress * task_config.curriculum.max_frame_freeze_prob_static
+            sb = progress * task_config.curriculum.max_frame_blank_prob_static
+            return {
+                "drone_freeze": df,
+                "drone_blank": db,
+                "static_freeze": sf,
+                "static_blank": sb,
+                "drone_total": df + db,
+                "static_total": sf + sb,
+            }
+
+        @staticmethod
+        def get_state_noise(level):
+            """
+            Linear schedules for state/pose noise (drone & static), per-axis Gaussian stds.
+            Returns dict with keys:
+              - drone_pos_std_m, drone_orient_std_rad
+              - static_pos_std_m, static_orient_std_rad
+            """
+            start = task_config.curriculum.state_noise_start_level
+            end = task_config.curriculum.state_noise_end_level
+            if level <= start:
+                return {
+                    "drone_pos_std_m": 0.0,
+                    "drone_orient_std_rad": 0.0,
+                    "static_pos_std_m": 0.0,
+                    "static_orient_std_rad": 0.0,
                 }
             if level >= end:
                 return {
-                    'drone_freeze': max_freeze_drone, 'drone_blank': max_blank_drone,
-                    'static_freeze': max_freeze_static, 'static_blank': max_blank_static,
-                    'drone_total': max_freeze_drone + max_blank_drone,
-                    'static_total': max_freeze_static + max_blank_static,
+                    "drone_pos_std_m": task_config.curriculum.max_drone_pos_noise_m,
+                    "drone_orient_std_rad": task_config.curriculum.max_drone_orient_noise_rad,
+                    "static_pos_std_m": task_config.curriculum.max_static_pos_noise_m,
+                    "static_orient_std_rad": task_config.curriculum.max_static_orient_noise_rad,
                 }
             progress = (level - start) / float(end - start)
-            d_freeze = progress * max_freeze_drone
-            d_blank  = progress * max_blank_drone
-            s_freeze = progress * max_freeze_static
-            s_blank  = progress * max_blank_static
             return {
-                'drone_freeze': d_freeze, 'drone_blank': d_blank,
-                'static_freeze': s_freeze, 'static_blank': s_blank,
-                'drone_total': d_freeze + d_blank,
-                'static_total': s_freeze + s_blank,
+                "drone_pos_std_m": progress * task_config.curriculum.max_drone_pos_noise_m,
+                "drone_orient_std_rad": progress * task_config.curriculum.max_drone_orient_noise_rad,
+                "static_pos_std_m": progress * task_config.curriculum.max_static_pos_noise_m,
+                "static_orient_std_rad": progress * task_config.curriculum.max_static_orient_noise_rad,
             }
- 
-        # REMOVED: get_drone_lateral_offset and get_drone_orientation_randomization
-        # These methods have been removed as we now use fixed parameters in LMF2 config
-        # with ±0.5m lateral variation and ±45° orientation without curriculum dependency
-        
+
+        @staticmethod
+        def get_spawn_ranges(level):
+            """
+            Linear spawn-range schedule from level 3 to 23.
+            Returns dict with:
+              - x_half_span_m
+              - y_center_m, y_half_span_m
+              - z_center_m, z_half_span_m
+              - yaw_abs_rad
+            """
+            s = task_config.curriculum.spawn_start_level
+            e = task_config.curriculum.spawn_end_level
+            if level <= s:
+                return {
+                    "x_half_span_m": task_config.curriculum.spawn_easy_x_half_span_m,
+                    "y_center_m": task_config.curriculum.spawn_easy_y_center_m,
+                    "y_half_span_m": task_config.curriculum.spawn_easy_y_half_span_m,
+                    "z_center_m": task_config.curriculum.spawn_easy_z_center_m,
+                    "z_half_span_m": task_config.curriculum.spawn_easy_z_half_span_m,
+                    "yaw_abs_rad": task_config.curriculum.spawn_easy_yaw_abs_rad,
+                }
+            if level >= e:
+                return {
+                    "x_half_span_m": task_config.curriculum.spawn_hard_x_half_span_m,
+                    "y_center_m": task_config.curriculum.spawn_hard_y_center_m,
+                    "y_half_span_m": task_config.curriculum.spawn_hard_y_half_span_m,
+                    "z_center_m": task_config.curriculum.spawn_hard_z_center_m,
+                    "z_half_span_m": task_config.curriculum.spawn_hard_z_half_span_m,
+                    "yaw_abs_rad": task_config.curriculum.spawn_hard_yaw_abs_rad,
+                }
+            p = (level - s) / float(e - s)
+            def lerp(a, b):
+                return a + p * (b - a)
+            return {
+                "x_half_span_m": lerp(task_config.curriculum.spawn_easy_x_half_span_m, task_config.curriculum.spawn_hard_x_half_span_m),
+                "y_center_m": lerp(task_config.curriculum.spawn_easy_y_center_m, task_config.curriculum.spawn_hard_y_center_m),
+                "y_half_span_m": lerp(task_config.curriculum.spawn_easy_y_half_span_m, task_config.curriculum.spawn_hard_y_half_span_m),
+                "z_center_m": lerp(task_config.curriculum.spawn_easy_z_center_m, task_config.curriculum.spawn_hard_z_center_m),
+                "z_half_span_m": lerp(task_config.curriculum.spawn_easy_z_half_span_m, task_config.curriculum.spawn_hard_z_half_span_m),
+                "yaw_abs_rad": lerp(task_config.curriculum.spawn_easy_yaw_abs_rad, task_config.curriculum.spawn_hard_yaw_abs_rad),
+            }
+
         @staticmethod
         def get_static_camera_difficulty(level):
             """
@@ -332,7 +436,7 @@ class task_config:
             
             LINEAR PROGRESSION: Level 3 → Level 23
             - Level 3: 0° max angle range (fixed straight-behind view)
-            - Level 23: ±30° max angle range (randomized within full range each episode)
+            - Level 23: ±25° max angle range (randomized within full range each episode)
             - Linear interpolation between levels
             
             Returns:
@@ -340,25 +444,18 @@ class task_config:
                 height_offset: Height offset from default position (always 0 - position stays fixed)
                 distance_offset: Distance offset from default position (always 0 - position stays fixed)
             """
-            # Class constants - LINEAR PROGRESSION
-            camera_start_level = 3     # Start progression from level 3
-            max_level = 23            # End progression at level 23
-            max_camera_angle_degrees = 25  # Maximum ±30° range
-            
-            # Linear progression from level 3 to 23
+            camera_start_level = 3
+            max_level = 23
+            max_camera_angle_degrees = 25
             if level <= camera_start_level:
-                max_camera_angle = 0.0  # No angle variation at level 3
+                max_camera_angle = 0.0
             elif level >= max_level:
-                max_camera_angle = max_camera_angle_degrees  # Full ±30° range at level 23
+                max_camera_angle = max_camera_angle_degrees
             else:
-                # Linear interpolation between start and end levels
                 level_progress = (level - camera_start_level) / (max_level - camera_start_level)
                 max_camera_angle = level_progress * max_camera_angle_degrees
-            
-            # Position stays FIXED - only angle changes
-            height_offset = 0.0    # No height variation - keep fixed position
-            distance_offset = 0.0  # No distance variation - keep fixed position
-            
+            height_offset = 0.0
+            distance_offset = 0.0
             return max_camera_angle, height_offset, distance_offset
 
     # Static camera curriculum positioning based on difficulty level
