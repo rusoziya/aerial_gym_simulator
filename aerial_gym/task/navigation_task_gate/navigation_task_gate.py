@@ -16,6 +16,7 @@ from gym.spaces import Dict, Box
 
 # Isaac Gym imports for static camera management
 from isaacgym import gymapi, gymtorch
+from typing import Tuple
 
 logger = CustomLogger("navigation_task_gate")
 
@@ -102,6 +103,9 @@ class NavigationTaskGate(BaseTask):
             use_warp=self.task_config.use_warp,
             headless=self.task_config.headless,
         )
+        
+        # Ensure num_envs is available before any observation processing that may rely on it
+        self.num_envs = self.sim_env.num_envs
         
         # Immediately select a random gate variant once after creation (safety)
         if hasattr(self.sim_env, 'apply_gate_variant_selection'):
@@ -406,9 +410,33 @@ class NavigationTaskGate(BaseTask):
         self.completed_episodes = []  # Store last 10 episode breakdowns
         self.max_stored_episodes = 10
         
+        # ===== Per-env episode trajectory state (replaces global buffers) =====
+        # Mark envs that have just been reset; spawn/last positions captured on first step
+        self._episode_fresh = torch.ones(self.num_envs, dtype=torch.bool, device=self.device)
+        # Spawn position captured at first step after reset
+        self._ep_spawn_pos = torch.zeros((self.num_envs, 3), device=self.device)
+        # Gate center captured at spawn for a stable denominator in path efficiency
+        self._ep_gate_center_at_spawn = torch.zeros((self.num_envs, 3), device=self.device)
+        # Last position for incremental path length accumulation
+        self._ep_last_pos = torch.zeros((self.num_envs, 3), device=self.device)
+        # Accumulated path length within the episode
+        self._ep_path_len = torch.zeros(self.num_envs, device=self.device)
+        # Per-env episode step counter (increments each step until reset)
+        self._ep_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
+        # Min distance to gate center observed within the episode
+        self._ep_min_gate_dist = torch.full((self.num_envs,), float('inf'), device=self.device)
+        # Crossing state and metrics captured at first crossing
+        self._ep_gate_crossed = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        self._ep_time_to_gate = torch.full((self.num_envs,), float('nan'), device=self.device)
+        self._ep_center_offset_cross = torch.full((self.num_envs,), float('nan'), device=self.device)
+        self._ep_height_offset_cross = torch.full((self.num_envs,), float('nan'), device=self.device)
+        
         # Initialize gate dimensions for all environments after full initialization
         logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
         self.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
+        
+        # Ensure infos survive resets for logging back to the learner
+        self._infos_to_return = None
 
     def close(self):
         try:
@@ -530,6 +558,19 @@ class NavigationTaskGate(BaseTask):
         self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
         # Update gate dimensions for adaptive rewards after gate selection
         self.update_gate_dimensions_for_environments(env_ids)
+        
+        # Reset per-env episode trajectory state for these environments
+        try:
+            self._episode_fresh[env_ids] = True
+            self._ep_path_len[env_ids] = 0.0
+            self._ep_steps[env_ids] = 0
+            self._ep_min_gate_dist[env_ids] = float('inf')
+            self._ep_gate_crossed[env_ids] = False
+            self._ep_time_to_gate[env_ids] = float('nan')
+            self._ep_center_offset_cross[env_ids] = float('nan')
+            self._ep_height_offset_cross[env_ids] = float('nan')
+        except Exception:
+            pass
         
         self.infos = {}
         return
@@ -774,7 +815,13 @@ class NavigationTaskGate(BaseTask):
         # Add gate navigation specific info to wandb tracking
         # Calculate gate navigation metrics from current state
         robot_position = self.obs_dict["robot_position"]
-        gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
+        # Use geometric center of gate opening (z + center_height) so a perfect center pass can approach 0
+        gate_center_position = self.gate_position.clone()
+        try:
+            gate_center_position[:, 2] = gate_center_position[:, 2] + self.gate_center_height
+        except Exception:
+            pass
+        gate_distance = torch.norm(robot_position - gate_center_position, dim=1)
         
         # Check if robot has passed gate (crossed Y = 0 plane with proper alignment) - ADAPTIVE
         gate_tracking_width_tolerance = self.gate_width * 0.6  # 60% of gate width for tracking
@@ -812,6 +859,49 @@ class NavigationTaskGate(BaseTask):
         # Add continuous curriculum tracking for wandb
         self.infos["curriculum/current_level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
         self.infos["curriculum/current_progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
+        self.infos["curriculum/current_level_minus_1"] = torch.tensor(self.curriculum_level - 1, dtype=torch.float32)
+
+        # ===== Per-env episode trajectory state update =====
+        # Initialize newly reset envs on their first step
+        try:
+            if hasattr(self, '_episode_fresh'):
+                fresh_mask = self._episode_fresh
+                if torch.any(fresh_mask):
+                    self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
+                    self._ep_gate_center_at_spawn[fresh_mask] = self.gate_position[fresh_mask]
+                    self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
+                    # counters and accumulators already zeroed in reset_idx
+                    self._episode_fresh[fresh_mask] = False
+            else:
+                # Safety init if missing (should not happen)
+                self._episode_fresh = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        except Exception:
+            pass
+        
+        # Incremental path length accumulation and min distance tracking
+        try:
+            step_deltas = robot_position - self._ep_last_pos
+            step_dist = torch.norm(step_deltas, dim=1)
+            self._ep_path_len += step_dist
+            self._ep_last_pos = robot_position
+            # Update episode step counters
+            self._ep_steps += 1
+            # Update min distance to gate center within episode (center-corrected)
+            step_gate_dist = torch.norm(robot_position - gate_center_position, dim=1)
+            self._ep_min_gate_dist = torch.minimum(self._ep_min_gate_dist, step_gate_dist)
+            # Record first crossing time and offsets
+            newly_crossed = (~self._ep_gate_crossed) & gate_passed_current
+            if torch.any(newly_crossed):
+                self._ep_gate_crossed[newly_crossed] = True
+                # Time to gate in episode steps
+                self._ep_time_to_gate[newly_crossed] = self._ep_steps[newly_crossed].to(torch.float32)
+                # Offsets at crossing (center-corrected for both center and height)
+                co = torch.norm(robot_position[newly_crossed] - gate_center_position[newly_crossed], dim=1)
+                ho = torch.abs(robot_position[newly_crossed, 2] - gate_center_position[newly_crossed, 2])
+                self._ep_center_offset_cross[newly_crossed] = co
+                self._ep_height_offset_cross[newly_crossed] = ho
+        except Exception:
+            pass
 
         self.logging_sanity_check(self.infos)
         self.check_and_update_curriculum_level(
@@ -821,6 +911,92 @@ class NavigationTaskGate(BaseTask):
         # sent to the RL algorithm as an observation and it helps if the camera image is updated then
         reset_envs = self.sim_env.post_reward_calculation_step()
         if len(reset_envs) > 0:
+            # Episode-end trajectory metrics for envs that reset now (computed from per-env state)
+            try:
+                env_ids = reset_envs if torch.is_tensor(reset_envs) else torch.tensor(reset_envs, device=self.device, dtype=torch.long)
+                # Path efficiency = path length / straight-line distance from spawn to gate center at spawn
+                denom = torch.norm(self._ep_spawn_pos[env_ids] - self._ep_gate_center_at_spawn[env_ids], dim=1)
+                denom = torch.clamp(denom, min=1e-6)
+                path_eff = torch.full((self.num_envs,), float('nan'), device=self.device)
+                path_eff[env_ids] = (self._ep_path_len[env_ids] / denom).clamp(max=1000.0)
+                # Time to gate in steps (already NaN for non-crossers)
+                time_to_gate = self._ep_time_to_gate.clone()
+                # Min distance to gate center during episode
+                min_gate_dist = self._ep_min_gate_dist.clone()
+                # Offsets at crossing (NaN for non-crossers)
+                center_offset = self._ep_center_offset_cross.clone()
+                height_offset = self._ep_height_offset_cross.clone()
+                # Last position at episode end (absolute and center-relative distance)
+                last_pos = robot_position[env_ids]
+                last_pos_x = last_pos[:, 0]
+                last_pos_y = last_pos[:, 1]
+                last_pos_z = last_pos[:, 2]
+                # Use the same center-corrected gate position used above
+                last_center_distance_vals = torch.norm(last_pos - gate_center_position[env_ids], dim=1)
+                # Debug print: average across resetting envs (NaN-aware)
+                pe_avg = torch.nanmean(path_eff[env_ids])
+                ttg_avg = torch.nanmean(time_to_gate[env_ids])
+                mgd_avg = torch.nanmean(min_gate_dist[env_ids])
+                co_avg = torch.nanmean(center_offset[env_ids])
+                ho_avg = torch.nanmean(height_offset[env_ids])
+                lpx_avg = torch.nanmean(last_pos_x)
+                lpy_avg = torch.nanmean(last_pos_y)
+                lpz_avg = torch.nanmean(last_pos_z)
+                lcd_avg = torch.nanmean(last_center_distance_vals)
+                # num = len(env_ids)
+                # logger.warning(f"[TRAJ_METRICS][DEBUG][avg over {num} envs] path_efficiency={float(pe_avg.item()):.3f}, time_to_gate_steps={float(ttg_avg.item()):.2f}, min_gate_distance={float(mgd_avg.item()):.3f}, center_offset_success={float(co_avg.item()):.3f}, height_offset_success={float(ho_avg.item()):.3f}, last_position=({float(lpx_avg.item()):.2f},{float(lpy_avg.item()):.2f},{float(lpz_avg.item()):.2f}), last_center_distance={float(lcd_avg.item()):.3f}")
+                # Stash per-env episode metrics for worker-side running aggregation
+                try:
+                    self._last_traj_metrics_per_env = {
+                        'path_efficiency': path_eff.detach().clone(),
+                        'time_to_gate_steps': time_to_gate.detach().clone(),
+                        'min_gate_distance': min_gate_dist.detach().clone(),
+                        'center_offset_success': center_offset.detach().clone(),
+                        'height_offset_success': height_offset.detach().clone(),
+                        'last_position_x': torch.full((self.num_envs,), float('nan'), device=self.device),
+                        'last_position_y': torch.full((self.num_envs,), float('nan'), device=self.device),
+                        'last_position_z': torch.full((self.num_envs,), float('nan'), device=self.device),
+                        'last_center_distance': torch.full((self.num_envs,), float('nan'), device=self.device),
+                        'crossed': self._ep_gate_crossed.detach().clone(),
+                    }
+                    self._last_traj_metrics_per_env['last_position_x'][env_ids] = last_pos_x
+                    self._last_traj_metrics_per_env['last_position_y'][env_ids] = last_pos_y
+                    self._last_traj_metrics_per_env['last_position_z'][env_ids] = last_pos_z
+                    self._last_traj_metrics_per_env['last_center_distance'][env_ids] = last_center_distance_vals
+                except Exception:
+                    self._last_traj_metrics_per_env = None
+                # Stash the averaged trajectory metrics for logging
+                try:
+                    self._last_traj_metrics_avg = {
+                        'path_efficiency': float(pe_avg.item()),
+                        'time_to_gate_steps': float(ttg_avg.item()),
+                        'min_gate_distance': float(mgd_avg.item()),
+                        'center_offset_success': float(co_avg.item()),
+                        'height_offset_success': float(ho_avg.item()),
+                        'last_position_x': float(lpx_avg.item()),
+                        'last_position_y': float(lpy_avg.item()),
+                        'last_position_z': float(lpz_avg.item()),
+                        'last_center_distance': float(lcd_avg.item()),
+                    }
+                except Exception:
+                    self._last_traj_metrics_avg = None
+                # Provide averaged metrics to infos['episode_extra_stats'] so learner can push to W&B as a backup
+                try:
+                    extra = self.infos.get('episode_extra_stats', {})
+                    if not isinstance(extra, dict):
+                        extra = {}
+                    extra.update(self._last_traj_metrics_avg or {})
+                    self.infos['episode_extra_stats'] = extra
+                except Exception:
+                    pass
+            except Exception as e:
+                logger.debug(f"Trajectory metrics computation failed: {e}")
+            # Stash infos to return to the learner before we clear them in reset
+            try:
+                self._infos_to_return = dict(self.infos)
+            except Exception:
+                self._infos_to_return = self.infos
+            # Finally, reset environments and mark them fresh for next episode
             self.reset_idx(reset_envs)
         self.num_task_steps += 1
         # do stuff with the image observations here
@@ -1119,6 +1295,12 @@ class NavigationTaskGate(BaseTask):
 
     def get_return_tuple(self):
         self.process_obs_for_task()
+        # If we have stashed infos from the previous step (pre-reset), use them once
+        if hasattr(self, '_infos_to_return') and self._infos_to_return is not None:
+            infos_to_return = self._infos_to_return
+            self._infos_to_return = None
+        else:
+            infos_to_return = self.infos
         
         # ADDITIONAL DEBUG: Verify observations in get_return_tuple (called every step)
         if not hasattr(self, '_return_tuple_debug_printed'):
@@ -1163,7 +1345,7 @@ class NavigationTaskGate(BaseTask):
             self.rewards,
             self.terminations,
             self.truncations,
-            self.infos,
+            infos_to_return,
         )
 
     def process_obs_for_task(self):
@@ -1591,17 +1773,27 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Crash rate: {crash_rate:.3f}")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Timeout rate: {timeout_rate:.3f}")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Current level: {old_level} (max reached: {self.max_curriculum_level_reached})")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Threshold for increase: >{self.task_config.curriculum.success_rate_for_increase:.3f} (NO DECREASE POLICY)")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Thresholds: increase>{self.task_config.curriculum.success_rate_for_increase:.3f}, decrease<{self.task_config.curriculum.success_rate_for_decrease:.3f}")
+            # Track cooldown state
+            if not hasattr(self, '_curriculum_cooldown'): self._curriculum_cooldown = 0
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Cooldown windows remaining: {self._curriculum_cooldown}")
 
-            # NO-DECREASE POLICY: Only allow increases, never decreases
-            if success_rate > self.task_config.curriculum.success_rate_for_increase:
-                self.curriculum_level += self.task_config.curriculum.increase_step
-                self.max_curriculum_level_reached = max(self.max_curriculum_level_reached, self.curriculum_level)
-                self.log_curriculum_update(f"[CURRICULUM UPDATE] LEVEL INCREASED: {old_level} -> {self.curriculum_level} (success rate {success_rate:.3f} > threshold)")
-                self.log_curriculum_update(f"[CURRICULUM UPDATE] NEW MAX LEVEL: {self.max_curriculum_level_reached}")
+            action_msg = "LEVEL UNCHANGED"
+            # Respect cooldown
+            if self._curriculum_cooldown > 0:
+                self._curriculum_cooldown -= 1
+                action_msg = f"LEVEL HOLD (cooldown {self._curriculum_cooldown} left)"
             else:
-                # NO-DECREASE POLICY: Only increase or stay the same, never decrease
-                self.log_curriculum_update(f"[CURRICULUM UPDATE] LEVEL UNCHANGED: {self.curriculum_level} (success rate {success_rate:.3f} <= threshold, no decrease allowed)")
+                if success_rate > self.task_config.curriculum.success_rate_for_increase:
+                    self.curriculum_level += self.task_config.curriculum.increase_step
+                    self.max_curriculum_level_reached = max(self.max_curriculum_level_reached, self.curriculum_level)
+                    self._curriculum_cooldown = getattr(self.task_config.curriculum, 'cooldown_windows', 0)
+                    action_msg = f"LEVEL INCREASED: {old_level} -> {self.curriculum_level} (SR {success_rate:.3f} > threshold)"
+                elif success_rate < self.task_config.curriculum.success_rate_for_decrease and self.curriculum_level > self.task_config.curriculum.min_level:
+                    self.curriculum_level -= self.task_config.curriculum.decrease_step
+                    self._curriculum_cooldown = getattr(self.task_config.curriculum, 'cooldown_windows', 0)
+                    action_msg = f"LEVEL DECREASED: {old_level} -> {self.curriculum_level} (SR {success_rate:.3f} < threshold)"
+            self.log_curriculum_update(f"[CURRICULUM UPDATE] {action_msg}")
 
             # Clamp curriculum_level to valid range
             self.curriculum_level = min(

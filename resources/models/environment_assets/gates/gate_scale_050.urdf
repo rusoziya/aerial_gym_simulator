@@ -8,14 +8,14 @@
     <visual>
       <origin xyz="0.000 0.000 0.625" rpy="0 0 0"/>
       <geometry>
-        <box size="0.200 0.200 1.250"/>
+        <box size="0.110 0.110 1.250"/>
       </geometry>
       <material name="gate_material"/>
     </visual>
     <collision>
       <origin xyz="0.000 0.000 0.625" rpy="0 0 0"/>
       <geometry>
-        <box size="0.200 0.200 1.250"/>
+        <box size="0.110 0.110 1.250"/>
       </geometry>
     </collision>
     <inertial>
@@ -56,14 +56,14 @@
     <visual>
       <origin xyz="0.000 0.000 0.000" rpy="0 0 0"/>
       <geometry>
-        <box size="0.200 1.350 0.200"/>
+        <box size="0.110 1.350 0.110"/>
       </geometry>
       <material name="gate_material"/>
     </visual>
     <collision>
       <origin xyz="0.000 0.000 0.000" rpy="0 0 0"/>
       <geometry>
-        <box size="0.200 1.350 0.200"/>
+        <box size="0.110 1.350 0.110"/>
       </geometry>
     </collision>
     <inertial>

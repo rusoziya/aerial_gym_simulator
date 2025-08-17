@@ -50,11 +50,19 @@ class AssetLoader:
         for file in os.listdir(folder):
             if file.endswith(".urdf"):
                 available_assets.append(file)
+        
+        # Deterministic ordering for reproducibility across envs
+        available_assets.sort()
 
         if num_assets == 0:
             return []
 
-        selected_files = random.choices(available_assets, k=num_assets)
+        # Ensure we don't pick duplicates: if requesting >= available, return all
+        if num_assets >= len(available_assets):
+            return list(available_assets)
+        
+        # Otherwise sample without replacement
+        selected_files = random.sample(available_assets, k=num_assets)
         return selected_files
 
     def load_selected_file_from_config(

@@ -32,27 +32,39 @@ def sample_command(args):
         "dce_navigation_task_gate", seed=42, use_warp=use_warp, headless=headless
     )
     print("Number of environments", rl_task.num_envs)
+    
     # 4D action space [x_vel, y_vel, z_vel, yaw_rate] for velocity controller
-    command_actions = torch.zeros((rl_task.num_envs, rl_task.task_config.action_space_dim))
-    command_actions[:, 0] = 1.0  # Forward velocity (X)
-    # command_actions[:, 0] = 1.5  # Forward velocity (X)
-    command_actions[:, 1] = 0.0  # Lateral velocity (Y)
-    command_actions[:, 2] = 0.0  # Vertical velocity (Z)
-    command_actions[:, 3] = 0.0  # Yaw rate
+    command_actions = torch.zeros((rl_task.num_envs, rl_task.task_config.action_space_dim), device=rl_task.device)
+    
+    # Initialize inference model
     nn_model = get_network(rl_task.num_envs)
     nn_model.eval()
-    nn_model.reset(torch.arange(rl_task.num_envs))
+    
+    # Optionally load checkpoint if provided via args (common SF flags)
+    model_path = getattr(args, 'load_checkpoint', None) or getattr(args, 'checkpoint', None)
+    if model_path:
+        try:
+            nn_model.load_model(model_path)
+        except Exception as e:
+            print(f"[Inference] Warning: failed to load model '{model_path}': {e}")
+    
+    nn_model.reset_rnn_states()
     rl_task.reset()
+    
     for i in range(0, 50000):
         start_time = time.time()
         obs, rewards, termination, truncation, infos = rl_task.step(command_actions)
 
-        obs["obs"] = obs["observations"]
-        # print(obs["observations"].shape)  # Should be 150D for gate navigation with position awareness
-        action = nn_model.get_action(obs)
-        # print("Action", action, action.shape)  # Should be 4D for gate navigation
-        action = torch.tensor(action).expand(rl_task.num_envs, -1)
-        command_actions[:] = action
+        # Build batched obs for policy (150D)
+        obs_batch = obs["observations"]  # [N, 150]
+        
+        # Get batched actions from policy
+        try:
+            actions_np = nn_model.get_action_batched({"obs": obs_batch})
+        except Exception:
+            actions_np = nn_model.get_action_batched(obs_batch)
+        actions = torch.tensor(actions_np, device=rl_task.device)
+        command_actions[:] = actions
 
         reset_ids = (termination + truncation).nonzero(as_tuple=True)
         if torch.any(termination):

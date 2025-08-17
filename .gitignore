@@ -1,0 +1,47 @@
+# Python caches
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Jupyter checkpoints
+**/.ipynb_checkpoints/**
+
+# Model weights / checkpoints
+**/*.pth
+**/checkpoint_p0/**
+**/checkpoints/**
+
+# Training outputs
+**/train_dir/**
+**/train_DIR/**
+**/sf_log.txt
+**/config.json
+**/git.diff
+
+# Weights & Biases local runs
+wandb/**
+**/wandb/**
+**/latest-run/**
+**/run-*/**
+
+# TensorBoard
+**/.summary/**
+**/events.out.tfevents.*
+
+# Generated media (large)
+aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/**
+
+# Logs and metrics (runtime)
+**/*.log
+aerial_gym/logs/**
+scripts/logs/**
+
+# Editor/OS
+.DS_Store
+*.swp
+*.swo
+
+# Temp/misc
+aerial_g_gym/

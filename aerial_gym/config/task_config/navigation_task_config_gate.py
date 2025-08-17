@@ -9,7 +9,7 @@ class task_config:
     robot_name = "lmf2"  # Use proven LMF2 robot
     controller_name = "lmf2_velocity_control"  # CHANGED: Switch to velocity controller for more direct control
     args = {}
-    num_envs = 16  # Standard configuration for gate navigation training
+    num_envs = 16  # Default to 16 environments for gate navigation training
     use_warp = True
     headless = False  # Enable visualization to view both cameras (can be overridden by Sample Factory)
     device = "cuda:0"
@@ -191,11 +191,12 @@ class task_config:
         spawn_hard_yaw_abs_rad = 45.0 * 3.141592653589793 / 180.0
         
         # EVALUATION PARAMETERS
-        check_after_log_instances = 128  # INCREASED FREQUENCY: Check curriculum every 128 instances for faster progression
+        check_after_log_instances = 256  # Check curriculum every 256 instances for reduced variance
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
-        decrease_step = 0   # NO DECREASE POLICY: Once a level is reached, never go back
-        success_rate_for_increase = 0.01  # TEMP: 1% success threshold to progress faster
-        success_rate_for_decrease = 0.0   # DISABLED: Never decrease difficulty (no-decrease policy)
+        decrease_step = 1  # Allow decreases by 1 level when success collapses
+        success_rate_for_increase = 0.6  # Promote when SR > 60%
+        success_rate_for_decrease = 0.25   # Demote when SR < 25%
+        cooldown_windows = 2  # After any change, hold level for this many evaluation windows
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
         # Each curriculum level controls multiple aspects of difficulty:
