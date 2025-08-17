@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Gate Navigation Training Configuration (16 environments to match standard config)
+# Gate Navigation Training Configuration (16 environments default)
 CONFIG_NAME="Gate Navigation Dual Camera Configuration (16 environments)"
 ENV_AGENTS=16
 BATCH_SIZE=2048
@@ -177,16 +177,18 @@ echo "==========================================================================
 echo ""
 
 # Display current GPU status
-python -c "
+python - <<'PY'
 import subprocess
 import time
 
 def show_gpu_status():
     try:
-        result = subprocess.run(['nvidia-smi', '--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw', '--format=csv,nounits,noheader'], 
-                              capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ['nvidia-smi', '--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw', '--format=csv,nounits,noheader'],
+            capture_output=True, text=True, check=True
+        )
         lines = result.stdout.strip().split('\n')
-        print(f'[{time.strftime(\"%H:%M:%S\")}] GPU Status:')
+        print(f'[{time.strftime("%H:%M:%S")}] GPU Status:')
         print('-' * 80)
         for i, line in enumerate(lines):
             name, util, mem_used, mem_total, temp, power = line.split(', ')
@@ -195,23 +197,23 @@ def show_gpu_status():
             mem_used_gb = mem_used_mb / 1024
             mem_total_gb = mem_total_mb / 1024
             mem_percent = (mem_used_mb / mem_total_mb) * 100
-            
+
             print(f'GPU {i} ({name}):')
             print(f'  VRAM: {mem_used_mb}MB/{mem_total_gb:.1f}GB ({mem_percent:.1f}%)')
             print(f'  Utilization: {util}%')
             print(f'  Temperature: {temp}°C')
             print(f'  Power: {power}W')
-            
+
             # Visual VRAM bar
             bar_length = 40
             filled = int((mem_percent / 100) * bar_length)
             bar = '█' * filled + '░' * (bar_length - filled)
             print(f'  VRAM: [{bar}] {mem_percent:.1f}%')
-    except:
-        print('Could not get GPU status')
+    except Exception as e:
+        print('Could not get GPU status:', e)
 
 show_gpu_status()
-"
+PY
 
 # Clear existing training directory for fresh start
 echo -e "${GREEN}✓ Cleared any existing training directory for fresh start${NC}"
