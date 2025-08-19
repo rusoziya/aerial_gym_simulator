@@ -181,14 +181,16 @@ class task_config:
         spawn_easy_y_half_span_m = 0.05
         spawn_easy_z_center_m = 1.5
         spawn_easy_z_half_span_m = 0.05
-        spawn_easy_yaw_abs_rad = 10.0 * 3.141592653589793 / 180.0
+        # At the easiest level, force camera to face the gate: 0° jitter
+        spawn_easy_yaw_abs_rad = 0.0 * 3.141592653589793 / 180.0
         # Hard (level 23) spawn: matches prior LMF2
         spawn_hard_x_half_span_m = 1.20
         spawn_hard_y_center_m = -2.0
         spawn_hard_y_half_span_m = 0.20
         spawn_hard_z_center_m = 1.5
         spawn_hard_z_half_span_m = 0.10
-        spawn_hard_yaw_abs_rad = 45.0 * 3.141592653589793 / 180.0
+        # Reduce maximum spawn yaw jitter at hardest level to 30°
+        spawn_hard_yaw_abs_rad = 30.0 * 3.141592653589793 / 180.0
         
         # EVALUATION PARAMETERS
         check_after_log_instances = 256  # Check curriculum every 256 instances for reduced variance

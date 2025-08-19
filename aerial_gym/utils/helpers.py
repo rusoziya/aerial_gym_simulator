@@ -182,6 +182,18 @@ def get_args(additional_parameters=[]):
             "default": True,
             "help": "Use warp for rendering",
         },
+        {
+            "name": "--load_checkpoint",
+            "type": str,
+            "default": "",
+            "help": "Path to a Sample Factory checkpoint (.pth) to load for inference",
+        },
+        {
+            "name": "--checkpoint",
+            "type": str,
+            "default": "",
+            "help": "Alias for --load_checkpoint",
+        },
     ]
     # parse arguments
     args = parse_arguments(

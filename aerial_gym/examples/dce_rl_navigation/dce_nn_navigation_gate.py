@@ -40,13 +40,44 @@ def sample_command(args):
     nn_model = get_network(rl_task.num_envs)
     nn_model.eval()
     
-    # Optionally load checkpoint if provided via args (common SF flags)
-    model_path = getattr(args, 'load_checkpoint', None) or getattr(args, 'checkpoint', None)
+    # Optionally load checkpoint (prefer explicit env var to avoid SF arg conflicts)
+    import os, glob
+    env_model = os.environ.get('DCE_MODEL', '').strip()
+    if env_model:
+        print(f"[Inference] DCE_MODEL={env_model}")
+    model_path = env_model or getattr(args, 'load_checkpoint', None) or getattr(args, 'checkpoint', None)
+    loaded = False
     if model_path:
         try:
             nn_model.load_model(model_path)
+            loaded = True
         except Exception as e:
             print(f"[Inference] Warning: failed to load model '{model_path}': {e}")
+    # Auto-detect from Sample Factory cfg if not explicitly provided
+    if not loaded:
+        try:
+            cfg = getattr(nn_model, 'cfg', None)
+            td = getattr(cfg, 'train_dir', None)
+            ex = getattr(cfg, 'experiment', None)
+            kind = getattr(cfg, 'load_checkpoint_kind', 'best')
+            if td and ex:
+                ckpt_dir = os.path.join(str(td), str(ex), 'checkpoint_p0')
+                pattern = 'best*.pth' if str(kind) == 'best' else '*.pth'
+                candidates = sorted(glob.glob(os.path.join(ckpt_dir, pattern)))
+                if not candidates and str(kind) != 'best':
+                    candidates = sorted(glob.glob(os.path.join(ckpt_dir, 'best*.pth')))
+                if candidates:
+                    auto_ckpt = candidates[-1]
+                    print(f"[Inference] Auto-selected checkpoint: {auto_ckpt}")
+                    nn_model.load_model(auto_ckpt)
+                    loaded = True
+                else:
+                    print(f"[Inference] No checkpoints found in {ckpt_dir}")
+        except Exception as e:
+            print(f"[Inference] Auto-detect failed: {e}")
+    if not loaded:
+        print("[Inference] ERROR: No model loaded. Set DCE_MODEL to a valid .pth or provide train_dir/experiment with saved checkpoints.")
+        raise SystemExit(1)
     
     nn_model.reset_rnn_states()
     rl_task.reset()

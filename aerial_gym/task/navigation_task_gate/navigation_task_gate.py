@@ -76,7 +76,26 @@ class NavigationTaskGate(BaseTask):
         # CRITICAL FIX: Set curriculum level and obstacle count BEFORE building environment
         # This ensures the asset manager gets the correct count from the start
         self.curriculum_level = self.task_config.curriculum.min_level
-        obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
+        # Obstacle ablation: if disabled, force to fixed count (default 0)
+        try:
+            import os
+            env_obs_dis = os.getenv('SF_DISABLE_OBSTACLE_RANDOMIZATION', None)
+            env_obs_fix = os.getenv('SF_FIXED_OBSTACLES_BEHIND_GATE', None)
+            if env_obs_dis is not None:
+                obstacles_disable = str(env_obs_dis).lower() == 'true'
+            else:
+                obstacles_disable = bool(getattr(self.task_config, 'disable_obstacle_randomization', False))
+            if env_obs_fix is not None:
+                obstacles_fixed = int(env_obs_fix)
+            else:
+                obstacles_fixed = int(getattr(self.task_config, 'fixed_obstacles_behind_gate', 0))
+        except Exception:
+            obstacles_disable = bool(getattr(self.task_config, 'disable_obstacle_randomization', False))
+            obstacles_fixed = int(getattr(self.task_config, 'fixed_obstacles_behind_gate', 0))
+        if obstacles_disable:
+            obstacles_behind_gate = max(0, obstacles_fixed)
+        else:
+            obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
         
         # FIXED: Calculate visible assets: 1 visible gate + walls (6) + curriculum obstacles + robot (1)
         # NOTE: Even though 11 gate variants are loaded, only 1 will be visible at any time
@@ -107,6 +126,40 @@ class NavigationTaskGate(BaseTask):
         # Ensure num_envs is available before any observation processing that may rely on it
         self.num_envs = self.sim_env.num_envs
         
+        # Propagate ablation flags (gate size and obstacles) to global tensor dict for EnvManager to consume
+        try:
+            if hasattr(self.sim_env, 'global_tensor_dict'):
+                gtd = self.sim_env.global_tensor_dict
+                import os
+                # Read from env first (worker-safe), fall back to task_config
+                env_dis = os.getenv('SF_DISABLE_GATE_SIZE_RANDOMIZATION', None)
+                env_fix = os.getenv('SF_FIXED_GATE_SCALE_PERCENT', None)
+                if env_dis is not None:
+                    disable_flag = str(env_dis).lower() == 'true'
+                else:
+                    disable_flag = bool(getattr(self.task_config, 'disable_gate_size_randomization', False))
+                if env_fix is not None:
+                    try:
+                        fixed_scale = int(env_fix)
+                    except Exception:
+                        fixed_scale = int(getattr(self.task_config, 'fixed_gate_scale_percent', 100))
+                else:
+                    fixed_scale = int(getattr(self.task_config, 'fixed_gate_scale_percent', 100))
+                gtd['gate_randomization/disabled'] = disable_flag
+                gtd['gate_randomization/fixed_scale_percent'] = fixed_scale
+                # Obstacles ablation flags
+                if env_obs_dis is not None:
+                    obstacles_disable = str(env_obs_dis).lower() == 'true'
+                if env_obs_fix is not None:
+                    try:
+                        obstacles_fixed = int(env_obs_fix)
+                    except Exception:
+                        obstacles_fixed = int(getattr(self.task_config, 'fixed_obstacles_behind_gate', 0))
+                gtd['obstacles_randomization/disabled'] = obstacles_disable
+                gtd['obstacles_randomization/fixed_count'] = int(max(0, obstacles_fixed))
+        except Exception:
+            pass
+
         # Immediately select a random gate variant once after creation (safety)
         if hasattr(self.sim_env, 'apply_gate_variant_selection'):
             logger.warning("[GateVariant] Initial selection after build (one-time)")
@@ -114,6 +167,17 @@ class NavigationTaskGate(BaseTask):
         
         # CRITICAL FIX: Immediately update the environment's obstacle count after creation
         if hasattr(self.sim_env, 'global_tensor_dict'):
+            # Override count if obstacle randomization disabled
+            try:
+                obs_dis = bool(self.sim_env.global_tensor_dict.get('obstacles_randomization/disabled', False))
+            except Exception:
+                obs_dis = False
+            if obs_dis:
+                try:
+                    fixed_count = int(self.sim_env.global_tensor_dict.get('obstacles_randomization/fixed_count', 0))
+                except Exception:
+                    fixed_count = 0
+                total_obstacles_in_env = fixed_assets_visible + max(0, fixed_count)
             self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
             logger.info(f"POST-INIT: Updated global_tensor_dict with obstacle count: {total_obstacles_in_env}")
 
@@ -1812,7 +1876,17 @@ class NavigationTaskGate(BaseTask):
             # ===== MULTI-ASPECT CURRICULUM APPLICATION =====
             
             # 1. OBSTACLE COUNT PROGRESSION: Apply new obstacle count behind gate
-            obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
+            try:
+                obs_dis = bool(self.sim_env.global_tensor_dict.get('obstacles_randomization/disabled', False))
+            except Exception:
+                obs_dis = False
+            if obs_dis:
+                try:
+                    obstacles_behind_gate = int(self.sim_env.global_tensor_dict.get('obstacles_randomization/fixed_count', 0))
+                except Exception:
+                    obstacles_behind_gate = 0
+            else:
+                obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
             
             # FIXED CALCULATION: Account for visible assets only (not all loaded assets)
             # Even though 11 gate variants are loaded, only 1 is visible at any time
@@ -1876,7 +1950,10 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update(f"\nSuccess Rate: {success_rate:.3f}\nCrash Rate: {crash_rate:.3f}\nTimeout Rate: {timeout_rate:.3f}")
             
             self.log_curriculum_update(f"\nCURRICULUM APPLIED:")
-            self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
+            if obs_dis:
+                self.log_curriculum_update(f"   1. OBSTACLES: fixed to {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
+            else:
+                self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
             try:
                 sr = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
                 self.log_curriculum_update(
@@ -1892,37 +1969,57 @@ class NavigationTaskGate(BaseTask):
                 current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
             self.log_curriculum_update(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
             
-            # 4. GATE SIZE UNLOCKS (Curriculum-gated randomization)
+            # 4. GATE SIZE UNLOCKS (Curriculum-gated randomization) or Fixed (ablation)
             if hasattr(self.sim_env, 'global_tensor_dict'):
                 gate_names = []
                 if len(self.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])) > 0:
                     gate_names = self.sim_env.global_tensor_dict["gate_variant_names_per_env"][0]
-                # Compute linear threshold from 80 -> 40 over levels 3..23
-                if self.curriculum_level <= 3:
-                    min_scale = 80
-                elif self.curriculum_level >= 23:
-                    min_scale = 40
+                # Report fixed mode if enabled
+                disable_flag = self.sim_env.global_tensor_dict.get('gate_randomization/disabled', False)
+                try:
+                    if hasattr(disable_flag, 'item'):
+                        disable_flag = bool(disable_flag.item())
+                    else:
+                        disable_flag = bool(disable_flag)
+                except Exception:
+                    disable_flag = False
+                if disable_flag:
+                    try:
+                        fixed_scale = self.sim_env.global_tensor_dict.get('gate_randomization/fixed_scale_percent', 100)
+                        if hasattr(fixed_scale, 'item'):
+                            fixed_scale = int(fixed_scale.item())
+                        else:
+                            fixed_scale = int(fixed_scale)
+                    except Exception:
+                        fixed_scale = 100
+                    self.log_curriculum_update(f"   4. GATE SIZE: randomization disabled, fixed scale = {fixed_scale}%")
                 else:
-                    frac = (self.curriculum_level - 3) / (23 - 3)
-                    raw = 80 - frac * (80 - 40)
-                    min_scale = int((int(raw) // 2) * 2)
-                    if min_scale < 40:
+                    # Compute linear threshold from 80 -> 40 over levels 3..23
+                    if self.curriculum_level <= 3:
+                        min_scale = 80
+                    elif self.curriculum_level >= 23:
                         min_scale = 40
-                    if min_scale > 100:
-                        min_scale = 100
-                # Collect scales meeting threshold
-                scales = []
-                for n in gate_names:
-                    if isinstance(n, str) and "gate_scale_" in n:
-                        try:
-                            s = int(n.replace("gate_scale_", ""))
-                            if s >= min_scale:
-                                scales.append(s)
-                        except:
-                            pass
-                # Report unique scales only (avoid duplicates from config classes)
-                scales = sorted(list(set(scales)), reverse=True)
-                self.log_curriculum_update(f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> {scales if scales else [100]} (uniform across unique scales)")
+                    else:
+                        frac = (self.curriculum_level - 3) / (23 - 3)
+                        raw = 80 - frac * (80 - 40)
+                        min_scale = int((int(raw) // 2) * 2)
+                        if min_scale < 40:
+                            min_scale = 40
+                        if min_scale > 100:
+                            min_scale = 100
+                    # Collect scales meeting threshold
+                    scales = []
+                    for n in gate_names:
+                        if isinstance(n, str) and "gate_scale_" in n:
+                            try:
+                                s = int(n.replace("gate_scale_", ""))
+                                if s >= min_scale:
+                                    scales.append(s)
+                            except:
+                                pass
+                    # Report unique scales only (avoid duplicates from config classes)
+                    scales = sorted(list(set(scales)), reverse=True)
+                    self.log_curriculum_update(f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> {scales if scales else [100]} (uniform across unique scales)")
             
             # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
             camera_gaussian_std, camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
@@ -2098,6 +2195,9 @@ class NavigationTaskGate(BaseTask):
         camera_facing_reward[poor_mask] = 0.2 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[poor_mask]
         severe_mask = camera_gate_alignment <= -0.707
         camera_facing_reward[severe_mask] = 2.0 * self.task_config.reward_parameters["camera_facing_reward_magnitude"] * camera_gate_alignment[severe_mask]
+        # Gate the camera-facing reward: only before first crossing and while approaching (y below gate plane)
+        approach_mask = (robot_position[:, 1] < self.gate_position[:, 1] - 0.1) & (~self.gate_passed)
+        camera_facing_reward = camera_facing_reward * approach_mask.float()
         self.episode_camera_facing_reward += mult_factor * camera_facing_reward
         
         # Action penalties - FIXED: Added missing Y-action penalties for 4D action space  
@@ -2794,7 +2894,10 @@ def compute_gate_reward(
     multiplied_gate_passage = MULTIPLICATION_FACTOR_REWARD * gate_passage_reward
     multiplied_gate_center_bonus = MULTIPLICATION_FACTOR_REWARD * gate_center_bonus
     multiplied_gate_center_passage = MULTIPLICATION_FACTOR_REWARD * gate_center_passage_bonus
-    multiplied_camera_facing = MULTIPLICATION_FACTOR_REWARD * camera_facing_reward
+    # Gate the camera-facing reward in TorchScript path as well: only before first crossing and while approaching gate
+    pre_cross_approach = (robot_position[:, 1] < gate_position[:, 1] - 0.1) & (~gate_passed)
+    gated_camera_facing = camera_facing_reward * pre_cross_approach.float()
+    multiplied_camera_facing = MULTIPLICATION_FACTOR_REWARD * gated_camera_facing
     multiplied_altitude_maintenance = MULTIPLICATION_FACTOR_REWARD * altitude_maintenance_reward
 
     # Combined reward - NOW INCLUDING CAMERA FACING REWARD AND ALTITUDE MAINTENANCE
@@ -2808,7 +2911,7 @@ def compute_gate_reward(
         + multiplied_gate_passage
         + multiplied_gate_center_bonus
         + multiplied_gate_center_passage
-        + multiplied_camera_facing  # Camera facing reward
+        + multiplied_camera_facing  # Camera facing reward (gated pre-crossing)
         + multiplied_altitude_maintenance  # NEW: Altitude maintenance reward
         + total_action_penalty
     )
