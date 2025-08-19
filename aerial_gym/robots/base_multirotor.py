@@ -244,6 +244,35 @@ class BaseMultirotor(BaseRobot):
             self.env_bounds_min, self.env_bounds_max, random_state[:, 0:3]
         )[env_ids]
 
+        # Align spawn yaw so the camera (+X body axis) faces the gate center, with curriculum jitter
+        try:
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
+            if hasattr(self, '_global_tensor_dict') and ('curriculum_level' in self._global_tensor_dict):
+                level = int(self._global_tensor_dict['curriculum_level'])
+                sr_local = _tc.curriculum.get_spawn_ranges(level)
+                yaw_abs = float(sr_local.get('yaw_abs_rad', 0.0))
+            else:
+                yaw_abs = 0.0
+        except Exception:
+            yaw_abs = 0.0
+
+        # Compute yaw to face the gate center at (0, 0) in world X-Y (gate opening faces +Y)
+        pos_xy = self.robot_state[env_ids, 0:2]
+        to_gate_xy = -pos_xy  # gate assumed at (0,0)
+        yaw_face = torch.atan2(to_gate_xy[:, 1], to_gate_xy[:, 0])
+        if yaw_abs > 0.0:
+            jitter = (torch.rand_like(yaw_face) * 2.0 - 1.0) * yaw_abs
+        else:
+            jitter = torch.zeros_like(yaw_face)
+        # Overwrite yaw in random_state before quaternion conversion
+        random_state[env_ids, 5] = yaw_face + jitter
+
+        # Optional spawn debug (disabled)
+        try:
+            pass
+        except Exception:
+            pass
+
         # Optional debug: print a few spawned positions and yaw to verify ranges
         try:
             from aerial_gym.config.task_config.navigation_task_config_gate import task_config
@@ -269,7 +298,7 @@ class BaseMultirotor(BaseRobot):
         #     f"env_bounds_min: {self.env_bounds_min[0]}, env_bounds_max: {self.env_bounds_max[0]}"
         # )
 
-        # quat conversion is handled separately
+        # quat conversion is handled separately (uses our yaw override above)
         self.robot_state[env_ids, 3:7] = quat_from_euler_xyz_tensor(random_state[env_ids, 3:6])
 
         self.robot_state[env_ids, 7:10] = random_state[env_ids, 7:10]

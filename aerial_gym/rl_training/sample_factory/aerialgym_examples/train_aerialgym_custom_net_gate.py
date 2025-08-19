@@ -521,6 +521,50 @@ class AerialGymVecEnv(gym.Env):
         except Exception as e:
             print(f"[GIF] Warning: Failed to save GIFs for episode {episode_num}: {e}")
 
+        # === OPTIONAL: Save originals vs VAE reconstructions (depth) ===
+        # try:
+        #     task = self.env
+        #     import numpy as np
+        #     import torch
+        #     from PIL import Image as PILImage
+        #
+        #     def _decode_to_pil(vae, latent_id, target_size_wh):
+        #         z = latent_id.detach().unsqueeze(0)  # (1, L)
+        #         dec = vae.decode(z)
+        #         img = dec[0].clamp(0, 1).cpu().numpy()
+        #         img_u8 = (img * 255.0).astype(np.uint8)
+        #         pil = PILImage.fromarray(img_u8, mode='L')
+        #         if target_size_wh is not None and pil.size != target_size_wh:
+        #             pil = pil.resize(target_size_wh)
+        #         return pil
+        #
+        #     def _stack_horiz(pil_left, pil_right):
+        #         w, h = pil_left.size
+        #         canvas = PILImage.new('L', (w * 2, h))
+        #         canvas.paste(pil_left, (0, 0))
+        #         canvas.paste(pil_right, (w, 0))
+        #         return canvas
+        #
+        #     # Drone recon grid
+        #     if hasattr(task, 'shared_vae_model') and hasattr(task, 'image_latents') and self.drone_depth_frames[env_id]:
+        #         orig_drone_pil = self.drone_depth_frames[env_id][-1].convert('L')
+        #         recon_drone_pil = _decode_to_pil(task.shared_vae_model, task.image_latents[0], orig_drone_pil.size)
+        #         grid = _stack_horiz(orig_drone_pil, recon_drone_pil)
+        #         out_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_recon_grid_drone{level_suffix}.png")
+        #         grid.save(out_path)
+        #         print(f"[GIF] Saved drone recon grid: {out_path}")
+        #
+        #     # Static recon grid
+        #     if hasattr(task, 'shared_vae_model') and hasattr(task, 'static_image_latents') and self.static_depth_frames[env_id]:
+        #         orig_static_pil = self.static_depth_frames[env_id][-1].convert('L')
+        #         recon_static_pil = _decode_to_pil(task.shared_vae_model, task.static_image_latents[0], orig_static_pil.size)
+        #         grid = _stack_horiz(orig_static_pil, recon_static_pil)
+        #         out_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_recon_grid_static{level_suffix}.png")
+        #         grid.save(out_path)
+        #         print(f"[GIF] Saved static recon grid: {out_path}")
+        # except Exception as e:
+        #     print(f"[GIF] Warning: Failed to save recon grids: {e}")
+
     def _clear_frames(self, env_id=0):
         """Clear collected frames for the specified environment (clean + noised versions)."""
         if self.save_gifs and env_id < self.num_agents:
@@ -964,6 +1008,24 @@ def make_aerialgym_env(
                     from aerial_gym.config.task_config.navigation_task_config_gate import task_config
                     
                     gate_config = task_config()
+                    # Apply ablation flags from CLI cfg so the task can propagate to EnvManager
+                    try:
+                        gate_config.disable_gate_size_randomization = bool(getattr(cfg, 'disable_gate_size_randomization', False))
+                    except Exception:
+                        gate_config.disable_gate_size_randomization = False
+                    try:
+                        gate_config.fixed_gate_scale_percent = int(getattr(cfg, 'fixed_gate_scale_percent', 100))
+                    except Exception:
+                        gate_config.fixed_gate_scale_percent = 100
+                    # Obstacle ablation flags
+                    try:
+                        gate_config.disable_obstacle_randomization = bool(getattr(cfg, 'disable_obstacle_randomization', False))
+                    except Exception:
+                        gate_config.disable_obstacle_randomization = False
+                    try:
+                        gate_config.fixed_obstacles_behind_gate = int(getattr(cfg, 'fixed_obstacles_behind_gate', 0))
+                    except Exception:
+                        gate_config.fixed_obstacles_behind_gate = 0
                     # Handle headless and environment settings for gate task
                     TaskClass = DCE_RL_Navigation_Task_Gate
                     config = gate_config
@@ -1076,6 +1138,12 @@ def add_extra_params_func(parser):
     parser.add_argument("--env_agents", default=None, type=int, help="Num agents in env (multi-agent only)")
     parser.add_argument("--headless", type=lambda x: x.lower() == 'true', default=None, help="Force headless mode (True/False)")
     parser.add_argument("--save_gifs", type=lambda x: x.lower() == 'true', default=False, help="Save episode GIFs for both cameras (True/False)")
+    # Gate size ablation flags
+    parser.add_argument("--disable_gate_size_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable gate size randomization and use a fixed scale percent")
+    parser.add_argument("--fixed_gate_scale_percent", type=int, default=100, help="Fixed gate scale percent to use when randomization is disabled (40..100, step 2)")
+    # Obstacle ablation flags (behind-gate objects)
+    parser.add_argument("--disable_obstacle_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable obstacle randomization behind the gate (spawns zero obstacles)")
+    parser.add_argument("--fixed_obstacles_behind_gate", type=int, default=0, help="Fixed number of obstacles behind the gate when randomization is disabled (default 0)")
     
     # Complete observation influence tracking arguments
     parser.add_argument("--enable_gradient_monitoring", type=lambda x: x.lower() == 'true', default=False, help="Enable complete observation influence tracking")
@@ -1343,7 +1411,7 @@ env_configs = dict(
         action_space_dim=4,  # 4D action space for VELOCITY CONTROLLER (x_vel, y_vel, z_vel, yaw_rate)
         
         # Gate Navigation Training Configuration
-        train_for_env_steps=100000000,  # 100M steps for comprehensive gate navigation learning
+        train_for_env_steps=200000000,  # 200M steps for comprehensive gate navigation learning
         encoder_mlp_layers=[512, 256, 128],  # Larger network for 145D observation space
         encoder_conv_mlp_layers=[],  # No ConvNet - VAE latents handled by gate task
         use_rnn=True,
@@ -1547,17 +1615,17 @@ def register_aerialgym_custom_components():
         except:
             pass
     
-    # Use environment variable from shell script if set, otherwise default to 128 (maximum parallelization config)
+    # Use environment variable from shell script if set, otherwise default to 256 (high parallelization config)
     # This will be updated based on the actual env_agents parameter when env is created
-    current_env_agents = os.environ.get('SF_ENV_AGENTS', '128')  # Default to maximum parallelization DCE configuration
+    current_env_agents = os.environ.get('SF_ENV_AGENTS', '256')  # Default to high parallelization configuration
     os.environ['SF_ENV_AGENTS'] = current_env_agents
     
     # Set train_dir for curriculum logging
     import os
     if 'SF_TRAIN_DIR' not in os.environ:
         os.environ['SF_TRAIN_DIR'] = './train_dir'  # Default train directory
-    if current_env_agents == '128':
-        print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (MAXIMUM PARALLELIZATION DCE CONFIG)")
+    if current_env_agents == '256':
+        print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (HIGH PARALLELIZATION CONFIG)")
     elif current_env_agents == '32':
         print(f"Set SF_ENV_AGENTS={current_env_agents} environment variable for all processes (UPDATED DCE CONFIG - high parallelization)")
     elif current_env_agents == '16':
@@ -1698,6 +1766,35 @@ def run_with_influence_tracking(cfg: Config):
     # Cache last non-empty obs_grad metrics to mirror every step
     _last_obsgrad_from_influence = {}
     _last_obsgrad_from_grad = {}
+    # Continuous curriculum logging: remember last known values and emit every step
+    CURRICULUM_KEYS = [
+        'curriculum/total_timeouts',
+        'curriculum/total_successes',
+        'curriculum/total_crashes',
+        'curriculum/total_resets',
+        'curriculum/timeout_rate',
+        'curriculum/success_rate',
+        'curriculum/state_noise_static_pos_std_m',
+        'curriculum/state_noise_static_orient_std_deg',
+        'curriculum/state_noise_drone_pos_std_m',
+        'curriculum/state_noise_drone_orient_std_deg',
+        'curriculum/progress',
+        'curriculum/obstacles_behind_gate',
+        'curriculum/max_level_reached',
+        'curriculum/level',
+        'curriculum/crash_rate',
+        'curriculum/camera_max_angle',
+        'curriculum/camera_gaussian_std',
+        'curriculum/camera_frame_freeze_static',
+        'curriculum/camera_frame_freeze_drone',
+        'curriculum/camera_frame_dropout_static_total',
+        'curriculum/camera_frame_dropout_drone_total',
+        'curriculum/camera_frame_blank_static',
+        'curriculum/camera_frame_blank_drone',
+        'curriculum/camera_dropout_rate',
+        'curriculum/camera_current_angle',
+    ]
+    _last_curriculum = {k: 0.0 for k in CURRICULUM_KEYS}
 
     def enhanced_wandb_log(metrics, **kwargs):
         """Enhanced wandb logging that includes influence monitoring metrics"""
@@ -1911,18 +2008,44 @@ def run_with_influence_tracking(cfg: Config):
                     # Drop non-loggable values
                     del metrics[k]
         
-        # Mirror any nested curriculum keys into a flat key for easy charting
+        # Mirror episode_extra_stats/curriculum/* -> curriculum/* and derive totals/rates every log
         try:
-            flat_curr = None
-            for name, val in metrics.items():
-                if isinstance(name, str) and 'curriculum' in name and isinstance(val, (int, float)):
-                    flat_curr = float(val)
-            if flat_curr is not None:
-                metrics['curriculum/level'] = flat_curr
-                # Optional debug (rate-limited by frames if present)
-                if 'frames' in metrics:
-                    if metrics['frames'] % 1000 == 0:
-                        print(f"[W&B_DEBUG][mirror] found nested curriculum key, logging curriculum/level={flat_curr} at frames={metrics['frames']}")
+            # Direct mirror from episode_extra_stats to curriculum namespace
+            for name, val in list(metrics.items()):
+                if isinstance(name, str) and name.startswith('episode_extra_stats/curriculum/'):
+                    suffix = name.split('episode_extra_stats/', 1)[1]  # 'curriculum/...'
+                    try:
+                        metrics[suffix] = float(val)
+                    except Exception:
+                        pass
+            # Alias current_* to canonical names
+            alias_map = {
+                'curriculum/current_level': 'curriculum/level',
+                'curriculum/current_progress': 'curriculum/progress',
+            }
+            for src, dst in alias_map.items():
+                if src in metrics and dst not in metrics:
+                    try:
+                        metrics[dst] = float(metrics[src])
+                    except Exception:
+                        pass
+            # Derive totals/rates when components are present
+            def _get_float(key: str):
+                v = metrics.get(key, None)
+                try:
+                    return float(v)
+                except Exception:
+                    return None
+            s = _get_float('curriculum/total_successes') or _get_float('episode_extra_stats/curriculum/total_successes')
+            c = _get_float('curriculum/total_crashes') or _get_float('episode_extra_stats/curriculum/total_crashes')
+            tmo = _get_float('curriculum/total_timeouts') or _get_float('episode_extra_stats/curriculum/total_timeouts')
+            if s is not None and c is not None and tmo is not None:
+                total_resets = s + c + tmo
+                metrics['curriculum/total_resets'] = float(total_resets)
+                if total_resets > 0.0:
+                    metrics.setdefault('curriculum/success_rate', float(s / total_resets))
+                    metrics.setdefault('curriculum/crash_rate', float(c / total_resets))
+                    metrics.setdefault('curriculum/timeout_rate', float(tmo / total_resets))
         except Exception:
             pass
         
@@ -1933,7 +2056,7 @@ def run_with_influence_tracking(cfg: Config):
                 wandb.define_metric('frames')
                 # Namespace common custom groups
                 for name in list(metrics.keys()):
-                    if name.startswith(('obs_grad/', 'influence/', 'curriculum/', 'gpu/', 'reward_breakdown/', 'episode_extra_stats/obs_grad/')):
+                    if name.startswith(('obs_grad/', 'influence/', 'curriculum/', 'gpu/', 'reward_breakdown/', 'episode_extra_stats/obs_grad/', 'episode_extra_stats/curriculum/')):
                         wandb.define_metric(name, step_metric='frames')
                 # Ensure episode_extra_stats trajectory keys are tracked against frames
                 for key in (
@@ -2073,6 +2196,31 @@ def run_with_influence_tracking(cfg: Config):
         # Store tracker references on learner for access in train method
         self._influence_tracker = influence_tracker
         self._grad_tracker = grad_tracker
+
+        # One-time: emit initial curriculum keys so W&B materializes all series early
+        try:
+            import wandb
+            frames0 = int(getattr(self, 'train_step', 0))
+            curriculum_keys = [
+                'curriculum/level','curriculum/progress','curriculum/success_rate','curriculum/crash_rate','curriculum/timeout_rate',
+                'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached',
+                'curriculum/camera_gaussian_std','curriculum/camera_dropout_rate',
+                'curriculum/camera_frame_dropout_drone_total','curriculum/camera_frame_dropout_static_total',
+                'curriculum/camera_frame_freeze_drone','curriculum/camera_frame_blank_drone',
+                'curriculum/camera_frame_freeze_static','curriculum/camera_frame_blank_static',
+                'curriculum/camera_max_angle','curriculum/camera_current_angle',
+                'curriculum/state_noise_drone_pos_std_m','curriculum/state_noise_drone_orient_std_deg',
+                'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg',
+                'curriculum/total_successes','curriculum/total_crashes','curriculum/total_timeouts',
+            ]
+            boot = {}
+            for k in curriculum_keys:
+                boot[f'episode_extra_stats/{k}'] = 0.0
+                boot[k] = 0.0
+            boot['frames'] = frames0
+            wandb.log(boot, step=frames0)
+        except Exception:
+            pass
         return result
 
     def enhanced_train(self, *args, **kwargs):
@@ -2156,6 +2304,70 @@ def run_with_influence_tracking(cfg: Config):
                         print(f"[W&B_DEBUG][learner] logged curriculum/level_minus_1={int(curr_level_minus_1)} at frames={frames}")
                     except Exception:
                         pass
+                # --- Explicit curriculum mirror block: ensure ~25+ curriculum keys are present each step ---
+                try:
+                    # Helper that tries multiple namespaces to find the latest value
+                    def _get_last_with_prefixes(key_name: str):
+                        v0 = _get_last(key_name)
+                        if v0 is not None:
+                            return v0
+                        v1 = _get_last('episode_extra_stats/' + key_name)
+                        if v1 is not None:
+                            return v1
+                        if key_name.startswith('curriculum/'):
+                            bare = key_name.split('/', 1)[1]
+                            v2 = _get_last(bare)
+                            if v2 is not None:
+                                return v2
+                        return None
+                    curriculum_keys = CURRICULUM_KEYS
+                    cur_payload = {}
+                    if isinstance(latest, dict):
+                        for k in curriculum_keys:
+                            v = _get_last_with_prefixes(k)
+                            if v is not None:
+                                # Log under both namespaces for dashboard compatibility
+                                cur_payload[f'episode_extra_stats/{k}'] = v
+                                cur_payload[k] = v
+                        # Derive total_resets if components available
+                        def _pl_get(name: str):
+                            if name in cur_payload:
+                                return cur_payload[name]
+                            if f'episode_extra_stats/{name}' in cur_payload:
+                                return cur_payload[f'episode_extra_stats/{name}']
+                            return None
+                        ts = _pl_get('curriculum/total_successes')
+                        tc = _pl_get('curriculum/total_crashes')
+                        tt = _pl_get('curriculum/total_timeouts')
+                        if ts is not None and tc is not None and tt is not None:
+                            cur_payload['curriculum/total_resets'] = float(ts + tc + tt)
+                            cur_payload['episode_extra_stats/curriculum/total_resets'] = float(ts + tc + tt)
+                    if len(cur_payload) > 0:
+                        cur_payload['frames'] = frames
+                        wandb.log(cur_payload, step=frames)
+                        try:
+                            first_keys = list(cur_payload.keys())[:6]
+                            print(f"[W&B_DEBUG][learner] logged curriculum keys: {first_keys} ... (total {len(cur_payload)})")
+                        except Exception:
+                            pass
+                    # Update last-known curriculum values
+                    try:
+                        for k in curriculum_keys:
+                            if k in cur_payload:
+                                _last_curriculum[k] = float(cur_payload[k])
+                    except Exception:
+                        pass
+                    # Emit continuous curriculum series each step, carrying forward last-known values
+                    try:
+                        forward_payload = {'frames': frames}
+                        for k in curriculum_keys:
+                            forward_payload[k] = float(_last_curriculum.get(k, 0.0))
+                            forward_payload[f'episode_extra_stats/{k}'] = float(_last_curriculum.get(k, 0.0))
+                        wandb.log(forward_payload, step=frames)
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
                 # Log trajectory metrics if present (NaN will be ignored by W&B)
                 traj_payload = {}
                 # Prefer running means if available; fall back to base keys

@@ -104,44 +104,95 @@ class NN_Inference_Class:
         """
         try:
             print(f"[NN_Inference_Class] Loading model from: {model_path}")
-            
-            # Define action and observation spaces for model creation
-            import gymnasium as gym
-            action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.action_space_dim,), dtype=np.float32)
-            obs_space = gym.spaces.Dict({
-                'obs': gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.obs_space_dim,), dtype=np.float32)
-            })
-            
-            # Create the actor-critic model 
-            self.model = create_actor_critic(self.cfg, obs_space, action_space)
-            
-            # Load the trained weights
+
+            # Load checkpoint first to infer architecture if needed
             checkpoint = torch.load(model_path, map_location=self.device)
-            
-            # Handle different checkpoint formats
             if 'model' in checkpoint:
                 state_dict = checkpoint['model']
             elif 'state_dict' in checkpoint:
                 state_dict = checkpoint['state_dict']
             else:
                 state_dict = checkpoint
-            
-            # Load the state dict into the model
+
+            # Infer dimensions from checkpoint or env overrides
+            inferred_rnn = None
+            inferred_head = None
+            try:
+                # GRU gate stacking: weight_ih_l0 has shape [3*rnn_size, input_size]
+                w_ih = state_dict.get('core.core.weight_ih_l0', None)
+                if w_ih is not None and hasattr(w_ih, 'shape') and len(w_ih.shape) == 2:
+                    inferred_rnn = int(w_ih.shape[0] // 3)
+                # Encoder head last linear: mlp_head.<idx>.weight has shape [head_dim, prev]
+                # Try a few common indices
+                for idx in (4, 2, 0):
+                    key = f'encoder.encoders.obs.mlp_head.{idx}.weight'
+                    if key in state_dict:
+                        inferred_head = int(state_dict[key].shape[0])
+                        break
+            except Exception:
+                pass
+
+            # Env var overrides
+            import os
+            env_rnn = os.environ.get('DCE_RNN_SIZE', '').strip()
+            env_head = os.environ.get('DCE_HEAD_DIM', '').strip()
+            if env_rnn.isdigit():
+                inferred_rnn = int(env_rnn)
+            if env_head.isdigit():
+                inferred_head = int(env_head)
+
+            # Prepare cfg copy and override if we inferred something
+            cfg = self.cfg
+            # Some checkpoints were trained with rnn_size=64 and head=64
+            if inferred_rnn is not None and hasattr(cfg, 'rnn_size'):
+                try:
+                    print(f"[NN_Inference_Class] Overriding rnn_size: {getattr(cfg, 'rnn_size', None)} -> {inferred_rnn}")
+                except Exception:
+                    pass
+                setattr(cfg, 'rnn_size', inferred_rnn)
+                setattr(cfg, 'use_rnn', True)
+            if inferred_head is not None and hasattr(cfg, 'encoder_mlp_layers'):
+                try:
+                    layers = list(getattr(cfg, 'encoder_mlp_layers', [512, 256, inferred_head]))
+                except Exception:
+                    layers = [512, 256, inferred_head]
+                # Force last layer to inferred_head, keep earlier as-is when possible
+                if len(layers) >= 1:
+                    if len(layers) == 1:
+                        layers = [inferred_head]
+                    elif len(layers) == 2:
+                        layers = [layers[0], inferred_head]
+                    else:
+                        layers[-1] = inferred_head
+                setattr(cfg, 'encoder_mlp_layers', layers)
+                print(f"[NN_Inference_Class] Using encoder_mlp_layers={layers}")
+
+            # Define action and observation spaces for model creation
+            import gymnasium as gym
+            action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.action_space_dim,), dtype=np.float32)
+            obs_space = gym.spaces.Dict({
+                'obs': gym.spaces.Box(low=-np.inf, high=np.inf, shape=(self.obs_space_dim,), dtype=np.float32)
+            })
+
+            # Create the actor-critic model with possibly adjusted cfg
+            self.model = create_actor_critic(cfg, obs_space, action_space)
+
+            # Load the state dict into the model (strict by default)
             self.model.load_state_dict(state_dict)
-            
+
             # Move model to device and set to evaluation mode
             self.model.to(self.device)
             self.model.eval()
-            
+
             # Initialize RNN states for all envs
-            rnn_size = get_rnn_size(self.cfg)
+            rnn_size = get_rnn_size(cfg)
             self.rnn_states = torch.zeros(self.num_envs, rnn_size, dtype=torch.float32, device=self.device)
-            
+
             self.is_model_loaded = True
             print(f"[NN_Inference_Class] Model loaded successfully")
             print(f"[NN_Inference_Class] Model action output dimension: {self.action_space_dim}D")
             print(f"[NN_Inference_Class] Model observation input dimension: {self.obs_space_dim}D")
-            
+
         except Exception as e:
             print(f"[NN_Inference_Class] Error loading model: {e}")
             self.is_model_loaded = False
@@ -201,8 +252,28 @@ class NN_Inference_Class:
             with torch.no_grad():
                 model_output = self.model(obs_dict, self.rnn_states)
                 action_logits = model_output['action_logits']
-                action_distribution = self.model.action_parameterization(action_logits)
-                actions = action_distribution.sample()
+                # Handle both cases:
+                # 1) action_logits are actor features -> pass through distribution_linear
+                # 2) action_logits already contain distribution parameters (mu||logstd) of size 2*action_dim
+                feat_in = None
+                try:
+                    feat_in = int(self.model.action_parameterization.distribution_linear.in_features)
+                except Exception:
+                    feat_in = None
+
+                if feat_in is None or action_logits.shape[-1] == feat_in:
+                    action_distribution = self.model.action_parameterization(action_logits)
+                    actions = action_distribution.sample()
+                elif action_logits.shape[-1] == self.action_space_dim * 2:
+                    # Interpret as concatenated [mu, log_std]
+                    mu, log_std = torch.split(action_logits, self.action_space_dim, dim=-1)
+                    std = torch.exp(log_std).clamp_min(1e-6)
+                    actions = mu + std * torch.randn_like(mu)
+                else:
+                    raise RuntimeError(
+                        f"Unexpected action_logits shape {tuple(action_logits.shape)}; "
+                        f"expected features {feat_in} or params {self.action_space_dim*2}"
+                    )
                 # Update RNN states for next step
                 self.rnn_states = model_output['new_rnn_states']
             
@@ -226,8 +297,21 @@ class NN_Inference_Class:
             with torch.no_grad():
                 model_output = self.model(obs_dict, self.rnn_states)
                 action_logits = model_output['action_logits']
-                action_distribution = self.model.action_parameterization(action_logits)
-                action = action_distribution.mode() if hasattr(action_distribution, 'mode') else action_distribution.mean
+                feat_in = None
+                try:
+                    feat_in = int(self.model.action_parameterization.distribution_linear.in_features)
+                except Exception:
+                    feat_in = None
+                if feat_in is None or action_logits.shape[-1] == feat_in:
+                    action_distribution = self.model.action_parameterization(action_logits)
+                    action = action_distribution.mode() if hasattr(action_distribution, 'mode') else action_distribution.mean
+                elif action_logits.shape[-1] == self.action_space_dim * 2:
+                    mu, log_std = torch.split(action_logits, self.action_space_dim, dim=-1)
+                    action = mu
+                else:
+                    raise RuntimeError(
+                        f"Unexpected action_logits shape {tuple(action_logits.shape)}; expected features {feat_in} or params {self.action_space_dim*2}"
+                    )
                 # Update RNN states for next step
                 self.rnn_states = model_output['new_rnn_states']
             

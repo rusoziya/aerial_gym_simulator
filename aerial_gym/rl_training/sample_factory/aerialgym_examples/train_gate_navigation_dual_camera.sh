@@ -69,6 +69,30 @@ while [[ $# -gt 0 ]]; do
             ENABLE_GIFS=true
             shift
             ;;
+        --envs=*)
+            ENV_AGENTS="${1#*=}"
+            shift
+            ;;
+        --env_agents=*)
+            ENV_AGENTS="${1#*=}"
+            shift
+            ;;
+        --disable_gate_size_randomization=*)
+            DISABLE_GATE_SIZE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --fixed_gate_scale_percent=*)
+            FIXED_GATE_SCALE_PERCENT="${1#*=}"
+            shift
+            ;;
+        --disable_obstacle_randomization=*)
+            DISABLE_OBSTACLE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --fixed_obstacles_behind_gate=*)
+            FIXED_OBSTACLES_BEHIND_GATE="${1#*=}"
+            shift
+            ;;
         *)
             if [ -z "$EXPERIMENT_NAME" ]; then
                 EXPERIMENT_NAME="$1"
@@ -83,7 +107,11 @@ done
 
 # Gate Navigation Training Configuration (16 environments default)
 CONFIG_NAME="Gate Navigation Dual Camera Configuration (16 environments)"
-ENV_AGENTS=16
+# If not set via CLI parsing above, default to 16
+if [ -z "${ENV_AGENTS}" ]; then
+    ENV_AGENTS=16
+fi
+EFFECTIVE_BATCH=4096
 BATCH_SIZE=2048
 NUM_BATCHES_TO_ACCUMULATE=2
 CONFIG_PREFIX="gate_nav_dual_cam"
@@ -96,8 +124,9 @@ else
     echo "Auto-generated experiment name: $EXPERIMENT_NAME"
 fi
 
-TRAIN_STEPS=100000000
-GPU_MONITOR_INTERVAL=10
+# TRAIN_STEPS=200000000
+TRAIN_STEPS=200000000
+GPU_MONITOR_INTERVAL=100
 GPU_LOG_FILE="../../../logs/gpu_usage_gate_nav_${EXPERIMENT_NAME}.csv"
 
 # Colors for output
@@ -115,7 +144,22 @@ echo -e "${YELLOW}Observation space: 141D (13D basic + 64D drone VAE + 64D stati
 echo -e "${GREEN}⚡ MEMORY OPTIMIZATION: Shared VAE model reduces GPU usage by ~50%${NC}"
 echo -e "${BLUE}🔬 GRADIENT MONITORING: Tracks static camera usage during training${NC}"
 echo -e "${YELLOW}Action space: 4D (x_vel, y_vel, z_vel, yaw_rate) - VELOCITY CONTROLLER${NC}"
-echo -e "${GREEN}Environments: ${ENV_AGENTS} (standard configuration)${NC}"
+if [ "$ENV_AGENTS" -ge 128 ]; then
+  PAR_LABEL="HIGH PARALLELIZATION CONFIG"
+elif [ "$ENV_AGENTS" -ge 32 ]; then
+  PAR_LABEL="UPDATED CONFIG - high parallelization"
+else
+  PAR_LABEL="ORIGINAL DCE CONFIG - standard"
+fi
+echo -e "${GREEN}Environments: ${ENV_AGENTS} (${PAR_LABEL})${NC}"
+ 
+# Dynamic batch adjustment to maintain effective batch size
+EFFECTIVE_BATCH_ACTUAL=$(( BATCH_SIZE * NUM_BATCHES_TO_ACCUMULATE ))
+if [ "$EFFECTIVE_BATCH_ACTUAL" -ne "$EFFECTIVE_BATCH" ]; then
+    NUM_BATCHES_TO_ACCUMULATE=$(( (EFFECTIVE_BATCH + BATCH_SIZE - 1) / BATCH_SIZE ))
+    EFFECTIVE_BATCH_ACTUAL=$(( BATCH_SIZE * NUM_BATCHES_TO_ACCUMULATE ))
+fi
+echo -e "${GREEN}Dynamic batch: batch_size=${BATCH_SIZE}, accumulate=${NUM_BATCHES_TO_ACCUMULATE} ⇒ effective_batch=${EFFECTIVE_BATCH_ACTUAL}${NC}"
 if [ "$ENABLE_VIEWER" = true ]; then
     echo -e "${GREEN}🖥️  Viewer: ENABLED (slower training, visual feedback)${NC}"
 else
@@ -126,6 +170,20 @@ if [ "$ENABLE_GIFS" = true ]; then
     echo -e "${GREEN}📹 GIF Saving: ENABLED (drone + static camera episodes saved as GIFs)${NC}"
 else
     echo -e "${YELLOW}⚡ GIF Saving: DISABLED (faster training, no GIF generation)${NC}"
+fi
+
+# Echo gate size ablation flags if provided
+if [ -n "$DISABLE_GATE_SIZE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Gate size randomization disabled flag: ${DISABLE_GATE_SIZE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$FIXED_GATE_SCALE_PERCENT" ]; then
+    echo -e "${YELLOW}Fixed gate scale percent: ${FIXED_GATE_SCALE_PERCENT}${NC}"
+fi
+if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Obstacle randomization disabled flag: ${DISABLE_OBSTACLE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
+    echo -e "${YELLOW}Fixed obstacles behind gate: ${FIXED_OBSTACLES_BEHIND_GATE}${NC}"
 fi
 echo ""
 echo -e "${YELLOW}Using fresh experiment name: ${EXPERIMENT_NAME}${NC}"
@@ -225,7 +283,21 @@ python -c "import torch; torch.cuda.empty_cache(); print('GPU cache cleared')"
 
 # Export environment variables for Sample Factory training
 export SF_ENV_AGENTS=${ENV_AGENTS}
-echo -e "${GREEN}Set SF_ENV_AGENTS=${ENV_AGENTS} environment variable for all processes (STANDARD CONFIG)${NC}"
+echo -e "${GREEN}Set SF_ENV_AGENTS=${ENV_AGENTS} environment variable for all processes (${PAR_LABEL})${NC}"
+
+# Export gate-size ablation flags so worker subprocesses inherit them
+if [ -n "$DISABLE_GATE_SIZE_RANDOMIZATION" ]; then
+    export SF_DISABLE_GATE_SIZE_RANDOMIZATION=$DISABLE_GATE_SIZE_RANDOMIZATION
+fi
+if [ -n "$FIXED_GATE_SCALE_PERCENT" ]; then
+    export SF_FIXED_GATE_SCALE_PERCENT=$FIXED_GATE_SCALE_PERCENT
+fi
+if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
+    export SF_DISABLE_OBSTACLE_RANDOMIZATION=$DISABLE_OBSTACLE_RANDOMIZATION
+fi
+if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
+    export SF_FIXED_OBSTACLES_BEHIND_GATE=$FIXED_OBSTACLES_BEHIND_GATE
+fi
 
 # Export headless setting for both main process and worker processes
 if [ "$ENABLE_VIEWER" = true ]; then
@@ -292,6 +364,20 @@ fi
 
 # Add gradient monitoring for static camera analysis
 TRAIN_CMD="$TRAIN_CMD --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100"
+
+# Add gate size ablation flags if provided
+if [ -n "$DISABLE_GATE_SIZE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_gate_size_randomization=$DISABLE_GATE_SIZE_RANDOMIZATION"
+fi
+if [ -n "$FIXED_GATE_SCALE_PERCENT" ]; then
+    TRAIN_CMD="$TRAIN_CMD --fixed_gate_scale_percent=$FIXED_GATE_SCALE_PERCENT"
+fi
+if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_obstacle_randomization=$DISABLE_OBSTACLE_RANDOMIZATION"
+fi
+if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
+    TRAIN_CMD="$TRAIN_CMD --fixed_obstacles_behind_gate=$FIXED_OBSTACLES_BEHIND_GATE"
+fi
 
 echo -e "${YELLOW}Training command:${NC}"
 echo "$TRAIN_CMD"

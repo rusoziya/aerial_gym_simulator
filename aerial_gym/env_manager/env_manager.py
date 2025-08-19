@@ -312,11 +312,53 @@ class EnvManager(BaseManager):
         # finally reset the robot manager that resets the robot state tensors and the sensors
         # logger.debug(f"Resetting environments {env_ids}.")
         self.IGE_env.reset_idx(env_ids)
+        # Determine how many assets to keep visible this reset
         obstacle_count = self.global_tensor_dict["num_obstacles_in_env"]
+        # When obstacle randomization is disabled, first let AssetManager place everything,
+        # then enforce the exact fixed count after gate selection.
+        try:
+            obs_dis = bool(self.global_tensor_dict.get('obstacles_randomization/disabled', False))
+        except Exception:
+            obs_dis = False
+        if obs_dis:
+            # Show all assets for now so none are hidden prematurely
+            try:
+                env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
+                total_assets = env_asset_state.shape[1]
+            except Exception:
+                total_assets = self.asset_manager.env_asset_state_tensor.shape[1]
+            obstacle_count = int(total_assets)
         # logger.warning(f"[OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count={obstacle_count}")
         self.asset_manager.reset_idx(env_ids, obstacle_count)
         # IMPORTANT: After asset manager randomization, activate one gate variant per env
         self.apply_gate_variant_selection(env_ids=env_ids)
+        # Enforce fixed obstacle count after gate selection if obstacle randomization is disabled
+        if obs_dis:
+            try:
+                fixed_count = int(self.global_tensor_dict.get('obstacles_randomization/fixed_count', 0))
+            except Exception:
+                fixed_count = 0
+            try:
+                env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
+                gate_indices_all = self.global_tensor_dict.get("gate_variant_indices_per_env", [])
+                total_assets = env_asset_state.shape[1]
+                # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
+                fixed_indices = set(range(int(self.keep_in_env or 0)))
+                # For each env, keep exactly `fixed_count` candidate obstacles (non-fixed, non-gate)
+                loop_envs = env_ids.tolist() if hasattr(env_ids, 'tolist') else list(env_ids)
+                for env_id in loop_envs:
+                    gate_indices = set(gate_indices_all[env_id]) if gate_indices_all else set()
+                    candidates = [i for i in range(total_assets) if (i not in fixed_indices) and (i not in gate_indices)]
+                    # Keep the first N candidates; hide the rest
+                    keep = set(candidates[: max(0, fixed_count)])
+                    for i in candidates:
+                        if i in keep:
+                            continue
+                        env_asset_state[env_id, i, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
+                # Write back
+                self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
+            except Exception:
+                pass
         if self.cfg.env.use_warp:
             self.warp_env.reset_idx(env_ids)
         self.robot_manager.reset_idx(env_ids)
@@ -345,6 +387,45 @@ class EnvManager(BaseManager):
             if not gate_indices:
                 continue
             
+            # Check ablation flags to optionally disable gate size randomization
+            disable_rand = bool(self.global_tensor_dict.get('gate_randomization/disabled', False))
+            if disable_rand:
+                # Fixed-scale mode
+                fixed_scale = int(self.global_tensor_dict.get('gate_randomization/fixed_scale_percent', 100))
+                # Parse available (index, scale)
+                parsed = []
+                for j, name in enumerate(gate_names):
+                    scale = 100
+                    if isinstance(name, str) and "gate_scale_" in name:
+                        try:
+                            scale = int(name.replace("gate_scale_", ""))
+                        except Exception:
+                            scale = 100
+                    parsed.append((j, scale, name))
+                if parsed:
+                    # Find exact or nearest scale
+                    exact = [j for (j, s, _) in parsed if s == fixed_scale]
+                    if exact:
+                        chosen_idx = exact[0]
+                    else:
+                        nearest = min(parsed, key=lambda t: abs(t[1] - fixed_scale))
+                        chosen_idx = nearest[0]
+                else:
+                    chosen_idx = 0
+                chosen_local_index = gate_indices[chosen_idx]
+                active_name = gate_names[chosen_idx] if gate_names and chosen_idx < len(gate_names) else "unknown"
+                # Place only the chosen variant at center; others hidden
+                for j, local_index in enumerate(gate_indices):
+                    if local_index < 0 or local_index >= env_asset_state.shape[1]:
+                        continue
+                    if j == chosen_idx:
+                        env_asset_state[env_id, local_index, 0:3] = torch.tensor([0.0, 0.0, 0.0], device=self.device)
+                    else:
+                        env_asset_state[env_id, local_index, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
+                self.global_tensor_dict["active_gate_variant_index"][env_id] = chosen_local_index
+                self.global_tensor_dict["active_gate_variant_array_index"][env_id] = chosen_idx
+                continue
+
             # Curriculum-gated unlocking of gate variants (threshold-based):
             # At level 3: allow all scales >= 80%
             # At level 23: allow all scales >= 40%
