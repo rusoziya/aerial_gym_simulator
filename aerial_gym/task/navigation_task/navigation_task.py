@@ -11,6 +11,7 @@ from aerial_gym.utils.vae.vae_image_encoder import VAEImageEncoder
 
 import gymnasium as gym
 from gym.spaces import Dict, Box
+from typing import Tuple
 
 logger = CustomLogger("navigation_task")
 
@@ -420,13 +421,25 @@ class NavigationTask(BaseTask):
         self.pos_error_vehicle_frame[:] = quat_rotate_inverse(
             robot_vehicle_orientation, (target_position - robot_position)
         )
+        # Apply curriculum multiplier ablation by passing an effective fraction
+        try:
+            disable_cm = str(os.environ.get('SF_DISABLE_CURRICULUM_MULTIPLIER', 'false')).lower() == 'true'
+        except Exception:
+            disable_cm = False
+        if not disable_cm:
+            try:
+                disable_cm = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
+            except Exception:
+                disable_cm = False
+        frac_eff = 0.0 if disable_cm else float(self.curriculum_progress_fraction)
+
         return compute_reward(
             self.pos_error_vehicle_frame,
             self.pos_error_vehicle_frame_prev,
             obs_dict["crashes"],
             obs_dict["robot_actions"],
             obs_dict["robot_prev_actions"],
-            self.curriculum_progress_fraction,
+            frac_eff,
             self.task_config.reward_parameters,
         )
 
@@ -458,7 +471,7 @@ def compute_reward(
     parameter_dict,
 ):
     # type: (Tensor, Tensor, Tensor, Tensor, Tensor, float, Dict[str, Tensor]) -> Tuple[Tensor, Tensor]
-    MULTIPLICATION_FACTOR_REWARD = 1.0 + (2.0) * curriculum_progress_fraction
+    MULTIPLICATION_FACTOR_REWARD = 1.0 + (0.5) * curriculum_progress_fraction
     dist = torch.norm(pos_error, dim=1)
     prev_dist_to_goal = torch.norm(prev_pos_error, dim=1)
     pos_reward = exponential_reward_function(
@@ -498,17 +511,32 @@ def compute_reward(
     )
     action_diff_penalty = x_diff_penalty + z_diff_penalty + yawrate_diff_penalty
     # absolute action penalty
-    x_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    # x_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    #     parameter_dict["x_absolute_action_penalty_magnitude"],
+    #     parameter_dict["x_absolute_action_penalty_exponent"],
+    #     action[:, 0],
+    # )
+    x_absolute_penalty = exponential_penalty_function(
         parameter_dict["x_absolute_action_penalty_magnitude"],
         parameter_dict["x_absolute_action_penalty_exponent"],
         action[:, 0],
     )
-    z_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    # z_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    #     parameter_dict["z_absolute_action_penalty_magnitude"],
+    #     parameter_dict["z_absolute_action_penalty_exponent"],
+    #     action[:, 2],
+    # )
+    z_absolute_penalty = exponential_penalty_function(
         parameter_dict["z_absolute_action_penalty_magnitude"],
         parameter_dict["z_absolute_action_penalty_exponent"],
         action[:, 2],
     )
-    yawrate_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    # yawrate_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
+    #     parameter_dict["yawrate_absolute_action_penalty_magnitude"],
+    #     parameter_dict["yawrate_absolute_action_penalty_exponent"],
+    #     action[:, 3],
+    # )
+    yawrate_absolute_penalty = exponential_penalty_function(
         parameter_dict["yawrate_absolute_action_penalty_magnitude"],
         parameter_dict["yawrate_absolute_action_penalty_exponent"],
         action[:, 3],

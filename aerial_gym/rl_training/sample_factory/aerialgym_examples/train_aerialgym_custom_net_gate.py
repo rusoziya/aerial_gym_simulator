@@ -1144,6 +1144,25 @@ def add_extra_params_func(parser):
     # Obstacle ablation flags (behind-gate objects)
     parser.add_argument("--disable_obstacle_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable obstacle randomization behind the gate (spawns zero obstacles)")
     parser.add_argument("--fixed_obstacles_behind_gate", type=int, default=0, help="Fixed number of obstacles behind the gate when randomization is disabled (default 0)")
+    # Static camera orientation randomization ablation flag
+    parser.add_argument("--disable_static_camera_orientation_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable static camera orientation randomization, fix angle to 0.0°")
+    # Camera noise randomization ablation flag (drone & static)
+    parser.add_argument("--disable_camera_noise_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable camera noise randomization (Gaussian STD=0, Dropout=0) for both drone & static")
+    # Camera frame dropout randomization ablation flag (drone & static)
+    parser.add_argument("--disable_camera_frame_dropout_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable entire-frame dropout randomization for both drone & static cameras")
+    # State noise randomization ablation flag (drone & static pose noise)
+    parser.add_argument("--disable_state_noise_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable pose state noise randomization for drone and static camera")
+    # Spawn randomization ablations (position vs orientation independently)
+    parser.add_argument("--disable_spawn_position_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable robot spawn POSITION randomization (lock to baseline level)")
+    parser.add_argument("--disable_spawn_orientation_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable robot spawn ORIENTATION randomization (lock yaw to baseline level)")
+    # Curriculum multiplier ablation
+    parser.add_argument("--disable_curriculum_multiplier", type=lambda x: x.lower() == 'true', default=False, help="Disable curriculum reward multiplier (sets multiplier to 1.0)")
+    # Force fixed curriculum level (disables auto progression)
+    parser.add_argument(
+        "--force_curriculum_level",
+        type=str,
+        default=None,
+        help="Force a specific curriculum level for the entire run (disables auto curriculum progression). Use 'none' to disable forcing.")
     
     # Complete observation influence tracking arguments
     parser.add_argument("--enable_gradient_monitoring", type=lambda x: x.lower() == 'true', default=False, help="Enable complete observation influence tracking")
@@ -1715,6 +1734,43 @@ def parse_aerialgym_cfg(evaluation=False):
     add_extra_params_func(parser)
     override_default_params_func(partial_cfg.env, parser)
     final_cfg = parse_full_cfg(parser)
+    # Bridge CLI flag to environment variable so worker processes can read it reliably
+    try:
+        if hasattr(final_cfg, 'disable_static_camera_orientation_randomization'):
+            os.environ['SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION'] = 'true' if final_cfg.disable_static_camera_orientation_randomization else 'false'
+            print(f"[CFG] static camera orientation randomization disabled: {final_cfg.disable_static_camera_orientation_randomization}")
+        if hasattr(final_cfg, 'disable_camera_noise_randomization'):
+            os.environ['SF_DISABLE_CAMERA_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_camera_noise_randomization else 'false'
+            print(f"[CFG] camera noise randomization disabled: {final_cfg.disable_camera_noise_randomization}")
+        if hasattr(final_cfg, 'disable_camera_frame_dropout_randomization'):
+            os.environ['SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION'] = 'true' if final_cfg.disable_camera_frame_dropout_randomization else 'false'
+            print(f"[CFG] camera frame dropout randomization disabled: {final_cfg.disable_camera_frame_dropout_randomization}")
+        if hasattr(final_cfg, 'disable_state_noise_randomization'):
+            os.environ['SF_DISABLE_STATE_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_state_noise_randomization else 'false'
+            print(f"[CFG] state noise randomization disabled: {final_cfg.disable_state_noise_randomization}")
+        if hasattr(final_cfg, 'disable_spawn_position_randomization'):
+            os.environ['SF_DISABLE_SPAWN_POSITION_RANDOMIZATION'] = 'true' if final_cfg.disable_spawn_position_randomization else 'false'
+            print(f"[CFG] spawn position randomization disabled: {final_cfg.disable_spawn_position_randomization}")
+        if hasattr(final_cfg, 'disable_spawn_orientation_randomization'):
+            os.environ['SF_DISABLE_SPAWN_ORIENTATION_RANDOMIZATION'] = 'true' if final_cfg.disable_spawn_orientation_randomization else 'false'
+            print(f"[CFG] spawn orientation randomization disabled: {final_cfg.disable_spawn_orientation_randomization}")
+        if hasattr(final_cfg, 'disable_curriculum_multiplier'):
+            os.environ['SF_DISABLE_CURRICULUM_MULTIPLIER'] = 'true' if final_cfg.disable_curriculum_multiplier else 'false'
+            print(f"[CFG] curriculum multiplier disabled: {final_cfg.disable_curriculum_multiplier}")
+        if hasattr(final_cfg, 'force_curriculum_level') and (final_cfg.force_curriculum_level is not None):
+            try:
+                lvl_str = str(final_cfg.force_curriculum_level).strip().lower()
+                if lvl_str and lvl_str != 'none':
+                    os.environ['SF_FORCE_CURRICULUM_LEVEL'] = str(int(lvl_str))
+                    print(f"[CFG] forcing curriculum level: {lvl_str}")
+                else:
+                    # ensure any previous env var is cleared
+                    os.environ.pop('SF_FORCE_CURRICULUM_LEVEL', None)
+                    print("[CFG] force curriculum level: none (disabled)")
+            except Exception:
+                pass
+    except Exception:
+        pass
     return final_cfg
 
 
