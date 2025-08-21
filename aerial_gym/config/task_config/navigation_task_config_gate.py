@@ -439,7 +439,7 @@ class task_config:
             
             LINEAR PROGRESSION: Level 3 → Level 23
             - Level 3: 0° max angle range (fixed straight-behind view)
-            - Level 23: ±25° max angle range (randomized within full range each episode)
+            - Level 23: ±19° max angle range (randomized within full range each episode)
             - Linear interpolation between levels
             
             Returns:
@@ -449,7 +449,7 @@ class task_config:
             """
             camera_start_level = 3
             max_level = 23
-            max_camera_angle_degrees = 25
+            max_camera_angle_degrees = 19
             if level <= camera_start_level:
                 max_camera_angle = 0.0
             elif level >= max_level:
