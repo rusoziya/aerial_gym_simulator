@@ -2048,10 +2048,8 @@ class NavigationTaskGate(BaseTask):
             
             # Propagate curriculum level to env manager for gate unlocking
             if hasattr(self, 'sim_env') and hasattr(self.sim_env, 'global_tensor_dict'):
+                # Only update the value; gate selection will occur on reset_idx
                 self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
-                # Re-apply gate selection so changes take effect immediately on next reset
-                if hasattr(self.sim_env, 'apply_gate_variant_selection'):
-                    self.sim_env.apply_gate_variant_selection(env_ids=torch.arange(self.sim_env.num_envs, device=self.device))
             
             # ===== MULTI-ASPECT CURRICULUM APPLICATION =====
             

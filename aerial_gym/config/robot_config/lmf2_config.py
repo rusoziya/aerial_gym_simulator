@@ -79,22 +79,31 @@ class LMF2Cfg:
         angular_quadratic_damping_coefficient = [0.0, 0.0, 0.0]  # along the body [x, y, z] axes
 
     class robot_asset:
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/robots/lmf2"
+        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/robots/x500"
+        # LMF2 original (commented for easy swap):
+        # asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/robots/lmf2"
         file = "model.urdf"
         name = "base_quadrotor"  # actor name
         base_link_name = "base_link"
         disable_gravity = False
-        collapse_fixed_joints = True  # merge bodies connected by fixed joints.
+        collapse_fixed_joints = True  # merge bodies connected by fixed joints (preferred with base_link forces)
+        # Alternate for motor-link realism (uncomment if enabling motor_link forces):
+        # collapse_fixed_joints = False  # keep motor links to preserve lever-arm torques
         fix_base_link = False  # fix the base of the robot
         collision_mask = 0  # 1 to disable, 0 to enable...bitwise filter
         replace_cylinder_with_capsule = False  # replace collision cylinders with capsules, leads to faster/more stable simulation
         flip_visual_attachments = True  # Some .obj meshes must be flipped from y-up to z-up
         density = 0.000001
-        angular_damping = 0.01
-        linear_damping = 0.01
+        angular_damping = 0.02
+        linear_damping = 0.02
+        # LMF2 original (commented):
+        # angular_damping = 0.01
+        # linear_damping = 0.01
         max_angular_velocity = 100.0
         max_linear_velocity = 100.0
-        armature = 0.001
+        armature = 0.00001
+        # LMF2 original (commented):
+        # armature = 0.001
 
         semantic_id = 1
         per_link_semantic = False
@@ -157,33 +166,60 @@ class LMF2Cfg:
 
     class control_allocator_config:
         num_motors = 4
-        force_application_level = "base_link"  # "motor_link" or "root_link" decides to apply combined forces acting on the robot at the root link or at the individual motor links
+        # Preferred: apply a single resultant wrench at base for throughput/stability
+        force_application_level = "base_link"
+        # Alternate (commented): per-motor forces at link positions for realism
+        # force_application_level = "motor_link"
 
-        application_mask = [1 + 4 + i for i in range(0, 4)]
-        motor_directions = [1, -1, 1, -1]
+        # Mask/directions used only when force_application_level == "motor_link"
+        application_mask = [4, 1, 3, 2]  # X500 URDF mapping: [FR, BR, BL, FL]
+        motor_directions = [1, 1, -1, -1]  # X500 spin pattern (affects yaw sign)
+        # LMF2 original (commented):
+        # application_mask = [1 + 4 + i for i in range(0, 4)]
+        # motor_directions = [1, -1, 1, -1]
 
         allocation_matrix = [
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 1.0, 1.0, 1.0],
-            [-0.13, -0.13, 0.13, 0.13],
-            [-0.13, 0.13, 0.13, -0.13],
-            [-0.07, 0.07, -0.07, 0.07],
+            [-0.13, 0.13, 0.13, -0.13],  # Mx (roll)
+            [-0.13, 0.13, -0.13, 0.13],  # My (pitch)
+            [-0.025, 0.025, -0.025, 0.025],  # Mz (yaw) — smaller yaw authority than LMF2
         ]
+        # LMF2 original allocation_matrix (commented):
+        # allocation_matrix = [
+        #     [0.0, 0.0, 0.0, 0.0],
+        #     [0.0, 0.0, 0.0, 0.0],
+        #     [1.0, 1.0, 1.0, 1.0],
+        #     [-0.13, -0.13, 0.13, 0.13],  # Mx
+        #     [-0.13, 0.13, 0.13, -0.13],  # My
+        #     [-0.07, 0.07, -0.07, 0.07],  # Mz (stronger yaw authority)
+        # ]
 
         class motor_model_config:
             use_rps = True
-            motor_thrust_constant_min = 0.00000926312
-            motor_thrust_constant_max = 0.00001826312
-            motor_time_constant_increasing_min = 0.05
-            motor_time_constant_increasing_max = 0.08
-            motor_time_constant_decreasing_min = 0.005
-            motor_time_constant_decreasing_max = 0.005
-            max_thrust = 15.0
+            motor_thrust_constant_min = 8.54858e-6
+            motor_thrust_constant_max = 8.54858e-6
+            motor_time_constant_increasing_min = 0.0125
+            motor_time_constant_increasing_max = 0.0125
+            motor_time_constant_decreasing_min = 0.025
+            motor_time_constant_decreasing_max = 0.025
+            max_thrust = 20.0
             min_thrust = 0.1
             max_thrust_rate = 100000.0
-            thrust_to_torque_ratio = 0.07
+            thrust_to_torque_ratio = 0.025
             use_discrete_approximation = True  # use discrete approximation for motor dynamics
+            # LMF2 original (commented):
+            # motor_thrust_constant_min = 9.26312e-06
+            # motor_thrust_constant_max = 1.826312e-05
+            # motor_time_constant_increasing_min = 0.05
+            # motor_time_constant_increasing_max = 0.08
+            # motor_time_constant_decreasing_min = 0.005
+            # motor_time_constant_decreasing_max = 0.005
+            # max_thrust = 15.0
+            # min_thrust = 0.1
+            # thrust_to_torque_ratio = 0.07
+            # use_discrete_approximation = True
 
 
 # Configuration for Drone 1 (positioned at -2, 0, 1.5)
@@ -226,41 +262,4 @@ class LMF2Drone1Cfg(LMF2Cfg):
         semantic_id = 1  # different semantic ID for identification
 
 
-# Configuration for Drone 2 (positioned at 2, 0, 1.5)
-class LMF2Drone2Cfg(LMF2Cfg):
-    class init_config(LMF2Cfg.init_config):
-        # Position drone 2 at (2, 0, 1.5) - right side of center
-        min_init_state = [
-            0.7,  # ratio_x: 2.0 in [-5, 5] range = ((2 + 5) / 10) = 0.7
-            0.5,  # ratio_y: 0.0 in [-5, 5] range = ((0 + 5) / 10) = 0.5
-            0.625,  # ratio_z: 1.5 in [-1, 3] range = ((1.5 + 1) / 4) = 0.625
-            0,  # no rotation
-            0,  # no rotation
-            0,  # no rotation
-            1.0,
-            0,  # no velocity
-            0,  # no velocity
-            0,  # no velocity
-            0,  # no angular velocity
-            0,  # no angular velocity
-            0,  # no angular velocity
-        ]
-        max_init_state = [
-            0.7,  # same as min for fixed position
-            0.5,  # same as min for fixed position
-            0.625,  # same as min for fixed position
-            0,  # no rotation
-            0,  # no rotation
-            0,  # no rotation
-            1.0,
-            0,  # no velocity
-            0,  # no velocity
-            0,  # no velocity
-            0,  # no angular velocity
-            0,  # no angular velocity
-            0,  # no angular velocity
-        ]
-    
-    class robot_asset(LMF2Cfg.robot_asset):
-        name = "drone_2"  # unique name for second drone
-        semantic_id = 2  # different semantic ID for identification
+
