@@ -186,7 +186,22 @@ class BaseMultirotor(BaseRobot):
             if hasattr(self, '_global_tensor_dict') and ('curriculum_level' in self._global_tensor_dict):
                 from aerial_gym.config.task_config.navigation_task_config_gate import task_config
                 level = int(self._global_tensor_dict['curriculum_level'])
-                sr = task_config.curriculum.get_spawn_ranges(level)
+                # Read spawn ablation flags
+                pos_dis = bool(self._global_tensor_dict.get('spawn_randomization/position_disabled', False))
+                yaw_dis = bool(self._global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
+                # Active and baseline (min_level) spawn ranges
+                sr_active = task_config.curriculum.get_spawn_ranges(level)
+                baseline_level = int(getattr(task_config.curriculum, 'min_level', 3))
+                sr_base = task_config.curriculum.get_spawn_ranges(baseline_level)
+                # Choose ranges according to ablation flags
+                sr = {
+                    'x_half_span_m': sr_base['x_half_span_m'] if pos_dis else sr_active['x_half_span_m'],
+                    'y_center_m':    sr_base['y_center_m']    if pos_dis else sr_active['y_center_m'],
+                    'y_half_span_m': sr_base['y_half_span_m'] if pos_dis else sr_active['y_half_span_m'],
+                    'z_center_m':    sr_base['z_center_m']    if pos_dis else sr_active['z_center_m'],
+                    'z_half_span_m': sr_base['z_half_span_m'] if pos_dis else sr_active['z_half_span_m'],
+                    'yaw_abs_rad':   sr_base['yaw_abs_rad']   if yaw_dis else sr_active['yaw_abs_rad'],
+                }
                 # Convert meters to ratios using env bounds
                 # Use environment bounds to set center and scale
                 env_x_min = float(self.env_bounds_min[0, 0].item())
@@ -249,7 +264,13 @@ class BaseMultirotor(BaseRobot):
             from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
             if hasattr(self, '_global_tensor_dict') and ('curriculum_level' in self._global_tensor_dict):
                 level = int(self._global_tensor_dict['curriculum_level'])
-                sr_local = _tc.curriculum.get_spawn_ranges(level)
+                # Respect orientation ablation flag by selecting baseline yaw if disabled
+                yaw_dis = bool(self._global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
+                if yaw_dis:
+                    baseline_level = int(getattr(_tc.curriculum, 'min_level', 3))
+                    sr_local = _tc.curriculum.get_spawn_ranges(baseline_level)
+                else:
+                    sr_local = _tc.curriculum.get_spawn_ranges(level)
                 yaw_abs = float(sr_local.get('yaw_abs_rad', 0.0))
             else:
                 yaw_abs = 0.0

@@ -93,6 +93,38 @@ while [[ $# -gt 0 ]]; do
             FIXED_OBSTACLES_BEHIND_GATE="${1#*=}"
             shift
             ;;
+        --disable_static_camera_orientation_randomization=*)
+            DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_camera_noise_randomization=*)
+            DISABLE_CAMERA_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_camera_frame_dropout_randomization=*)
+            DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_state_noise_randomization=*)
+            DISABLE_STATE_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_spawn_position_randomization=*)
+            DISABLE_SPAWN_POSITION_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_spawn_orientation_randomization=*)
+            DISABLE_SPAWN_ORIENTATION_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_curriculum_multiplier=*)
+            DISABLE_CURRICULUM_MULTIPLIER="${1#*=}"
+            shift
+            ;;
+        --force_curriculum_level=*)
+            FORCE_CURRICULUM_LEVEL="${1#*=}"
+            shift
+            ;;
         *)
             if [ -z "$EXPERIMENT_NAME" ]; then
                 EXPERIMENT_NAME="$1"
@@ -184,6 +216,30 @@ if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
 fi
 if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
     echo -e "${YELLOW}Fixed obstacles behind gate: ${FIXED_OBSTACLES_BEHIND_GATE}${NC}"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Static camera orientation randomization disabled flag: ${DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Camera noise randomization disabled flag: ${DISABLE_CAMERA_NOISE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Camera frame dropout randomization disabled flag: ${DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}State noise randomization disabled flag: ${DISABLE_STATE_NOISE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_SPAWN_POSITION_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Spawn POSITION randomization disabled flag: ${DISABLE_SPAWN_POSITION_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Spawn ORIENTATION randomization disabled flag: ${DISABLE_SPAWN_ORIENTATION_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
+    echo -e "${YELLOW}Curriculum multiplier disabled flag: ${DISABLE_CURRICULUM_MULTIPLIER}${NC}"
+fi
+if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
+    echo -e "${YELLOW}Force curriculum level: ${FORCE_CURRICULUM_LEVEL}${NC}"
 fi
 echo ""
 echo -e "${YELLOW}Using fresh experiment name: ${EXPERIMENT_NAME}${NC}"
@@ -298,6 +354,30 @@ fi
 if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
     export SF_FIXED_OBSTACLES_BEHIND_GATE=$FIXED_OBSTACLES_BEHIND_GATE
 fi
+if [ -n "$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION" ]; then
+    export SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION=$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION
+fi
+if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_CAMERA_NOISE_RANDOMIZATION=$DISABLE_CAMERA_NOISE_RANDOMIZATION
+fi
+if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
+    export SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION=$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION
+fi
+if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_STATE_NOISE_RANDOMIZATION=$DISABLE_STATE_NOISE_RANDOMIZATION
+fi
+if [ -n "$DISABLE_SPAWN_POSITION_RANDOMIZATION" ]; then
+    export SF_DISABLE_SPAWN_POSITION_RANDOMIZATION=$DISABLE_SPAWN_POSITION_RANDOMIZATION
+fi
+if [ -n "$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION" ]; then
+    export SF_DISABLE_SPAWN_ORIENTATION_RANDOMIZATION=$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION
+fi
+if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
+    export SF_DISABLE_CURRICULUM_MULTIPLIER=$DISABLE_CURRICULUM_MULTIPLIER
+fi
+if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
+    export SF_FORCE_CURRICULUM_LEVEL=$FORCE_CURRICULUM_LEVEL
+fi
 
 # Export headless setting for both main process and worker processes
 if [ "$ENABLE_VIEWER" = true ]; then
@@ -342,7 +422,7 @@ TRAIN_CMD="python train_aerialgym_custom_net_gate.py \
     --normalize_input=true \
     --use_env_info_cache=false \
     --with_wandb=true \
-    --wandb_project=\"gate_navigation_dual_camera\" \
+    --wandb_project=\"ablation_studies\" \
     --wandb_user=\"ziya-ruso-ucl\" \
     --wandb_group=\"gate_navigation_training\" \
     --wandb_tags \"aerial_gym\" \"gate_navigation\" \"dual_camera\" \"x500\" \"sample_factory\" \"memory_optimized\" \
@@ -377,6 +457,30 @@ if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
 fi
 if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
     TRAIN_CMD="$TRAIN_CMD --fixed_obstacles_behind_gate=$FIXED_OBSTACLES_BEHIND_GATE"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_static_camera_orientation_randomization=$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_camera_noise_randomization=$DISABLE_CAMERA_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_camera_frame_dropout_randomization=$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_state_noise_randomization=$DISABLE_STATE_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_SPAWN_POSITION_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_spawn_position_randomization=$DISABLE_SPAWN_POSITION_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_spawn_orientation_randomization=$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_curriculum_multiplier=$DISABLE_CURRICULUM_MULTIPLIER"
+fi
+if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
+    TRAIN_CMD="$TRAIN_CMD --force_curriculum_level=$FORCE_CURRICULUM_LEVEL"
 fi
 
 echo -e "${YELLOW}Training command:${NC}"
