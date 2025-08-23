@@ -1943,9 +1943,16 @@ def run_with_influence_tracking(cfg: Config):
                     'drone_linear_vel', 'drone_angular_vel', 'drone_actions'
                 }
                 SLICE_NAMES_CAMERA = {'drone_camera_vae', 'static_camera_vae'}
+                # Modality groupings for visual/kinematic/spatial shares
+                SLICE_NAMES_VISUAL = {'drone_camera_vae', 'static_camera_vae'}
+                SLICE_NAMES_KINEMATIC = {'drone_linear_vel', 'drone_angular_vel', 'drone_actions', 'linear_vel', 'angular_vel', 'actions'}
+                SLICE_NAMES_SPATIAL = {'drone_position', 'static_camera_pos', 'static_camera_orient', 'drone_orientation'}
                 total_val = 0.0
                 camera_val = 0.0
                 state_val = 0.0
+                visual_val = 0.0
+                kinematic_val = 0.0
+                spatial_val = 0.0
                 slice_values = {}
                 for name, val in list(source_metrics.items()):
                     if not isinstance(name, str):
@@ -1993,6 +2000,16 @@ def run_with_influence_tracking(cfg: Config):
                           base.startswith('drone_actions') or
                           base.startswith('static_camera_pos') or base.startswith('static_camera_orient')):
                         state_val += scalar
+                    # Modality buckets
+                    if base in SLICE_NAMES_VISUAL or 'camera_vae' in base:
+                        visual_val += scalar
+                    if (base in SLICE_NAMES_KINEMATIC or
+                        base.startswith('drone_linear_vel') or base.startswith('drone_angular_vel') or base.startswith('drone_actions')):
+                        kinematic_val += scalar
+                    if (base in SLICE_NAMES_SPATIAL or
+                        base.startswith('drone_position') or base.startswith('drone_orientation') or
+                        base.startswith('static_camera_pos') or base.startswith('static_camera_orient')):
+                        spatial_val += scalar
                     else:
                         # Unknown slices count toward total but not camera/state buckets
                         pass
@@ -2008,10 +2025,66 @@ def run_with_influence_tracking(cfg: Config):
                     # Percentages [0,100]
                     metrics['episode_extra_stats/obs_grad/camera_share_pct'] = float(camera_share * 100.0)
                     metrics['episode_extra_stats/obs_grad/state_share_pct'] = float(state_share * 100.0)
+                    # Modality shares (visual/kinematic/spatial)
+                    visual_share = visual_val / total_val
+                    kinematic_share = kinematic_val / total_val
+                    spatial_share = spatial_val / total_val
+                    metrics['episode_extra_stats/obs_grad/visual_share'] = float(visual_share)
+                    metrics['episode_extra_stats/obs_grad/kinematic_share'] = float(kinematic_share)
+                    metrics['episode_extra_stats/obs_grad/spatial_share'] = float(spatial_share)
+                    metrics['episode_extra_stats/obs_grad/visual_share_pct'] = float(visual_share * 100.0)
+                    metrics['episode_extra_stats/obs_grad/kinematic_share_pct'] = float(kinematic_share * 100.0)
+                    metrics['episode_extra_stats/obs_grad/spatial_share_pct'] = float(spatial_share * 100.0)
                     # Per-slice magnitudes and percentages
                     for base, sval in slice_values.items():
                         metrics['episode_extra_stats/obs_grad/slice_mag/' + base] = float(sval)
                         metrics['episode_extra_stats/obs_grad/slice_pct/' + base] = float((sval / total_val) * 100.0)
+
+                    # Per-observation percentages (recent/overall) with sum/residual guardrails
+                    try:
+                        base_recent = {}
+                        base_overall = {}
+                        for name, val in list(source_metrics.items()):
+                            if not isinstance(name, str) or not name.startswith(('obs_grad/', 'influence/', 'grad_attr/')):
+                                continue
+                            parts = name.split('/')
+                            suffix = parts[-1]
+                            # map to base
+                            base = suffix
+                            for post in ['_mean_norm_recent', '_mean_norm_overall', '_recent', '_overall', '_mean_norm', '_mean', '_norm']:
+                                if base.endswith(post):
+                                    base = base[: -len(post)]
+                                    break
+                            try:
+                                scalar = float(val)
+                            except Exception:
+                                continue
+                            if suffix.endswith('_mean_norm_recent') or suffix.endswith('_recent'):
+                                base_recent[base] = base_recent.get(base, 0.0) + scalar
+                            if suffix.endswith('_mean_norm_overall') or suffix.endswith('_overall'):
+                                base_overall[base] = base_overall.get(base, 0.0) + scalar
+                        # recent
+                        tot_r = float(sum(base_recent.values()))
+                        if tot_r > 0.0:
+                            sum_pct_r = 0.0
+                            for b, v in base_recent.items():
+                                p = 100.0 * float(v) / tot_r
+                                metrics[f'episode_extra_stats/obs_grad/obs_pct_recent/{b}'] = float(p)
+                                sum_pct_r += p
+                            metrics['episode_extra_stats/obs_grad/obs_pct_recent/_sum'] = float(sum_pct_r)
+                            metrics['episode_extra_stats/obs_grad/obs_pct_recent/_residual'] = float(100.0 - sum_pct_r)
+                        # overall
+                        tot_o = float(sum(base_overall.values()))
+                        if tot_o > 0.0:
+                            sum_pct_o = 0.0
+                            for b, v in base_overall.items():
+                                p = 100.0 * float(v) / tot_o
+                                metrics[f'episode_extra_stats/obs_grad/obs_pct_overall/{b}'] = float(p)
+                                sum_pct_o += p
+                            metrics['episode_extra_stats/obs_grad/obs_pct_overall/_sum'] = float(sum_pct_o)
+                            metrics['episode_extra_stats/obs_grad/obs_pct_overall/_residual'] = float(100.0 - sum_pct_o)
+                    except Exception:
+                        pass
                     # try:
                     #     captured = ','.join(sorted(list(slice_values.keys()))[:8])
                     #     print(f"[W&B_DEBUG][obs_grad] shares computed: camera={camera_share*100.0:.1f}% state={state_share*100.0:.1f}% total_slices={len(slice_values)} captured=[{captured}…]")
@@ -2525,9 +2598,27 @@ def run_with_influence_tracking(cfg: Config):
             # Derived shares
             SLICE_NAMES_STATE = {'drone_position','static_camera_pos','static_camera_orient','drone_orientation','linear_vel','angular_vel','actions','drone_linear_vel','drone_angular_vel','drone_actions'}
             SLICE_NAMES_CAMERA = {'drone_camera_vae','static_camera_vae'}
+            # Modality groups
+            SLICE_NAMES_VISUAL = {'drone_camera_vae','static_camera_vae'}
+            SLICE_NAMES_KINEMATIC = {'drone_linear_vel','drone_angular_vel','drone_actions','linear_vel','angular_vel','actions'}
+            SLICE_NAMES_SPATIAL = {'drone_position','static_camera_pos','static_camera_orient','drone_orientation'}
             total_val = 0.0
             camera_val = 0.0
             state_val = 0.0
+            # Window-specific totals for PURE recent/overall percentages
+            total_recent = 0.0
+            total_overall = 0.0
+            camera_recent = 0.0
+            state_recent = 0.0
+            camera_overall = 0.0
+            state_overall = 0.0
+            # Modality windowed totals
+            visual_recent = 0.0
+            kinematic_recent = 0.0
+            spatial_recent = 0.0
+            visual_overall = 0.0
+            kinematic_overall = 0.0
+            spatial_overall = 0.0
             slice_vals = {}
             for name, val in merged.items():
                 if not isinstance(name, str) or not name.startswith(('obs_grad/','influence/','grad_attr/')):
@@ -2547,14 +2638,48 @@ def run_with_influence_tracking(cfg: Config):
                     if base.endswith(post):
                         base = base[: -len(post)]
                         break
+                # Classify window
+                is_recent = suffix.endswith('_mean_norm_recent') or suffix.endswith('_recent')
+                is_overall = suffix.endswith('_mean_norm_overall') or suffix.endswith('_overall')
+                if is_recent:
+                    total_recent += scalar
+                if is_overall:
+                    total_overall += scalar
                 if (base in SLICE_NAMES_CAMERA) or ('camera_vae' in base):
                     camera_val += scalar
+                    if is_recent:
+                        camera_recent += scalar
+                    if is_overall:
+                        camera_overall += scalar
                 elif (base in SLICE_NAMES_STATE or
                       base.startswith('drone_position') or base.startswith('drone_orientation') or
                       base.startswith('drone_linear_vel') or base.startswith('drone_angular_vel') or
                       base.startswith('drone_actions') or
                       base.startswith('static_camera_pos') or base.startswith('static_camera_orient')):
                     state_val += scalar
+                    if is_recent:
+                        state_recent += scalar
+                    if is_overall:
+                        state_overall += scalar
+                # Modality buckets
+                if (base in SLICE_NAMES_VISUAL) or ('camera_vae' in base):
+                    if is_recent:
+                        visual_recent += scalar
+                    if is_overall:
+                        visual_overall += scalar
+                if (base in SLICE_NAMES_KINEMATIC or
+                    base.startswith('drone_linear_vel') or base.startswith('drone_angular_vel') or base.startswith('drone_actions')):
+                    if is_recent:
+                        kinematic_recent += scalar
+                    if is_overall:
+                        kinematic_overall += scalar
+                if (base in SLICE_NAMES_SPATIAL or
+                    base.startswith('drone_position') or base.startswith('drone_orientation') or
+                    base.startswith('static_camera_pos') or base.startswith('static_camera_orient')):
+                    if is_recent:
+                        spatial_recent += scalar
+                    if is_overall:
+                        spatial_overall += scalar
             if total_val > 0.0:
                 cam_share = camera_val / total_val
                 if state_val <= 0.0 and camera_val > 0.0:
@@ -2564,9 +2689,49 @@ def run_with_influence_tracking(cfg: Config):
                 obs_payload['episode_extra_stats/obs_grad/state_share'] = float(st_share)
                 obs_payload['episode_extra_stats/obs_grad/camera_share_pct'] = float(cam_share * 100.0)
                 obs_payload['episode_extra_stats/obs_grad/state_share_pct'] = float(st_share * 100.0)
+                # PURE recent/overall camera/state shares
+                if total_recent > 0.0:
+                    cam_share_r = camera_recent / total_recent
+                    st_share_r = state_recent / total_recent
+                    obs_payload['episode_extra_stats/obs_grad/camera_share_recent'] = float(cam_share_r)
+                    obs_payload['episode_extra_stats/obs_grad/state_share_recent'] = float(st_share_r)
+                    obs_payload['episode_extra_stats/obs_grad/camera_share_pct_recent'] = float(cam_share_r * 100.0)
+                    obs_payload['episode_extra_stats/obs_grad/state_share_pct_recent'] = float(st_share_r * 100.0)
+                if total_overall > 0.0:
+                    cam_share_o = camera_overall / total_overall
+                    st_share_o = state_overall / total_overall
+                    obs_payload['episode_extra_stats/obs_grad/camera_share_overall'] = float(cam_share_o)
+                    obs_payload['episode_extra_stats/obs_grad/state_share_overall'] = float(st_share_o)
+                    obs_payload['episode_extra_stats/obs_grad/camera_share_pct_overall'] = float(cam_share_o * 100.0)
+                    obs_payload['episode_extra_stats/obs_grad/state_share_pct_overall'] = float(st_share_o * 100.0)
+                # PURE modality shares (recent/overall)
+                if total_recent > 0.0:
+                    vis_r = visual_recent / total_recent
+                    kin_r = kinematic_recent / total_recent
+                    spa_r = spatial_recent / total_recent
+                    obs_payload['episode_extra_stats/obs_grad/visual_share_recent'] = float(vis_r)
+                    obs_payload['episode_extra_stats/obs_grad/kinematic_share_recent'] = float(kin_r)
+                    obs_payload['episode_extra_stats/obs_grad/spatial_share_recent'] = float(spa_r)
+                    obs_payload['episode_extra_stats/obs_grad/visual_share_pct_recent'] = float(vis_r * 100.0)
+                    obs_payload['episode_extra_stats/obs_grad/kinematic_share_pct_recent'] = float(kin_r * 100.0)
+                    obs_payload['episode_extra_stats/obs_grad/spatial_share_pct_recent'] = float(spa_r * 100.0)
+                if total_overall > 0.0:
+                    vis_o = visual_overall / total_overall
+                    kin_o = kinematic_overall / total_overall
+                    spa_o = spatial_overall / total_overall
+                    obs_payload['episode_extra_stats/obs_grad/visual_share_overall'] = float(vis_o)
+                    obs_payload['episode_extra_stats/obs_grad/kinematic_share_overall'] = float(kin_o)
+                    obs_payload['episode_extra_stats/obs_grad/spatial_share_overall'] = float(spa_o)
+                    obs_payload['episode_extra_stats/obs_grad/visual_share_pct_overall'] = float(vis_o * 100.0)
+                    obs_payload['episode_extra_stats/obs_grad/kinematic_share_pct_overall'] = float(kin_o * 100.0)
+                    obs_payload['episode_extra_stats/obs_grad/spatial_share_pct_overall'] = float(spa_o * 100.0)
                 for sfx, sval in slice_vals.items():
                     obs_payload[f'episode_extra_stats/obs_grad/slice_mag/{sfx}'] = float(sval)
-                    obs_payload[f'episode_extra_stats/obs_grad/slice_pct/{sfx}'] = float((sval / total_val) * 100.0)
+                    # PURE recent/overall percentages by window-specific denominator
+                    is_r = sfx.endswith('_mean_norm_recent') or sfx.endswith('_recent')
+                    is_o = sfx.endswith('_mean_norm_overall') or sfx.endswith('_overall')
+                    denom = total_recent if is_r and total_recent > 0.0 else (total_overall if is_o and total_overall > 0.0 else total_val)
+                    obs_payload[f'episode_extra_stats/obs_grad/slice_pct/{sfx}'] = float((sval / denom) * 100.0)
             if len(obs_payload) > 0:
                 obs_payload['frames'] = frames
                 # Print the two target metrics for debugging
