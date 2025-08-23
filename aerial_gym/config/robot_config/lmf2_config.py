@@ -172,11 +172,11 @@ class LMF2Cfg:
         # force_application_level = "motor_link"
 
         # Mask/directions used only when force_application_level == "motor_link"
-        application_mask = [4, 1, 3, 2]  # X500 URDF mapping: [FR, BR, BL, FL]
-        motor_directions = [1, 1, -1, -1]  # X500 spin pattern (affects yaw sign)
+        # application_mask = [4, 1, 3, 2]  # X500 URDF mapping: [FR, BR, BL, FL]
+        # motor_directions = [1, 1, -1, -1]  # X500 spin pattern (affects yaw sign)
         # LMF2 original (commented):
-        # application_mask = [1 + 4 + i for i in range(0, 4)]
-        # motor_directions = [1, -1, 1, -1]
+        application_mask = [1 + 4 + i for i in range(0, 4)]
+        motor_directions = [1, -1, 1, -1]
 
         allocation_matrix = [
             [0.0, 0.0, 0.0, 0.0],
@@ -184,7 +184,9 @@ class LMF2Cfg:
             [1.0, 1.0, 1.0, 1.0],
             [-0.13, 0.13, 0.13, -0.13],  # Mx (roll)
             [-0.13, 0.13, -0.13, 0.13],  # My (pitch)
-            [-0.025, 0.025, -0.025, 0.025],  # Mz (yaw) — smaller yaw authority than LMF2
+            # [-0.025, 0.025, -0.025, 0.025],  # Mz (yaw) — smaller yaw authority than LMF2        #     [-0.07, 0.07, -0.07, 0.07],  # Mz (stronger yaw authority)
+            [-0.07, 0.07, -0.07, 0.07],  # Mz (stronger yaw authority)
+
         ]
         # LMF2 original allocation_matrix (commented):
         # allocation_matrix = [
@@ -197,13 +199,17 @@ class LMF2Cfg:
         # ]
 
         class motor_model_config:
+            # in the .sdf file 
             use_rps = True
             motor_thrust_constant_min = 8.54858e-6
             motor_thrust_constant_max = 8.54858e-6
+            # in the .sdf file 
             motor_time_constant_increasing_min = 0.0125
             motor_time_constant_increasing_max = 0.0125
-            motor_time_constant_decreasing_min = 0.025
-            motor_time_constant_decreasing_max = 0.025
+            # motor_time_constant_decreasing_min = 0.025
+            # motor_time_constant_decreasing_max = 0.025
+            motor_time_constant_decreasing_min = 0.0025
+            motor_time_constant_decreasing_max = 0.0025
             max_thrust = 20.0
             min_thrust = 0.1
             max_thrust_rate = 100000.0

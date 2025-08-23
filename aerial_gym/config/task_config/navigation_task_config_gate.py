@@ -198,7 +198,7 @@ class task_config:
         decrease_step = 1  # Allow decreases by 1 level when success collapses
         success_rate_for_increase = 0.6  # Promote when SR > 60%
         success_rate_for_decrease = 0.25   # Demote when SR < 25%
-        cooldown_windows = 2  # After any change, hold level for this many evaluation windows
+        cooldown_windows = 3  # After any change, hold level for this many evaluation windows
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
         # Each curriculum level controls multiple aspects of difficulty:
