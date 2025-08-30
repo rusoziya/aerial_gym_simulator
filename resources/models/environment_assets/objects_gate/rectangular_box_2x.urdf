@@ -8,7 +8,7 @@
     </inertial>
     <visual name="base_link_visual">
       <geometry>
-        <box size="1.271 0.636 0.954"/>
+        <box size="1.009 0.505 0.757"/>
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <material name="object_color">
@@ -17,7 +17,7 @@
     </visual>
     <collision name="base_link_collision">
       <geometry>
-        <box size="1.271 0.636 0.954"/>
+        <box size="1.009 0.505 0.757"/>
       </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
     </collision>

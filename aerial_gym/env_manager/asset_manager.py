@@ -77,8 +77,14 @@ class AssetManager:
         )
         
         # put those obstacles not needed in the environment outside
-        # logger.warning(f"[OBSTACLE_DEBUG] Moving assets {num_obstacles_per_env} to {self.env_asset_state_tensor.shape[1]-1} to position (-1000, -1000, -1000)")
-        self.env_asset_state_tensor[env_ids, num_obstacles_per_env:, 0:3] = -1000.0
+        # Avoid advanced indexing shape issues on some PyTorch/CUDA combos by iterating per-env
+        # logger.warning(f"[OBSTACLE_DEBUG] Moving assets {num_obstacles_per_env}..end to position (-1000, -1000, -1000)")
+        try:
+            env_list = env_ids.tolist() if hasattr(env_ids, 'tolist') else list(env_ids)
+        except Exception:
+            env_list = [int(env_ids)]
+        for eid in env_list:
+            self.env_asset_state_tensor[eid, num_obstacles_per_env:, 0:3] = -1000.0
         
         # Count visible obstacles per environment for debugging
         # for env_id in (env_ids.tolist() if hasattr(env_ids, 'tolist') else [env_ids]):

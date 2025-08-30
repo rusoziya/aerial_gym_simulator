@@ -169,7 +169,7 @@ class NavigationTaskGate(BaseTask):
                 gtd['static_camera_randomization/orientation_disabled'] = disable_cam_orient
                 # Mirror into the task instance for quick access
                 self.disable_static_camera_orientation_randomization = disable_cam_orient
-                # Camera noise randomization ablation flag (both drone & static)
+                # Camera noise randomization flags
                 try:
                     env_cam_noise_dis = os.getenv('SF_DISABLE_CAMERA_NOISE_RANDOMIZATION', None)
                     if env_cam_noise_dis is not None:
@@ -179,6 +179,16 @@ class NavigationTaskGate(BaseTask):
                 except Exception:
                     disable_cam_noise = bool(getattr(self.task_config, 'disable_camera_noise_randomization', False))
                 gtd['camera_randomization/noise_disabled'] = disable_cam_noise
+                # Per-camera overrides
+                try:
+                    env_drone_noise = os.getenv('SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION', None)
+                    env_static_noise = os.getenv('SF_DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION', None)
+                    if env_drone_noise is not None:
+                        gtd['camera_randomization/drone_noise_disabled'] = str(env_drone_noise).lower() == 'true'
+                    if env_static_noise is not None:
+                        gtd['camera_randomization/static_noise_disabled'] = str(env_static_noise).lower() == 'true'
+                except Exception:
+                    pass
                 # Camera frame dropout ablation flag (both drone & static)
                 try:
                     env_cam_fd_dis = os.getenv('SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION', None)
@@ -189,6 +199,16 @@ class NavigationTaskGate(BaseTask):
                 except Exception:
                     disable_cam_fd = bool(getattr(self.task_config, 'disable_camera_frame_dropout_randomization', False))
                 gtd['camera_randomization/frame_dropout_disabled'] = disable_cam_fd
+                # Per-camera frame-drop overrides
+                try:
+                    env_drone_fd = os.getenv('SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT', None)
+                    env_static_fd = os.getenv('SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT', None)
+                    if env_drone_fd is not None:
+                        gtd['camera_randomization/drone_frame_dropout_disabled'] = str(env_drone_fd).lower() == 'true'
+                    if env_static_fd is not None:
+                        gtd['camera_randomization/static_frame_dropout_disabled'] = str(env_static_fd).lower() == 'true'
+                except Exception:
+                    pass
                 self.disable_camera_frame_dropout_randomization = disable_cam_fd
                 self.disable_camera_noise_randomization = disable_cam_noise
                 # Spawn ablation flags (position/orientation): store in global dict
@@ -219,6 +239,42 @@ class NavigationTaskGate(BaseTask):
                     disable_state_noise = bool(getattr(self.task_config, 'disable_state_noise_randomization', False))
                 gtd['state_randomization/noise_disabled'] = disable_state_noise
                 self.disable_state_noise_randomization = disable_state_noise
+                
+                # Dynamic camera following ablation flag
+                try:
+                    env_dynamic_camera_dis = os.environ.get('disable_dynamic_camera_following', None)
+                    if env_dynamic_camera_dis is not None:
+                        disable_dynamic_camera = str(env_dynamic_camera_dis).lower() == 'true'
+                    else:
+                        disable_dynamic_camera = bool(getattr(self.task_config, 'disable_dynamic_camera_following', False))
+                except Exception:
+                    disable_dynamic_camera = bool(getattr(self.task_config, 'disable_dynamic_camera_following', False))
+                gtd['dynamic_camera_following/disabled'] = disable_dynamic_camera
+                self.disable_dynamic_camera_following = disable_dynamic_camera
+                # Static camera yaw sweep controls (curriculum-independent for now)
+                try:
+                    yaw_sweep_enabled = str(os.getenv('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
+                    yaw_sweep_speed_deg = float(os.getenv('SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG', '10.0'))
+                except Exception:
+                    yaw_sweep_enabled = False
+                    yaw_sweep_speed_deg = 10.0
+                gtd['static_camera/yaw_sweep_enabled'] = 'true' if yaw_sweep_enabled else 'false'
+                gtd['static_camera/yaw_sweep_speed_deg'] = float(yaw_sweep_speed_deg)
+                
+                # Dynamic camera following enable flag (overrides config setting)
+                try:
+                    env_dynamic_camera_enable = os.environ.get('enable_dynamic_camera_following', None)
+                    if env_dynamic_camera_enable is not None:
+                        enable_dynamic_camera = str(env_dynamic_camera_enable).lower() == 'true'
+                        # Override the config setting
+                        self.task_config.curriculum.enable_dynamic_camera_following = enable_dynamic_camera
+                        gtd['dynamic_camera_following/config_overridden'] = True
+                        logger.warning(f"[Dynamic Camera] Config overridden by command line: enable_dynamic_camera_following = {enable_dynamic_camera}")
+                    else:
+                        gtd['dynamic_camera_following/config_overridden'] = False
+                except Exception:
+                    gtd['dynamic_camera_following/config_overridden'] = False
+                
         except Exception:
             pass
 
@@ -457,7 +513,50 @@ class NavigationTaskGate(BaseTask):
             )
         except Exception as e:
             logger.info(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
-        logger.info(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
+        # 3. STATIC CAMERA YAW SWEEP STATUS (takes precedence over static orientation randomization)
+        try:
+            yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
+            yaw_speed = float(os.environ.get('SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG', '10.0'))
+        except Exception:
+            yaw_enabled = False
+            yaw_speed = 10.0
+        # Orientation randomization disable flag and dynamic camera effective state
+        try:
+            cam_orient_disabled = bool(self.sim_env.global_tensor_dict.get('static_camera_randomization/orientation_disabled', False))
+        except Exception:
+            cam_orient_disabled = False
+        try:
+            dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+            dynamic_effective = bool(dyn_cfg and not dyn_dis)
+        except Exception:
+            dynamic_effective = False
+        # Effective note for sweep
+        if yaw_enabled:
+            if dynamic_effective:
+                sweep_note = "IGNORED (dynamic camera active)"
+            else:
+                sweep_note = "ACTIVE"
+        else:
+            sweep_note = "N/A"
+        logger.info(
+            f"   3. STATIC CAMERA YAW SWEEP: {'ENABLED' if yaw_enabled else 'DISABLED'} (speed={yaw_speed:.1f} deg/s) — effective: {sweep_note}; orientation_rand={'DISABLED' if cam_orient_disabled else 'ENABLED'}"
+        )
+        try:
+            base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))
+            base_z = float(os.environ.get('SF_STATIC_CAMERA_BASE_Z', 1.5))
+        except Exception:
+            base_y, base_z = -3.0, 1.5
+        logger.info(f"      ↳ static camera base: Y={base_y:.2f} m, Z={base_z:.2f} m")
+        # 4. CAMERA ANGLE (randomization applies only when sweep is disabled and dynamic camera is inactive)
+        if yaw_enabled and not dynamic_effective:
+            logger.info("   4. CAMERA ANGLE: overridden by yaw sweep")
+        elif dynamic_effective:
+            logger.info("   4. CAMERA ANGLE: suppressed (dynamic camera following active)")
+        elif cam_orient_disabled:
+            logger.info("   4. CAMERA ANGLE: randomization DISABLED, fixed at 0.0°")
+        else:
+            logger.info(f"   4. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
         
         # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
         initial_camera_gaussian_std, initial_camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
@@ -513,7 +612,11 @@ class NavigationTaskGate(BaseTask):
         
         self.log_curriculum_update(f"[INIT] Multi-aspect curriculum initialized at level {self.curriculum_level}")
 
-        self.terminations = self.obs_dict["crashes"]
+        # Use dedicated terminations tensor if provided by env_manager; fallback to crashes
+        try:
+            self.terminations = self.obs_dict["terminations"]
+        except Exception:
+            self.terminations = self.obs_dict["crashes"]
         self.truncations = self.obs_dict["truncations"]
         self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
 
@@ -573,6 +676,8 @@ class NavigationTaskGate(BaseTask):
             self.num_envs, 3, device=self.device
         )
         self.gate_passed = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        # Episode-level tracking flags
+        self._ep_target_success_flag = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
         self.camera_alignment_debug = torch.zeros(self.num_envs, device=self.device)
         self.num_task_steps = 0
         self.curriculum_progress_fraction = 0.0
@@ -588,6 +693,7 @@ class NavigationTaskGate(BaseTask):
         self.episode_gate_passage_reward = torch.zeros(self.num_envs, device=self.device)
         self.episode_collision_penalty = torch.zeros(self.num_envs, device=self.device)
         self.episode_image_reward = torch.zeros(self.num_envs, device=self.device)
+        self.episode_boundary_violation_penalty = torch.zeros(self.num_envs, device=self.device)
         
         # Track episode statistics
         self.episode_lengths = torch.zeros(self.num_envs, device=self.device)
@@ -614,6 +720,10 @@ class NavigationTaskGate(BaseTask):
         self._ep_time_to_gate = torch.full((self.num_envs,), float('nan'), device=self.device)
         self._ep_center_offset_cross = torch.full((self.num_envs,), float('nan'), device=self.device)
         self._ep_height_offset_cross = torch.full((self.num_envs,), float('nan'), device=self.device)
+        # Boundary violation debug state for env0 (rising-edge print)
+        self._bv_prev_env0 = False
+        # Boundary violation per-episode flag (one-shot per env)
+        self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         
         # Initialize gate dimensions for all environments after full initialization
         logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
@@ -725,6 +835,11 @@ class NavigationTaskGate(BaseTask):
         
         # Reset gate-specific tracking
         self.gate_passed[env_ids] = False
+        # Reset episode flags for these environments
+        try:
+            self._ep_target_success_flag[env_ids] = False
+        except Exception:
+            pass
         self.gate_approach_distance[env_ids] = 0.0
         
         # RESET EPISODE REWARD TRACKING: Store completed episode data and reset trackers
@@ -918,7 +1033,13 @@ class NavigationTaskGate(BaseTask):
                 self.gate_center_height[env_id] = 1.2
                 self.gate_scale_factors[env_id] = 1.0
                 logger.warning(f"[GATE_ADAPTIVE] Env {env_id}: No active gate found (active_idx={active_idx}, num_gates={len(env_gate_names)}), using default gate dimensions")
-    
+        # Expose adaptive gate center heights per env to global tensor dict for camera spawning
+        try:
+            if hasattr(self.sim_env, 'global_tensor_dict'):
+                self.sim_env.global_tensor_dict['gate/center_height_per_env'] = self.gate_center_height.detach().clone()
+        except Exception:
+            pass
+
     # REMOVED: _apply_curriculum_drone_spawning and _apply_curriculum_orientation_randomization
     # These methods have been removed as we now use fixed parameters from LMF2 config
     # The normal Isaac Gym reset mechanism handles spawning using min_init_state/max_init_state
@@ -933,15 +1054,81 @@ class NavigationTaskGate(BaseTask):
         
         # Apply action transformation function from task config (4D -> 4D)
         transformed_action = self.action_transformation_function(actions)
+        # NaN/Inf guard: detect invalid actions per env, zero them and mark for truncation
+        try:
+            invalid_action_mask = torch.any(torch.isnan(transformed_action) | torch.isinf(transformed_action), dim=1)
+            if torch.any(invalid_action_mask):
+                transformed_action[invalid_action_mask] = 0.0
+                # Defer truncation application until after time-limit assignment below
+                nan_trunc_mask = invalid_action_mask.clone()
+                # Guard debug: log offending envs for invalid actions
+                try:
+                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                        _ids = torch.nonzero(invalid_action_mask, as_tuple=False).squeeze(-1).tolist()
+                        logger.warning(f"[NaNGuard] Invalid ACTION in envs {_ids}; zeroed and will truncate")
+                except Exception:
+                    pass
+            else:
+                nan_trunc_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        except Exception:
+            nan_trunc_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         logger.debug(f"raw_action: {actions[0]}, transformed action: {transformed_action[0]}")
         
         # Pass 4D velocity commands directly to simulation environment
         self.sim_env.step(actions=transformed_action)
+        
+        # Observation NaN/Inf guard: scan tensors in obs_dict and truncate offending envs
+        try:
+            invalid_obs_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+            for k, v in self.obs_dict.items():
+                if isinstance(v, torch.Tensor) and v.shape[0] == self.num_envs:
+                    bad = torch.any(torch.isnan(v) | torch.isinf(v), dim=tuple(range(1, v.ndim)))
+                    # Guard debug: log offending obs keys and envs
+                    if getattr(self.task_config, 'guard_debug_enabled', True) and torch.any(bad):
+                        try:
+                            _ids = torch.nonzero(bad, as_tuple=False).squeeze(-1).tolist()
+                            logger.warning(f"[NaNGuard] Invalid OBS '{k}' in envs {_ids}")
+                        except Exception:
+                            pass
+                    invalid_obs_mask |= bad
+            if torch.any(invalid_obs_mask):
+                # zero-out obvious offenders to keep reward path stable for this step
+                try:
+                    if "robot_position" in self.obs_dict and isinstance(self.obs_dict["robot_position"], torch.Tensor):
+                        rp = self.obs_dict["robot_position"]
+                        rp[invalid_obs_mask] = 0.0
+                except Exception:
+                    pass
+                # Guard debug: log envs that will be truncated due to invalid observations
+                try:
+                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                        _ids = torch.nonzero(invalid_obs_mask, as_tuple=False).squeeze(-1).tolist()
+                        logger.warning(f"[NaNGuard] Invalid OBS detected; envs {_ids} will truncate")
+                except Exception:
+                    pass
+                nan_trunc_mask |= invalid_obs_mask
+        except Exception:
+            pass
 
         # This step must be done since the reset is done after the reward is calculated.
         # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
         # This is important for the RL agent to get the correct state after the reset.
         self.rewards[:], self.terminations[:], camera_gate_alignment = self.compute_rewards_and_crashes(self.obs_dict)
+        # Reward NaN/Inf guard: sanitize invalid rewards and truncate offending envs
+        try:
+            invalid_reward_mask = torch.isnan(self.rewards) | torch.isinf(self.rewards)
+            if torch.any(invalid_reward_mask):
+                try:
+                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                        _ids = torch.nonzero(invalid_reward_mask, as_tuple=False).squeeze(-1).tolist()
+                        logger.warning(f"[NaNGuard] Invalid REWARD in envs {_ids}; zeroed and truncating.")
+                except Exception:
+                    pass
+                self.rewards[invalid_reward_mask] = 0.0
+                # Ensure truncation to reset these envs safely
+                self.truncations[invalid_reward_mask] = 1
+        except Exception:
+            pass
 
         # logger.info(f"Curricluum Level: {self.curriculum_level}")
 
@@ -953,17 +1140,32 @@ class NavigationTaskGate(BaseTask):
             torch.ones_like(self.truncations),
             torch.zeros_like(self.truncations),
         )
+        # Apply NaN/Inf-triggered truncations (takes precedence)
+        if torch.any(nan_trunc_mask):
+            self.truncations[nan_trunc_mask] = 1
+            # Guard debug: final truncation set due to NaN/Inf
+            try:
+                if getattr(self.task_config, 'guard_debug_enabled', True):
+                    _ids = torch.nonzero(nan_trunc_mask, as_tuple=False).squeeze(-1).tolist()
+                    logger.warning(f"[NaNGuard] Truncating envs due to NaN/Inf: {_ids}")
+            except Exception:
+                pass
 
         # ===== SIMPLE GATE PASSAGE SUCCESS CRITERIA =====
         # Success = simply passing through the gate boundary (any part of the gate opening)
         # More forgiving than target-based or centered passage requirements
         robot_position = self.obs_dict["robot_position"]
+        # Snapshot positions BEFORE any potential resets mutate the shared tensors
+        try:
+            robot_position_before_reset = robot_position.clone()
+        except Exception:
+            robot_position_before_reset = torch.clone(robot_position)
         
-        # Gate passage detection: crossed gate plane with proper alignment - ADAPTIVE to gate dimensions
-        # Gate dimensions are now adaptive based on the selected gate variant per environment
-        gate_success_width_tolerance = self.gate_width * 0.52  # 52% of gate width for success detection (safety margin)
-        gate_success_min_height = self.gate_position[:, 2] + self.gate_height * 0.08  # 8% above ground
-        gate_success_max_height = self.gate_position[:, 2] + self.gate_height * 0.92  # 92% of gate height
+        # Gate passage detection: crossed gate plane within the FULL gate opening (100% tolerance)
+        # Accept any passage through the opening: width ±50% and height from bottom to top
+        gate_success_width_tolerance = self.gate_width * 0.50
+        gate_success_min_height = self.gate_position[:, 2]  # gate bottom
+        gate_success_max_height = self.gate_position[:, 2] + self.gate_height  # gate top
         
         gate_passage_success = (
             (robot_position[:, 1] > self.gate_position[:, 1]) &  # Crossed gate (Y > 0)
@@ -972,29 +1174,49 @@ class NavigationTaskGate(BaseTask):
         )
         
         # Immediate success termination and reset
-        # If success occurs now (by gate passage or by being within target threshold), mark truncation to force reset
-        target_success_immediate = torch.norm(self.target_position - robot_position, dim=1) < 1.0
-        immediate_success_mask = (~(self.terminations > 0)) & (gate_passage_success | target_success_immediate)
+        # If success occurs now (by gate passage), mark TERMINATION to force reset
+        # Target window: within 10% of gate width (X) and 10% of gate height (Z) around ADAPTIVE gate center
+        x_off_imm = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
+        z_off_imm = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + self.gate_center_height))
+        x_ok_imm = x_off_imm <= (self.gate_width * 0.10)
+        z_ok_imm = z_off_imm <= (self.gate_height * 0.10)
+        target_success_immediate = x_ok_imm & z_ok_imm
+        # Do not let target-window success terminate episodes; training success uses gate passage only
+        immediate_success_mask = (~(self.terminations > 0)) & gate_passage_success
         if torch.any(immediate_success_mask):
-            # Mark truncations immediately so the environment will reset at post_reward_calculation_step
-            self.truncations[immediate_success_mask] = 1
+            # Mark terminations immediately so the environment will reset at post_reward_calculation_step
+            self.terminations[immediate_success_mask] = 1
+            # Record per-episode target success flags where 10% tolerance is also met
+            try:
+                self._ep_target_success_flag[immediate_success_mask] |= target_success_immediate[immediate_success_mask]
+            except Exception:
+                pass
             try:
                 success_envs = torch.nonzero(immediate_success_mask, as_tuple=False).squeeze(-1).tolist()
             except Exception:
                 success_envs = []
             logger.debug(f"[SUCCESS_RESET] Immediate success achieved in envs: {success_envs}. Terminating and resetting.")
         
-        # Success when episode truncates (not crashes) and gate passage achieved
-        successes = self.truncations * gate_passage_success
-        successes = torch.where(self.terminations > 0, torch.zeros_like(successes), successes)
+        # Success when episode TERMINATES (not crashes) and gate passage achieved
+        crash_mask = (self.obs_dict["crashes"] > 0)
+        successes = (self.terminations > 0) & gate_passage_success & (~crash_mask)
         
-        # Keep original target-based success as backup for comparison
-        target_success = torch.norm(self.target_position - robot_position, dim=1) < 1.0
-        target_successes = self.truncations * target_success
-        target_successes = torch.where(self.terminations > 0, torch.zeros_like(target_successes), target_successes)
+        # Target success at truncation: same 10% width/height window around adaptive gate center
+        x_off = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
+        z_off = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + self.gate_center_height))
+        x_ok = x_off <= (self.gate_width * 0.10)
+        z_ok = z_off <= (self.gate_height * 0.10)
+        target_success = x_ok & z_ok
+        target_successes = (self.terminations > 0) & (target_success & gate_passage_success) & (~crash_mask)
+        # Also accumulate per-episode target success flag when truncated at step end
+        try:
+            end_success_mask = (self.terminations > 0) & (target_success & gate_passage_success) & (~crash_mask)
+            self._ep_target_success_flag[end_success_mask] = True
+        except Exception:
+            pass
         
-        # Use gate passage as primary, but also accept target success if achieved
-        successes = torch.logical_or(successes, target_successes)
+        # Training success remains gate passage only; target success is for logging metrics only
+        # successes = torch.logical_or(successes, target_successes)
         
 
         # ===== END SIMPLE GATE PASSAGE SUCCESS =====
@@ -1007,7 +1229,8 @@ class NavigationTaskGate(BaseTask):
 
         self.infos["successes"] = successes
         self.infos["timeouts"] = timeouts
-        self.infos["crashes"] = self.terminations
+        # Report crashes only (exclude success-based terminations)
+        self.infos["crashes"] = self.obs_dict["crashes"]
         
         # Add gate navigation specific info to wandb tracking
         # Calculate gate navigation metrics from current state
@@ -1065,7 +1288,13 @@ class NavigationTaskGate(BaseTask):
                 fresh_mask = self._episode_fresh
                 if torch.any(fresh_mask):
                     self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
-                    self._ep_gate_center_at_spawn[fresh_mask] = self.gate_position[fresh_mask]
+                    # Store gate CENTER at spawn (z corrected by current center height)
+                    try:
+                        _gcenter = self.gate_position.clone()
+                        _gcenter[:, 2] = _gcenter[:, 2] + self.gate_center_height
+                        self._ep_gate_center_at_spawn[fresh_mask] = _gcenter[fresh_mask]
+                    except Exception:
+                        self._ep_gate_center_at_spawn[fresh_mask] = self.gate_position[fresh_mask]
                     self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
                     # counters and accumulators already zeroed in reset_idx
                     self._episode_fresh[fresh_mask] = False
@@ -1086,15 +1315,17 @@ class NavigationTaskGate(BaseTask):
             # Update min distance to gate center within episode (center-corrected)
             step_gate_dist = torch.norm(robot_position - gate_center_position, dim=1)
             self._ep_min_gate_dist = torch.minimum(self._ep_min_gate_dist, step_gate_dist)
-            # Record first crossing time and offsets
+            # Record first crossing time and offsets (2D XZ center error; height error in Z only)
             newly_crossed = (~self._ep_gate_crossed) & gate_passed_current
             if torch.any(newly_crossed):
                 self._ep_gate_crossed[newly_crossed] = True
                 # Time to gate in episode steps
                 self._ep_time_to_gate[newly_crossed] = self._ep_steps[newly_crossed].to(torch.float32)
-                # Offsets at crossing (center-corrected for both center and height)
-                co = torch.norm(robot_position[newly_crossed] - gate_center_position[newly_crossed], dim=1)
-                ho = torch.abs(robot_position[newly_crossed, 2] - gate_center_position[newly_crossed, 2])
+                # Offsets at crossing relative to ADAPTIVE gate center (2D XZ distance)
+                dx_cross = robot_position[newly_crossed, 0] - gate_center_position[newly_crossed, 0]
+                dz_cross = robot_position[newly_crossed, 2] - gate_center_position[newly_crossed, 2]
+                co = torch.sqrt(dx_cross * dx_cross + dz_cross * dz_cross)
+                ho = torch.abs(dz_cross)
                 self._ep_center_offset_cross[newly_crossed] = co
                 self._ep_height_offset_cross[newly_crossed] = ho
         except Exception:
@@ -1114,8 +1345,12 @@ class NavigationTaskGate(BaseTask):
                 # Path efficiency = path length / straight-line distance from spawn to gate center at spawn
                 denom = torch.norm(self._ep_spawn_pos[env_ids] - self._ep_gate_center_at_spawn[env_ids], dim=1)
                 denom = torch.clamp(denom, min=1e-6)
+                # Fallback for rare cases where incremental path stayed ~0 (e.g., immediate reset)
+                disp = torch.norm((robot_position[env_ids] - self._ep_spawn_pos[env_ids]), dim=1)
+                path_len = self._ep_path_len[env_ids]
+                path_len = torch.where(path_len <= 1e-6, disp, path_len)
                 path_eff = torch.full((self.num_envs,), float('nan'), device=self.device)
-                path_eff[env_ids] = (self._ep_path_len[env_ids] / denom).clamp(max=1000.0)
+                path_eff[env_ids] = (path_len / denom).clamp(max=1000.0)
                 # Time to gate in steps (already NaN for non-crossers)
                 time_to_gate = self._ep_time_to_gate.clone()
                 # Min distance to gate center during episode
@@ -1124,12 +1359,16 @@ class NavigationTaskGate(BaseTask):
                 center_offset = self._ep_center_offset_cross.clone()
                 height_offset = self._ep_height_offset_cross.clone()
                 # Last position at episode end (absolute and center-relative distance)
-                last_pos = robot_position[env_ids]
+                # Use the snapshot from BEFORE reset to report end-of-episode last pose
+                last_pos = robot_position_before_reset[env_ids]
                 last_pos_x = last_pos[:, 0]
                 last_pos_y = last_pos[:, 1]
                 last_pos_z = last_pos[:, 2]
-                # Use the same center-corrected gate position used above
-                last_center_distance_vals = torch.norm(last_pos - gate_center_position[env_ids], dim=1)
+                # Center-relative error (2D XZ) at termination
+                dx_last = last_pos_x - gate_center_position[env_ids, 0]
+                dz_last = last_pos_z - gate_center_position[env_ids, 2]
+                last_center_offset_vals = torch.sqrt(dx_last * dx_last + dz_last * dz_last)
+                last_height_offset_vals = torch.abs(dz_last)
                 # Debug print: average across resetting envs (NaN-aware)
                 pe_avg = torch.nanmean(path_eff[env_ids])
                 ttg_avg = torch.nanmean(time_to_gate[env_ids])
@@ -1139,7 +1378,18 @@ class NavigationTaskGate(BaseTask):
                 lpx_avg = torch.nanmean(last_pos_x)
                 lpy_avg = torch.nanmean(last_pos_y)
                 lpz_avg = torch.nanmean(last_pos_z)
-                lcd_avg = torch.nanmean(last_center_distance_vals)
+                # Also compute episode-end offsets (useful fallback when no crossing occurred)
+                lco_avg = torch.nanmean(last_center_offset_vals)
+                lho_avg = torch.nanmean(last_height_offset_vals)
+                # Report both: overall success rate (gate passage) and target success rate (gate passage AND 10%/10%)
+                try:
+                    # Overall success rate among resetting envs
+                    overall_success_rate = torch.mean((successes[env_ids] > 0).float())
+                    # Target success (10% width/height AND gate passage) among resetting envs
+                    target_success_rate = torch.mean((target_successes[env_ids] > 0).float())
+                except Exception:
+                    overall_success_rate = torch.tensor(float('nan'), device=self.device)
+                    target_success_rate = torch.tensor(float('nan'), device=self.device)
                 # num = len(env_ids)
                 # logger.warning(f"[TRAJ_METRICS][DEBUG][avg over {num} envs] path_efficiency={float(pe_avg.item()):.3f}, time_to_gate_steps={float(ttg_avg.item()):.2f}, min_gate_distance={float(mgd_avg.item()):.3f}, center_offset_success={float(co_avg.item()):.3f}, height_offset_success={float(ho_avg.item()):.3f}, last_position=({float(lpx_avg.item()):.2f},{float(lpy_avg.item()):.2f},{float(lpz_avg.item()):.2f}), last_center_distance={float(lcd_avg.item()):.3f}")
                 # Stash per-env episode metrics for worker-side running aggregation
@@ -1150,30 +1400,53 @@ class NavigationTaskGate(BaseTask):
                         'min_gate_distance': min_gate_dist.detach().clone(),
                         'center_offset_success': center_offset.detach().clone(),
                         'height_offset_success': height_offset.detach().clone(),
+                        'target_success_flag': self._ep_target_success_flag.detach().clone(),
                         'last_position_x': torch.full((self.num_envs,), float('nan'), device=self.device),
                         'last_position_y': torch.full((self.num_envs,), float('nan'), device=self.device),
                         'last_position_z': torch.full((self.num_envs,), float('nan'), device=self.device),
-                        'last_center_distance': torch.full((self.num_envs,), float('nan'), device=self.device),
+                        'last_center_offset': torch.full((self.num_envs,), float('nan'), device=self.device),
+                        'last_height_offset': torch.full((self.num_envs,), float('nan'), device=self.device),
                         'crossed': self._ep_gate_crossed.detach().clone(),
                     }
                     self._last_traj_metrics_per_env['last_position_x'][env_ids] = last_pos_x
                     self._last_traj_metrics_per_env['last_position_y'][env_ids] = last_pos_y
                     self._last_traj_metrics_per_env['last_position_z'][env_ids] = last_pos_z
-                    self._last_traj_metrics_per_env['last_center_distance'][env_ids] = last_center_distance_vals
+                    self._last_traj_metrics_per_env['last_center_offset'][env_ids] = last_center_offset_vals
+                    self._last_traj_metrics_per_env['last_height_offset'][env_ids] = last_height_offset_vals
                 except Exception:
                     self._last_traj_metrics_per_env = None
                 # Stash the averaged trajectory metrics for logging
                 try:
+                    # Fallback to episode-end offsets if crossing-based offsets are NaN
+                    try:
+                        co_val = co_avg
+                        if torch.isnan(co_val):
+                            co_val = lco_avg
+                    except Exception:
+                        co_val = lco_avg
+                    try:
+                        ho_val = ho_avg
+                        if torch.isnan(ho_val):
+                            ho_val = lho_avg
+                    except Exception:
+                        ho_val = lho_avg
                     self._last_traj_metrics_avg = {
                         'path_efficiency': float(pe_avg.item()),
                         'time_to_gate_steps': float(ttg_avg.item()),
+                        'time_to_gate': float(ttg_avg.item()),
                         'min_gate_distance': float(mgd_avg.item()),
-                        'center_offset_success': float(co_avg.item()),
-                        'height_offset_success': float(ho_avg.item()),
+                        'center_offset_success': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
+                        'height_offset_success': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
+                        # Duplicate keys to match existing dashboards
+                        'center_offset': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
+                        'height_offset': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
+                        'success_rate': float(overall_success_rate.item()) if hasattr(overall_success_rate, 'item') else float('nan'),
+                        'target_success_rate': float(target_success_rate.item()) if hasattr(target_success_rate, 'item') else float('nan'),
                         'last_position_x': float(lpx_avg.item()),
                         'last_position_y': float(lpy_avg.item()),
                         'last_position_z': float(lpz_avg.item()),
-                        'last_center_distance': float(lcd_avg.item()),
+                        'last_center_offset': float(lco_avg.item()),
+                        'last_height_offset': float(lho_avg.item()),
                     }
                 except Exception:
                     self._last_traj_metrics_avg = None
@@ -1183,6 +1456,21 @@ class NavigationTaskGate(BaseTask):
                     if not isinstance(extra, dict):
                         extra = {}
                     extra.update(self._last_traj_metrics_avg or {})
+                    # Expose per-camera noise/frame-drop overrides to W&B, mirroring prior style
+                    try:
+                        gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+                        cam_noise_global = bool(gtd.get('camera_randomization/noise_disabled', False))
+                        cam_fd_global = bool(gtd.get('camera_randomization/frame_dropout_disabled', False))
+                        drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if 'camera_randomization/drone_noise_disabled' in gtd else cam_noise_global
+                        static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False)) if 'camera_randomization/static_noise_disabled' in gtd else cam_noise_global
+                        drone_fd_dis = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if 'camera_randomization/drone_frame_dropout_disabled' in gtd else cam_fd_global
+                        static_fd_dis = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False)) if 'camera_randomization/static_frame_dropout_disabled' in gtd else cam_fd_global
+                        extra['episode_extra_stats/camera_noise_disabled_drone'] = float(drone_noise_dis)
+                        extra['episode_extra_stats/camera_noise_disabled_static'] = float(static_noise_dis)
+                        extra['episode_extra_stats/camera_frame_dropout_disabled_drone'] = float(drone_fd_dis)
+                        extra['episode_extra_stats/camera_frame_dropout_disabled_static'] = float(static_fd_dis)
+                    except Exception:
+                        pass
                     self.infos['episode_extra_stats'] = extra
                 except Exception:
                     pass
@@ -1252,28 +1540,34 @@ class NavigationTaskGate(BaseTask):
         # Get the drone's depth image (normalized 0.0–1.0)
         image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)  # shape: (num_envs, H, W)
         
-        # Apply D455 camera noise if enabled and not ablated, at sufficient curriculum level
+        # Apply D455 camera noise if enabled and not ablated
         noised_image_obs = image_obs.clone()  # Start with clean image
         camera_noise_disabled = False
         try:
             camera_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False))
         except Exception:
             camera_noise_disabled = bool(getattr(self, 'disable_camera_noise_randomization', False))
-        if getattr(self.task_config.curriculum, "enable_camera_noise", False) and not camera_noise_disabled:
-            # Get noise parameters for current level
-            gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
-            if gaussian_std > 0 or dropout_rate > 0:
-                # Gaussian noise: add N(0, gaussian_std) to each pixel (depth measurement uncertainty)
+        # Per-camera override: if set, apply to drone camera processing
+        drone_noise_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/drone_noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
+        if getattr(self.task_config.curriculum, "enable_camera_noise", False):
+            # Use current level when enabled; otherwise force minimum schedule (level 3)
+            if not camera_noise_disabled and not drone_noise_override:
+                gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
+            else:
+                gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(3)
+            
+            # Gaussian noise: add N(0, gaussian_std) to each pixel (depth measurement uncertainty)
+            if gaussian_std > 0:
                 noise = torch.randn_like(noised_image_obs) * gaussian_std
                 noised_image_obs = noised_image_obs + noise
-                
-                # Pixel dropout: set a fraction of pixels to 1.0 (missing depth readings)
-                if dropout_rate > 0:
-                    dropout_mask = torch.rand_like(noised_image_obs) < dropout_rate
-                    noised_image_obs = noised_image_obs.masked_fill(dropout_mask, 1.0)  # 1.0 = max depth (no reading)
-                
-                # Clamp values to valid range [0, 1]
-                noised_image_obs = torch.clamp(noised_image_obs, 0.0, 1.0)
+            
+            # Pixel dropout: set a fraction of pixels to 1.0 (missing depth readings)
+            if dropout_rate > 0:
+                dropout_mask = torch.rand_like(noised_image_obs) < dropout_rate
+                noised_image_obs = noised_image_obs.masked_fill(dropout_mask, 1.0)  # 1.0 = max depth (no reading)
+            
+            # Clamp values to valid range [0, 1]
+            noised_image_obs = torch.clamp(noised_image_obs, 0.0, 1.0)
         
         # Entire-frame dropout (curriculum-driven)
         frame_dropout_disabled = False
@@ -1281,25 +1575,31 @@ class NavigationTaskGate(BaseTask):
             frame_dropout_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False))
         except Exception:
             frame_dropout_disabled = bool(getattr(self, 'disable_camera_frame_dropout_randomization', False))
-        if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False) and not camera_noise_disabled and not frame_dropout_disabled:
-            fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+        drone_fd_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/drone_frame_dropout_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
+        if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
+            # Use current level unless frame-dropout is disabled; noise flag should not affect frame dropout
+            if not frame_dropout_disabled and not drone_fd_override:
+                fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+            else:
+                fd = self.task_config.curriculum.get_camera_frame_dropout(3)
             p_blank = fd.get("drone_blank", 0.0)
             p_freeze = fd.get("drone_freeze", 0.0)
-            if (p_blank > 0.0) or (p_freeze > 0.0):
-                # Ensure buffer exists
-                if not hasattr(self, "_prev_drone_depth"):
-                    self._prev_drone_depth = noised_image_obs.clone()
-                # Draw per-env Bernoulli masks
-                if p_blank > 0.0:
-                    blank_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_blank).view(-1, 1, 1)
-                    noised_image_obs = torch.where(blank_mask, torch.ones_like(noised_image_obs), noised_image_obs)
-                if p_freeze > 0.0:
-                    freeze_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_freeze).view(-1, 1, 1)
-                    # Apply freeze only where not already blanked
-                    apply_freeze = freeze_mask if p_blank == 0.0 else (freeze_mask & (~blank_mask))
-                    noised_image_obs = torch.where(apply_freeze, self._prev_drone_depth, noised_image_obs)
-                # Update previous buffer after potential dropout
+            
+            # Ensure buffer exists
+            if not hasattr(self, "_prev_drone_depth"):
                 self._prev_drone_depth = noised_image_obs.clone()
+            
+            # Apply frame dropout effects
+            if p_blank > 0.0:
+                blank_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_blank).view(-1, 1, 1)
+                noised_image_obs = torch.where(blank_mask, torch.ones_like(noised_image_obs), noised_image_obs)
+            if p_freeze > 0.0:
+                freeze_mask = (torch.rand(noised_image_obs.shape[0], device=noised_image_obs.device) < p_freeze).view(-1, 1, 1)
+                # Apply freeze only where not already blanked
+                apply_freeze = freeze_mask if p_blank == 0.0 else (freeze_mask & (~blank_mask))
+                noised_image_obs = torch.where(apply_freeze, self._prev_drone_depth, noised_image_obs)
+            # Update previous buffer after potential dropout
+            self._prev_drone_depth = noised_image_obs.clone()
         else:
             # Maintain previous buffer if feature disabled
             if not hasattr(self, "_prev_drone_depth"):
@@ -1333,67 +1633,66 @@ class NavigationTaskGate(BaseTask):
                 
                 # Apply D455 camera noise if enabled and not ablated
                 static_depth_noised = static_depth_clean.copy() if isinstance(static_depth_clean, np.ndarray) else static_depth_clean.clone()
-                if getattr(self.task_config.curriculum, "enable_camera_noise", False) and not bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False)):
-                    # Get noise parameters for current level
-                    gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
-                    if gaussian_std > 0 or dropout_rate > 0:
-                        # Handle numpy array case
-                        if isinstance(static_depth_noised, np.ndarray):
-                            # Gaussian noise: add N(0, gaussian_std) to each pixel (depth measurement uncertainty)
+                static_noise_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/static_noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
+                global_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
+                if getattr(self.task_config.curriculum, "enable_camera_noise", False):
+                    # Current level unless disabled -> then use level 3 minimum
+                    if not global_noise_disabled and not static_noise_override:
+                        gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
+                    else:
+                        gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(3)
+                    
+                    # Handle numpy array case
+                    if isinstance(static_depth_noised, np.ndarray):
+                        if gaussian_std > 0:
                             noise = np.random.normal(0.0, gaussian_std, size=static_depth_noised.shape)
                             static_depth_noised = static_depth_noised + noise
-                            
-                            # Pixel dropout: set a fraction of pixels to 1.0 (missing depth readings)
-                            if dropout_rate > 0:
-                                dropout_mask = np.random.rand(*static_depth_noised.shape) < dropout_rate
-                                static_depth_noised[dropout_mask] = 1.0  # 1.0 = max depth (no reading)
-                            
-                            # Clip depth values to [0, 1] range
-                            static_depth_noised = np.clip(static_depth_noised, 0.0, 1.0)
-                        else:
-                            # Handle tensor case
+                        if dropout_rate > 0:
+                            dropout_mask = np.random.rand(*static_depth_noised.shape) < dropout_rate
+                            static_depth_noised[dropout_mask] = 1.0
+                        static_depth_noised = np.clip(static_depth_noised, 0.0, 1.0)
+                    else:
+                        if gaussian_std > 0:
                             noise = torch.randn_like(static_depth_noised) * gaussian_std
                             static_depth_noised = static_depth_noised + noise
-                            
-                            if dropout_rate > 0:
-                                dropout_mask = torch.rand_like(static_depth_noised) < dropout_rate
-                                static_depth_noised = static_depth_noised.masked_fill(dropout_mask, 1.0)
-                            
-                            static_depth_noised = torch.clamp(static_depth_noised, 0.0, 1.0)
+                        if dropout_rate > 0:
+                            dropout_mask = torch.rand_like(static_depth_noised) < dropout_rate
+                            static_depth_noised = static_depth_noised.masked_fill(dropout_mask, 1.0)
+                        static_depth_noised = torch.clamp(static_depth_noised, 0.0, 1.0)
 
                 # Entire-frame dropout (curriculum-driven)
-                if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False) and not bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False)) and not bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False)):
-                    fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+                static_fd_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/static_frame_dropout_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
+                global_fd_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
+                if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
+                    # Decouple from noise flag: only frame-dropout flags control this schedule
+                    fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level) if (not global_fd_disabled and not static_fd_override) else self.task_config.curriculum.get_camera_frame_dropout(3)
                     p_blank = fd.get("static_blank", 0.0)
                     p_freeze = fd.get("static_freeze", 0.0)
-                    if (p_blank > 0.0) or (p_freeze > 0.0):
-                        # Initialize previous static buffer
-                        if not hasattr(self, "_prev_static_depth"):
-                            # Use per-env shared static image
-                            if isinstance(static_depth_noised, np.ndarray):
-                                self._prev_static_depth = static_depth_noised.copy()
-                            else:
-                                self._prev_static_depth = static_depth_noised.clone()
-                        # Apply blank then freeze
-                        if isinstance(static_depth_noised, np.ndarray):
-                            if p_blank > 0.0 and (np.random.rand() < p_blank):
-                                static_depth_noised[...] = 1.0
-                            elif p_freeze > 0.0 and (np.random.rand() < p_freeze):
-                                static_depth_noised = self._prev_static_depth.copy()
-                        else:
-                            # tensor case
-                            do_blank = (torch.rand(1, device=static_depth_noised.device).item() < p_blank)
-                            if do_blank:
-                                static_depth_noised = torch.ones_like(static_depth_noised)
-                            else:
-                                do_freeze = (torch.rand(1, device=static_depth_noised.device).item() < p_freeze)
-                                if do_freeze:
-                                    static_depth_noised = self._prev_static_depth.clone()
-                        # update buffer
+                    # Initialize previous static buffer
+                    if not hasattr(self, "_prev_static_depth"):
                         if isinstance(static_depth_noised, np.ndarray):
                             self._prev_static_depth = static_depth_noised.copy()
                         else:
                             self._prev_static_depth = static_depth_noised.clone()
+                    # Apply blank then freeze
+                    if isinstance(static_depth_noised, np.ndarray):
+                        if p_blank > 0.0 and (np.random.rand() < p_blank):
+                            static_depth_noised[...] = 1.0
+                        elif p_freeze > 0.0 and (np.random.rand() < p_freeze):
+                            static_depth_noised = self._prev_static_depth.copy()
+                    else:
+                        do_blank = (torch.rand(1, device=static_depth_noised.device).item() < p_blank)
+                        if do_blank:
+                            static_depth_noised = torch.ones_like(static_depth_noised)
+                        else:
+                            do_freeze = (torch.rand(1, device=static_depth_noised.device).item() < p_freeze)
+                            if do_freeze:
+                                static_depth_noised = self._prev_static_depth.clone()
+                    # update buffer
+                    if isinstance(static_depth_noised, np.ndarray):
+                        self._prev_static_depth = static_depth_noised.copy()
+                    else:
+                        self._prev_static_depth = static_depth_noised.clone()
                 
                 # Store noised static camera images for GIF generation
                 self.obs_dict["static_depth_clean"] = static_depth_clean
@@ -1452,14 +1751,18 @@ class NavigationTaskGate(BaseTask):
 
     def post_image_reward_addition(self):
         """Add image-based rewards from drone camera."""
-        image_obs = 10.0 * self.obs_dict["depth_range_pixels"].squeeze(1)
+        image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)
         image_obs[image_obs < 0] = 10.0
         self.min_pixel_dist = torch.amin(image_obs, dim=(1, 2))
         
         # Calculate image rewards for debugging
+        mag = self.task_config.reward_parameters.get("image_penalty_magnitude", 4.0)
+        expo = self.task_config.reward_parameters.get("image_penalty_exponent", 1.0)
         image_rewards = -exponential_reward_function(
-            4.0, 1.0, self.min_pixel_dist[self.terminations < 0]
+            float(mag), float(expo), self.min_pixel_dist[~self.terminations]
         )
+        # Apply image penalty to non-terminated environments
+        self.rewards[~self.terminations] += image_rewards
         
         # COMPREHENSIVE IMAGE REWARD DEBUGGING: Print values every 200 steps  
         if hasattr(self, 'num_task_steps') and self.num_task_steps % 200 == 0:
@@ -1498,7 +1801,7 @@ class NavigationTaskGate(BaseTask):
             # logger.warning("="*60)
         
         # Apply the image rewards
-        self.rewards[self.terminations < 0] += image_rewards
+        self.rewards[~self.terminations] += image_rewards
 
     def get_return_tuple(self):
         self.process_obs_for_task()
@@ -1546,6 +1849,31 @@ class NavigationTaskGate(BaseTask):
                     logger.error(f"❌ WRONG OBSERVATION DIMENSION: {obs_shape[1]} (expected 150)")
             else:
                 logger.error("❌ task_obs not available in get_return_tuple")
+        
+        # Update dynamic camera following every frame if enabled and not disabled by flag
+        dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+        dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+        
+        if dynamic_enabled and not dynamic_disabled:
+            self.static_camera_manager.update_dynamic_camera_following(
+                self.obs_dict["robot_position"], 
+                self.gate_position, 
+                self.gate_center_height
+            )
+        
+        # If static camera yaw sweep is enabled, update static camera orientation every frame
+        try:
+            gtd = self.sim_env.global_tensor_dict
+            sweep_enabled_flag = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
+            # Do not run sweep updates when dynamic following is active
+            if sweep_enabled_flag and not (dynamic_enabled and not dynamic_disabled):
+                env_ids_all = torch.arange(self.sim_env.num_envs, device=self.device)
+                self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids_all)
+                # Temporary debug for yaw sweep status
+                if (int(gtd.get('sim_steps', torch.tensor([0], device=self.device))[0].item()) % 60) == 0:
+                    logger.warning("[YawSweep] Per-step camera orientation update executed for all envs")
+        except Exception as e:
+            logger.debug(f"[YawSweep] Per-step update skipped due to: {e}")
         
         return (
             self.task_obs,
@@ -1634,11 +1962,47 @@ class NavigationTaskGate(BaseTask):
         self.task_obs["observations"][:, 18:22] = self.obs_dict["robot_actions"]
         
         # ===== VISUAL OBSERVATIONS (128D) =====
-        # [22:86] = Drone camera VAE latents (64D)
-        self.task_obs["observations"][:, 22:86] = self.image_latents
-        
-        # [86:150] = Static camera VAE latents (64D)
-        self.task_obs["observations"][:, 86:150] = self.static_image_latents
+        # Optionally normalize 64D VAEs per env to balance scales
+        try:
+            normalize = bool(getattr(self.task_config.vae_config, 'normalize_vae_latents', False))
+            env_norm = os.environ.get('NORMALIZE_VAE_LATENTS', None)
+            if env_norm is not None:
+                normalize = str(env_norm).lower() == 'true'
+        except Exception:
+            normalize = False
+
+        if normalize:
+            # Per-env z-score on 64D latents to mean 0, std 1 (epsilon to avoid div-by-zero)
+            eps = 1e-6
+            drone_lat = self.image_latents
+            static_lat = self.static_image_latents
+            d_mean = drone_lat.mean(dim=1, keepdim=True)
+            d_std = drone_lat.std(dim=1, keepdim=True)
+            s_mean = static_lat.mean(dim=1, keepdim=True)
+            s_std = static_lat.std(dim=1, keepdim=True)
+            drone_lat = (drone_lat - d_mean) / (d_std + eps)
+            static_lat = (static_lat - s_mean) / (s_std + eps)
+            self.task_obs["observations"][:, 22:86] = drone_lat
+            self.task_obs["observations"][:, 86:150] = static_lat
+        else:
+            # [22:86] = Drone camera VAE latents (64D)
+            self.task_obs["observations"][:, 22:86] = self.image_latents
+            # [86:150] = Static camera VAE latents (64D)
+            self.task_obs["observations"][:, 86:150] = self.static_image_latents
+
+        # (Removed W&B latent stats logging per request)
+
+        # Final observation NaN/Inf guard: sanitize outgoing observations tensor
+        try:
+            obs_tensor = self.task_obs.get("observations", None)
+            if isinstance(obs_tensor, torch.Tensor):
+                bad = torch.isnan(obs_tensor) | torch.isinf(obs_tensor)
+                if torch.any(bad):
+                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                        logger.warning(f"[NaNGuard] Sanitizing {int(torch.sum(bad).item())} invalid obs entries before return.")
+                    obs_tensor[bad] = 0.0
+        except Exception:
+            pass
 
     def compute_rewards_and_crashes(self, obs_dict):
         """Compute rewards with gate-specific components."""
@@ -1655,6 +2019,20 @@ class NavigationTaskGate(BaseTask):
         # obs_dict contains direct references to global tensors that get updated simultaneously
         current_actions = obs_dict["robot_actions"].clone()
         previous_actions = obs_dict["robot_prev_actions"].clone()
+        
+        # First-step stabilization: align previous error/actions with current for fresh episodes
+        prev_actions_for_reward = previous_actions
+        try:
+            fresh_mask = getattr(self, '_episode_fresh', None)
+        except Exception:
+            fresh_mask = None
+        if isinstance(fresh_mask, torch.Tensor) and fresh_mask.shape[0] == self.num_envs:
+            if torch.any(fresh_mask):
+                # Set previous error equal to current on the first step after reset
+                self.pos_error_vehicle_frame_prev[fresh_mask] = self.pos_error_vehicle_frame[fresh_mask]
+                # Also zero action diff on the first step after reset
+                prev_actions_for_reward = previous_actions.clone()
+                prev_actions_for_reward[fresh_mask] = current_actions[fresh_mask]
         
         # Curriculum multiplier ablation: pass effective fraction to scripted reward
         try:
@@ -1675,22 +2053,80 @@ class NavigationTaskGate(BaseTask):
         frac_eff = 0.0 if cm_disabled else float(frac_current)
         self._curriculum_multiplier_factor = 1.0 + 0.5 * frac_eff
 
-        rewards, crashes, camera_gate_alignment = compute_gate_reward(
-            self.pos_error_vehicle_frame,
-            self.pos_error_vehicle_frame_prev,
-            obs_dict["crashes"],
-            current_actions,
-            previous_actions,
-            robot_position,
-            robot_vehicle_orientation,
-            self.gate_position,
-            self.gate_passed,
-            frac_eff,
-            self.task_config.reward_parameters,
-            self.gate_width,
-            self.gate_height,
-            self.gate_center_height,
-        )
+        # Compute one-shot boundary violation mask in Python: trigger when crossing to front side
+        # outside passage window and not yet passed in this episode; apply once and latch
+        try:
+            y_margin = 0.2
+            behind_gate_mask = (robot_position[:, 1] > (self.gate_position[:, 1] + y_margin))
+            gate_passage_width_tolerance = self.gate_width * 0.5
+            gate_min_height = self.gate_position[:, 2] + self.gate_height * 0.0
+            gate_max_height = self.gate_position[:, 2] + self.gate_height * 1.0
+            within_passage_window = (
+                (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_passage_width_tolerance)
+                & (robot_position[:, 2] > gate_min_height)
+                & (robot_position[:, 2] < gate_max_height)
+            )
+            misaligned_cross_mask = behind_gate_mask & (~within_passage_window) & (~self.gate_passed)
+            # Latch: apply penalty only once per episode per env
+            if not hasattr(self, '_bv_flag_episode'):
+                self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+            boundary_violation_one_shot_mask = misaligned_cross_mask & (~self._bv_flag_episode)
+            # Update latch for envs that just violated
+            self._bv_flag_episode |= boundary_violation_one_shot_mask
+            # Debug detection: log when boundary violation triggers, including where it happened
+            if getattr(self.task_config, 'guard_debug_enabled', True) and torch.any(boundary_violation_one_shot_mask):
+                try:
+                    _ids = torch.nonzero(boundary_violation_one_shot_mask, as_tuple=False).squeeze(-1).tolist()
+                    logger.warning(f"[BoundaryViolation] One-shot penalty applied in envs {_ids}")
+                    # Print per-env details (limit to first few to avoid spam)
+                    try:
+                        max_list = int(getattr(self.task_config, 'reward_outlier_log_limit_per_step', 8))
+                    except Exception:
+                        max_list = 8
+                    for eid in _ids[:max_list]:
+                        try:
+                            rx = float(self.obs_dict["robot_position"][eid, 0].item())
+                            ry = float(self.obs_dict["robot_position"][eid, 1].item())
+                            rz = float(self.obs_dict["robot_position"][eid, 2].item())
+                            gx = float(self.gate_position[eid, 0].item())
+                            gy = float(self.gate_position[eid, 1].item())
+                            gz = float(self.gate_position[eid, 2].item())
+                            gw = float(self.gate_width[eid].item() if hasattr(self.gate_width, 'shape') else self.gate_width)
+                            gh = float(self.gate_height[eid].item() if hasattr(self.gate_height, 'shape') else self.gate_height)
+                            tol = float((self.gate_width[eid] * 0.5).item()) if hasattr(self.gate_width, 'shape') else float(self.gate_width * 0.5)
+                            zmin = float(gz + 0.0 * gh)
+                            zmax = float(gz + 1.0 * gh)
+                            x_off = abs(rx - gx)
+                            logger.warning(
+                                f"[BoundaryViolation] Env{eid} pos=({rx:.3f},{ry:.3f},{rz:.3f}), gate_y={gy:.3f}, x_off={x_off:.3f} (tol={tol:.3f}), z_window=({zmin:.3f},{zmax:.3f}), gate_size=(w={gw:.3f}, h={gh:.3f})"
+                            )
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+        except Exception:
+            boundary_violation_one_shot_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+
+        # Disable nvFuser optimizations for this scripted block to avoid CUDA fuser fallback warnings
+        # (no change in semantics; prevents noisy warnings from TorchScript fuser)
+        with torch.jit.optimized_execution(False):
+            rewards, crashes, camera_gate_alignment = compute_gate_reward(
+                self.pos_error_vehicle_frame,
+                self.pos_error_vehicle_frame_prev,
+                obs_dict["crashes"],
+                current_actions,
+                prev_actions_for_reward,
+                robot_position,
+                robot_vehicle_orientation,
+                self.gate_position,
+                self.gate_passed,
+                frac_eff,
+                self.task_config.reward_parameters,
+                self.gate_width,
+                self.gate_height,
+                self.gate_center_height,
+                boundary_violation_one_shot_mask,
+            )
         
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
         self.update_episode_reward_tracking(obs_dict, rewards, crashes)
@@ -1724,17 +2160,50 @@ class NavigationTaskGate(BaseTask):
                 2.0 * self.task_config.reward_parameters["getting_closer_reward_multiplier"] * getting_closer,
             )
             
-            gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
+            # Use adaptive gate center (z = bottom + center_height)
+            gate_center_position = self.gate_position.clone()
+            try:
+                gate_center_position[:, 2] = gate_center_position[:, 2] + self.gate_center_height
+            except Exception:
+                pass
+            gate_distance = torch.norm(robot_position - gate_center_position, dim=1)
             gate_approach_reward = exponential_reward_function(
                 self.task_config.reward_parameters["gate_approach_reward_magnitude"],
                 0.5,
                 gate_distance,
             )
             
-            # Gate alignment
+            # Gate alignment (finer piecewise by lateral offset from gate center)
             gate_alignment_reward = torch.zeros_like(gate_distance)
-            aligned_mask = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < 1.5
-            gate_alignment_reward[aligned_mask] = self.task_config.reward_parameters["gate_alignment_reward_magnitude"]
+            dx = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
+            # Thresholds proportional to current gate width (denser piecewise bins)
+            t00 = self.gate_width * 0.01
+            t0  = self.gate_width * 0.02
+            t1  = self.gate_width * 0.04
+            t2  = self.gate_width * 0.06
+            t3  = self.gate_width * 0.08
+            t4  = self.gate_width * 0.10
+            t5  = self.gate_width * 0.12
+            t6  = self.gate_width * 0.15
+            t7  = self.gate_width * 0.20
+            t8  = self.gate_width * 0.25
+            t9  = self.gate_width * 0.30
+            t10 = self.gate_width * 0.40
+            t11 = self.gate_width * 0.50
+            mag = self.task_config.reward_parameters["gate_alignment_reward_magnitude"]
+            gate_alignment_reward[dx <= t00] = 1.00 * mag
+            gate_alignment_reward[(dx > t00) & (dx <= t0)] = 0.97 * mag
+            gate_alignment_reward[(dx > t0) & (dx <= t1)]  = 0.94 * mag
+            gate_alignment_reward[(dx > t1) & (dx <= t2)]  = 0.90 * mag
+            gate_alignment_reward[(dx > t2) & (dx <= t3)]  = 0.85 * mag
+            gate_alignment_reward[(dx > t3) & (dx <= t4)]  = 0.80 * mag
+            gate_alignment_reward[(dx > t4) & (dx <= t5)]  = 0.72 * mag
+            gate_alignment_reward[(dx > t5) & (dx <= t6)]  = 0.65 * mag
+            gate_alignment_reward[(dx > t6) & (dx <= t7)]  = 0.55 * mag
+            gate_alignment_reward[(dx > t7) & (dx <= t8)]  = 0.45 * mag
+            gate_alignment_reward[(dx > t8) & (dx <= t9)]  = 0.35 * mag
+            gate_alignment_reward[(dx > t9) & (dx <= t10)] = 0.25 * mag
+            gate_alignment_reward[(dx > t10) & (dx <= t11)] = 0.15 * mag
             
             # Camera facing reward calculation (same as in compute_gate_reward)
             drone_to_gate = self.gate_position - robot_position
@@ -1867,6 +2336,25 @@ class NavigationTaskGate(BaseTask):
             avg_gate_alignment = torch.mean(mult_factor * gate_alignment_reward).item()
             avg_camera_facing = torch.mean(mult_factor * camera_facing_reward).item()
             avg_action_penalty = torch.mean(total_action_penalty).item()
+            # Boundary violation penalty: calculate for debugging (same logic as torchscript)
+            try:
+                # Use consistent fixed y-margin for boundary check (same as TorchScript and episode tracker)
+                y_margin = 0.2
+                behind_gate_mask = (robot_position[:, 1] > (self.gate_position[:, 1] + y_margin))
+                gate_passage_width_tolerance = self.gate_width * 0.6
+                gate_min_height = self.gate_position[:, 2] + self.gate_height * 0.1
+                gate_max_height = self.gate_position[:, 2] + self.gate_height * 0.9
+                within_passage_window = (
+                    (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_passage_width_tolerance)
+                    & (robot_position[:, 2] > gate_min_height)
+                    & (robot_position[:, 2] < gate_max_height)
+                )
+                misaligned_cross_mask = behind_gate_mask & (~within_passage_window) & (~self.gate_passed)
+                boundary_violation_penalty = torch.zeros_like(gate_distance)
+                boundary_violation_penalty[misaligned_cross_mask] = -50.0
+                avg_boundary_penalty = torch.mean(boundary_violation_penalty).item()
+            except Exception:
+                avg_boundary_penalty = 0.0
             avg_distance = torch.mean(dist).item()
             avg_gate_distance = torch.mean(gate_distance).item()
             avg_camera_alignment = torch.mean(camera_gate_alignment).item()
@@ -1874,6 +2362,23 @@ class NavigationTaskGate(BaseTask):
             logger.warning("="*80)
             logger.warning(f"🔍 COMPREHENSIVE REWARD BREAKDOWN (Step {self.num_task_steps}):")
             logger.warning(f"  📊 TOTAL REWARD:           {avg_total_reward:.3f}")
+            # Print VAE latent statistics alongside reward breakdown for clear visibility
+            try:
+                if hasattr(self, 'task_obs') and isinstance(self.task_obs, dict) and 'observations' in self.task_obs:
+                    obs_all = self.task_obs['observations']
+                    if obs_all.shape[1] >= 150:
+                        d_lat = obs_all[:, 22:86]
+                        s_lat = obs_all[:, 86:150]
+                        d_mu = float(torch.mean(d_lat).item()); s_mu = float(torch.mean(s_lat).item())
+                        d_std = float(torch.std(d_lat).item()); s_std = float(torch.std(s_lat).item())
+                        d_norm = float(torch.linalg.norm(d_lat).item()); s_norm = float(torch.linalg.norm(s_lat).item())
+                        ratio = s_norm / (d_norm + 1e-6)
+                        logger.warning(
+                            f"  🔬 VAE STATS: norm_ratio={ratio:.3f} | "
+                            f"drone(mu={d_mu:.3f}, std={d_std:.3f}) | static(mu={s_mu:.3f}, std={s_std:.3f})"
+                        )
+            except Exception:
+                pass
             logger.warning(f"  📍 Position Reward:        {avg_pos_reward:.3f} (dist: {avg_distance:.2f}m)")
             logger.warning(f"  🎯 Very Close Reward:      {avg_very_close:.3f}")
             logger.warning(f"  ⬆️  Getting Closer:         {avg_getting_closer:.3f}")
@@ -1881,6 +2386,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"  ✅ Gate Alignment:         {avg_gate_alignment:.3f}")
             logger.warning(f"  📹 Camera Facing:          {avg_camera_facing:.3f} (align: {avg_camera_alignment:.3f})")
             logger.warning(f"  🎮 Action Penalty:         {avg_action_penalty:.3f}")
+            logger.warning(f"  ⛔ Boundary Violation:     {avg_boundary_penalty:.3f}")
             logger.warning(f"  ⚡ Multiplier Factor:      {mult_factor:.3f}")
             
             # Check for any gate passages - ADAPTIVE to gate dimensions
@@ -1920,6 +2426,8 @@ class NavigationTaskGate(BaseTask):
                 logger.warning(f"  ✅ Gate Alignment:         {avg_episode_data['gate_alignment_reward']:.1f}")
                 logger.warning(f"  📹 Camera Facing:          {avg_episode_data['camera_facing_reward']:.1f}")
                 logger.warning(f"  🎮 Action Penalties:       {avg_episode_data['action_penalty']:.1f}")
+                if 'boundary_violation_penalty' in avg_episode_data:
+                    logger.warning(f"  ⛔ Boundary Violations:    {avg_episode_data['boundary_violation_penalty']:.1f}")
                 logger.warning(f"  🎉 Gate Passage Bonuses:   {avg_episode_data['gate_passage_reward']:.1f} (basic + center)")
                 
                 # Calculate estimated passages per episode
@@ -1952,12 +2460,16 @@ class NavigationTaskGate(BaseTask):
             avg_current_gate_alignment = torch.mean(self.episode_gate_alignment_reward).item()
             avg_current_camera_facing = torch.mean(self.episode_camera_facing_reward).item()
             avg_current_action_penalty = torch.mean(self.episode_action_penalty).item()
+            try:
+                avg_current_boundary_penalty = torch.mean(self.episode_boundary_violation_penalty).item()
+            except Exception:
+                avg_current_boundary_penalty = 0.0
             avg_current_collision_penalty = torch.mean(self.episode_collision_penalty).item()
             avg_current_episode_length = torch.mean(self.episode_lengths).item()
             
             current_total = (avg_current_pos + avg_current_very_close + avg_current_getting_closer + 
                            avg_current_gate_approach + avg_current_gate_alignment + avg_current_camera_facing + 
-                           avg_current_action_penalty + avg_current_collision_penalty)
+                           avg_current_action_penalty + avg_current_collision_penalty + avg_current_boundary_penalty)
             
             logger.warning(f"  🔄 Current Episode Total:  {current_total:.1f} (avg across 16 envs)")
             logger.warning(f"  📍 Position So Far:        {avg_current_pos:.1f}")
@@ -1969,6 +2481,29 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"  📏 Steps So Far:           {avg_current_episode_length:.0f}")
             
             logger.warning("="*80)
+        
+        # Reward outlier logging to catch negative spikes
+        try:
+            thr = float(getattr(self.task_config, 'reward_outlier_threshold', -180.0))
+        except Exception:
+            thr = -180.0
+        try:
+            if torch.any(rewards < thr):
+                _bad = torch.nonzero(rewards < thr, as_tuple=False).squeeze(-1)
+                if _bad.numel() > 0:
+                    _limit = int(getattr(self.task_config, 'reward_outlier_log_limit_per_step', 8))
+                    _s = _bad[:_limit]
+                    logger.warning(f"[RewardOutlier] envs={_s.tolist()} rewards={rewards[_s].tolist()} crashes={crashes[_s].tolist()}")
+                    _dist = torch.norm(self.pos_error_vehicle_frame[_s], dim=1)
+                    _y = obs_dict['robot_position'][_s, 1]
+                    # Also log boundary violation mask to see if it caused spikes
+                    try:
+                        _bv = boundary_violation_one_shot_mask[_s].tolist()
+                    except Exception:
+                        _bv = []
+                    logger.warning(f"[RewardOutlier] dist={_dist.tolist()} y={_y.tolist()} boundary_violation={_bv}")
+        except Exception:
+            pass
         
         # Store camera alignment for debugging
         self.camera_alignment_debug = camera_gate_alignment
@@ -2128,6 +2663,27 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update(f"\nSuccess Rate: {success_rate:.3f}\nCrash Rate: {crash_rate:.3f}\nTimeout Rate: {timeout_rate:.3f}")
             
             self.log_curriculum_update(f"\nCURRICULUM APPLIED:")
+            # Report yaw sweep status in curriculum update debug (takes precedence over orientation randomization)
+            try:
+                yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
+                yaw_speed = float(os.environ.get('SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG', '10.0'))
+            except Exception:
+                yaw_enabled = False
+                yaw_speed = 10.0
+            # Determine dynamic camera effective state (needed below)
+            try:
+                dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+                dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+                dynamic_effective = bool(dyn_cfg and not dyn_dis)
+            except Exception:
+                dynamic_effective = False
+            # Report sweep with effective status and orientation/dynamic interactions
+            if yaw_enabled and not dynamic_effective:
+                self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: ENABLED (speed={yaw_speed:.1f} deg/s)")
+            elif yaw_enabled and dynamic_effective:
+                self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: ENABLED but IGNORED (dynamic camera active)")
+            else:
+                self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: DISABLED")
             if obs_dis:
                 self.log_curriculum_update(f"   1. OBSTACLES: fixed to {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
             else:
@@ -2161,15 +2717,19 @@ class NavigationTaskGate(BaseTask):
             current_angle = 0.0
             if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
                 current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
-            # Report static camera orientation randomization status
+            # Report static camera orientation randomization status (only relevant when yaw sweep is DISABLED)
             try:
                 cam_orient_disabled = bool(self.sim_env.global_tensor_dict.get('static_camera_randomization/orientation_disabled', False))
             except Exception:
                 cam_orient_disabled = False
-            if cam_orient_disabled:
-                self.log_curriculum_update(f"   3. CAMERA ANGLE: randomization DISABLED, fixed at 0.0° (env0: {current_angle:.1f}°)")
+            if yaw_enabled and not dynamic_effective:
+                self.log_curriculum_update(f"   4. CAMERA ANGLE: overridden by yaw sweep (env0 current: {current_angle:.1f}°)")
+            elif dynamic_effective:
+                self.log_curriculum_update(f"   4. CAMERA ANGLE: suppressed (dynamic camera following active)")
+            elif cam_orient_disabled:
+                self.log_curriculum_update(f"   4. CAMERA ANGLE: randomization DISABLED, fixed at 0.0° (env0: {current_angle:.1f}°)")
             else:
-                self.log_curriculum_update(f"   3. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
+                self.log_curriculum_update(f"   4. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
             
             # 4. GATE SIZE UNLOCKS (Curriculum-gated randomization) or Fixed (ablation)
             if hasattr(self.sim_env, 'global_tensor_dict'):
@@ -2196,17 +2756,17 @@ class NavigationTaskGate(BaseTask):
                         fixed_scale = 100
                     self.log_curriculum_update(f"   4. GATE SIZE: randomization disabled, fixed scale = {fixed_scale}%")
                 else:
-                    # Compute linear threshold from 80 -> 40 over levels 3..23
+                    # Compute linear threshold from 80 -> 60 over levels 3..23
                     if self.curriculum_level <= 3:
                         min_scale = 80
                     elif self.curriculum_level >= 23:
-                        min_scale = 40
+                        min_scale = 60
                     else:
                         frac = (self.curriculum_level - 3) / (23 - 3)
-                        raw = 80 - frac * (80 - 40)
+                        raw = 80 - frac * (80 - 60)
                         min_scale = int((int(raw) // 2) * 2)
-                        if min_scale < 40:
-                            min_scale = 40
+                        if min_scale < 60:
+                            min_scale = 60
                         if min_scale > 100:
                             min_scale = 100
                     # Collect scales meeting threshold
@@ -2229,10 +2789,25 @@ class NavigationTaskGate(BaseTask):
                 cam_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False))
             except Exception:
                 cam_noise_disabled = False
-            if cam_noise_disabled:
-                self.log_curriculum_update(f"   5. CAMERA NOISE: DISABLED (Gaussian STD=0.0000, Dropout=0.0%) for both drone & static")
-            else:
-                self.log_curriculum_update(f"   5. CAMERA NOISE: Gaussian STD={camera_gaussian_std:.4f}, Dropout={camera_dropout_rate*100:.1f}% (both drone & static)")
+            # Per-camera overrides for noise (presence-based overrides)
+            try:
+                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+                drone_noise_key_present = 'camera_randomization/drone_noise_disabled' in gtd
+                static_noise_key_present = 'camera_randomization/static_noise_disabled' in gtd
+                drone_noise_flag = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if drone_noise_key_present else cam_noise_disabled
+                static_noise_flag = bool(gtd.get('camera_randomization/static_noise_disabled', False)) if static_noise_key_present else cam_noise_disabled
+            except Exception:
+                drone_noise_flag = cam_noise_disabled
+                static_noise_flag = cam_noise_disabled
+            # Level-3 fallbacks when disabled
+            d_std_min, d_drop_min = self.task_config.curriculum.get_camera_noise(3)
+            eff_drone_std = camera_gaussian_std if not drone_noise_flag else d_std_min
+            eff_static_std = camera_gaussian_std if not static_noise_flag else d_std_min
+            eff_drone_drop = camera_dropout_rate if not drone_noise_flag else d_drop_min
+            eff_static_drop = camera_dropout_rate if not static_noise_flag else d_drop_min
+            self.log_curriculum_update(
+                f"   5. CAMERA NOISE: drone(std={eff_drone_std:.4f}, pixel_drop={eff_drone_drop*100:.1f}%), static(std={eff_static_std:.4f}, pixel_drop={eff_static_drop*100:.1f}%)"
+            )
             
             # 6. CAMERA FRAME DROPOUT (entire-frame)
             fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
@@ -2240,15 +2815,27 @@ class NavigationTaskGate(BaseTask):
                 cam_fd_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False))
             except Exception:
                 cam_fd_disabled = False
-            if cam_fd_disabled:
-                self.log_curriculum_update(
-                    "   6. CAMERA FRAME DROPOUT: DISABLED (drone_total=0.0%, static_total=0.0%)"
-                )
-            else:
-                self.log_curriculum_update(
-                    f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total']*100:.1f}% (freeze {fd['drone_freeze']*100:.1f}%, blank {fd['drone_blank']*100:.1f}%), "
-                    f"static_total={fd['static_total']*100:.1f}% (freeze {fd['static_freeze']*100:.1f}%, blank {fd['static_blank']*100:.1f}%)"
-                )
+            # Per-camera overrides for frame dropout (presence-based overrides)
+            try:
+                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+                drone_fd_key_present = 'camera_randomization/drone_frame_dropout_disabled' in gtd
+                static_fd_key_present = 'camera_randomization/static_frame_dropout_disabled' in gtd
+                drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if drone_fd_key_present else cam_fd_disabled
+                static_fd_flag = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False)) if static_fd_key_present else cam_fd_disabled
+            except Exception:
+                drone_fd_flag = cam_fd_disabled
+                static_fd_flag = cam_fd_disabled
+            # After change: when disabled, show level-3 minimum totals instead of 0
+            fd_min = self.task_config.curriculum.get_camera_frame_dropout(3)
+            eff_drone_tot = fd['drone_total'] if not drone_fd_flag else fd_min['drone_total']
+            eff_static_tot = fd['static_total'] if not static_fd_flag else fd_min['static_total']
+            eff_drone_freeze = fd['drone_freeze'] if not drone_fd_flag else fd_min['drone_freeze']
+            eff_drone_blank = fd['drone_blank'] if not drone_fd_flag else fd_min['drone_blank']
+            eff_static_freeze = fd['static_freeze'] if not static_fd_flag else fd_min['static_freeze']
+            eff_static_blank = fd['static_blank'] if not static_fd_flag else fd_min['static_blank']
+            self.log_curriculum_update(
+                f"   6. CAMERA FRAME DROPOUT: drone_total={eff_drone_tot*100:.1f}% (freeze {eff_drone_freeze*100:.1f}%, blank {eff_drone_blank*100:.1f}%), static_total={eff_static_tot*100:.1f}% (freeze {eff_static_freeze*100:.1f}%, blank {eff_static_blank*100:.1f}%)"
+            )
             
             # 7. STATE NOISE (pose)
             if getattr(self.task_config.curriculum, "enable_state_noise", False):
@@ -2266,6 +2853,29 @@ class NavigationTaskGate(BaseTask):
                     )
             else:
                 self.log_curriculum_update("   7. STATE NOISE: disabled")
+            
+            # 8. DYNAMIC CAMERA FOLLOWING
+            dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+            try:
+                dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+                config_overridden = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/config_overridden', False))
+            except Exception:
+                dynamic_disabled = False
+                config_overridden = False
+            
+            if dynamic_enabled and not dynamic_disabled:
+                if config_overridden:
+                    self.log_curriculum_update("   8. DYNAMIC CAMERA: ENABLED by flag (--enable_dynamic_camera_following=true) - camera follows drone with adaptive gate targeting")
+                else:
+                    self.log_curriculum_update("   8. DYNAMIC CAMERA: ENABLED (camera follows drone with adaptive gate targeting)")
+            elif dynamic_enabled and dynamic_disabled:
+                self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED by flag (--disable_dynamic_camera_following=true)")
+            else:
+                if config_overridden:
+                    self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED by flag (--enable_dynamic_camera_following=false)")
+                else:
+                    self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED (static camera mode - curriculum-based positioning)")
+            
             # Curriculum multiplier debug (update block)
             try:
                 cm_disabled = str(os.environ.get('SF_DISABLE_CURRICULUM_MULTIPLIER', 'false')).lower() == 'true'
@@ -2283,7 +2893,7 @@ class NavigationTaskGate(BaseTask):
             # ===== CURRICULUM DEBUGGING: Final state after update =====
             self.log_curriculum_update(f"[CURRICULUM UPDATE] FINAL STATE:")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Level: {self.curriculum_level} (range: {self.task_config.curriculum.min_level}-{self.task_config.curriculum.max_level})")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Max level reached: {self.max_curriculum_level_reached} (NO-DECREASE POLICY)")
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Max level reached: {self.max_curriculum_level_reached} (DECREASE ENABLED)")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Progress: {self.curriculum_progress_fraction:.3f}")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Obstacles behind gate: {obstacles_behind_gate} (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
@@ -2312,33 +2922,84 @@ class NavigationTaskGate(BaseTask):
                 )
             except Exception:
                 self.log_curriculum_update(f"[CURRICULUM UPDATE]   Spawn difficulty: LMF2 config (fallback)")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Camera angle: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
+            # When yaw sweep is enabled and dynamic camera is not active, suppress static camera angle randomization message
+            try:
+                yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
+            except Exception:
+                yaw_enabled = False
+            dynamic_effective = False
+            try:
+                dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+                dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+                dynamic_effective = bool(dyn_cfg and not dyn_dis)
+            except Exception:
+                dynamic_effective = False
+            if yaw_enabled and not dynamic_effective:
+                # Already logged as overridden by yaw sweep earlier
+                pass
+            else:
+                self.log_curriculum_update(f"[CURRICULUM UPDATE]   Camera angle: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
             
             # ===== END CURRICULUM DEBUGGING =====
             
             # Add comprehensive curriculum metrics to infos for wandb logging
-            self.infos["curriculum/level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
-            self.infos["curriculum/progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
-            self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
-            self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
-            self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
+            self.infos["curriculum/level"] = torch.as_tensor(self.curriculum_level, dtype=torch.float32)
+            self.infos["curriculum/progress"] = torch.as_tensor(self.curriculum_progress_fraction, dtype=torch.float32)
+            self.infos["curriculum/success_rate"] = torch.as_tensor(success_rate, dtype=torch.float32)
+            self.infos["curriculum/crash_rate"] = torch.as_tensor(crash_rate, dtype=torch.float32)
+            self.infos["curriculum/timeout_rate"] = torch.as_tensor(timeout_rate, dtype=torch.float32)
             
             # Add curriculum metrics
-            self.infos["curriculum/obstacles_behind_gate"] = torch.tensor(obstacles_behind_gate, dtype=torch.float32)
-            self.infos["curriculum/total_assets"] = torch.tensor(total_obstacles_in_env, dtype=torch.float32)
-            self.infos["curriculum/max_level_reached"] = torch.tensor(self.max_curriculum_level_reached, dtype=torch.float32)
+            self.infos["curriculum/obstacles_behind_gate"] = torch.as_tensor(obstacles_behind_gate, dtype=torch.float32)
+            self.infos["curriculum/total_assets"] = torch.as_tensor(total_obstacles_in_env, dtype=torch.float32)
+            self.infos["curriculum/max_level_reached"] = torch.as_tensor(self.max_curriculum_level_reached, dtype=torch.float32)
             
-            # Add camera noise metrics (D455 simulation)
-            self.infos["curriculum/camera_gaussian_std"] = torch.tensor(camera_gaussian_std, dtype=torch.float32)
-            self.infos["curriculum/camera_dropout_rate"] = torch.tensor(camera_dropout_rate, dtype=torch.float32)
-            # Add camera frame dropout metrics
-            fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
-            self.infos["curriculum/camera_frame_dropout_drone_total"] = torch.tensor(fd["drone_total"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_dropout_static_total"] = torch.tensor(fd["static_total"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_freeze_drone"] = torch.tensor(fd["drone_freeze"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_blank_drone"] = torch.tensor(fd["drone_blank"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_freeze_static"] = torch.tensor(fd["static_freeze"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_blank_static"] = torch.tensor(fd["static_blank"], dtype=torch.float32)
+            # Add camera noise metrics (D455 simulation) — report effective per-camera values in logs above
+            self.infos["curriculum/camera_gaussian_std"] = torch.as_tensor(camera_gaussian_std, dtype=torch.float32)
+            self.infos["curriculum/camera_dropout_rate"] = torch.as_tensor(camera_dropout_rate, dtype=torch.float32)
+            # Per-camera effective values (respecting per-camera disable overrides) — level-3 fallback when disabled
+            try:
+                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+                drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False))
+                static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False))
+                # Level-3 minimums
+                d_std_min, d_drop_min = self.task_config.curriculum.get_camera_noise(3)
+                # Effective Gaussian std per camera
+                eff_gauss_drone = camera_gaussian_std if not drone_noise_dis else d_std_min
+                eff_gauss_static = camera_gaussian_std if not static_noise_dis else d_std_min
+                # Effective pixel dropout per camera
+                eff_drop_drone = camera_dropout_rate if not drone_noise_dis else d_drop_min
+                eff_drop_static = camera_dropout_rate if not static_noise_dis else d_drop_min
+                self.infos["curriculum/camera_noise_drone_gaussian_std"] = torch.tensor(eff_gauss_drone, dtype=torch.float32)
+                self.infos["curriculum/camera_noise_static_gaussian_std"] = torch.tensor(eff_gauss_static, dtype=torch.float32)
+                self.infos["curriculum/camera_noise_drone_dropout_rate"] = torch.tensor(eff_drop_drone, dtype=torch.float32)
+                self.infos["curriculum/camera_noise_static_dropout_rate"] = torch.tensor(eff_drop_static, dtype=torch.float32)
+            except Exception:
+                pass
+            # Add camera frame dropout metrics (effective per-camera, with level-3 fallback when disabled)
+            fd_sched = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+            try:
+                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+                drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False))
+                static_fd_flag = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False))
+            except Exception:
+                drone_fd_flag = False
+                static_fd_flag = False
+            fd_min = self.task_config.curriculum.get_camera_frame_dropout(3)
+            eff = {
+                'drone_total':  fd_sched['drone_total']  if not drone_fd_flag else fd_min['drone_total'],
+                'static_total': fd_sched['static_total'] if not static_fd_flag else fd_min['static_total'],
+                'drone_freeze': fd_sched['drone_freeze'] if not drone_fd_flag else fd_min['drone_freeze'],
+                'drone_blank':  fd_sched['drone_blank']  if not drone_fd_flag else fd_min['drone_blank'],
+                'static_freeze':fd_sched['static_freeze']if not static_fd_flag else fd_min['static_freeze'],
+                'static_blank': fd_sched['static_blank'] if not static_fd_flag else fd_min['static_blank'],
+            }
+            self.infos["curriculum/camera_frame_dropout_drone_total"] = torch.tensor(eff["drone_total"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_dropout_static_total"] = torch.tensor(eff["static_total"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_freeze_drone"] = torch.tensor(eff["drone_freeze"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_blank_drone"] = torch.tensor(eff["drone_blank"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_freeze_static"] = torch.tensor(eff["static_freeze"], dtype=torch.float32)
+            self.infos["curriculum/camera_frame_blank_static"] = torch.tensor(eff["static_blank"], dtype=torch.float32)
             
             # Add camera angle metrics
             self.infos["curriculum/camera_max_angle"] = torch.tensor(self.max_camera_angle, dtype=torch.float32)
@@ -2420,7 +3081,13 @@ class NavigationTaskGate(BaseTask):
         self.episode_getting_closer_reward += mult_factor * getting_closer_reward
         
         # Gate approach reward
-        gate_distance = torch.norm(robot_position - self.gate_position, dim=1)
+        # Use adaptive gate center (z = bottom + center_height)
+        gate_center_position = self.gate_position.clone()
+        try:
+            gate_center_position[:, 2] = gate_center_position[:, 2] + self.gate_center_height
+        except Exception:
+            pass
+        gate_distance = torch.norm(robot_position - gate_center_position, dim=1)
         gate_approach_reward = exponential_reward_function(
             self.task_config.reward_parameters["gate_approach_reward_magnitude"],
             0.5,
@@ -2573,13 +3240,68 @@ class NavigationTaskGate(BaseTask):
         total_gate_rewards = gate_passage_reward + gate_center_passage_bonus
         self.episode_gate_passage_reward += total_gate_rewards
         
+        # Boundary violation penalty (episode tracking mirror of TorchScript path)
+        try:
+            # Use ENTIRE gate opening (±0.5 width, full height) and zero plane margin
+            y_margin = 0.2
+            behind_gate_mask = (robot_position[:, 1] > (self.gate_position[:, 1] + y_margin))
+            full_width_tol = self.gate_width * 0.5
+            full_min_h = self.gate_position[:, 2] + 0.0 * self.gate_height
+            full_max_h = self.gate_position[:, 2] + 1.0 * self.gate_height
+            within_passage_window = (
+                (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < full_width_tol)
+                & (robot_position[:, 2] > full_min_h)
+                & (robot_position[:, 2] < full_max_h)
+            )
+            misaligned_cross_mask = behind_gate_mask & (~within_passage_window) & (~self.gate_passed) & (~gate_passed_this_step)
+            boundary_violation_penalty = torch.zeros_like(gate_distance)
+            # One-shot penalty per episode: apply only on rising edge
+            if not hasattr(self, '_bv_flag_episode'):
+                self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+            rising_mask = misaligned_cross_mask & (~self._bv_flag_episode)
+            boundary_violation_penalty[rising_mask] = -50.0
+            # Update flag and force termination for violating envs
+            self._bv_flag_episode = self._bv_flag_episode | misaligned_cross_mask
+            if torch.any(rising_mask):
+                # Use terminations for boundary violations (true MDP failure)
+                self.terminations[rising_mask] = 1
+                # env0 debug already prints above on rising edge
+            self.episode_boundary_violation_penalty += boundary_violation_penalty
+            # Print on rising edge for all envs that violated this step
+            try:
+                rising_envs = torch.nonzero(rising_mask, as_tuple=False).squeeze(-1)
+                if rising_envs.numel() > 0:
+                    for eid in rising_envs.tolist():
+                        rx = float(robot_position[eid, 0].item())
+                        ry = float(robot_position[eid, 1].item())
+                        rz = float(robot_position[eid, 2].item())
+                        gate_x = float(self.gate_position[eid, 0].item())
+                        gate_y = float(self.gate_position[eid, 1].item())
+                        x_off = abs(rx - gate_x)
+                        gw = float(self.gate_width[eid].item() if hasattr(self.gate_width, 'shape') else self.gate_width)
+                        gh = float(self.gate_height[eid].item() if hasattr(self.gate_height, 'shape') else self.gate_height)
+                        tol = float(full_width_tol[eid].item() if hasattr(full_width_tol, 'shape') else full_width_tol)
+                        zmin = float(full_min_h[eid].item() if hasattr(full_min_h, 'shape') else full_min_h)
+                        zmax = float(full_max_h[eid].item() if hasattr(full_max_h, 'shape') else full_max_h)
+                        logger.warning(
+                            f"[Boundary] Env{eid} VIOLATION at step {self.num_task_steps}: pos=({rx:.3f},{ry:.3f},{rz:.3f}), "
+                            f"gate_y={gate_y:.3f}, x_off={x_off:.3f} (tol={tol:.3f}), z_window=({zmin:.3f},{zmax:.3f}), "
+                            f"gate_size=(w={gw:.3f}, h={gh:.3f})"
+                        )
+            except Exception:
+                pass
+        except Exception:
+            pass
+        
         # Track image rewards (from post_image_reward_addition)
         if hasattr(self, 'min_pixel_dist'):
+            mag = self.task_config.reward_parameters.get("image_penalty_magnitude", 4.0)
+            expo = self.task_config.reward_parameters.get("image_penalty_exponent", 1.0)
             image_rewards = -exponential_reward_function(
-                4.0, 1.0, self.min_pixel_dist[self.terminations < 0]
+                float(mag), float(expo), self.min_pixel_dist[~self.terminations]
             )
             # Only add for non-terminated environments
-            non_terminated_mask = self.terminations < 0
+            non_terminated_mask = ~self.terminations
             if torch.sum(non_terminated_mask) > 0:
                 self.episode_image_reward[non_terminated_mask] += image_rewards
         
@@ -2603,6 +3325,7 @@ class NavigationTaskGate(BaseTask):
                         self.episode_gate_alignment_reward[env_id] + 
                         self.episode_camera_facing_reward[env_id] + 
                         self.episode_action_penalty[env_id] + 
+                        self.episode_boundary_violation_penalty[env_id] + 
                         self.episode_gate_passage_reward[env_id] + 
                         self.episode_collision_penalty[env_id] + 
                         self.episode_image_reward[env_id]
@@ -2614,6 +3337,7 @@ class NavigationTaskGate(BaseTask):
                     'gate_alignment_reward': self.episode_gate_alignment_reward[env_id].item(),
                     'camera_facing_reward': self.episode_camera_facing_reward[env_id].item(),
                     'action_penalty': self.episode_action_penalty[env_id].item(),
+                    'boundary_violation_penalty': self.episode_boundary_violation_penalty[env_id].item(),
                     'gate_passage_reward': self.episode_gate_passage_reward[env_id].item(),  # Now includes both basic + center bonus
                     'collision_penalty': self.episode_collision_penalty[env_id].item(),
                     'image_reward': self.episode_image_reward[env_id].item(),
@@ -2636,6 +3360,7 @@ class NavigationTaskGate(BaseTask):
         self.episode_gate_passage_reward[env_ids] = 0
         self.episode_collision_penalty[env_ids] = 0
         self.episode_image_reward[env_ids] = 0
+        self.episode_boundary_violation_penalty[env_ids] = 0
         self.episode_lengths[env_ids] = 0
 
 
@@ -2652,8 +3377,8 @@ class StaticCameraManager:
         self.camera_setup_success = False
         self.use_synthetic_camera = False  # Initialize synthetic camera flag
         
-        # Gate position (center of environment)
-        self.gate_position = [0.0, 0.0, 0.0]
+        # Gate position (will be updated dynamically based on actual gate positions)
+        self.gate_position = [0.0, 0.0, 0.0]  # Default, overridden by adaptive positioning
         self.env_bounds = [[-4.0, -4.0, 0.0], [4.0, 4.0, 4.0]]  # Updated for gate_env bounds
         
         # Per-environment camera angle tracking - FIXED during each episode
@@ -2776,9 +3501,10 @@ class StaticCameraManager:
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         
-        # Get maximum angle range from curriculum (linear progression from 0° to ±30°)
+        # Get maximum angle range. For yaw sweep feature we use fixed ±30° (curriculum-independent)
         from aerial_gym.config.task_config.navigation_task_config_gate import task_config
-        max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
+        _max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
+        FIXED_SWEEP_MAX_DEG = 15.0
         # Honor ablation flag from parent task/global dict and read robot positions
         try:
             parent = getattr(self, 'env_manager', None)
@@ -2793,69 +3519,244 @@ class StaticCameraManager:
             rp = None
         
         try:
-            # Fixed camera position (3m behind gate, 1.5m height) - POSITION NEVER CHANGES
-            base_camera_pos = gymapi.Vec3(0.0, -3.0, 1.5)
+            # Fixed camera base position with optional CLI overrides
+            try:
+                parent = getattr(self, 'env_manager', None)
+                gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+            except Exception:
+                gtd = {}
+            try:
+                base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
+            except Exception:
+                base_y = -3.0
+            # Determine base Z spawning mode: numeric or 'adaptive' to gate center
+            try:
+                base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
+                if base_z_env is None:
+                    base_z_env = gtd.get('static_camera/base_z', 1.5)
+                # Accept string 'adaptive' (case-insensitive) to enable adaptive Z per env
+                if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':
+                    base_z = None  # Means adaptive per env
+                else:
+                    base_z = float(base_z_env)
+            except Exception:
+                base_z = 1.5
+            # If base_z is None (adaptive per env), use a numeric placeholder for Vec3; per-env Z resolved below
+            try:
+                base_z_for_vec = 1.5 if base_z is None else float(base_z)
+            except Exception:
+                base_z_for_vec = 1.5
+            base_camera_pos = gymapi.Vec3(0.0, base_y, base_z_for_vec)
             
             import math
             import random
             
+            # Ensure per-env randomized sweep parameters exist
+            try:
+                if not hasattr(self, 'sweep_phase_offsets') or (len(getattr(self, 'sweep_phase_offsets', [])) != len(self.env_handles)):
+                    self.sweep_phase_offsets = [0.0 for _ in range(len(self.env_handles))]
+                    self.sweep_directions = [1.0 for _ in range(len(self.env_handles))]
+            except Exception:
+                pass
+
             # Update camera orientation ONLY for the specified environments (those resetting)
             for env_idx in env_ids:
                 if env_idx >= len(self.env_handles) or env_idx >= len(self.camera_handles):
                     continue
                     
-                # Spawn-aware angle selection: keep both gate (0°) and drone inside FOV; or 0 if disabled
-                if disable_flag or max_angle_range <= 0:
-                    angle_offset_degrees = 0.0
-                else:
-                    horizontal_fov = 87.0
-                    half_fov = horizontal_fov * 0.5
-                    margin = 5.0
-                    if rp is not None and env_idx < rp.shape[0]:
-                        cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
-                        dx = float(rp[env_idx, 0].item()) - cam_x
-                        dy = float(rp[env_idx, 1].item()) - cam_y
-                        theta_r = math.degrees(math.atan2(dx, dy))  # 0° points to +Y
-                        gate_low, gate_high = -half_fov + margin, half_fov - margin
-                        rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
-                        low = max(gate_low, rob_low, -max_angle_range)
-                        high = min(gate_high, rob_high, max_angle_range)
-                        if high > low:
-                            angle_offset_degrees = random.uniform(low, high)
+                # Optional: constant yaw sweep (±30°), curriculum-independent
+                try:
+                    parent = getattr(self, 'env_manager', None)
+                    gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+                    sweep_enabled = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
+                    sweep_speed_deg = float(gtd.get('static_camera/yaw_sweep_speed_deg', 10.0))
+                except Exception:
+                    sweep_enabled = False
+                    sweep_speed_deg = 10.0
+
+                if sweep_enabled:
+                    # Compute time-based angle: A*sin(omega*t + phase). Use sim step as time base
+                    # A = ±30°, omega = speed_deg/s converted to rad/step using nominal dt=1/60 s
+                    A = FIXED_SWEEP_MAX_DEG
+                    dt = 1.0/60.0
+                    # Keep peak angular speed similar to baseline A0=50° when changing amplitude.
+                    # For theta(t)=A*sin(ωt), peak speed = A*ω. Compensate ω by (A0/A).
+                    A0 = 50.0
+                    comp = (A0 / max(A, 1e-6))
+                    sweep_speed_eff = sweep_speed_deg * comp
+                    omega = (sweep_speed_eff * 3.14159 / 180.0) * dt
+                    # Use global sim step as t and per-env small phase to desynchronize
+                    sim_steps = 0
+                    try:
+                        steps_obj = gtd.get('sim_steps', 0)
+                        # Support torch tensors or plain ints
+                        if hasattr(steps_obj, 'shape') or hasattr(steps_obj, 'ndim'):
+                            # Torch tensor
+                            try:
+                                if getattr(steps_obj, 'ndim', 0) == 0:
+                                    sim_steps = int(steps_obj.item())
+                                else:
+                                    idx = env_idx if env_idx < steps_obj.shape[0] else 0
+                                    sim_steps = int(steps_obj[idx].item())
+                            except Exception:
+                                sim_steps = 0
                         else:
-                            target = max(min(theta_r, gate_high), gate_low)
-                            angle_offset_degrees = max(-max_angle_range, min(max_angle_range, target))
+                            sim_steps = int(steps_obj)
+                    except Exception:
+                        sim_steps = 0
+                    # Per-env randomized phase and direction so starting angle and direction vary
+                    # Re-randomize on first step after reset for each env (sim_steps == 0)
+                    try:
+                        if sim_steps == 0:
+                            # Use seeded torch RNG for determinism across runs with the same --seed
+                            rand_phase = float(torch.rand(1, device=self.device).item())  # [0,1)
+                            self.sweep_phase_offsets[env_idx] = -math.pi + (2.0 * math.pi * rand_phase)
+                            dir_flag = int(torch.randint(low=0, high=2, size=(1,), device=self.device).item())
+                            self.sweep_directions[env_idx] = 1.0 if dir_flag == 1 else -1.0
+                        phi0 = self.sweep_phase_offsets[env_idx]
+                        direction = self.sweep_directions[env_idx]
+                    except Exception:
+                        phi0 = 0.0
+                        direction = 1.0
+                    angle_offset_degrees = A * math.sin(direction * (omega * sim_steps) + phi0)
+                    debug_max_range = A
+                    # [YawSweep DEBUG DISABLED]
+                else:
+                    # Spawn-aware angle selection: keep both gate (0°) and drone inside FOV; or 0 if disabled
+                    max_angle_range = _max_angle_range
+                    # When sweep is disabled, honor the orientation randomization disable flag
+                    if disable_flag or max_angle_range <= 0:
+                        angle_offset_degrees = 0.0
                     else:
-                        angle_offset_degrees = random.uniform(-max_angle_range, max_angle_range)
-                
+                        horizontal_fov = 87.0
+                        half_fov = horizontal_fov * 0.5
+                        margin = 5.0
+                        if rp is not None and env_idx < rp.shape[0]:
+                            cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
+                            dx = float(rp[env_idx, 0].item()) - cam_x
+                            dy = float(rp[env_idx, 1].item()) - cam_y
+                            theta_r = math.degrees(math.atan2(dx, dy))  # 0° points to +Y
+                            gate_low, gate_high = -half_fov + margin, half_fov - margin
+                            rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
+                            low = max(gate_low, rob_low, -max_angle_range)
+                            high = min(gate_high, rob_high, max_angle_range)
+                            if high > low:
+                                # Seeded torch RNG for deterministic selection
+                                u = float(torch.rand(1, device=self.device).item())
+                                angle_offset_degrees = low + u * (high - low)
+                            else:
+                                target = max(min(theta_r, gate_high), gate_low)
+                                angle_offset_degrees = max(-max_angle_range, min(max_angle_range, target))
+                        else:
+                            # Seeded torch RNG for deterministic selection
+                            u = float(torch.rand(1, device=self.device).item())
+                            angle_offset_degrees = -max_angle_range + u * (2.0 * max_angle_range)
+                    debug_max_range = max_angle_range
+
                 # Store the angle for this environment
                 if env_idx < len(self.current_camera_angles):
                     self.current_camera_angles[env_idx] = angle_offset_degrees
                 
                 # Convert to radians and update camera
                 angle_offset_radians = angle_offset_degrees * (3.14159 / 180.0)
-                
+
+                # Resolve per-env base Z (adaptive to gate center if requested)
+                try:
+                    env_base_z = base_z
+                    if env_base_z is None:
+                        gh = gtd.get('gate/center_height_per_env', None)
+                        env_base_z = float(gh[env_idx].item()) if gh is not None else 1.5
+                except Exception:
+                    env_base_z = 1.5
+                base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
+
                 # Calculate offset target position based on randomized angle for this environment
-                target_distance = 3.0  # Distance from camera to gate
-                target_x = base_camera_pos.x + target_distance * math.sin(angle_offset_radians)
-                target_y = base_camera_pos.y + target_distance * math.cos(angle_offset_radians)
-                target_z = 1.5  # Keep same height as gate center
-                
+                target_distance = abs(base_camera_env_pos.y)  # Keep look-at distance consistent with base Y
+                target_x = base_camera_env_pos.x + target_distance * math.sin(angle_offset_radians)
+                target_y = base_camera_env_pos.y + target_distance * math.cos(angle_offset_radians)
+                # Look at gate adaptive center height, to keep camera pitched to the center
+                try:
+                    gh = gtd.get('gate/center_height_per_env', None)
+                    target_z = float(gh[env_idx].item()) if gh is not None else env_base_z
+                except Exception:
+                    target_z = env_base_z
                 new_target = gymapi.Vec3(target_x, target_y, target_z)
-                
+
                 # Update ONLY this environment's camera
                 env_handle = self.env_handles[env_idx]
                 cam_handle = self.camera_handles[env_idx]
-                self.gym.set_camera_location(cam_handle, env_handle, base_camera_pos, new_target)
+                self.gym.set_camera_location(cam_handle, env_handle, base_camera_env_pos, new_target)
                 
-                logger.debug(f"Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{max_angle_range:.1f}°)")
+                # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{debug_max_range:.1f}°)")
             
-            logger.debug(f"Updated static camera orientation for {len(env_ids)} resetting environments")
+            # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera orientation for {len(env_ids)} environments")
             
         except Exception as e:
             logger.warning(f"Failed to update static camera orientation: {e}")
             # Fall back to fixed positioning if update fails
             logger.debug(f"Static camera orientation update failed - using fixed positioning")
+            return
+    
+    def update_dynamic_camera_following(self, robot_positions, gate_positions, gate_center_heights):
+        """
+        Update camera positions to follow drones from behind while facing the gate.
+        Called every frame when dynamic following is enabled.
+        
+        Args:
+            robot_positions: Tensor of shape (num_envs, 3) with drone positions
+            gate_positions: Tensor of shape (num_envs, 3) with adaptive gate positions  
+            gate_center_heights: Tensor of shape (num_envs,) with adaptive gate center heights
+        """
+        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
+            # In synthetic mode, dynamic following is handled in observation processing
+            if getattr(self.task_config.curriculum, 'log_camera_following', False):
+                logger.debug("Synthetic camera mode - dynamic following handled in observation processing")
+            return
+            
+        if not self.camera_setup_success or len(self.camera_handles) == 0:
+            return
+        
+        try:
+            # Get dynamic camera follow offset from config
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+            x_offset, y_offset, z_offset = task_config.curriculum.get_dynamic_camera_follow_offset()
+            
+            # Update each camera to follow its respective drone
+            for env_idx in range(min(len(self.env_handles), len(self.camera_handles), robot_positions.shape[0])):
+                if env_idx >= len(self.env_handles) or env_idx >= len(self.camera_handles):
+                    continue
+                
+                # Calculate camera position: drone position + offset
+                drone_pos = robot_positions[env_idx]
+                camera_x = float(drone_pos[0].item()) + x_offset
+                camera_y = float(drone_pos[1].item()) + y_offset
+                camera_z = float(drone_pos[2].item()) + z_offset
+                
+                # Set camera position
+                camera_pos = gymapi.Vec3(camera_x, camera_y, camera_z)
+                
+                # Camera always looks at ADAPTIVE gate center (per environment)
+                gate_pos = gate_positions[env_idx]
+                gate_center_height = gate_center_heights[env_idx]
+                
+                # Create adaptive gate target position using actual gate position and center height
+                camera_target = gymapi.Vec3(
+                    float(gate_pos[0].item()),  # Gate X position
+                    float(gate_pos[1].item()),  # Gate Y position  
+                    float(gate_center_height.item())  # Adaptive gate center height
+                )
+                
+                # Update camera location
+                cam_handle = self.camera_handles[env_idx]
+                env_handle = self.env_handles[env_idx]
+                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
+                
+                # Optional debug logging
+                if getattr(self.task_config.curriculum, 'log_camera_following', False) and env_idx == 0:
+                    logger.debug(f"Dynamic camera env{env_idx}: drone=({drone_pos[0]:.2f},{drone_pos[1]:.2f},{drone_pos[2]:.2f}) -> camera=({camera_x:.2f},{camera_y:.2f},{camera_z:.2f}) -> gate_target=({gate_pos[0]:.2f},{gate_pos[1]:.2f},{gate_center_height:.2f})")
+            
+        except Exception as e:
+            logger.warning(f"Failed to update dynamic camera following: {e}")
             return
     
     def capture_images(self):
@@ -2990,8 +3891,9 @@ def compute_gate_reward(
     gate_width,
     gate_height,
     gate_center_height,
+    boundary_violation_one_shot_mask,
 ):
-    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, float, Dict[str, Tensor], Tensor, Tensor, Tensor) -> Tuple[Tensor, Tensor, Tensor]
+    # type: (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, float, Dict[str, Tensor], Tensor, Tensor, Tensor, Tensor) -> Tuple[Tensor, Tensor, Tensor]
     
     # Base reward computation - REDUCED multiplication factor to prevent over-rewarding
     MULTIPLICATION_FACTOR_REWARD = 1.0 + (0.5) * curriculum_progress_fraction
@@ -3160,9 +4062,10 @@ def compute_gate_reward(
     gate_center_bonus[center_aligned_mask] = parameter_dict["gate_center_bonus_magnitude"]
     
     # Check for gate passage (crossing Y = 0 plane with proper alignment) - ADAPTIVE to gate dimensions
-    gate_passage_width_tolerance = gate_width * 0.6  # 60% of gate width for passage detection
-    gate_min_height = gate_position[:, 2] + gate_height * 0.1  # 10% above ground
-    gate_max_height = gate_position[:, 2] + gate_height * 0.9  # 90% of gate height
+    # Passage window covers the entire gate opening
+    gate_passage_width_tolerance = gate_width * 0.5  # half-width
+    gate_min_height = gate_position[:, 2] + gate_height * 0.0
+    gate_max_height = gate_position[:, 2] + gate_height * 1.0
     
     just_passed_gate = (
         (robot_position[:, 1] > gate_position[:, 1]) &  # In front of gate
@@ -3171,22 +4074,52 @@ def compute_gate_reward(
         (~gate_passed)  # Haven't passed before
     )
     
-    # Check for center passage (more precise alignment) - ADAPTIVE thresholds
-    center_passage_x_tolerance = gate_width * 0.2  # 20% of gate width for center passage
-    center_passage_z_tolerance = gate_height * 0.125  # 12.5% of gate height for center passage
-    
-    just_passed_center = (
-        just_passed_gate &  # Basic passage requirement
-        (x_distance_from_center < center_passage_x_tolerance) &  # Centered horizontally
-        (z_distance_from_center < center_passage_z_tolerance)    # Centered vertically
-    )
-    
+    # Center passage bonus: piecewise tiers by proximity to gate center (ADAPTIVE)
     gate_passage_reward = torch.zeros_like(gate_distance)
     gate_passage_reward[just_passed_gate] = parameter_dict["gate_passage_reward_magnitude"]
-    
-    # Extra bonus for center passage
+
     gate_center_passage_bonus = torch.zeros_like(gate_distance)
-    gate_center_passage_bonus[just_passed_center] = parameter_dict["gate_center_passage_bonus_magnitude"]
+    bonus_mag = parameter_dict["gate_center_passage_bonus_magnitude"]
+
+    # Tolerances (as fractions of gate size) — denser piecewise
+    x_tol_01  = gate_width  * 0.01
+    x_tol_02  = gate_width  * 0.02
+    x_tol_03  = gate_width  * 0.03
+    x_tol_05  = gate_width  * 0.05
+    x_tol_07  = gate_width  * 0.07
+    x_tol_10  = gate_width  * 0.10
+    x_tol_12  = gate_width  * 0.12
+    x_tol_15  = gate_width  * 0.15
+    x_tol_20  = gate_width  * 0.20
+    z_tol_01  = gate_height * 0.01
+    z_tol_02  = gate_height * 0.02
+    z_tol_03  = gate_height * 0.03
+    z_tol_05  = gate_height * 0.05
+    z_tol_07  = gate_height * 0.07
+    z_tol_10  = gate_height * 0.10
+    z_tol_125 = gate_height * 0.125
+
+    # Define tier masks (mutually exclusive, most strict first)
+    t1 =  just_passed_gate & (x_distance_from_center < x_tol_01) & (z_distance_from_center < z_tol_01)
+    t2 =  just_passed_gate & (~t1) & (x_distance_from_center < x_tol_02) & (z_distance_from_center < z_tol_02)
+    t3 =  just_passed_gate & (~(t1 | t2)) & (x_distance_from_center < x_tol_03) & (z_distance_from_center < z_tol_03)
+    t4 =  just_passed_gate & (~(t1 | t2 | t3)) & (x_distance_from_center < x_tol_05) & (z_distance_from_center < z_tol_05)
+    t5 =  just_passed_gate & (~(t1 | t2 | t3 | t4)) & (x_distance_from_center < x_tol_07) & (z_distance_from_center < z_tol_07)
+    t6 =  just_passed_gate & (~(t1 | t2 | t3 | t4 | t5)) & (x_distance_from_center < x_tol_10) & (z_distance_from_center < z_tol_10)
+    t7 =  just_passed_gate & (~(t1 | t2 | t3 | t4 | t5 | t6)) & (x_distance_from_center < x_tol_12) & (z_distance_from_center < z_tol_10)
+    t8 =  just_passed_gate & (~(t1 | t2 | t3 | t4 | t5 | t6 | t7)) & (x_distance_from_center < x_tol_15) & (z_distance_from_center < z_tol_125)
+    t9 =  just_passed_gate & (~(t1 | t2 | t3 | t4 | t5 | t6 | t7 | t8)) & (x_distance_from_center < x_tol_20) & (z_distance_from_center < z_tol_125)
+
+    # Assign piecewise bonuses (fractions of bonus_mag)
+    gate_center_passage_bonus[t1] = 1.00 * bonus_mag
+    gate_center_passage_bonus[t2] = 0.92 * bonus_mag
+    gate_center_passage_bonus[t3] = 0.85 * bonus_mag
+    gate_center_passage_bonus[t4] = 0.77 * bonus_mag
+    gate_center_passage_bonus[t5] = 0.65 * bonus_mag
+    gate_center_passage_bonus[t6] = 0.55 * bonus_mag
+    gate_center_passage_bonus[t7] = 0.45 * bonus_mag
+    gate_center_passage_bonus[t8] = 0.35 * bonus_mag
+    gate_center_passage_bonus[t9] = 0.25 * bonus_mag
     
     # Update gate passed status
     gate_passed = gate_passed | just_passed_gate
@@ -3229,6 +4162,10 @@ def compute_gate_reward(
     multiplied_camera_facing = MULTIPLICATION_FACTOR_REWARD * gated_camera_facing
     multiplied_altitude_maintenance = MULTIPLICATION_FACTOR_REWARD * altitude_maintenance_reward
 
+    # Boundary violation penalty: one-shot mask computed in Python to avoid repeated penalties
+    boundary_violation_penalty = torch.zeros_like(gate_distance)
+    boundary_violation_penalty[boundary_violation_one_shot_mask] = -parameter_dict["boundary_violation_penalty_magnitude"]
+
     # Combined reward - NOW INCLUDING CAMERA FACING REWARD AND ALTITUDE MAINTENANCE
     reward = (
         multiplied_pos_reward
@@ -3242,6 +4179,7 @@ def compute_gate_reward(
         + multiplied_gate_center_passage
         + multiplied_camera_facing  # Camera facing reward (gated pre-crossing)
         + multiplied_altitude_maintenance  # NEW: Altitude maintenance reward
+        + boundary_violation_penalty  # Penalty for crossing behind gate plane without a valid passage
         + total_action_penalty
     )
 

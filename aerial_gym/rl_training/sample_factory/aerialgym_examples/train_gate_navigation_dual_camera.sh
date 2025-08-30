@@ -26,6 +26,9 @@
 
 set -e  # Exit on any error
 
+# Enforce deterministic cuBLAS workspace for reproducible matmul
+export CUBLAS_WORKSPACE_CONFIG=:16:8
+
 # Parse arguments
 EXPERIMENT_NAME=""
 ENABLE_VIEWER=false
@@ -105,6 +108,22 @@ while [[ $# -gt 0 ]]; do
             DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION="${1#*=}"
             shift
             ;;
+        --disable_drone_camera_noise_randomization=*)
+            DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_static_camera_noise_randomization=*)
+            DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_drone_camera_frame_dropout=*)
+            DISABLE_DRONE_CAMERA_FRAME_DROPOUT="${1#*=}"
+            shift
+            ;;
+        --disable_static_camera_frame_dropout=*)
+            DISABLE_STATIC_CAMERA_FRAME_DROPOUT="${1#*=}"
+            shift
+            ;;
         --disable_state_noise_randomization=*)
             DISABLE_STATE_NOISE_RANDOMIZATION="${1#*=}"
             shift
@@ -125,6 +144,50 @@ while [[ $# -gt 0 ]]; do
             FORCE_CURRICULUM_LEVEL="${1#*=}"
             shift
             ;;
+        --disable_dynamic_camera_following=*)
+            DISABLE_DYNAMIC_CAMERA_FOLLOWING="${1#*=}"
+            shift
+            ;;
+        --enable_dynamic_camera_following=*)
+            ENABLE_DYNAMIC_CAMERA_FOLLOWING="${1#*=}"
+            shift
+            ;;
+        --fusion=*)
+            FUSION="${1#*=}"
+            shift
+            ;;
+        --gate_per_feature=*)
+            GATE_PER_FEATURE="${1#*=}"
+            shift
+            ;;
+        --enable_static_camera_yaw_sweep=*)
+            ENABLE_STATIC_CAMERA_YAW_SWEEP="${1#*=}"
+            shift
+            ;;
+        --static_camera_yaw_sweep_speed_deg=*)
+            STATIC_CAMERA_YAW_SWEEP_SPEED_DEG="${1#*=}"
+            shift
+            ;;
+        --static_camera_base_y=*)
+            STATIC_CAMERA_BASE_Y="${1#*=}"
+            shift
+            ;;
+        --static_camera_base_z=*)
+            STATIC_CAMERA_BASE_Z="${1#*=}"
+            shift
+            ;;
+        --train_steps=*)
+            TRAIN_STEPS="${1#*=}"
+            shift
+            ;;
+        --train_for_env_steps=*)
+            TRAIN_STEPS="${1#*=}"
+            shift
+            ;;
+        --seed=*)
+            SEED_VAL="${1#*=}"
+            shift
+            ;;
         *)
             if [ -z "$EXPERIMENT_NAME" ]; then
                 EXPERIMENT_NAME="$1"
@@ -137,11 +200,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Gate Navigation Training Configuration (16 environments default)
-CONFIG_NAME="Gate Navigation Dual Camera Configuration (16 environments)"
-# If not set via CLI parsing above, default to 16
+# Gate Navigation Training Configuration (defaults tuned for 150k-step runs)
+CONFIG_NAME="Gate Navigation Dual Camera Configuration"
+# If not set via CLI parsing above, default to 256 envs for step alignment (256*32=8192)
 if [ -z "${ENV_AGENTS}" ]; then
-    ENV_AGENTS=16
+    ENV_AGENTS=256
 fi
 EFFECTIVE_BATCH=4096
 BATCH_SIZE=2048
@@ -156,9 +219,15 @@ else
     echo "Auto-generated experiment name: $EXPERIMENT_NAME"
 fi
 
-# TRAIN_STEPS=200000000
-TRAIN_STEPS=200000000
-GPU_MONITOR_INTERVAL=100
+# Total env steps to stop at (exactly 19 updates with 256 envs * 32 rollout)
+# Target W&B global_step set by user; adjust TRAIN_STEPS accordingly.
+# Note: final global_step ≈ TRAIN_STEPS + drain_rollouts * (env_agents*rollout)
+# With sync mode and your setup drain_rollouts≈3 and quantum=8192.
+# User requested final ≈ 1,212,416, so default TRAIN_STEPS to match exactly unless overridden.
+if [ -z "${TRAIN_STEPS}" ]; then
+    TRAIN_STEPS=1212416
+fi
+GPU_MONITOR_INTERVAL=1000
 GPU_LOG_FILE="../../../logs/gpu_usage_gate_nav_${EXPERIMENT_NAME}.csv"
 
 # Colors for output
@@ -223,6 +292,12 @@ fi
 if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
     echo -e "${YELLOW}Camera noise randomization disabled flag: ${DISABLE_CAMERA_NOISE_RANDOMIZATION}${NC}"
 fi
+if [ -n "$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}DRONE camera noise disabled override: ${DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}STATIC camera noise disabled override: ${DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION}${NC}"
+fi
 if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
     echo -e "${YELLOW}Camera frame dropout randomization disabled flag: ${DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION}${NC}"
 fi
@@ -240,6 +315,18 @@ if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
 fi
 if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
     echo -e "${YELLOW}Force curriculum level: ${FORCE_CURRICULUM_LEVEL}${NC}"
+fi
+if [ -n "$DISABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    echo -e "${YELLOW}Disable dynamic camera following flag: ${DISABLE_DYNAMIC_CAMERA_FOLLOWING}${NC}"
+fi
+if [ -n "$ENABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    echo -e "${YELLOW}Enable dynamic camera following override: ${ENABLE_DYNAMIC_CAMERA_FOLLOWING}${NC}"
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_YAW_SWEEP" ]; then
+    echo -e "${YELLOW}Static camera yaw sweep: ${ENABLE_STATIC_CAMERA_YAW_SWEEP}${NC}"
+fi
+if [ -n "$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG" ]; then
+    echo -e "${YELLOW}Static camera yaw sweep speed (deg/s): ${STATIC_CAMERA_YAW_SWEEP_SPEED_DEG}${NC}"
 fi
 echo ""
 echo -e "${YELLOW}Using fresh experiment name: ${EXPERIMENT_NAME}${NC}"
@@ -360,8 +447,20 @@ fi
 if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
     export SF_DISABLE_CAMERA_NOISE_RANDOMIZATION=$DISABLE_CAMERA_NOISE_RANDOMIZATION
 fi
+if [ -n "$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION=$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION=$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION
+fi
 if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
     export SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION=$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION
+fi
+if [ -n "$DISABLE_DRONE_CAMERA_FRAME_DROPOUT" ]; then
+    export SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT=$DISABLE_DRONE_CAMERA_FRAME_DROPOUT
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_FRAME_DROPOUT" ]; then
+    export SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT=$DISABLE_STATIC_CAMERA_FRAME_DROPOUT
 fi
 if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
     export SF_DISABLE_STATE_NOISE_RANDOMIZATION=$DISABLE_STATE_NOISE_RANDOMIZATION
@@ -377,6 +476,18 @@ if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
 fi
 if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
     export SF_FORCE_CURRICULUM_LEVEL=$FORCE_CURRICULUM_LEVEL
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_YAW_SWEEP" ]; then
+    export SF_ENABLE_STATIC_CAMERA_YAW_SWEEP=$ENABLE_STATIC_CAMERA_YAW_SWEEP
+fi
+if [ -n "$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG" ]; then
+    export SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG=$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG
+fi
+if [ -n "$STATIC_CAMERA_BASE_Y" ]; then
+    export SF_STATIC_CAMERA_BASE_Y=$STATIC_CAMERA_BASE_Y
+fi
+if [ -n "$STATIC_CAMERA_BASE_Z" ]; then
+    export SF_STATIC_CAMERA_BASE_Z=$STATIC_CAMERA_BASE_Z
 fi
 
 # Export headless setting for both main process and worker processes
@@ -418,7 +529,6 @@ TRAIN_CMD="python train_aerialgym_custom_net_gate.py \
     --gamma=0.98 \
     --reward_scale=0.1 \
     --max_grad_norm=1.0 \
-    --async_rl=true \
     --normalize_input=true \
     --use_env_info_cache=false \
     --with_wandb=true \
@@ -426,9 +536,18 @@ TRAIN_CMD="python train_aerialgym_custom_net_gate.py \
     --wandb_user=\"ziya-ruso-ucl\" \
     --wandb_group=\"gate_navigation_training\" \
     --wandb_tags \"aerial_gym\" \"gate_navigation\" \"dual_camera\" \"x500\" \"sample_factory\" \"memory_optimized\" \
-    --save_every_sec=120 \
-    --save_best_every_sec=5 \
-    --train_for_env_steps=${TRAIN_STEPS}"
+    --save_every_sec=1800 \
+    --save_best_every_sec=300 \
+    --train_for_env_steps=${TRAIN_STEPS} \
+    --train_for_seconds=0 \
+    --async_rl=false \
+    --serial_mode=true \
+    --policy_workers_per_policy=1"
+
+# Append seed if provided
+if [ -n "$SEED_VAL" ]; then
+    TRAIN_CMD="$TRAIN_CMD --seed=$SEED_VAL"
+fi
 
 # Add headless parameter based on viewer preference
 if [ "$ENABLE_VIEWER" = false ]; then
@@ -467,6 +586,18 @@ fi
 if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
     TRAIN_CMD="$TRAIN_CMD --disable_camera_frame_dropout_randomization=$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION"
 fi
+if [ -n "$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_drone_camera_noise_randomization=$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_static_camera_noise_randomization=$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_DRONE_CAMERA_FRAME_DROPOUT" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_drone_camera_frame_dropout=$DISABLE_DRONE_CAMERA_FRAME_DROPOUT"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_FRAME_DROPOUT" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_static_camera_frame_dropout=$DISABLE_STATIC_CAMERA_FRAME_DROPOUT"
+fi
 if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
     TRAIN_CMD="$TRAIN_CMD --disable_state_noise_randomization=$DISABLE_STATE_NOISE_RANDOMIZATION"
 fi
@@ -481,6 +612,32 @@ if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
 fi
 if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
     TRAIN_CMD="$TRAIN_CMD --force_curriculum_level=$FORCE_CURRICULUM_LEVEL"
+fi
+if [ -n "$DISABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_dynamic_camera_following=$DISABLE_DYNAMIC_CAMERA_FOLLOWING"
+fi
+if [ -n "$ENABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_dynamic_camera_following=$ENABLE_DYNAMIC_CAMERA_FOLLOWING"
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_YAW_SWEEP" ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_static_camera_yaw_sweep=$ENABLE_STATIC_CAMERA_YAW_SWEEP"
+fi
+if [ -n "$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_yaw_sweep_speed_deg=$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG"
+fi
+if [ -n "$STATIC_CAMERA_BASE_Y" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_base_y=$STATIC_CAMERA_BASE_Y"
+fi
+if [ -n "$STATIC_CAMERA_BASE_Z" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_base_z=$STATIC_CAMERA_BASE_Z"
+fi
+
+# Add fusion flags if provided
+if [ -n "$FUSION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --fusion=$FUSION"
+fi
+if [ -n "$GATE_PER_FEATURE" ]; then
+    TRAIN_CMD="$TRAIN_CMD --gate_per_feature=$GATE_PER_FEATURE"
 fi
 
 echo -e "${YELLOW}Training command:${NC}"

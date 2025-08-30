@@ -368,8 +368,8 @@ class NavigationTask(BaseTask):
         image_obs = 10.0 * self.obs_dict["depth_range_pixels"].squeeze(1)
         image_obs[image_obs < 0] = 10.0
         self.min_pixel_dist = torch.amin(image_obs, dim=(1, 2))
-        self.rewards[self.terminations < 0] += -exponential_reward_function(
-            4.0, 1.0, self.min_pixel_dist[self.terminations < 0]
+        self.rewards[~self.terminations] += -exponential_reward_function(
+            4.0, 1.0, self.min_pixel_dist[~self.terminations]
         )
 
     def get_return_tuple(self):

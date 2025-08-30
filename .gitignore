@@ -45,3 +45,4 @@ scripts/logs/**
 
 # Temp/misc
 aerial_g_gym/
+aerial_gym/utils/vae/datasets/static_frames_480x270/val/

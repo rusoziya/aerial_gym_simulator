@@ -155,6 +155,10 @@ class EnvManager(BaseManager):
         self.global_tensor_dict["crashes"] = torch.zeros(
             (self.num_envs), device=self.device, requires_grad=False, dtype=torch.bool
         )
+        # Dedicated terminations tensor (true MDP terminals: success, boundary violation, etc.)
+        self.global_tensor_dict["terminations"] = torch.zeros(
+            (self.num_envs), device=self.device, requires_grad=False, dtype=torch.bool
+        )
         self.global_tensor_dict["truncations"] = torch.zeros(
             (self.num_envs), device=self.device, requires_grad=False, dtype=torch.bool
         )
@@ -165,7 +169,16 @@ class EnvManager(BaseManager):
         self.global_tensor_dict["prev_env_actions"] = None
 
         self.collision_tensor = self.global_tensor_dict["crashes"]
+        self.termination_tensor = self.global_tensor_dict["terminations"]
         self.truncation_tensor = self.global_tensor_dict["truncations"]
+
+        # Initialize per-env gate variant selection counters for deterministic randomization
+        try:
+            self.global_tensor_dict["gate_variant_counter"] = torch.zeros(
+                (self.num_envs), device=self.device, dtype=torch.int64
+            )
+        except Exception:
+            pass
 
         # Before we populate the environment, we need to create the ground plane
         if self.cfg.env.create_ground_plane:
@@ -428,25 +441,25 @@ class EnvManager(BaseManager):
 
             # Curriculum-gated unlocking of gate variants (threshold-based):
             # At level 3: allow all scales >= 80%
-            # At level 23: allow all scales >= 40%
+            # At level 23: allow all scales >= 60% (enforced lower bound)
             cur_level = self.global_tensor_dict.get("curriculum_level", 3)
             try:
                 cur_level = int(cur_level.item()) if hasattr(cur_level, 'item') else int(cur_level)
             except Exception:
                 cur_level = 3
             
-            # Compute linear threshold from 80 -> 40 over levels 3..23
+            # Compute linear threshold from 80 -> 60 over levels 3..23 (never below 60)
             if cur_level <= 3:
                 min_allowed_scale = 80
             elif cur_level >= 23:
-                min_allowed_scale = 40
+                min_allowed_scale = 60
             else:
                 frac = (cur_level - 3) / (23 - 3)
-                raw = 80 - frac * (80 - 40)
+                raw = 80 - frac * (80 - 60)
                 # Quantize down to nearest 2%% step (80, 78, 76, ...)
                 min_allowed_scale = int((int(raw) // 2) * 2)
-                if min_allowed_scale < 40:
-                    min_allowed_scale = 40
+                if min_allowed_scale < 60:
+                    min_allowed_scale = 60
                 if min_allowed_scale > 100:
                     min_allowed_scale = 100
             
@@ -467,13 +480,22 @@ class EnvManager(BaseManager):
                 parsed.sort(key=lambda x: x[1], reverse=True)
                 allowed_js = [j for (j, _, __) in parsed[:1]] if parsed else []
             
-            # Choose uniformly across unique scales to avoid duplicate weighting
+            # Deterministic randomization across runs: use torch RNG seeded globally and per-env counter
             if allowed_js:
                 allowed_pairs = [(j, scale) for (j, scale, _) in parsed if j in allowed_js]
                 unique_scales = sorted({scale for (_, scale) in allowed_pairs}, reverse=True)
-                chosen_scale = random.choice(unique_scales)
+                # Increment per-env counter to advance RNG in a deterministic manner
+                try:
+                    self.global_tensor_dict["gate_variant_counter"][env_id] += 1
+                except Exception:
+                    pass
+                # Sample an index deterministically using torch's seeded RNG
+                # Pick a scale bucket first
+                scale_idx = int(torch.randint(low=0, high=len(unique_scales), size=(1,), device=self.device).item())
+                chosen_scale = unique_scales[scale_idx]
                 candidates = [j for (j, scale) in allowed_pairs if scale == chosen_scale]
-                chosen_idx = random.choice(candidates)
+                cand_idx = int(torch.randint(low=0, high=len(candidates), size=(1,), device=self.device).item())
+                chosen_idx = candidates[cand_idx]
             else:
                 chosen_idx = 0
             chosen_local_index = gate_indices[chosen_idx]
@@ -547,6 +569,7 @@ class EnvManager(BaseManager):
 
     def reset_tensors(self):
         self.collision_tensor[:] = 0
+        self.termination_tensor[:] = 0
         self.truncation_tensor[:] = 0
 
     def simulate(self, actions, env_actions):
@@ -569,12 +592,15 @@ class EnvManager(BaseManager):
 
     def reset_terminated_and_truncated_envs(self):
         collision_envs = self.collision_tensor.nonzero(as_tuple=False).squeeze(-1)
+        termination_envs = self.termination_tensor.nonzero(as_tuple=False).squeeze(-1)
         truncation_envs = self.truncation_tensor.nonzero(as_tuple=False).squeeze(-1)
-        envs_to_reset = (
-            (self.collision_tensor * int(self.cfg.env.reset_on_collision) + self.truncation_tensor)
-            .nonzero(as_tuple=False)
-            .squeeze(-1)
+        # Reset on: collisions (if enabled), terminations (always), or truncations
+        reset_mask = (
+            (self.collision_tensor & bool(self.cfg.env.reset_on_collision))
+            | self.termination_tensor
+            | self.truncation_tensor
         )
+        envs_to_reset = reset_mask.nonzero(as_tuple=False).squeeze(-1)
         # reset the environments that have a collision
         if len(envs_to_reset) > 0:
             self.reset_idx(envs_to_reset)
@@ -633,6 +659,8 @@ class EnvManager(BaseManager):
             self.simulate(actions, env_actions)
             self.compute_observations()
         self.sim_steps[:] = self.sim_steps[:] + 1
+        # Expose sim steps to global tensor dict for modules needing a global time base (e.g., static camera yaw sweep)
+        self.global_tensor_dict["sim_steps"] = self.sim_steps
         self.step_counter += 1
         if self.step_counter % self.cfg.env.render_viewer_every_n_steps == 0:
             self.render(render_components="viewer")

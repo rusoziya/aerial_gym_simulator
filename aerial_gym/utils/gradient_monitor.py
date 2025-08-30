@@ -116,21 +116,70 @@ class CompleteObservationInfluenceTracker:
         self.enabled = False
         
     def _activation_hook(self, module, input, output):
-        """Hook that captures activations and analyzes complete observation influence."""
+        """Hook that captures activations and analyzes complete observation influence.
+        Robust to modules that accept/return dicts or tuples (SF encoders, custom fusion encoders).
+        """
         if not self.enabled:
             return
-            
+
+        def _extract_obs_tensor(obj):
+            # Try common wrapper types: tuple(list(dict(...)))
+            try:
+                import torch as _torch
+                # Direct tensor
+                if isinstance(obj, _torch.Tensor):
+                    return obj
+                # Tuple/list: search first tensor or dict field
+                if isinstance(obj, (tuple, list)) and len(obj) > 0:
+                    return _extract_obs_tensor(obj[0])
+                # Dict: typical Sample Factory keys
+                if isinstance(obj, dict):
+                    if 'obs' in obj and isinstance(obj['obs'], _torch.Tensor):
+                        return obj['obs']
+                    if 'observations' in obj and isinstance(obj['observations'], _torch.Tensor):
+                        return obj['observations']
+                    # Fallback: first tensor value
+                    for v in obj.values():
+                        if isinstance(v, _torch.Tensor):
+                            return v
+                return None
+            except Exception:
+                return None
+
+        def _extract_feat_tensor(obj):
+            try:
+                import torch as _torch
+                if isinstance(obj, _torch.Tensor):
+                    return obj
+                if isinstance(obj, (tuple, list)) and len(obj) > 0:
+                    return _extract_feat_tensor(obj[0])
+                if isinstance(obj, dict):
+                    for key in ('encoding', 'x', 'h', 'features', 'out'):
+                        if key in obj and isinstance(obj[key], _torch.Tensor):
+                            return obj[key]
+                    for v in obj.values():
+                        if isinstance(v, _torch.Tensor):
+                            return v
+                return None
+            except Exception:
+                return None
+
         try:
-            # Extract observations and encoded features
-            observations = input[0] if isinstance(input, tuple) else input
-            encoded_features = output
-            
-            if observations.dim() != 2 or observations.shape[1] != 150:
-                return  # Skip if not the expected observation format
-                
+            observations = _extract_obs_tensor(input)
+            encoded_features = _extract_feat_tensor(output)
+
+            # Validate
+            if observations is None or not hasattr(observations, 'dim'):
+                return
+            if encoded_features is None or not hasattr(encoded_features, 'dim'):
+                return
+            if observations.dim() != 2 or observations.shape[1] < 81:
+                # Expect at least the standard 81D or the 150D gate observation
+                return
+
             # Analyze influence for all observation components
             self._analyze_complete_observation_influence(observations, encoded_features)
-            
+
         except Exception as e:
             if self.step_count < 5:  # Only log errors for first few steps
                 logger.warning(f"🔧 Hook analysis error: {e}")

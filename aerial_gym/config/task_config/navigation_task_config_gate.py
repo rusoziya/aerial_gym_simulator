@@ -30,6 +30,14 @@ class task_config:
     )
     # user can set the above to true if they so desire
 
+    # DEBUG TOGGLES
+    # Enable verbose guard logs (NaN/Inf in actions/observations) and reward outlier detection
+    guard_debug_enabled = True
+    # Threshold below which a reward is considered an outlier and logged (collision is -100)
+    reward_outlier_threshold = -180.0
+    # Max number of env indices to include in a single outlier log line
+    reward_outlier_log_limit_per_step = 8
+
     # Target positions (goals) - keep targets on front side of gate
     # Front side (positive Y) where obstacles are, forcing gate navigation
     # Obstacles at Y = [+2.0, +3.2], so targets should be beyond Y = +3.6
@@ -113,6 +121,11 @@ class task_config:
         # "camera_facing_reward_magnitude": 5.0,  # Enhanced reward for drone camera facing towards gate (from user's previous request)
         "camera_facing_reward_magnitude": 0.0,  # Enhanced reward for drone camera facing towards gate (TRIPLED from 1.0)
 
+        # IMAGE-BASED PENALTY (depth min distance, 0.4m-20.0m range)
+        # Penalty applied as -exp(-(d^2)*exponent) * magnitude for non-terminated envs
+        "image_penalty_magnitude": 0.2,
+        "image_penalty_exponent": 2.0,
+
         
         # NEW: Altitude maintenance reward to encourage proper gate-level flying
         "altitude_maintenance_reward_magnitude": 0.0,  # Reward for staying at gate height (1.2-1.8m)
@@ -120,6 +133,8 @@ class task_config:
         
         # Gate collision penalty (separate from general collision for specificity)
         "gate_collision_penalty": -50.0,  # Additional penalty for hitting gate specifically
+        # Boundary violation penalty magnitude (applied once per episode when crossing to front side outside passage window)
+        "boundary_violation_penalty_magnitude": 50.0,
     }
 
     # Shared VAE configuration for both drone and static cameras (Memory-Optimized)
@@ -173,23 +188,42 @@ class task_config:
         max_drone_orient_noise_rad = 0.008726646259971648   # 0.5 deg
 
         # 8. SPAWN RANGE PROGRESSION (Levels 3-23) — curriculum-controlled spawn
+        # OLD (kept for easy rollback):
+        # spawn_easy_x_half_span_m = 0.20
+        # spawn_easy_y_center_m = -2.0
+        # spawn_easy_y_half_span_m = 0.05
+        # spawn_easy_z_center_m = 1.5
+        # spawn_easy_z_half_span_m = 0.05
+        # spawn_hard_x_half_span_m = 1.20
+        # spawn_hard_y_center_m = -2.0
+        # spawn_hard_y_half_span_m = 0.20
+        # spawn_hard_z_center_m = 1.5
+        # spawn_hard_z_half_span_m = 0.10
+        
         spawn_start_level = 3
         spawn_end_level = 23
-        # Easy (level 3) spawn: tight
-        spawn_easy_x_half_span_m = 0.20
-        spawn_easy_y_center_m = -2.0
-        spawn_easy_y_half_span_m = 0.05
-        spawn_easy_z_center_m = 1.5
-        spawn_easy_z_half_span_m = 0.05
-        # At the easiest level, force camera to face the gate: 0° jitter
+        
+        # NEW (request):
+        # - X half-span: ±0.5m at L3 → ±2.0m at L23 (linear)
+        # - Y fixed at -1.5m (no randomization)
+        # - Z range: [0.75, 1.50] at L3 → [0.50, 1.75] at L23 (linear)
+        #   Both intervals are centered at 1.125m, so center stays constant; half-span grows 0.375 → 0.625
+        spawn_easy_x_half_span_m = 0.50
+        spawn_hard_x_half_span_m = 2.00
+        
+        spawn_easy_y_center_m = -1.50
+        spawn_hard_y_center_m = -1.50
+        # Remove Y randomization by setting half-span to 0 at all levels
+        spawn_easy_y_half_span_m = 0.00
+        spawn_hard_y_half_span_m = 0.00
+        
+        spawn_easy_z_center_m = 1.125
+        spawn_hard_z_center_m = 1.125
+        spawn_easy_z_half_span_m = 0.375  # 1.125±0.375 ⇒ [0.75, 1.50]
+        spawn_hard_z_half_span_m = 0.625  # 1.125±0.625 ⇒ [0.50, 1.75]
+        
+        # Yaw jitter schedule: keep 0° at easy; 30° at hard (unchanged)
         spawn_easy_yaw_abs_rad = 0.0 * 3.141592653589793 / 180.0
-        # Hard (level 23) spawn: matches prior LMF2
-        spawn_hard_x_half_span_m = 1.20
-        spawn_hard_y_center_m = -2.0
-        spawn_hard_y_half_span_m = 0.20
-        spawn_hard_z_center_m = 1.5
-        spawn_hard_z_half_span_m = 0.10
-        # Reduce maximum spawn yaw jitter at hardest level to 30°
         spawn_hard_yaw_abs_rad = 30.0 * 3.141592653589793 / 180.0
         
         # EVALUATION PARAMETERS
@@ -197,16 +231,16 @@ class task_config:
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
         decrease_step = 1  # Allow decreases by 1 level when success collapses
         success_rate_for_increase = 0.6  # Promote when SR > 60%
-        success_rate_for_decrease = 0.25   # Demote when SR < 25%
+        success_rate_for_decrease = 0.3   # Demote when SR < 25%
         cooldown_windows = 3  # After any change, hold level for this many evaluation windows
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
         # Each curriculum level controls multiple aspects of difficulty:
         
-        # 1. OBSTACLE COUNT PROGRESSION (Levels 3-23: Increase obstacles behind gate)
-        # Levels 3-23: Direct 1:1 mapping - curriculum level = obstacle count
-        # Level 3: 3 obstacles, Level 4: 4 obstacles, ..., Level 23: 23 obstacles
-        max_obstacles_behind_gate = 25  # Maximum obstacles behind gate (level 23 + buffer)
+        # 1. OBSTACLE COUNT PROGRESSION (Levels 3-23)
+        # Linear schedule: Level 3 → 3 obstacles, Level 23 → 10 obstacles
+        # Intermediate levels interpolate linearly and are rounded to nearest integer
+        max_obstacles_behind_gate = 10  # Final cap at level 23
         
         # CRITICAL FIX: Ensure asset capacity matches environment configuration  
         # Gate environment now loads 30 objects initially, curriculum can use up to 25
@@ -226,10 +260,24 @@ class task_config:
         camera_orientation_start_level = 5    # Start camera orientation changes at level 5
         max_camera_angle_degrees = 25         # Maximum camera angle from straight-on view (was 30)
         
+        # DYNAMIC CAMERA FOLLOWING CONFIGURATION
+        # Toggle between static camera (curriculum-based positioning) and dynamic following
+        enable_dynamic_camera_following = False  # Toggle: False = static camera, True = follow drone
+        
+        # Dynamic camera offset relative to drone position (in meters)
+        # Camera position = drone_position + offset_vector
+        # Camera always looks towards ADAPTIVE gate center (varies per environment based on gate size/position)
+        dynamic_camera_follow_distance_x = 0.0   # No lateral offset - directly behind drone
+        dynamic_camera_follow_distance_y = -1.0  # Distance behind drone in Y direction (meters)
+        dynamic_camera_follow_distance_z = 0.0   # No Z offset as requested (camera at same height as drone)
+        
         # DEBUGGING AND MONITORING
         enable_detailed_logging = True  # Enable comprehensive curriculum debugging
         log_curriculum_changes = True   # Log all curriculum aspect changes
         save_curriculum_metrics = True  # Save curriculum metrics to wandb
+        
+        # CAMERA BEHAVIOR LOGGING
+        log_camera_following = False    # Log dynamic camera following behavior (can be verbose)
 
         def update_curriculim_level(self, success_rate, current_level):
             """
@@ -250,27 +298,31 @@ class task_config:
         @staticmethod
         def get_obstacle_count_behind_gate(level):
             """
-            Calculate number of obstacles behind gate based on curriculum level.
-            
-            FIXED: Direct 1:1 mapping between curriculum level and obstacle count
+            Number of obstacles behind gate based on curriculum level (3→23).
             - Level 3: 3 obstacles
-            - Level 4: 4 obstacles
-            - ...
-            - Level 23: 23 obstacles
-            
-            Simple progression: obstacle_count = curriculum_level
+            - Level 23: 10 obstacles
+            - Linear interpolation in between (rounded to nearest int)
             """
-            max_obstacles_behind_gate = 25  # INCREASED: Support up to 25 obstacles (level 23 + buffer)
+            min_level = getattr(task_config.curriculum, 'min_level', 3)
+            max_level = getattr(task_config.curriculum, 'max_level', 23)
+            start_obstacles = 3
+            end_obstacles = 10
             total_asset_capacity = 30  # Must match gate_object_params.num_assets in gate_env.py
             
-            # SIMPLE DIRECT MAPPING: curriculum level = obstacle count
-            requested_obstacles = level
+            # Clamp level
+            if level <= min_level:
+                requested_obstacles = start_obstacles
+            elif level >= max_level:
+                requested_obstacles = end_obstacles
+            else:
+                progress = (level - min_level) / float(max_level - min_level)
+                requested_obstacles = int(round(start_obstacles + progress * (end_obstacles - start_obstacles)))
             
-            # CRITICAL VALIDATION: Ensure we never exceed total asset capacity
+            # Safety clamps
+            requested_obstacles = max(start_obstacles, min(end_obstacles, requested_obstacles))
             if requested_obstacles > total_asset_capacity:
                 print(f"WARNING: Curriculum requested {requested_obstacles} obstacles but only {total_asset_capacity} available!")
                 requested_obstacles = total_asset_capacity
-            
             return requested_obstacles
         
         @staticmethod
@@ -279,8 +331,8 @@ class task_config:
             Calculate camera noise parameters based on curriculum level.
             
             LINEAR PROGRESSION: Level 3 → Level 23
-            - Level 3: 0% noise (no noise at start)
-            - Level 23: Maximum noise (full D455 simulation)
+            - Level 3: Non-zero starting values (5% of max)
+            - Level 23: 0.0125 Gaussian noise, 0.0125 dropout (maximum values)
             - Linear interpolation between levels
             
             D455 Camera Noise Simulation:
@@ -294,61 +346,64 @@ class task_config:
                 tuple: (gaussian_std, dropout_rate) - Noise parameters for current level
             """
             # Linear progression constants
-            camera_noise_start_level = 3       # Start at level 3 with 0 noise
+            camera_noise_start_level = 3       # Start at level 3
             camera_noise_end_level = 23        # End at level 23 with max noise
-            max_gaussian_noise_std = 0.0125    # Maximum Gaussian noise: 1.25% of depth range
-            max_pixel_dropout_rate = 0.0125    # Halved: 1.25% of pixels
             
-            # Linear progression from level 3 to 23
-            if level <= camera_noise_start_level:
-                return 0.0, 0.0  # No noise at level 3
-            elif level >= camera_noise_end_level:
-                return max_gaussian_noise_std, max_pixel_dropout_rate  # Full noise at level 23
-            else:
-                # Linear interpolation between start and end levels
-                level_progress = (level - camera_noise_start_level) / (camera_noise_end_level - camera_noise_start_level)
-                gaussian_std = level_progress * max_gaussian_noise_std
-                dropout_rate = level_progress * max_pixel_dropout_rate
-                return gaussian_std, dropout_rate
+            # Level 3 starting values (5% of max) and Level 23 maximum values
+            max_gaussian_noise_std = 0.0125    # Level 23: 0.0125
+            max_pixel_dropout_rate = 0.0125    # Level 23: 0.0125
+            min_gaussian_noise_std = max_gaussian_noise_std * 0.05    # Level 3: 0.000625 (5% of max)
+            min_pixel_dropout_rate = max_pixel_dropout_rate * 0.05    # Level 3: 0.000625 (5% of max)
+            
+            # Clamp level to valid range
+            level = max(camera_noise_start_level, min(camera_noise_end_level, level))
+            
+            # Linear interpolation from level 3 to level 23
+            level_progress = (level - camera_noise_start_level) / (camera_noise_end_level - camera_noise_start_level)
+            gaussian_std = min_gaussian_noise_std + level_progress * (max_gaussian_noise_std - min_gaussian_noise_std)
+            dropout_rate = min_pixel_dropout_rate + level_progress * (max_pixel_dropout_rate - min_pixel_dropout_rate)
+            
+            return gaussian_std, dropout_rate
 
         @staticmethod
         def get_camera_frame_dropout(level):
             """
             Linear schedules for entire-frame dropouts with split freeze/blank probabilities.
+            
+            LINEAR PROGRESSION: Level 3 → Level 23
+            - Level 3: Non-zero starting values (5% of max)
+            - Level 23: 5.0% freeze, 0.5% blank (maximum values)
+            - Linear interpolation between levels
+            
             Returns a dict with keys:
               - 'drone_freeze', 'drone_blank', 'static_freeze', 'static_blank'
               - 'drone_total' (freeze+blank), 'static_total' (freeze+blank)
             """
-            start = task_config.curriculum.frame_dropout_start_level
-            end = task_config.curriculum.frame_dropout_end_level
-            if level <= start:
-                return {
-                    "drone_freeze": 0.0,
-                    "drone_blank": 0.0,
-                    "static_freeze": 0.0,
-                    "static_blank": 0.0,
-                    "drone_total": 0.0,
-                    "static_total": 0.0,
-                }
-            if level >= end:
-                df = task_config.curriculum.max_frame_freeze_prob_drone
-                db = task_config.curriculum.max_frame_blank_prob_drone
-                sf = task_config.curriculum.max_frame_freeze_prob_static
-                sb = task_config.curriculum.max_frame_blank_prob_static
-                return {
-                    "drone_freeze": df,
-                    "drone_blank": db,
-                    "static_freeze": sf,
-                    "static_blank": sb,
-                    "drone_total": df + db,
-                    "static_total": sf + sb,
-                }
-            # Linear interpolation between start and end levels
+            start = task_config.curriculum.frame_dropout_start_level  # Level 3
+            end = task_config.curriculum.frame_dropout_end_level      # Level 23
+            
+            # Define start and end values for linear interpolation
+            max_drone_freeze = task_config.curriculum.max_frame_freeze_prob_drone  # Level 23: 5%
+            max_drone_blank = task_config.curriculum.max_frame_blank_prob_drone    # Level 23: 0.5%
+            max_static_freeze = task_config.curriculum.max_frame_freeze_prob_static # Level 23: 5%
+            max_static_blank = task_config.curriculum.max_frame_blank_prob_static   # Level 23: 0.5%
+            
+            # Level 3 starting values (5% of max)
+            min_drone_freeze = max_drone_freeze * 0.05    # Level 3: 0.25% (5% of 5%)
+            min_drone_blank = max_drone_blank * 0.05      # Level 3: 0.025% (5% of 0.5%)
+            min_static_freeze = max_static_freeze * 0.05  # Level 3: 0.25% (5% of 5%)
+            min_static_blank = max_static_blank * 0.05    # Level 3: 0.025% (5% of 0.5%)
+            
+            # Clamp level to valid range
+            level = max(start, min(end, level))
+            
+            # Linear interpolation from level 3 to level 23
             progress = (level - start) / float(end - start)
-            df = progress * task_config.curriculum.max_frame_freeze_prob_drone
-            db = progress * task_config.curriculum.max_frame_blank_prob_drone
-            sf = progress * task_config.curriculum.max_frame_freeze_prob_static
-            sb = progress * task_config.curriculum.max_frame_blank_prob_static
+            df = min_drone_freeze + progress * (max_drone_freeze - min_drone_freeze)
+            db = min_drone_blank + progress * (max_drone_blank - min_drone_blank)
+            sf = min_static_freeze + progress * (max_static_freeze - min_static_freeze)
+            sb = min_static_blank + progress * (max_static_blank - min_static_blank)
+            
             return {
                 "drone_freeze": df,
                 "drone_blank": db,
@@ -362,32 +417,42 @@ class task_config:
         def get_state_noise(level):
             """
             Linear schedules for state/pose noise (drone & static), per-axis Gaussian stds.
+            
+            LINEAR PROGRESSION: Level 3 → Level 23
+            - Level 3: Non-zero starting values (5% of max)
+            - Level 23: Maximum values (drone pos 0.02m, drone orient 0.5°, static pos 0.05m, static orient 1.0°)
+            - Linear interpolation between levels
+            
             Returns dict with keys:
               - drone_pos_std_m, drone_orient_std_rad
               - static_pos_std_m, static_orient_std_rad
             """
-            start = task_config.curriculum.state_noise_start_level
-            end = task_config.curriculum.state_noise_end_level
-            if level <= start:
-                return {
-                    "drone_pos_std_m": 0.0,
-                    "drone_orient_std_rad": 0.0,
-                    "static_pos_std_m": 0.0,
-                    "static_orient_std_rad": 0.0,
-                }
-            if level >= end:
-                return {
-                    "drone_pos_std_m": task_config.curriculum.max_drone_pos_noise_m,
-                    "drone_orient_std_rad": task_config.curriculum.max_drone_orient_noise_rad,
-                    "static_pos_std_m": task_config.curriculum.max_static_pos_noise_m,
-                    "static_orient_std_rad": task_config.curriculum.max_static_orient_noise_rad,
-                }
+            start = task_config.curriculum.state_noise_start_level  # Level 3
+            end = task_config.curriculum.state_noise_end_level      # Level 23
+            
+            # Define start and end values for linear interpolation
+            max_drone_pos_noise = task_config.curriculum.max_drone_pos_noise_m  # Level 23: 0.02m
+            max_drone_orient_noise = task_config.curriculum.max_drone_orient_noise_rad  # Level 23: 0.5°
+            max_static_pos_noise = task_config.curriculum.max_static_pos_noise_m  # Level 23: 0.05m
+            max_static_orient_noise = task_config.curriculum.max_static_orient_noise_rad  # Level 23: 1.0°
+            
+            # Level 3 starting values (5% of max)
+            min_drone_pos_noise = max_drone_pos_noise * 0.05  # Level 3: 0.001m (5% of 0.02m)
+            min_drone_orient_noise = max_drone_orient_noise * 0.05  # Level 3: ~0.025° (5% of 0.5°)
+            min_static_pos_noise = max_static_pos_noise * 0.05  # Level 3: 0.0025m (5% of 0.05m)
+            min_static_orient_noise = max_static_orient_noise * 0.05  # Level 3: ~0.05° (5% of 1.0°)
+            
+            # Clamp level to valid range
+            level = max(start, min(end, level))
+            
+            # Linear interpolation from level 3 to level 23
             progress = (level - start) / float(end - start)
+            
             return {
-                "drone_pos_std_m": progress * task_config.curriculum.max_drone_pos_noise_m,
-                "drone_orient_std_rad": progress * task_config.curriculum.max_drone_orient_noise_rad,
-                "static_pos_std_m": progress * task_config.curriculum.max_static_pos_noise_m,
-                "static_orient_std_rad": progress * task_config.curriculum.max_static_orient_noise_rad,
+                "drone_pos_std_m": min_drone_pos_noise + progress * (max_drone_pos_noise - min_drone_pos_noise),
+                "drone_orient_std_rad": min_drone_orient_noise + progress * (max_drone_orient_noise - min_drone_orient_noise),
+                "static_pos_std_m": min_static_pos_noise + progress * (max_static_pos_noise - min_static_pos_noise),
+                "static_orient_std_rad": min_static_orient_noise + progress * (max_static_orient_noise - min_static_orient_noise),
             }
 
         @staticmethod
@@ -460,6 +525,20 @@ class task_config:
             height_offset = 0.0
             distance_offset = 0.0
             return max_camera_angle, height_offset, distance_offset
+        
+        @staticmethod
+        def get_dynamic_camera_follow_offset():
+            """
+            Get the offset vector for dynamic camera following.
+            
+            Returns:
+                tuple: (x_offset, y_offset, z_offset) in meters
+            """
+            return (
+                task_config.curriculum.dynamic_camera_follow_distance_x,
+                task_config.curriculum.dynamic_camera_follow_distance_y, 
+                task_config.curriculum.dynamic_camera_follow_distance_z
+            )
 
     # Static camera curriculum positioning based on difficulty level
     class static_camera_curriculum:

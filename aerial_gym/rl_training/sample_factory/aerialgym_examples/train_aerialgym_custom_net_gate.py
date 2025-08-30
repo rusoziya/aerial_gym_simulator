@@ -42,6 +42,8 @@ from typing import Dict, Optional, Tuple
 import isaacgym
 import gymnasium as gym
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 import matplotlib.cm
 from PIL import Image
@@ -51,6 +53,9 @@ import math
 
 from torch import Tensor
 from sample_factory.algo.utils.gymnasium_utils import convert_space
+from sample_factory.algo.utils.context import global_model_factory
+from sample_factory.model.encoder import Encoder, ObsSpace, create_mlp, calc_num_elements, nonlinearity
+import gymnasium.spaces as spaces
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
 from sample_factory.envs.env_utils import register_env
 from sample_factory.train import run_rl
@@ -60,6 +65,17 @@ from sample_factory.utils.utils import str2bool
 from aerial_gym.registry.task_registry import task_registry
 
 import numpy as np
+
+# Enforce deterministic backends for reproducibility
+try:
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    # torch.backends.cuda.matmul.allow_tf32 = False
+    # torch.backends.cudnn.allow_tf32 = False
+    # Leave TF32 as default (enabled on Ampere) for performance unless overridden externally
+except Exception:
+    pass
 
 
 class AerialGymVecEnv(gym.Env):
@@ -106,6 +122,10 @@ class AerialGymVecEnv(gym.Env):
         # Debug: Print action space info to verify it's 4D
         print(f"[AerialGymVecEnv] Forced action space shape: {self.action_space.shape}")
         print(f"[AerialGymVecEnv] is_multiagent: {self.is_multiagent}, num_agents: {self.num_agents}")
+
+        # Fusion controls
+        self.fusion_mode = os.environ.get('SF_FUSION_MODE', 'concat')
+        self.gate_per_feature = os.environ.get('SF_GATE_PER_FEATURE', '1') == '1'
 
         # DYNAMIC OBSERVATION SPACE: Detect observation space dimension from task config
         # This handles both standard DCE navigation (81D) and gate navigation (147D)
@@ -175,6 +195,26 @@ class AerialGymVecEnv(gym.Env):
             'total_timeouts': 0,
         }
 
+        # Build fusion module for gated mode (drop-in; actor-critic trunk remains in SF)
+        if self.fusion_mode == 'gated':
+            class DualGatedLateFusion(nn.Module):
+                def __init__(self, latent_dim=64, kin_dim=22, last_act_dim=0, trunk_dims=(512,256,128), gate_per_feature=True):
+                    super().__init__()
+                    D = latent_dim
+                    self.ego_proj    = nn.Sequential(nn.LayerNorm(D), nn.Linear(D, D), nn.ELU(), nn.LayerNorm(D))
+                    self.static_proj = nn.Sequential(nn.LayerNorm(D), nn.Linear(D, D), nn.ELU(), nn.LayerNorm(D))
+                    gate_out = D if gate_per_feature else 1
+                    self.gate = nn.Sequential(nn.Linear(2*D, D), nn.ELU(), nn.Linear(D, gate_out))
+                def forward(self, ego_latent, static_latent):
+                    e = self.ego_proj(ego_latent)
+                    s = self.static_proj(static_latent)
+                    g = torch.sigmoid(self.gate(torch.cat([e, s], dim=-1)))
+                    if g.shape[-1] == 1:
+                        g = g.expand_as(e)
+                    z = g * s + (1 - g) * e
+                    return z, g
+            self._gated_fuser = DualGatedLateFusion(latent_dim=64, gate_per_feature=self.gate_per_feature).to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+
     def _process_camera_image(self, image_data, camera_type="depth"):
         """Process camera image for GIF saving."""
         if camera_type == "depth":
@@ -200,9 +240,10 @@ class AerialGymVecEnv(gym.Env):
         Return-drop ablation controlled by environment variables.
         Supported env vars:
           - ABLATE_DRONE_POS=true           -> zero [0:3]
-          - ABLATE_OBS_RANGES="0:3=zero,22:86=shuffle,86:150=noise:0.1"
+          - ABLATE_OBS_RANGES="0:3=zero,22:86=shuffle,86:150=noise:0.1,0:22=zerograd"
         Ops:
           - zero     : set slice to 0
+          - zerograd : set slice to constant zeros detached from graph (no grad influence)
           - shuffle  : permute values across envs for this slice
           - noise:std: add Gaussian noise with given std
         """
@@ -224,6 +265,9 @@ class AerialGymVecEnv(gym.Env):
         spec_str = os.environ.get("ABLATE_OBS_RANGES", "").strip()
         if not spec_str:
             return obs_tensor
+        grad_mask = None
+        zero_ranges = []
+        zerograd_ranges = []
         for spec in spec_str.split(","):
             spec = spec.strip()
             if not spec:
@@ -241,11 +285,14 @@ class AerialGymVecEnv(gym.Env):
                 continue
             op = rhs
             if op == "zero":
-                obs_tensor[:, start:end] = 0.0
-                if debug and self._ablate_debug_count < 10:
-                    v = obs_tensor[:, start:end]
-                    print(f"[ABLATE_DEBUG] applied: {start}:{end}=zero | min={v.min().item():.3e} max={v.max().item():.3e} mean={v.mean().item():.3e} nonzero={int((v!=0).sum().item())}")
-                    self._ablate_debug_count += 1
+                # Defer zeroing via a constant mask so gradients are zeroed on these dims too
+                if grad_mask is None:
+                    grad_mask = torch.ones_like(obs_tensor)
+                grad_mask[:, start:end] = 0.0
+                zero_ranges.append((start, end))
+            elif op == "zerograd":
+                # Mark for replacement with constant zeros detached from the current graph
+                zerograd_ranges.append((start, end))
             elif op == "shuffle":
                 if obs_tensor.shape[0] > 1:
                     perm = torch.randperm(obs_tensor.shape[0], device=obs_tensor.device)
@@ -266,6 +313,29 @@ class AerialGymVecEnv(gym.Env):
                     v = obs_tensor[:, start:end]
                     print(f"[ABLATE_DEBUG] applied: {start}:{end}=noise:{std} | std_est={v.std().item():.3e} mean={v.mean().item():.3e}")
                     self._ablate_debug_count += 1
+        # Apply accumulated mask at once (for `zero` ops)
+        if grad_mask is not None:
+            obs_tensor = obs_tensor * grad_mask
+            if debug:
+                for (start, end) in zero_ranges:
+                    if self._ablate_debug_count >= 10:
+                        break
+                    v = obs_tensor[:, start:end]
+                    print(f"[ABLATE_DEBUG] applied: {start}:{end}=zero | min={v.min().item():.3e} max={v.max().item():.3e} mean={v.mean().item():.3e} nonzero={int((v!=0).sum().item())}")
+                    self._ablate_debug_count += 1
+
+        # Apply zerograd replacements last: replace ranges with constant zero tensors detached from the graph
+        for (start, end) in zerograd_ranges:
+            # Build zero slice that is not connected to original obs_tensor graph
+            zero_slice = torch.zeros_like(obs_tensor[:, start:end])
+            # Concatenate to avoid any multiply-by-zero path
+            left = obs_tensor[:, :start]
+            right = obs_tensor[:, end:]
+            obs_tensor = torch.cat([left, zero_slice, right], dim=-1)
+            if debug and self._ablate_debug_count < 10:
+                v = obs_tensor[:, start:end]
+                print(f"[ABLATE_DEBUG] applied: {start}:{end}=zerograd | min={v.min().item():.3e} max={v.max().item():.3e} mean={v.mean().item():.3e} nonzero={int((v!=0).sum().item())}")
+                self._ablate_debug_count += 1
         return obs_tensor
 
     def _collect_frames(self, obs_dict):
@@ -423,30 +493,30 @@ class AerialGymVecEnv(gym.Env):
             except Exception:
                 level_suffix = ""
             
-            # Save drone camera GIFs
-            if len(self.drone_depth_frames[env_id]) > 0:
-                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_depth{level_suffix}.gif")
-                self.drone_depth_frames[env_id][0].save(
-                    gif_path,
-                    save_all=True,
-                    append_images=self.drone_depth_frames[env_id][1:],
-                    duration=100,
-                    loop=0
-                )
-                print(f"[GIF] Saved drone depth: {gif_path}")
+            # # Save drone camera GIFs (disabled to reduce output volume)
+            # if len(self.drone_depth_frames[env_id]) > 0:
+            #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_depth{level_suffix}.gif")
+            #     self.drone_depth_frames[env_id][0].save(
+            #         gif_path,
+            #         save_all=True,
+            #         append_images=self.drone_depth_frames[env_id][1:],
+            #         duration=100,
+            #         loop=0
+            #     )
+            #     print(f"[GIF] Saved drone depth: {gif_path}")
             
-            if len(self.drone_seg_frames[env_id]) > 0:
-                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_seg{level_suffix}.gif")
-                self.drone_seg_frames[env_id][0].save(
-                    gif_path,
-                    save_all=True,
-                    append_images=self.drone_seg_frames[env_id][1:],
-                    duration=100,
-                    loop=0
-                )
-                print(f"[GIF] Saved drone segmentation: {gif_path}")
+            # if len(self.drone_seg_frames[env_id]) > 0:
+            #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_seg{level_suffix}.gif")
+            #     self.drone_seg_frames[env_id][0].save(
+            #         gif_path,
+            #         save_all=True,
+            #         append_images=self.drone_seg_frames[env_id][1:],
+            #         duration=100,
+            #         loop=0
+            #     )
+            #     print(f"[GIF] Saved drone segmentation: {gif_path}")
             
-            # Save static camera GIFs
+            # Save static camera GIFs (depth only)
             if len(self.static_depth_frames[env_id]) > 0:
                 gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_depth{level_suffix}.gif")
                 self.static_depth_frames[env_id][0].save(
@@ -458,28 +528,27 @@ class AerialGymVecEnv(gym.Env):
                 )
                 print(f"[GIF] Saved static depth: {gif_path}")
             
-            if len(self.static_seg_frames[env_id]) > 0:
-                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_seg{level_suffix}.gif")
-                self.static_seg_frames[env_id][0].save(
-                    gif_path,
-                    save_all=True,
-                    append_images=self.static_seg_frames[env_id][1:],
-                    duration=100,
-                    loop=0
-                )
-                print(f"[GIF] Saved static segmentation: {gif_path}")
+            # if len(self.static_seg_frames[env_id]) > 0:
+            #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_seg{level_suffix}.gif")
+            #     self.static_seg_frames[env_id][0].save(
+            #         gif_path,
+            #         save_all=True,
+            #         append_images=self.static_seg_frames[env_id][1:],
+            #         duration=100,
+            #         loop=0
+            #     )
+            #     print(f"[GIF] Saved static segmentation: {gif_path}")
             
-            # Save merged GIF (drone + static side by side - CLEAN versions)
-            if len(self.merged_frames[env_id]) > 0:
-                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_CLEAN{level_suffix}.gif")
-                self.merged_frames[env_id][0].save(
-                    gif_path,
-                    save_all=True,
-                    append_images=self.merged_frames[env_id][1:],
-                    duration=100,
-                    loop=0
-                )
-                print(f"[GIF] Saved merged dual camera (CLEAN): {gif_path}")
+            # if len(self.merged_frames[env_id]) > 0:
+            #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_CLEAN{level_suffix}.gif")
+            #     self.merged_frames[env_id][0].save(
+            #         gif_path,
+            #         save_all=True,
+            #         append_images=self.merged_frames[env_id][1:],
+            #         duration=100,
+            #         loop=0
+            #     )
+            #     print(f"[GIF] Saved merged dual camera (CLEAN): {gif_path}")
             
             # === D455 NOISED CAMERA GIFS ===
             # Save drone camera noised GIFs
@@ -506,17 +575,17 @@ class AerialGymVecEnv(gym.Env):
                 )
                 print(f"[GIF] Saved static depth (D455 NOISED): {gif_path}")
             
-            # Save merged noised GIF (drone + static side by side - NOISED versions)
-            if len(self.merged_noised_frames[env_id]) > 0:
-                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_D455_NOISED{level_suffix}.gif")
-                self.merged_noised_frames[env_id][0].save(
-                    gif_path,
-                    save_all=True,
-                    append_images=self.merged_noised_frames[env_id][1:],
-                    duration=100,
-                    loop=0
-                )
-                print(f"[GIF] Saved merged dual camera (D455 NOISED): {gif_path}")
+            # # Save merged noised GIF (drone + static side by side - NOISED versions)
+            # if len(self.merged_noised_frames[env_id]) > 0:
+            #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_D455_NOISED{level_suffix}.gif")
+            #     self.merged_noised_frames[env_id][0].save(
+            #         gif_path,
+            #         save_all=True,
+            #         append_images=self.merged_noised_frames[env_id][1:],
+            #         duration=100,
+            #         loop=0
+            #     )
+            #     print(f"[GIF] Saved merged dual camera (D455 NOISED): {gif_path}")
         
         except Exception as e:
             print(f"[GIF] Warning: Failed to save GIFs for episode {episode_num}: {e}")
@@ -618,19 +687,24 @@ class AerialGymVecEnv(gym.Env):
             # Save GIFs for terminated/truncated environments (only save for env 0 to avoid spam)
             reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
             if len(reset_ids) > 0 and 0 in reset_ids:  # Only save for first environment
-                # Check if this episode should be saved (every 12 episodes including episode 0) - 4x more frequent than before
-                save_this_episode = (self.episode_count % 15 == 0)
-                
-                if save_this_episode:
+                # Only save if env_agents is 16
+                try:
+                    env_agents = int(os.environ.get('SF_ENV_AGENTS', '0'))
+                except Exception:
+                    env_agents = 0
+                if env_agents != 16:
+                    # Clear frames and skip saving to control output volume
+                    self._clear_frames(env_id=0)
+                    self.episode_count += 1
+                    return transformed_obs, rew, terminated, truncated, infos
+                # Save every 5 episodes for env 0
+                if self.episode_count % 5 == 0:
                     if terminated[0]:
-                        print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 15 episodes)")
+                        print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 5 episodes)")
                     elif truncated[0]:
-                        print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 15 episodes)")
+                        print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 5 episodes)")
                     self._save_episode_gifs(env_id=0)
-                    self._clear_frames(env_id=0)
-                else:
-                    # Don't save but still clear frames to free memory
-                    self._clear_frames(env_id=0)
+                self._clear_frames(env_id=0)
                 
                 # Increment episode counter when first environment resets
                 self.episode_count += 1
@@ -715,7 +789,7 @@ class AerialGymVecEnv(gym.Env):
                                     pass
                     # Pass-through any episode-level trajectory metrics already stored by env
                     # They will be aggregated by SF and picked up by the learner later
-                    for k in ('path_efficiency','time_to_gate_steps','min_gate_distance','center_offset_success','height_offset_success'):
+                    for k in ('path_efficiency','time_to_gate_steps','min_gate_distance','center_offset_success','height_offset_success','target_success_rate'):
                         if k in extra:
                             # ensure float cast
                             try:
@@ -1098,7 +1172,13 @@ def make_aerialgym_env(
     save_gifs = getattr(cfg, 'save_gifs', False)
 
     # Create the environment and force correct action space for inference compatibility
-    env = AerialGymVecEnv(task_registry.make_task(task_name=full_task_name), "obs", save_gifs=save_gifs)
+    # Forward seed from cfg if provided, else None
+    seed_val = getattr(cfg, 'seed', None)
+    env = AerialGymVecEnv(
+        task_registry.make_task(task_name=full_task_name, seed=seed_val),
+        "obs",
+        save_gifs=save_gifs,
+    )
     
     # Debug: list available gate variants if present
     try:
@@ -1135,6 +1215,7 @@ def add_extra_params_func(parser):
     """
     Specify extra arguments for this family of environments.
     """
+    
     parser.add_argument("--env_agents", default=None, type=int, help="Num agents in env (multi-agent only)")
     parser.add_argument("--headless", type=lambda x: x.lower() == 'true', default=None, help="Force headless mode (True/False)")
     parser.add_argument("--save_gifs", type=lambda x: x.lower() == 'true', default=False, help="Save episode GIFs for both cameras (True/False)")
@@ -1150,8 +1231,32 @@ def add_extra_params_func(parser):
     parser.add_argument("--disable_camera_noise_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable camera noise randomization (Gaussian STD=0, Dropout=0) for both drone & static")
     # Camera frame dropout randomization ablation flag (drone & static)
     parser.add_argument("--disable_camera_frame_dropout_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable entire-frame dropout randomization for both drone & static cameras")
+    # NEW: Per-camera noise/dropout controls
+    parser.add_argument("--disable_drone_camera_noise_randomization", type=lambda x: x.lower() == 'true', default=None, help="Disable noise randomization for DRONE camera only (overrides global when set)")
+    parser.add_argument("--disable_static_camera_noise_randomization", type=lambda x: x.lower() == 'true', default=None, help="Disable noise randomization for STATIC camera only (overrides global when set)")
+    parser.add_argument("--disable_drone_camera_frame_dropout", type=lambda x: x.lower() == 'true', default=None, help="Disable frame dropout for DRONE camera only (overrides global when set)")
+    parser.add_argument("--disable_static_camera_frame_dropout", type=lambda x: x.lower() == 'true', default=None, help="Disable frame dropout for STATIC camera only (overrides global when set)")
+    # Static camera yaw sweep (constant oscillation)
+    parser.add_argument("--enable_static_camera_yaw_sweep", type=lambda x: x.lower() == 'true', default=False, help="Enable constant yaw oscillation for static camera (±30°)")
+    parser.add_argument("--static_camera_yaw_sweep_speed_deg", type=float, default=10.0, help="Yaw sweep speed in deg/s (default 10)")
+    # Static camera base position overrides (Y back distance, Z height)
+    parser.add_argument("--static_camera_base_y", type=float, default=None, help="Override static camera base Y (meters; negative is behind gate). Default -3.0 if not set")
+    # Accept float or the literal string 'adaptive'
+    def parse_base_z(val):
+        v = str(val).strip().lower()
+        if v == 'adaptive':
+            return 'adaptive'
+        try:
+            return float(val)
+        except Exception:
+            raise ValueError("--static_camera_base_z must be a float or 'adaptive'")
+    parser.add_argument("--static_camera_base_z", type=parse_base_z, default=None, help="Static cam Z (meters) or 'adaptive' to follow gate center height")
     # State noise randomization ablation flag (drone & static pose noise)
     parser.add_argument("--disable_state_noise_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable pose state noise randomization for drone and static camera")
+    # Dynamic camera following ablation flag
+    parser.add_argument("--disable_dynamic_camera_following", type=lambda x: x.lower() == 'true', default=False, help="Disable dynamic camera following mode (forces static camera even if enabled in config)")
+    # Dynamic camera following enable flag (override config setting)
+    parser.add_argument("--enable_dynamic_camera_following", type=lambda x: x.lower() == 'true', default=None, help="Enable dynamic camera following mode (overrides config setting when specified)")
     # Spawn randomization ablations (position vs orientation independently)
     parser.add_argument("--disable_spawn_position_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable robot spawn POSITION randomization (lock to baseline level)")
     parser.add_argument("--disable_spawn_orientation_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable robot spawn ORIENTATION randomization (lock yaw to baseline level)")
@@ -1164,6 +1269,10 @@ def add_extra_params_func(parser):
         default=None,
         help="Force a specific curriculum level for the entire run (disables auto curriculum progression). Use 'none' to disable forcing.")
     
+    # Fusion mode flags
+    parser.add_argument("--fusion", type=str, default="gated", choices=["concat", "gated"], help="Fusion strategy: concat (early concat) or gated (dual gated late fusion)")
+    parser.add_argument("--gate_per_feature", type=int, default=1, help="Use per-feature gate (1) or scalar gate (0)")
+
     # Complete observation influence tracking arguments
     parser.add_argument("--enable_gradient_monitoring", type=lambda x: x.lower() == 'true', default=False, help="Enable complete observation influence tracking")
     parser.add_argument("--gradient_log_interval", default=100, type=int, help="Log influence metrics every N steps")
@@ -1245,7 +1354,7 @@ def override_default_params_func(env, parser):
         normalize_returns=True,  # does not improve results on all envs, but with return normalization we don't need to tune reward scale
         save_best_after=int(1e6),
         serial_mode=True,  # it makes sense to run isaacgym envs in serial mode since most of the parallelism comes from the env itself (although async mode works!)
-        async_rl=True,
+        async_rl=False,
         use_env_info_cache=False,  # speeds up startup
         kl_loss_coeff=0.1,
         restart_behavior="resume",  # changed to match DCE config
@@ -1329,7 +1438,7 @@ env_configs = dict(
         kl_loss_coeff=0.1,  # Match original config
         normalize_input=True,  # Match original config
         normalize_returns=True,  # Match original config
-        async_rl=True,  # Match original config
+        async_rl=False,  # Force synchronous training for determinism
         serial_mode=True,  # Match original config
         batched_sampling=True,  # Match original config
         num_workers=1,  # Match original config
@@ -1355,10 +1464,10 @@ env_configs = dict(
         vtrace_c=1.0,  # Match original config
         lr_adaptive_min=1e-06,  # Match original config
         lr_adaptive_max=0.01,  # Match original config
-        save_every_sec=120,  # Regular checkpoint every 2 minutes
+        save_every_sec=1800,  # Regular checkpoint every 30 minutes
         keep_checkpoints=5,  # Keep 5 regular checkpoints (increased for safety)
         save_milestones_sec=-1,  # No milestone saving
-        save_best_every_sec=5,  # Check for best model every 5 seconds
+        save_best_every_sec=300,  # Check for best model every 5 minutes
         save_best_metric="reward",  # Use reward to determine best model
         save_best_after=100000,  # Save best models after 100K steps (much more reasonable)
         policy_initialization="torch_default",  # Match original config
@@ -1456,7 +1565,7 @@ env_configs = dict(
         kl_loss_coeff=0.1,
         normalize_input=True,
         normalize_returns=True,
-        async_rl=True,
+        async_rl=False,
         serial_mode=True,
         batched_sampling=True,
         num_workers=1,
@@ -1485,10 +1594,10 @@ env_configs = dict(
         lr_adaptive_max=0.01,
         
         # Checkpoint and logging
-        save_every_sec=120,  # Save every 2 minutes
+        save_every_sec=1800,  # Save every 30 minutes
         keep_checkpoints=5,
         save_milestones_sec=-1,
-        save_best_every_sec=5,
+        save_best_every_sec=300,
         save_best_metric="reward",
         save_best_after=100000,  # Save best models after 100K steps
         
@@ -1622,6 +1731,291 @@ env_configs = dict(
 # CustomEncoder removed - DCE task handles VAE encoding internally and provides 81-dimensional observations
 
 
+class DualFusionEncoder(Encoder):
+    """Encoder that supports early concat or gated late fusion.
+    It expects a single flat obs vector and slices out ego/static 64D latents.
+    """
+    def __init__(self, cfg: Config, obs_space: ObsSpace):
+        super().__init__(cfg)
+        self.obs_space = obs_space
+        # Read fusion config from cfg/env
+        fusion_mode = getattr(cfg, 'fusion', 'concat')
+        self.fusion_mode = fusion_mode
+        self.gate_per_feature = bool(int(getattr(cfg, 'gate_per_feature', 1)))
+        # Indices for 150D obs layout
+        self.slice_drone_vae = (22, 86)
+        self.slice_static_vae = (86, 150)
+        # Detect ablation spec to optionally hard-detach specific latent branches (full-slice zeros)
+        import os
+        spec_str = os.environ.get('ABLATE_OBS_RANGES', '').strip()
+        self._ablate_drone_zero = False
+        self._ablate_static_zero = False
+        if spec_str:
+            for spec in [s.strip() for s in spec_str.split(',') if s.strip() and '=' in s]:
+                lhs, rhs = spec.split('=', 1)
+                lhs = lhs.strip(); rhs = rhs.strip()
+                if ':' not in lhs:
+                    continue
+                try:
+                    a, b = lhs.split(':', 1)
+                    a = int(a); b = int(b)
+                except Exception:
+                    continue
+                if rhs in ('zero', 'zerograd'):
+                    if a == self.slice_drone_vae[0] and b == self.slice_drone_vae[1]:
+                        self._ablate_drone_zero = True
+                    if a == self.slice_static_vae[0] and b == self.slice_static_vae[1]:
+                        self._ablate_static_zero = True
+        # Build adapters/gate
+        D = 64
+        if self.fusion_mode == 'gated':
+            self.ego_proj    = nn.Sequential(nn.LayerNorm(D), nn.Linear(D, D), nn.ELU(), nn.LayerNorm(D))
+            self.static_proj = nn.Sequential(nn.LayerNorm(D), nn.Linear(D, D), nn.ELU(), nn.LayerNorm(D))
+            gate_out = D if self.gate_per_feature else 1
+            self.gate = nn.Sequential(nn.Linear(2*D, D), nn.ELU(), nn.Linear(D, gate_out))
+            fused_latent_dim = D
+        else:
+            # Early concat (baseline)
+            fused_latent_dim = 128
+        # Determine total encoder input after fusion: fused latent + rest of features
+        total_obs_dim = obs_space['obs'].shape[0]
+        # Remove original two 64D latents (128) and add fused_latent_dim
+        base_dim = total_obs_dim - 128 + fused_latent_dim
+        mlp_layers = getattr(cfg, 'encoder_mlp_layers', [512, 256, 128])
+        self.mlp = create_mlp(mlp_layers, base_dim, nonlinearity(cfg))
+        if len(mlp_layers) > 0:
+            self.mlp = torch.jit.script(self.mlp)
+        self.encoder_out_size = calc_num_elements(self.mlp, (base_dim,))
+
+        # Debug counters/last stats for fusion monitoring
+        self._fwd_count = 0
+        self._last_gate_stats = None
+
+        # One-time info
+        try:
+            print(f"[FUSION] Using fusion mode: {self.fusion_mode} (gate_per_feature={int(self.gate_per_feature)})")
+        except Exception:
+            pass
+
+    def _slice_latents(self, x: torch.Tensor):
+        z_e = x[..., self.slice_drone_vae[0]:self.slice_drone_vae[1]]
+        z_s = x[..., self.slice_static_vae[0]:self.slice_static_vae[1]]
+        return z_e, z_s
+
+    def _remove_latents(self, x: torch.Tensor):
+        a, b = self.slice_drone_vae, self.slice_static_vae
+        # Keep prefix, skip [a0:a1] and [b0:b1], keep suffix
+        prefix = x[..., :a[0]]
+        middle = x[..., a[1]:b[0]]
+        suffix = x[..., b[1]:]
+        return torch.cat([prefix, middle, suffix], dim=-1)
+
+    def forward(self, obs_dict):
+        x = obs_dict['obs']
+        z_e, z_s = self._slice_latents(x)
+        rest = self._remove_latents(x)
+        if self.fusion_mode == 'gated':
+            # If a full-slice zero ablation was requested, detach those inputs so grads cannot route via gate
+            if self._ablate_drone_zero:
+                z_e = (z_e * 0.0).detach()
+            if self._ablate_static_zero:
+                z_s = (z_s * 0.0).detach()
+
+            # Short-circuit: when one branch is ablated, ignore it entirely in forward
+            if self._ablate_static_zero and not self._ablate_drone_zero:
+                # Use only ego branch
+                e = self.ego_proj(z_e)
+                z = e
+                fused = torch.cat([rest, z], dim=-1)
+                # Periodic debug for ablated-static case
+                self._fwd_count += 1
+                if (self._fwd_count % 200) == 0:
+                    try:
+                        e_norm = float(e.norm(dim=1).mean().item())
+                        z_norm = float(z.norm(dim=1).mean().item())
+                        print(
+                            f"[FUSION] gated(per_feature={int(self.gate_per_feature)}) static_disabled: true, drone_only: true | "
+                            f"norms: e={e_norm:.3f} z={z_norm:.3f}"
+                        )
+                        # Log to W&B even when static is disabled (treat gate as 0 towards static)
+                        try:
+                            import wandb  # noqa: F401
+                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                            payload = {
+                                'episode_extra_stats/fusion/gate_mean_pct': 0.0,  # g≈0 → drone-only
+                                'episode_extra_stats/fusion/gate_std_pct': 0.0,
+                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 0.0,
+                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 100.0,
+                                'episode_extra_stats/fusion/e_norm_mean': float(e_norm),
+                                'episode_extra_stats/fusion/s_norm_mean': 0.0,
+                                'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
+                            }
+                            if frames is not None and frames > 0:
+                                wandb.log(payload, step=frames)
+                            else:
+                                wandb.log(payload)
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+            elif self._ablate_drone_zero and not self._ablate_static_zero:
+                # Use only static branch
+                s = self.static_proj(z_s)
+                z = s
+                fused = torch.cat([rest, z], dim=-1)
+                # Periodic debug for ablated-drone case
+                self._fwd_count += 1
+                if (self._fwd_count % 200) == 0:
+                    try:
+                        s_norm = float(s.norm(dim=1).mean().item())
+                        z_norm = float(z.norm(dim=1).mean().item())
+                        print(
+                            f"[FUSION] gated(per_feature={int(self.gate_per_feature)}) drone_disabled: true, static_only: true | "
+                            f"norms: s={s_norm:.3f} z={z_norm:.3f}"
+                        )
+                        # Log to W&B even when drone is disabled (treat gate as 1 towards static)
+                        try:
+                            import wandb  # noqa: F401
+                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                            payload = {
+                                'episode_extra_stats/fusion/gate_mean_pct': 100.0,  # g≈1 → static-only
+                                'episode_extra_stats/fusion/gate_std_pct': 0.0,
+                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 100.0,
+                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 0.0,
+                                'episode_extra_stats/fusion/e_norm_mean': 0.0,
+                                'episode_extra_stats/fusion/s_norm_mean': float(s_norm),
+                                'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
+                            }
+                            if frames is not None and frames > 0:
+                                wandb.log(payload, step=frames)
+                            else:
+                                wandb.log(payload)
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+            elif self._ablate_drone_zero and self._ablate_static_zero:
+                # Both ablated: feed zeros latent
+                z = torch.zeros_like(z_e)
+                fused = torch.cat([rest, z], dim=-1)
+                # Periodic debug for both ablated
+                self._fwd_count += 1
+                if (self._fwd_count % 200) == 0:
+                    try:
+                        print(
+                            f"[FUSION] gated(per_feature={int(self.gate_per_feature)}) both_cameras_disabled: true | norms: z=0.000"
+                        )
+                        # Log a minimal payload when both branches are disabled
+                        try:
+                            import wandb  # noqa: F401
+                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                            payload = {
+                                'episode_extra_stats/fusion/gate_mean_pct': 50.0,  # undefined, show neutral
+                                'episode_extra_stats/fusion/gate_std_pct': 0.0,
+                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 0.0,
+                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 0.0,
+                                'episode_extra_stats/fusion/e_norm_mean': 0.0,
+                                'episode_extra_stats/fusion/s_norm_mean': 0.0,
+                                'episode_extra_stats/fusion/z_norm_mean': 0.0,
+                            }
+                            if frames is not None and frames > 0:
+                                wandb.log(payload, step=frames)
+                            else:
+                                wandb.log(payload)
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+            else:
+                # Normal gated fusion
+                e = self.ego_proj(z_e)
+                s = self.static_proj(z_s)
+                g = torch.sigmoid(self.gate(torch.cat([e, s], dim=-1)))
+                if g.shape[-1] == 1:
+                    g = g.expand_as(e)
+                z = g * s + (1 - g) * e
+                fused = torch.cat([rest, z], dim=-1)
+
+            # Periodic debug print for gate stats
+            # Periodic debug print for gate stats (only when gate was active)
+            if not (self._ablate_static_zero or self._ablate_drone_zero):
+                self._fwd_count += 1
+                if (self._fwd_count % 200) == 0:
+                    try:
+                        gate_mean = float(g.mean().item())
+                        gate_std = float(g.std().item())
+                        frac_high = float((g > 0.7).float().mean().item())
+                        frac_low = float((g < 0.3).float().mean().item())
+                        e_norm = float(e.norm(dim=1).mean().item())
+                        s_norm = float(s.norm(dim=1).mean().item())
+                        z_norm = float(z.norm(dim=1).mean().item())
+                        self._last_gate_stats = {
+                            'mean': gate_mean,
+                            'std': gate_std,
+                            'frac_gt_0_7': frac_high,
+                            'frac_lt_0_3': frac_low,
+                            'e_norm_mean': e_norm,
+                            's_norm_mean': s_norm,
+                            'z_norm_mean': z_norm,
+                        }
+                        print(
+                            f"[FUSION] gated(per_feature={int(self.gate_per_feature)}) "
+                            f"gate_mean={gate_mean:.3f} gate_std={gate_std:.3f} "
+                            f">0.7={frac_high:.2%} <0.3={frac_low:.2%} "
+                            f"|| norms: e={e_norm:.3f} s={s_norm:.3f} z={z_norm:.3f}"
+                        )
+                        # Mirror to W&B payload under episode_extra_stats/fusion/* (only for gated and both cameras enabled)
+                        try:
+                            import wandb  # ensure wandb available
+                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                            payload = {
+                                'episode_extra_stats/fusion/gate_mean_pct': float(gate_mean * 100.0),
+                                'episode_extra_stats/fusion/gate_std_pct': float(gate_std * 100.0),
+                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': float(frac_high * 100.0),
+                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': float(frac_low * 100.0),
+                                'episode_extra_stats/fusion/e_norm_mean': float(e_norm),
+                                'episode_extra_stats/fusion/s_norm_mean': float(s_norm),
+                                'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
+                            }
+                            if frames is not None and frames > 0:
+                                wandb.log(payload, step=frames)
+                            else:
+                                wandb.log(payload)
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+        else:
+            # Early concat baseline (kept for easy revert)
+            fused = torch.cat([rest, z_e, z_s], dim=-1)
+            # Periodic debug print for concat stats
+            self._fwd_count += 1
+            if (self._fwd_count % 200) == 0:
+                try:
+                    B = int(x.shape[0]) if torch.is_tensor(x) else 0
+                    D_e = int(z_e.shape[-1])
+                    D_s = int(z_s.shape[-1])
+                    e_norm = float(z_e.norm(dim=1).mean().item())
+                    s_norm = float(z_s.norm(dim=1).mean().item())
+                    cat_norm = float(fused[:, - (D_e + D_s):].norm(dim=1).mean().item())
+                    balance = float((s_norm / (e_norm + s_norm + 1e-8)))
+                    print(
+                        f"[FUSION] mode=concat B={B} D_e={D_e} D_s={D_s} | "
+                        f"L2 norms (mean): ego={e_norm:.3f} static={s_norm:.3f} cat={cat_norm:.3f} | "
+                        f"static_balance≈{balance:.2%}"
+                    )
+                except Exception:
+                    pass
+        return self.mlp(fused)
+
+    def get_out_size(self) -> int:
+        return self.encoder_out_size
+
+
+def make_dual_fusion_encoder(cfg: Config, obs_space: ObsSpace) -> Encoder:
+    return DualFusionEncoder(cfg, obs_space)
+
+
 def register_aerialgym_custom_components():
     # Clear cached environment info for single agent mode to prevent mismatch
     import os
@@ -1726,7 +2120,12 @@ def register_aerialgym_custom_components():
     for env_name in env_configs:
         register_env(env_name, make_aerialgym_env)
 
-    # Don't register custom encoder since DCE task handles VAE encoding internally
+    # Register custom encoder to perform fusion inside SF model
+    try:
+        global_model_factory().register_encoder_factory(make_dual_fusion_encoder)
+        print("Registered DualFusionEncoder with fusion/ gating options")
+    except Exception as e:
+        print(f"Warning: Could not register DualFusionEncoder: {e}")
 
 
 def parse_aerialgym_cfg(evaluation=False):
@@ -1736,18 +2135,62 @@ def parse_aerialgym_cfg(evaluation=False):
     final_cfg = parse_full_cfg(parser)
     # Bridge CLI flag to environment variable so worker processes can read it reliably
     try:
+        # Fusion flags to env for workers
+        if hasattr(final_cfg, 'fusion'):
+            os.environ['SF_FUSION_MODE'] = str(final_cfg.fusion)
+            print(f"[CFG] fusion mode: {final_cfg.fusion}")
+        if hasattr(final_cfg, 'gate_per_feature'):
+            os.environ['SF_GATE_PER_FEATURE'] = '1' if int(final_cfg.gate_per_feature) != 0 else '0'
+            print(f"[CFG] gate_per_feature: {final_cfg.gate_per_feature}")
         if hasattr(final_cfg, 'disable_static_camera_orientation_randomization'):
             os.environ['SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION'] = 'true' if final_cfg.disable_static_camera_orientation_randomization else 'false'
             print(f"[CFG] static camera orientation randomization disabled: {final_cfg.disable_static_camera_orientation_randomization}")
         if hasattr(final_cfg, 'disable_camera_noise_randomization'):
             os.environ['SF_DISABLE_CAMERA_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_camera_noise_randomization else 'false'
             print(f"[CFG] camera noise randomization disabled: {final_cfg.disable_camera_noise_randomization}")
+        # Per-camera noise/dropout overrides
+        if hasattr(final_cfg, 'disable_drone_camera_noise_randomization') and final_cfg.disable_drone_camera_noise_randomization is not None:
+            os.environ['SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_drone_camera_noise_randomization else 'false'
+            print(f"[CFG] DRONE camera noise disabled override: {final_cfg.disable_drone_camera_noise_randomization}")
+        if hasattr(final_cfg, 'disable_static_camera_noise_randomization') and final_cfg.disable_static_camera_noise_randomization is not None:
+            os.environ['SF_DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_static_camera_noise_randomization else 'false'
+            print(f"[CFG] STATIC camera noise disabled override: {final_cfg.disable_static_camera_noise_randomization}")
+        if hasattr(final_cfg, 'disable_drone_camera_frame_dropout') and final_cfg.disable_drone_camera_frame_dropout is not None:
+            os.environ['SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT'] = 'true' if final_cfg.disable_drone_camera_frame_dropout else 'false'
+            print(f"[CFG] DRONE camera frame-drop disabled override: {final_cfg.disable_drone_camera_frame_dropout}")
+        if hasattr(final_cfg, 'disable_static_camera_frame_dropout') and final_cfg.disable_static_camera_frame_dropout is not None:
+            os.environ['SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT'] = 'true' if final_cfg.disable_static_camera_frame_dropout else 'false'
+            print(f"[CFG] STATIC camera frame-drop disabled override: {final_cfg.disable_static_camera_frame_dropout}")
+        # Static camera yaw sweep (const ±30°, curriculum-independent for now)
+        if hasattr(final_cfg, 'enable_static_camera_yaw_sweep'):
+            os.environ['SF_ENABLE_STATIC_CAMERA_YAW_SWEEP'] = 'true' if final_cfg.enable_static_camera_yaw_sweep else 'false'
+            print(f"[CFG] Static camera yaw sweep enabled: {final_cfg.enable_static_camera_yaw_sweep}")
+        if hasattr(final_cfg, 'static_camera_yaw_sweep_speed_deg'):
+            os.environ['SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG'] = str(float(final_cfg.static_camera_yaw_sweep_speed_deg))
+            print(f"[CFG] Static camera yaw sweep speed: {final_cfg.static_camera_yaw_sweep_speed_deg} deg/s")
+        # Static camera base position overrides to env for workers
+        if hasattr(final_cfg, 'static_camera_base_y') and final_cfg.static_camera_base_y is not None:
+            os.environ['SF_STATIC_CAMERA_BASE_Y'] = str(float(final_cfg.static_camera_base_y))
+            print(f"[CFG] Static camera base Y: {final_cfg.static_camera_base_y}")
+        if hasattr(final_cfg, 'static_camera_base_z') and final_cfg.static_camera_base_z is not None:
+            if isinstance(final_cfg.static_camera_base_z, str) and str(final_cfg.static_camera_base_z).lower() == 'adaptive':
+                os.environ['SF_STATIC_CAMERA_BASE_Z'] = 'adaptive'
+                print(f"[CFG] Static camera base Z: adaptive")
+            else:
+                os.environ['SF_STATIC_CAMERA_BASE_Z'] = str(float(final_cfg.static_camera_base_z))
+                print(f"[CFG] Static camera base Z: {final_cfg.static_camera_base_z}")
         if hasattr(final_cfg, 'disable_camera_frame_dropout_randomization'):
             os.environ['SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION'] = 'true' if final_cfg.disable_camera_frame_dropout_randomization else 'false'
             print(f"[CFG] camera frame dropout randomization disabled: {final_cfg.disable_camera_frame_dropout_randomization}")
         if hasattr(final_cfg, 'disable_state_noise_randomization'):
             os.environ['SF_DISABLE_STATE_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_state_noise_randomization else 'false'
             print(f"[CFG] state noise randomization disabled: {final_cfg.disable_state_noise_randomization}")
+        if hasattr(final_cfg, 'disable_dynamic_camera_following'):
+            os.environ['disable_dynamic_camera_following'] = 'true' if final_cfg.disable_dynamic_camera_following else 'false'
+            print(f"[CFG] dynamic camera following disabled: {final_cfg.disable_dynamic_camera_following}")
+        if hasattr(final_cfg, 'enable_dynamic_camera_following') and final_cfg.enable_dynamic_camera_following is not None:
+            os.environ['enable_dynamic_camera_following'] = 'true' if final_cfg.enable_dynamic_camera_following else 'false'
+            print(f"[CFG] dynamic camera following enabled (override): {final_cfg.enable_dynamic_camera_following}")
         if hasattr(final_cfg, 'disable_spawn_position_randomization'):
             os.environ['SF_DISABLE_SPAWN_POSITION_RANDOMIZATION'] = 'true' if final_cfg.disable_spawn_position_randomization else 'false'
             print(f"[CFG] spawn position randomization disabled: {final_cfg.disable_spawn_position_randomization}")
@@ -1906,7 +2349,10 @@ def run_with_influence_tracking(cfg: Config):
             metrics.update(influence_metrics)
             # Update cache if we received any obs/influence keys
             try:
-                had = any(isinstance(k, str) and k.startswith(('obs_grad/', 'influence/', 'grad_attr/')) for k in influence_metrics.keys())
+                had = any(
+                    isinstance(k, str) and k.startswith(('obs_grad/', 'influence/', 'grad_attr/', 'obs_influence/'))
+                    for k in influence_metrics.keys()
+                )
                 if had:
                     _last_obsgrad_from_influence = dict(influence_metrics)
             except Exception:
@@ -1921,7 +2367,7 @@ def run_with_influence_tracking(cfg: Config):
                 for name, val in list(source_metrics.items()):
                     if not isinstance(name, str):
                         continue
-                    if name.startswith(('obs_grad/', 'influence/', 'grad_attr/')):
+                    if name.startswith(('obs_grad/', 'influence/', 'grad_attr/', 'obs_influence/')):
                         try:
                             prefix_removed = name.split('/', 1)[1] if '/' in name else name
                             new_key = 'episode_extra_stats/obs_grad/' + prefix_removed
@@ -1957,7 +2403,7 @@ def run_with_influence_tracking(cfg: Config):
                 for name, val in list(source_metrics.items()):
                     if not isinstance(name, str):
                         continue
-                    if not (name.startswith(('obs_grad/', 'influence/', 'grad_attr/'))):
+                    if not (name.startswith(('obs_grad/', 'influence/', 'grad_attr/', 'obs_influence/'))):
                         continue
                     parts = name.split('/')
                     # Extract slice label after 'slice_pct'/'slice_mag' if present
@@ -1976,6 +2422,7 @@ def run_with_influence_tracking(cfg: Config):
                                 label = parts[idx + 1]
                         except Exception:
                             pass
+                    suffix = parts[-1]
                     if suffix.startswith('total_') or suffix == 'backward_passes':
                         continue
                     try:
@@ -2278,6 +2725,11 @@ def run_with_influence_tracking(cfg: Config):
                                 t = arg.get('obs', None)
                                 if torch.is_tensor(t) and t.dim() == 2 and t.shape[1] == 150:
                                     x = t.detach().requires_grad_(True)
+                                    try:
+                                        if hasattr(self, '_grad_tracker') and self._grad_tracker:
+                                            x.register_hook(lambda g: self._grad_tracker.consume_grad(g))
+                                    except Exception:
+                                        pass
                                     # Stash proxy for backward hook
                                     mod._obs_proxy = x
                                     # Replace in a shallow-copied dict to avoid in-place side-effects
@@ -2291,6 +2743,11 @@ def run_with_influence_tracking(cfg: Config):
                             # Case 2: raw tensor input
                             if torch.is_tensor(arg) and arg.dim() == 2 and arg.shape[1] == 150:
                                 x = arg.detach().requires_grad_(True)
+                                try:
+                                    if hasattr(self, '_grad_tracker') and self._grad_tracker:
+                                        x.register_hook(lambda g: self._grad_tracker.consume_grad(g))
+                                except Exception:
+                                    pass
                                 mod._obs_proxy = x
                                 if isinstance(inp, tuple):
                                     lst = list(inp)
@@ -2301,8 +2758,10 @@ def run_with_influence_tracking(cfg: Config):
                             return None
                         except Exception:
                             return None
-                    # Register on the encoder if present; otherwise on actor_critic itself
-                    target = getattr(self.actor_critic, 'encoder', self.actor_critic)
+                    # Prefer encoder if not scripted, else fall back to actor_critic root
+                    target = getattr(self.actor_critic, 'encoder', None)
+                    if target is None or hasattr(target, '_c') or 'ScriptModule' in str(type(target)):
+                        target = self.actor_critic
                     self._grad_attr_forward_handle = target.register_forward_pre_hook(_ac_forward_hook)
 
                     def _ac_backward_hook(mod, grad_in, grad_out):
@@ -2530,6 +2989,29 @@ def run_with_influence_tracking(cfg: Config):
                     traj_payload['episode_extra_stats/episodes_total'] = ep_total
                 if ep_cross is not None:
                     traj_payload['episode_extra_stats/episodes_crossed'] = ep_cross
+                # Also forward VAE latent diagnostics if present in latest infos
+                try:
+                    def _get_last_any(names):
+                        for nm in names:
+                            v = _get_last(nm)
+                            if v is not None:
+                                return v
+                        return None
+                    for name in (
+                        'episode_extra_stats/vae/drone_mean',
+                        'episode_extra_stats/vae/static_mean',
+                        'episode_extra_stats/vae/drone_std',
+                        'episode_extra_stats/vae/static_std',
+                        'episode_extra_stats/vae/drone_dim_std_mean',
+                        'episode_extra_stats/vae/static_dim_std_mean',
+                        'episode_extra_stats/vae/static_to_drone_norm_ratio',
+                    ):
+                        v = _get_last_any([name, name.replace('episode_extra_stats/','')])
+                        if v is not None:
+                            traj_payload[name] = float(v)
+                except Exception:
+                    pass
+
                 if len(traj_payload) > 0:
                     traj_payload['frames'] = frames
                     wandb.log(traj_payload, step=frames)

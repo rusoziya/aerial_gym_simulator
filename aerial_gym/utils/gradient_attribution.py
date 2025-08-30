@@ -85,22 +85,46 @@ class GradientAttributionTracker:
                 logger.warning(f"⚠️ Failed to attach gradient hooks to {target_name}: {e}")
                 continue
 
-        logger.warning("❌ Failed to attach gradient attribution hooks - no suitable non-ScriptModule target found")
-        self.enabled = False
+        logger.warning("❌ Failed to attach gradient attribution hooks - no suitable non-ScriptModule target found; falling back to model pre-hook")
+        try:
+            self.module_hook_handle = self.model.register_forward_pre_hook(self._forward_pre_hook_model)
+            self.backward_hook_handle = self.model.register_full_backward_hook(self._backward_hook)
+            logger.warning("✅ Gradient attribution fallback hooks attached at model level")
+        except Exception as e:
+            logger.warning(f"⚠️ Model-level fallback failed: {e}")
+            self.enabled = False
 
     # ---------------------------------------------------------------------
     # Hooks
     # ---------------------------------------------------------------------
     def _forward_hook(self, module, input, output):
-        """Enable grad on observation tensor and register a tensor-level grad hook."""
+        """Enable grad on observation tensor and register a tensor-level grad hook.
+        Robust to dict/tuple/list inputs; extracts 'obs'/'observations' if present.
+        """
+        def _extract_obs_tensor(obj):
+            try:
+                if torch.is_tensor(obj):
+                    return obj
+                if isinstance(obj, (tuple, list)) and len(obj) > 0:
+                    return _extract_obs_tensor(obj[0])
+                if isinstance(obj, dict):
+                    for k in ('obs', 'observations'):
+                        t = obj.get(k, None)
+                        if torch.is_tensor(t):
+                            return t
+                    for v in obj.values():
+                        if torch.is_tensor(v):
+                            return v
+                return None
+            except Exception:
+                return None
         try:
             if not input:
                 return
-            x = input[0]
+            x = _extract_obs_tensor(input)
             if not torch.is_tensor(x) or x.dim() != 2:
                 return
-            # Only handle expected obs sizes (support 150; ignore others)
-            if x.shape[1] != 150:
+            if x.shape[1] < 81:
                 return
             # Ensure gradients will be computed wrt inputs
             if not x.requires_grad:
@@ -121,6 +145,46 @@ class GradientAttributionTracker:
             # Only warn a couple of times to avoid spam
             if self.backward_pass_count < 2:
                 logger.warning(f"🔧 Forward hook setup failed: {e}")
+
+    def _forward_pre_hook_model(self, module, input):
+        """Model-level pre-hook to wrap obs with requires_grad when encoder is scripted."""
+        try:
+            if not input:
+                return None
+            arg = input[0] if isinstance(input, tuple) and len(input) > 0 else input
+            def _wrap(obj):
+                if torch.is_tensor(obj) and obj.dim() == 2 and obj.shape[1] >= 81:
+                    if not obj.requires_grad:
+                        obj = obj.detach().requires_grad_(True)
+                    module._obs_proxy = obj
+                    return obj
+                if isinstance(obj, dict):
+                    out = dict(obj)
+                    for k in ('obs', 'observations'):
+                        if k in out and torch.is_tensor(out[k]) and out[k].dim() == 2 and out[k].shape[1] >= 81:
+                            t = out[k]
+                            if not t.requires_grad:
+                                t = t.detach().requires_grad_(True)
+                            module._obs_proxy = t
+                            out[k] = t
+                            return out
+                    return obj
+                if isinstance(obj, (tuple, list)) and len(obj) > 0:
+                    seq = list(obj)
+                    seq[0] = _wrap(seq[0])
+                    return type(obj)(seq)
+                return obj
+            wrapped = _wrap(arg)
+            if wrapped is arg:
+                return None
+            if isinstance(input, tuple):
+                lst = list(input)
+                lst[0] = wrapped
+                return tuple(lst)
+            else:
+                return wrapped
+        except Exception:
+            return None
 
     def _backward_hook(self, module, grad_input, grad_output):
         """Fallback: capture grad_input if available (requires inputs with requires_grad=True)."""

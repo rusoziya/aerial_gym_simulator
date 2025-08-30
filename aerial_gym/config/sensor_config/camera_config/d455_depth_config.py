@@ -17,8 +17,9 @@ class RsD455Config(BaseDepthCameraConfig):
     horizontal_fov_deg = 87.000
     # camera params VFOV is calcuated from the aspect ratio and HFOV
     # VFOV = 2 * atan(tan(HFOV/2) / aspect_ratio)
-    max_range = 15.0
-    min_range = 0.2
+    # Standardized depth range to match runtime normalization
+    max_range = 20.0
+    min_range = 0.4
 
     # Type of camera (depth, range, pointcloud, segmentation)
     # You can combine: (depth+segmentation), (range+segmentation), (pointcloud+segmentation)

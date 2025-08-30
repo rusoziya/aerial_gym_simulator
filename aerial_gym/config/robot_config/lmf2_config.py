@@ -21,15 +21,32 @@ class LMF2Cfg:
         # Orientation: ±45° for reasonable randomization without curriculum complexity
         # Velocity: Minimal initial velocity for more randomization
         
-        # Position spawn: 2m behind gate center (Y=-2.0) with ±1.2m lateral (X) variation
-        # Height: 1.5m (gate center level) with ±0.1m variation
+        # Position spawn: ~1.5m behind gate center (Y≈-1.5) in a tight band
+        # X (lateral): from ±0.5 up to ±2.0 → we allow full ±2.0 here (task can narrow)
+        # Z (height): from 0.5m to 1.5m (task can narrow to 0.75–1.25 at easy levels)
         # Environment bounds: [-4,4] x [-4,4] x [0,4] = 8m × 8m × 4m
         # Position conversion: ratio = (position + 4) / 8 for X,Y; ratio = position / 4 for Z
         
+        # Previous spawn ratios (kept for easy rollback):
+        # min_init_state (old) = [
+        #     0.35,   # ratio_x: -1.2m
+        #     0.225,  # ratio_y: -2.2m
+        #     0.35,   # ratio_z: 1.4m
+        #     0, 0, -np.pi/4, 1.0,
+        #     -0.1, -0.1, -0.05, -0.02, -0.02, -0.05
+        # ]
+        # max_init_state (old) = [
+        #     0.65,   # ratio_x: +1.2m
+        #     0.275,  # ratio_y: -1.8m
+        #     0.4,    # ratio_z: 1.6m
+        #     0, 0, np.pi/4, 1.0,
+        #     0.1, 0.1, 0.05, 0.02, 0.02, 0.05
+        # ]
+
         min_init_state = [
-            0.35,   # ratio_x: X = -1.2m → ratio = ((-1.2) + 4) / 8 = 0.35 (1.2m left of center)
-            0.225,  # ratio_y: Y = -2.2m → ratio = ((-2.2) + 4) / 8 = 0.225 (2.2m behind gate)
-            0.35,   # ratio_z: Z = 1.4m → ratio = 1.4 / 4 = 0.35 (gate level - 0.1m)
+            0.25,     # ratio_x: X = -2.0m → ((-2.0)+4)/8 = 0.25 (left bound of ±2.0m)
+            0.30625,  # ratio_y: Y = -1.55m → ((-1.55)+4)/8 = 0.30625 (tight band near -1.5m)
+            0.125,    # ratio_z: Z = 0.5m  → 0.5/4 = 0.125 (lower height bound)
             0,      # no roll variation
             0,      # no pitch variation
             -np.pi/4, # yaw: -45° for orientation randomization
@@ -42,9 +59,9 @@ class LMF2Cfg:
             -0.05,  # minimal initial yaw rate
         ]
         max_init_state = [
-            0.65,   # ratio_x: X = +1.2m → ratio = ((+1.2) + 4) / 8 = 0.65 (1.2m right of center)
-            0.275,  # ratio_y: Y = -1.8m → ratio = ((-1.8) + 4) / 8 = 0.275 (1.8m behind gate)
-            0.4,    # ratio_z: Z = 1.6m → ratio = 1.6 / 4 = 0.4 (gate level + 0.1m)
+            0.75,     # ratio_x: X = +2.0m → ((+2.0)+4)/8 = 0.75 (right bound of ±2.0m)
+            0.31875,  # ratio_y: Y = -1.45m → ((-1.45)+4)/8 = 0.31875 (tight band near -1.5m)
+            0.375,    # ratio_z: Z = 1.5m → 1.5/4 = 0.375 (upper height bound)
             0,      # no roll variation
             0,      # no pitch variation
             np.pi/4, # yaw: +45° for orientation randomization
