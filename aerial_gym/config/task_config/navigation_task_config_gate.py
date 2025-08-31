@@ -69,10 +69,10 @@ class task_config:
     # Enhanced reward parameters for gate navigation with 4D action space
     reward_parameters = {
         # BASE NAVIGATION REWARDS (SCALED DOWN to prevent reward inflation)
-        "pos_reward_magnitude": 2.5,  # REDUCED from 5.0 (10x reduction)
-        "pos_reward_exponent": 1.0 / 3.5,
-        "very_close_to_goal_reward_magnitude": 2.5,  # REDUCED from 5.0 (10x reduction)
-        "very_close_to_goal_reward_exponent": 2.0,
+        "pos_reward_magnitude": 0.5,  # Further reduced from 2.5
+        "pos_reward_exponent": 0.15,
+        "very_close_to_goal_reward_magnitude": 0.75,  # REDUCED from 5.0 (10x reduction)
+        "very_close_to_goal_reward_exponent": 1.25,
         "getting_closer_reward_multiplier": 5.0,  # REDUCED from 10.0 (10x reduction)
         
         # Action smoothness penalties (match base navigation)
@@ -125,6 +125,14 @@ class task_config:
         # Penalty applied as -exp(-(d^2)*exponent) * magnitude for non-terminated envs
         "image_penalty_magnitude": 0.2,
         "image_penalty_exponent": 2.0,
+
+        # Static camera FOV visibility reward (shaped inside-frustum score)
+        # Set magnitude > 0 to enable; exponent controls rolloff near edges
+        # "static_fov_visibility_reward_magnitude": 0.25,
+        # "static_fov_visibility_exponent": 2.0,
+        "static_fov_visibility_reward_magnitude": 0,
+        "static_fov_visibility_exponent": 0,
+
 
         
         # NEW: Altitude maintenance reward to encourage proper gate-level flying
