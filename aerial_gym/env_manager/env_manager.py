@@ -448,18 +448,28 @@ class EnvManager(BaseManager):
             except Exception:
                 cur_level = 3
             
-            # Compute linear threshold from 80 -> 60 over levels 3..23 (never below 60)
+            # Unlock smaller gate scales beyond level 23 up to 50% at level 33 during eval-stretch
+            # Training: linear threshold from 80 -> 60 over levels 3..23 (never below 60)
+            # Eval-stretch (if enabled via global_tensor_dict): continue linearly 60 -> 40 over 23..stretch_end_level
+            eval_stretch_enabled = bool(self.global_tensor_dict.get('eval_stretch_enabled', False))
+            stretch_end_level = int(self.global_tensor_dict.get('eval_stretch_end_level', 23))
             if cur_level <= 3:
                 min_allowed_scale = 80
-            elif cur_level >= 23:
+            elif cur_level >= 23 and (not eval_stretch_enabled or stretch_end_level <= 23):
                 min_allowed_scale = 60
             else:
-                frac = (cur_level - 3) / (23 - 3)
-                raw = 80 - frac * (80 - 60)
-                # Quantize down to nearest 2%% step (80, 78, 76, ...)
+                if cur_level < 23:
+                    frac = (cur_level - 3) / (23 - 3)
+                    raw = 80 - frac * (80 - 60)
+                else:
+                    upper = max(23, stretch_end_level)
+                    span = max(1, upper - 23)
+                    frac = min(1.0, (cur_level - 23) / float(span))
+                    raw = 60 - frac * (60 - 50)
+                # Quantize down to nearest 2% step (80, 78, ..., 50)
                 min_allowed_scale = int((int(raw) // 2) * 2)
-                if min_allowed_scale < 60:
-                    min_allowed_scale = 60
+                if min_allowed_scale < 50:
+                    min_allowed_scale = 50
                 if min_allowed_scale > 100:
                     min_allowed_scale = 100
             

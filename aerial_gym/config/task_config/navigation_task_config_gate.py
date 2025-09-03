@@ -1,4 +1,5 @@
 import torch
+import os
 from aerial_gym import AERIAL_GYM_DIRECTORY
 
 
@@ -143,6 +144,17 @@ class task_config:
         "gate_collision_penalty": -50.0,  # Additional penalty for hitting gate specifically
         # Boundary violation penalty magnitude (applied once per episode when crossing to front side outside passage window)
         "boundary_violation_penalty_magnitude": 50.0,
+
+        # TIME-BASED PENALTIES (configurable)
+        # Per-step time cost target at horizon (total, before reward_scale): set to 4.0 to yield ≈-4 across 100 steps
+        "time_penalty_total_at_horizon": 4.0,
+        # Shape parameters for r_time = -lambda0 * (1 + lambda1 * s^p), s = step/horizon
+        "time_penalty_lambda1": 1.0,
+        "time_penalty_exponent": 2.0,
+        # Optional explicit lambda0 override (normally computed from total@horizon); set None to auto-compute
+        # "time_penalty_lambda0": 0.0,
+        # One-off penalty applied only at timeout (no success/crash)
+        "timeout_penalty": 60.0,
     }
 
     # Shared VAE configuration for both drone and static cameras (Memory-Optimized)
@@ -165,6 +177,15 @@ class task_config:
         # EXPANDED CURRICULUM RANGE: Level 3-23 (20 levels total)
         min_level = 3   # Start with 3 obstacles behind gate (base level)
         max_level = 23  # End with maximum difficulty (20 levels of progression)
+        
+        # EVAL-ONLY SCHEDULE STRETCHING (does not affect training)
+        # When enabled, curriculum schedules linearly interpolate to this end level during evaluation
+        # so that values that normally reach their maximum at level=23 instead reach the same maximum at level=eval_stretch_end_level.
+        # Example: with eval_stretch_enabled=True and eval_stretch_end_level=30, progress is computed over [3..30].
+        eval_stretch_enabled = bool(int(os.getenv('EVAL_STRETCH_ENABLED', '0')))
+        eval_stretch_end_level = int(os.getenv('EVAL_STRETCH_END_LEVEL', '33'))
+        # Optional: allow obstacles to increase beyond level 23 during eval stretch
+        stretched_end_obstacles = int(os.getenv('EVAL_STRETCH_END_OBSTACLES', '25'))
         
         # ===== 5. CAMERA NOISE PROGRESSION (Levels 3-23) - D455 Realistic Noise =====
         # Simulate Intel RealSense D455 camera characteristics for both drone and static cameras
@@ -231,7 +252,7 @@ class task_config:
         spawn_hard_z_half_span_m = 0.625  # 1.125±0.625 ⇒ [0.50, 1.75]
         
         # Yaw jitter schedule: keep 0° at easy; 30° at hard (unchanged)
-        spawn_easy_yaw_abs_rad = 0.0 * 3.141592653589793 / 180.0
+        spawn_easy_yaw_abs_rad = 1.0 * 3.141592653589793 / 180.0
         spawn_hard_yaw_abs_rad = 30.0 * 3.141592653589793 / 180.0
         
         # EVALUATION PARAMETERS
@@ -313,21 +334,33 @@ class task_config:
             """
             min_level = getattr(task_config.curriculum, 'min_level', 3)
             max_level = getattr(task_config.curriculum, 'max_level', 23)
+            # Use stretched end level for evaluation if enabled
+            effective_max_level = (
+                getattr(task_config.curriculum, 'eval_stretch_end_level', max_level)
+                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                else max_level
+            )
             start_obstacles = 3
             end_obstacles = 10
+            stretched_end_obstacles = getattr(task_config.curriculum, 'stretched_end_obstacles', 25)
             total_asset_capacity = 30  # Must match gate_object_params.num_assets in gate_env.py
             
-            # Clamp level
-            if level <= min_level:
-                requested_obstacles = start_obstacles
-            elif level >= max_level:
-                requested_obstacles = end_obstacles
-            else:
-                progress = (level - min_level) / float(max_level - min_level)
+            # Piecewise linear progression:
+            # - Level 3..23: 3 -> 10
+            # - Level 23..effective_max_level (when eval stretch enabled): 10 -> stretched_end_obstacles
+            lvl = max(min_level, level)
+            if lvl <= max_level:
+                progress = (lvl - min_level) / float(max_level - min_level) if max_level > min_level else 1.0
                 requested_obstacles = int(round(start_obstacles + progress * (end_obstacles - start_obstacles)))
+            else:
+                # Beyond training max; only applies when stretch is enabled
+                upper = max(max_level, effective_max_level)
+                lvl_clamped = min(lvl, upper)
+                extra_span = max(1, upper - max_level)
+                progress2 = (lvl_clamped - max_level) / float(extra_span)
+                requested_obstacles = int(round(end_obstacles + progress2 * (stretched_end_obstacles - end_obstacles)))
             
             # Safety clamps
-            requested_obstacles = max(start_obstacles, min(end_obstacles, requested_obstacles))
             if requested_obstacles > total_asset_capacity:
                 print(f"WARNING: Curriculum requested {requested_obstacles} obstacles but only {total_asset_capacity} available!")
                 requested_obstacles = total_asset_capacity
@@ -355,7 +388,12 @@ class task_config:
             """
             # Linear progression constants
             camera_noise_start_level = 3       # Start at level 3
-            camera_noise_end_level = 23        # End at level 23 with max noise
+            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
+            camera_noise_end_level = (
+                getattr(task_config.curriculum, 'eval_stretch_end_level', 23)
+                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                else 23
+            )
             
             # Level 3 starting values (5% of max) and Level 23 maximum values
             max_gaussian_noise_std = 0.0125    # Level 23: 0.0125
@@ -388,7 +426,12 @@ class task_config:
               - 'drone_total' (freeze+blank), 'static_total' (freeze+blank)
             """
             start = task_config.curriculum.frame_dropout_start_level  # Level 3
-            end = task_config.curriculum.frame_dropout_end_level      # Level 23
+            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
+            end = (
+                getattr(task_config.curriculum, 'eval_stretch_end_level', task_config.curriculum.frame_dropout_end_level)
+                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                else task_config.curriculum.frame_dropout_end_level
+            )
             
             # Define start and end values for linear interpolation
             max_drone_freeze = task_config.curriculum.max_frame_freeze_prob_drone  # Level 23: 5%
@@ -436,7 +479,12 @@ class task_config:
               - static_pos_std_m, static_orient_std_rad
             """
             start = task_config.curriculum.state_noise_start_level  # Level 3
-            end = task_config.curriculum.state_noise_end_level      # Level 23
+            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
+            end = (
+                getattr(task_config.curriculum, 'eval_stretch_end_level', task_config.curriculum.state_noise_end_level)
+                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                else task_config.curriculum.state_noise_end_level
+            )
             
             # Define start and end values for linear interpolation
             max_drone_pos_noise = task_config.curriculum.max_drone_pos_noise_m  # Level 23: 0.02m
@@ -474,7 +522,12 @@ class task_config:
               - yaw_abs_rad
             """
             s = task_config.curriculum.spawn_start_level
-            e = task_config.curriculum.spawn_end_level
+            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
+            e = (
+                getattr(task_config.curriculum, 'eval_stretch_end_level', task_config.curriculum.spawn_end_level)
+                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                else task_config.curriculum.spawn_end_level
+            )
             if level <= s:
                 return {
                     "x_half_span_m": task_config.curriculum.spawn_easy_x_half_span_m,
@@ -521,7 +574,12 @@ class task_config:
                 distance_offset: Distance offset from default position (always 0 - position stays fixed)
             """
             camera_start_level = 3
-            max_level = 23
+            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
+            max_level = (
+                getattr(task_config.curriculum, 'eval_stretch_end_level', 23)
+                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                else 23
+            )
             max_camera_angle_degrees = 19
             if level <= camera_start_level:
                 max_camera_angle = 0.0

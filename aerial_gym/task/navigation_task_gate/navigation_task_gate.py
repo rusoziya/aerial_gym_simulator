@@ -629,7 +629,7 @@ class NavigationTaskGate(BaseTask):
                 "image_obs": Box(
                     low=-1.0,
                     high=1.0,
-                    shape=(1, 135, 240),
+                    shape=(1, 270, 480),
                     dtype=np.float32,
                 ),
             }
@@ -696,6 +696,9 @@ class NavigationTaskGate(BaseTask):
         
         # Track episode statistics
         self.episode_lengths = torch.zeros(self.num_envs, device=self.device)
+        # New: track time-related penalties for analysis
+        self.episode_time_penalty = torch.zeros(self.num_envs, device=self.device)
+        self.episode_timeout_penalty = torch.zeros(self.num_envs, device=self.device)
         self.completed_episodes = []  # Store last 10 episode breakdowns
         self.max_stored_episodes = 10
         
@@ -860,6 +863,14 @@ class NavigationTaskGate(BaseTask):
         
         # Persist curriculum level for env manager (for gated gate randomization)
         self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
+        # Propagate eval-stretch flags from task_config if present (for gate size unlocking etc.)
+        try:
+            stretch_enabled = bool(getattr(self.task_config.curriculum, 'eval_stretch_enabled', False))
+            stretch_end = int(getattr(self.task_config.curriculum, 'eval_stretch_end_level', 23))
+            self.sim_env.global_tensor_dict['eval_stretch_enabled'] = stretch_enabled
+            self.sim_env.global_tensor_dict['eval_stretch_end_level'] = stretch_end
+        except Exception:
+            pass
         # Update gate dimensions for adaptive rewards after gate selection
         self.update_gate_dimensions_for_environments(env_ids)
         
@@ -1259,6 +1270,19 @@ class NavigationTaskGate(BaseTask):
         self.infos["timeouts"] = timeouts
         # Report crashes only (exclude success-based terminations)
         self.infos["crashes"] = self.obs_dict["crashes"]
+
+        # One-off timeout penalty: discourage hover-to-horizon strategies
+        try:
+            timeout_penalty = float(self.task_config.reward_parameters.get('timeout_penalty', 60.0))
+        except Exception:
+            timeout_penalty = 60.0
+        if torch.any(timeouts):
+            # Apply to the per-env reward vector maintained at the task level
+            self.rewards = self.rewards - (timeouts.float() * timeout_penalty)
+            try:
+                self.episode_timeout_penalty[timeouts] -= timeout_penalty
+            except Exception:
+                pass
         
         # Add gate navigation specific info to wandb tracking
         # Calculate gate navigation metrics from current state
@@ -1877,6 +1901,35 @@ class NavigationTaskGate(BaseTask):
                     logger.error(f"❌ WRONG OBSERVATION DIMENSION: {obs_shape[1]} (expected 150)")
             else:
                 logger.error("❌ task_obs not available in get_return_tuple")
+        # Periodic static camera obs debug (env 0): print every 120 steps
+        try:
+            if hasattr(self, 'num_task_steps') and (int(self.num_task_steps) % 120 == 0):
+                if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+                    obs_all = self.task_obs['observations']
+                    if obs_all.shape[0] > 0 and obs_all.shape[1] >= 9:
+                        sp = obs_all[0, 3:6]
+                        so = obs_all[0, 6:9]
+                        # Drone and camera world positions
+                        rp = self.obs_dict.get('robot_position', None)
+                        rp0 = rp[0] if isinstance(rp, torch.Tensor) and rp.shape[0] > 0 else torch.zeros(3, device=self.device)
+                        cw = getattr(self, '_debug_cam_world', None)
+                        cw0 = cw[0] if isinstance(cw, torch.Tensor) and cw.shape[0] > 0 else torch.zeros(3, device=self.device)
+                        # Drone & camera world orientations (Euler)
+                        de = getattr(self, '_debug_drone_eul', None)
+                        ce = getattr(self, '_debug_cam_eul', None)
+                        de0 = de[0] if isinstance(de, torch.Tensor) and de.shape[0] > 0 else torch.zeros(3, device=self.device)
+                        ce0 = ce[0] if isinstance(ce, torch.Tensor) and ce.shape[0] > 0 else torch.zeros(3, device=self.device)
+                        logger.warning(
+                            f"[StaticObs] step={int(self.num_task_steps)} env0 "
+                            f"drone_w=({rp0[0].item():+.3f},{rp0[1].item():+.3f},{rp0[2].item():+.3f}) "
+                            f"cam_w=({cw0[0].item():+.3f},{cw0[1].item():+.3f},{cw0[2].item():+.3f}) "
+                            f"drone_eul_w=({de0[0].item():+.3f},{de0[1].item():+.3f},{de0[2].item():+.3f}) "
+                            f"cam_eul_w=({ce0[0].item():+.3f},{ce0[1].item():+.3f},{ce0[2].item():+.3f}) "
+                            f"pos_rel=({sp[0].item():+.3f},{sp[1].item():+.3f},{sp[2].item():+.3f}) "
+                            f"eul_rel=({so[0].item():+.3f},{so[1].item():+.3f},{so[2].item():+.3f})"
+                        )
+        except Exception:
+            pass
         
         # Update dynamic camera following every frame if enabled and not disabled by flag
         dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
@@ -1910,6 +1963,170 @@ class NavigationTaskGate(BaseTask):
             self.truncations,
             infos_to_return,
         )
+
+    def _get_static_camera_pose_relative_to_drone(self):
+        """Compute per-environment static camera pose and orientation relative to the drone.
+
+        Position: camera_world - robot_world, rotated into drone/body frame (obs[3:6]).
+        Orientation: Euler XYZ of q_rel = q_drone^-1 ⊗ q_cam (obs[6:9]).
+        Camera world pose reflects either static base placement (with yaw sweep/randomization)
+        or dynamic following when enabled.
+        """
+        device = self.device
+        num_envs = getattr(self, "num_envs", 1)
+
+        # Base Y from task_config first, then env var, else default
+        try:
+            base_y = float(getattr(self.task_config, 'static_camera_base_y', float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))))
+        except Exception:
+            base_y = -3.0
+
+        # Base Z can be numeric or 'adaptive'
+        adaptive_z = False
+        base_z_value = 1.5
+        try:
+            cfg_base_z = getattr(self.task_config, 'static_camera_base_z', None)
+            if cfg_base_z is not None:
+                if isinstance(cfg_base_z, str) and cfg_base_z.strip().lower() == 'adaptive':
+                    adaptive_z = True
+                else:
+                    base_z_value = float(cfg_base_z)
+            else:
+                env_base_z = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
+                if env_base_z is not None and str(env_base_z).strip().lower() == 'adaptive':
+                    adaptive_z = True
+                elif env_base_z is not None:
+                    base_z_value = float(env_base_z)
+        except Exception:
+            pass
+
+        # Resolve per-env Z when adaptive
+        if adaptive_z:
+            try:
+                gate_center_z = getattr(self, 'gate_center_height', None)
+                if gate_center_z is None:
+                    gate_center_z = torch.full((num_envs,), 1.5, device=device, dtype=torch.float32)
+                elif not torch.is_tensor(gate_center_z):
+                    gate_center_z = torch.full((num_envs,), float(gate_center_z), device=device, dtype=torch.float32)
+                else:
+                    gate_center_z = gate_center_z.to(device=device, dtype=torch.float32).view(-1)
+            except Exception:
+                gate_center_z = torch.full((num_envs,), 1.5, device=device, dtype=torch.float32)
+        else:
+            gate_center_z = torch.full((num_envs,), float(base_z_value), device=device, dtype=torch.float32)
+
+        # Determine if dynamic camera following is effective (enabled and not disabled)
+        dynamic_enabled = bool(getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False))
+        try:
+            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False)) if hasattr(self, 'sim_env') and hasattr(self.sim_env, 'global_tensor_dict') else False
+        except Exception:
+            dyn_dis = False
+        dynamic_effective = bool(dynamic_enabled and not dyn_dis)
+
+        # Camera world positions for each env
+        cam_world = torch.zeros((num_envs, 3), device=device, dtype=torch.float32)
+        if dynamic_effective:
+            # Follow the drone with fixed offset
+            try:
+                from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
+                x_off, y_off, z_off = _tc.curriculum.get_dynamic_camera_follow_offset()
+            except Exception:
+                x_off, y_off, z_off = 0.0, -1.0, 0.0
+            try:
+                robot_pos_world = self.obs_dict['robot_position'].to(device=device, dtype=torch.float32)
+            except Exception:
+                robot_pos_world = torch.zeros((num_envs, 3), device=device, dtype=torch.float32)
+            cam_world[:, 0] = robot_pos_world[:, 0] + float(x_off)
+            cam_world[:, 1] = robot_pos_world[:, 1] + float(y_off)
+            cam_world[:, 2] = robot_pos_world[:, 2] + float(z_off)
+        else:
+            # Static base placement (x=0, y=base_y, z=gate_center or fixed)
+            cam_world[:, 0] = 0.0
+            cam_world[:, 1] = float(base_y)
+            cam_world[:, 2] = gate_center_z
+
+        # Robot world pose tensors
+        try:
+            robot_pos = self.obs_dict['robot_position'].to(device=device, dtype=torch.float32)
+        except Exception:
+            robot_pos = torch.zeros((num_envs, 3), device=device, dtype=torch.float32)
+        # Prefer vehicle (yaw-only) orientation for stable horizontal frame; fallback to body
+        q = None
+        try:
+            q = self.obs_dict.get('robot_vehicle_orientation', None)
+        except Exception:
+            q = None
+        if q is None:
+            try:
+                q = self.obs_dict.get('robot_orientation', None)
+            except Exception:
+                q = None
+        if q is None:
+            q = torch.zeros((num_envs, 4), device=device, dtype=torch.float32)
+            q[:, 3] = 1.0
+        else:
+            q = q.to(device=device, dtype=torch.float32)
+
+        # Relative position in world then rotate into the drone/body frame
+        rel_world = cam_world - robot_pos
+        rel_pos_body = quat_rotate_inverse(q, rel_world)
+
+        # Compute camera world orientation as look-at towards a per-env target
+        # Target is the adaptive gate center when static base or dynamic following
+        try:
+            gate_pos_world = self.gate_position
+        except Exception:
+            gate_pos_world = torch.zeros((num_envs, 3), device=device)
+        try:
+            gcz = self.gate_center_height
+        except Exception:
+            gcz = torch.full((num_envs,), 1.5, device=device)
+        target_world = gate_pos_world.clone()
+        target_world[:, 2] = gate_pos_world[:, 2] + gcz
+
+        # When static base+ yaw sweep/randomization is active, adjust target X/Y using current yaw offset if available
+        if not dynamic_effective:
+            try:
+                scm = getattr(self, 'static_camera_manager', None)
+                have_angles = (scm is not None) and hasattr(scm, 'current_camera_angles') and (len(scm.current_camera_angles) >= num_envs)
+            except Exception:
+                have_angles = False
+            if have_angles:
+                # Build per-env target consistent with update_camera_positions
+                target_distance = torch.abs(cam_world[:, 1])  # |base_y|
+                angles_deg = torch.tensor(scm.current_camera_angles[:num_envs], dtype=torch.float32, device=device)
+                ang = angles_deg * (3.141592653589793 / 180.0)
+                target_world[:, 0] = cam_world[:, 0] + target_distance * torch.sin(ang)
+                target_world[:, 1] = cam_world[:, 1] + target_distance * torch.cos(ang)
+
+        # Camera forward vector and Euler in world
+        fwd = target_world - cam_world
+        fwd = fwd / (torch.norm(fwd, dim=1, keepdim=True) + 1e-8)
+        # Yaw: angle in XY toward +Y; Pitch: elevation toward +Z; Roll=0 (world up maintained)
+        fx, fy, fz = fwd[:, 0], fwd[:, 1], fwd[:, 2]
+        yaw_cam = torch.atan2(fx, torch.clamp(fy, min=1e-8))
+        hyp = torch.sqrt(torch.clamp(fx * fx + fy * fy, min=1e-8))
+        pitch_cam = torch.atan2(fz, hyp)
+        roll_cam = torch.zeros_like(yaw_cam)
+        eul_cam = torch.stack([roll_cam, pitch_cam, yaw_cam], dim=1)
+        q_cam = quat_from_euler_xyz_tensor(eul_cam)
+
+        # Relative orientation q_rel = q_drone^-1 ⊗ q_cam; then Euler in drone/body frame
+        q_drone = q
+        q_drone_conj = torch.stack([-q_drone[:, 0], -q_drone[:, 1], -q_drone[:, 2], q_drone[:, 3]], dim=1)
+        q_rel = quat_mul(q_drone_conj, q_cam)
+        rel_orient_euler = ssa(get_euler_xyz_tensor(q_rel))
+        drone_eul_world = ssa(get_euler_xyz_tensor(q_drone))
+        # Stash debug state for printing after obs assembly
+        try:
+            self._debug_cam_world = cam_world.detach().clone()
+            self._debug_rel_pos = rel_pos_body.detach().clone()
+            self._debug_rel_eul = rel_orient_euler.detach().clone()
+            self._debug_cam_eul = eul_cam.detach().clone()
+            self._debug_drone_eul = drone_eul_world.detach().clone()
+        except Exception:
+            pass
+        return rel_pos_body, rel_orient_euler
 
     def process_obs_for_task(self):
         """
@@ -2155,6 +2372,50 @@ class NavigationTaskGate(BaseTask):
                 self.gate_center_height,
                 boundary_violation_one_shot_mask,
             )
+
+        # Per-step time cost (scaled like other dense shaping)
+        # r_time = -lambda0 * (1 + lambda1 * s^p),  s = step / horizon
+        try:
+            rp = getattr(self.task_config, 'reward_parameters', {})
+        except Exception:
+            rp = {}
+        try:
+            H = int(getattr(self.task_config, 'episode_len_steps', 100))
+            if H <= 0:
+                H = 100
+        except Exception:
+            H = 100
+        lam1 = float(rp.get('time_penalty_lambda1', 1.0))
+        p = float(rp.get('time_penalty_exponent', 2.0))
+        desired_total = float(rp.get('time_penalty_total_at_horizon', 4.0))
+        lam0 = rp.get('time_penalty_lambda0', None)
+        if lam0 is None:
+            if abs(p - 2.0) < 1e-6:
+                sum_s_p = ((H + 1.0) * (2.0 * H + 1.0)) / (6.0 * H)
+            else:
+                sum_s_p = H / (p + 1.0)
+            denom = H + lam1 * sum_s_p
+            lam0 = desired_total / max(denom, 1e-6)
+        lam0 = float(lam0)
+        try:
+            s = torch.clamp((self.episode_lengths + 1.0) / float(H), 0.0, 1.0)
+        except Exception:
+            s = torch.full((self.num_envs,), 1.0 / float(H), device=self.device)
+        raw_time_penalty = -lam0 * (1.0 + lam1 * torch.pow(s, p))
+        reward_scale = float(rp.get('reward_scale', 0.1))
+        try:
+            mult_factor = float(getattr(self, '_curriculum_multiplier_factor', 1.0))
+        except Exception:
+            mult_factor = 1.0
+        time_penalty = (mult_factor * reward_scale * raw_time_penalty)
+        rewards = rewards + time_penalty
+        # Accumulate for per-episode debugging
+        try:
+            non_terminated = ~self.terminations
+            if torch.sum(non_terminated) > 0:
+                self.episode_time_penalty[non_terminated] += time_penalty[non_terminated]
+        except Exception:
+            pass
 
         # Static camera FOV visibility reward (depth-based frustum check, shaped)
         try:
@@ -2591,6 +2852,17 @@ class NavigationTaskGate(BaseTask):
             if fov_mag != 0.0:
                 logger.warning(f"  🖼️ Static FOV Reward:      {avg_static_fov_reward:.3f}")
             logger.warning(f"  🎮 Action Penalty:         {avg_action_penalty:.3f}")
+            # Time/timeout penalties (averages)
+            try:
+                avg_time_pen = float(torch.mean(self.episode_time_penalty).item())
+            except Exception:
+                avg_time_pen = 0.0
+            try:
+                avg_timeout_pen = float(torch.mean(self.episode_timeout_penalty).item())
+            except Exception:
+                avg_timeout_pen = 0.0
+            logger.warning(f"  ⏱️ Time Penalty (avg):     {avg_time_pen:.3f}")
+            logger.warning(f"  ⌛ Timeout Penalty (avg):  {avg_timeout_pen:.3f}")
             logger.warning(f"  ⛔ Boundary Violation:     {avg_boundary_penalty:.3f}")
             logger.warning(f"  ⚡ Multiplier Factor:      {mult_factor:.3f}")
             
@@ -2631,6 +2903,11 @@ class NavigationTaskGate(BaseTask):
                 logger.warning(f"  ✅ Gate Alignment:         {avg_episode_data['gate_alignment_reward']:.1f}")
                 logger.warning(f"  📹 Camera Facing:          {avg_episode_data['camera_facing_reward']:.1f}")
                 logger.warning(f"  🎮 Action Penalties:       {avg_episode_data['action_penalty']:.1f}")
+                # New: time-related penalties over last 10 episodes
+                if 'time_penalty' in avg_episode_data:
+                    logger.warning(f"  ⏱️ Time Penalties:         {avg_episode_data['time_penalty']:.1f}")
+                if 'timeout_penalty' in avg_episode_data:
+                    logger.warning(f"  ⌛ Timeout Penalties:      {avg_episode_data['timeout_penalty']:.1f}")
                 if 'boundary_violation_penalty' in avg_episode_data:
                     logger.warning(f"  ⛔ Boundary Violations:    {avg_episode_data['boundary_violation_penalty']:.1f}")
                 logger.warning(f"  🎉 Gate Passage Bonuses:   {avg_episode_data['gate_passage_reward']:.1f} (basic + center)")
@@ -2725,6 +3002,35 @@ class NavigationTaskGate(BaseTask):
         3. Drone orientation randomization (progressive random orientations)
         4. Static camera positioning (progressive angle and distance changes)
         """
+        # Early exit for testing/eval with forced level: lock level and skip progression
+        try:
+            forced = os.environ.get('SF_FORCE_CURRICULUM_LEVEL', None)
+            if forced is None:
+                forced = getattr(self.task_config, 'force_curriculum_level', None)
+            if forced is not None and str(forced).lower() != 'no':
+                eval_stretch_enabled = bool(getattr(self.task_config.curriculum, 'eval_stretch_enabled', False))
+                effective_max = (
+                    int(getattr(self.task_config.curriculum, 'eval_stretch_end_level', self.task_config.curriculum.max_level))
+                    if eval_stretch_enabled else self.task_config.curriculum.max_level
+                )
+                self.curriculum_level = int(forced)
+                self.curriculum_level = min(
+                    max(self.curriculum_level, self.task_config.curriculum.min_level),
+                    effective_max,
+                )
+                if hasattr(self, 'sim_env') and hasattr(self.sim_env, 'global_tensor_dict'):
+                    self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
+                try:
+                    self.obs_dict["curriculum_level"] = self.curriculum_level
+                except Exception:
+                    pass
+                try:
+                    self.max_curriculum_level_reached = max(getattr(self, 'max_curriculum_level_reached', self.curriculum_level), self.curriculum_level)
+                except Exception:
+                    pass
+                return
+        except Exception:
+            pass
         self.success_aggregate += torch.sum(successes)
         self.crashes_aggregate += torch.sum(crashes)
         self.timeouts_aggregate += torch.sum(timeouts)
@@ -2779,10 +3085,15 @@ class NavigationTaskGate(BaseTask):
                 pass
             self.log_curriculum_update(f"[CURRICULUM UPDATE] {action_msg}")
 
-            # Clamp curriculum_level to valid range
+            # Clamp curriculum_level to valid range (honor eval stretch end level if enabled)
+            eval_stretch_enabled = bool(getattr(self.task_config.curriculum, 'eval_stretch_enabled', False))
+            effective_max = (
+                int(getattr(self.task_config.curriculum, 'eval_stretch_end_level', self.task_config.curriculum.max_level))
+                if eval_stretch_enabled else self.task_config.curriculum.max_level
+            )
             self.curriculum_level = min(
                 max(self.curriculum_level, self.task_config.curriculum.min_level),
-                self.task_config.curriculum.max_level,
+                effective_max,
             )
             self.obs_dict["curriculum_level"] = self.curriculum_level
             
@@ -3530,6 +3841,8 @@ class NavigationTaskGate(BaseTask):
                         self.episode_gate_alignment_reward[env_id] + 
                         self.episode_camera_facing_reward[env_id] + 
                         self.episode_action_penalty[env_id] + 
+                        self.episode_time_penalty[env_id] + 
+                        self.episode_timeout_penalty[env_id] + 
                         self.episode_boundary_violation_penalty[env_id] + 
                         self.episode_gate_passage_reward[env_id] + 
                         self.episode_collision_penalty[env_id] + 
@@ -3543,6 +3856,8 @@ class NavigationTaskGate(BaseTask):
                     'camera_facing_reward': self.episode_camera_facing_reward[env_id].item(),
                     'action_penalty': self.episode_action_penalty[env_id].item(),
                     'boundary_violation_penalty': self.episode_boundary_violation_penalty[env_id].item(),
+                    'time_penalty': self.episode_time_penalty[env_id].item(),
+                    'timeout_penalty': self.episode_timeout_penalty[env_id].item(),
                     'gate_passage_reward': self.episode_gate_passage_reward[env_id].item(),  # Now includes both basic + center bonus
                     'collision_penalty': self.episode_collision_penalty[env_id].item(),
                     'image_reward': self.episode_image_reward[env_id].item(),
@@ -3566,6 +3881,8 @@ class NavigationTaskGate(BaseTask):
         self.episode_collision_penalty[env_ids] = 0
         self.episode_image_reward[env_ids] = 0
         self.episode_boundary_violation_penalty[env_ids] = 0
+        self.episode_time_penalty[env_ids] = 0
+        self.episode_timeout_penalty[env_ids] = 0
         self.episode_lengths[env_ids] = 0
 
 
@@ -3589,6 +3906,10 @@ class StaticCameraManager:
         # Per-environment camera angle tracking - FIXED during each episode
         self.num_envs = len(self.env_handles)
         self.current_camera_angles = [0.0] * self.num_envs  # Track angle per environment
+        # Debug tracking of last camera placement and target per env
+        self.last_camera_pos = [(0.0, -3.0, 1.5) for _ in range(self.num_envs)]
+        self.last_camera_target = [(0.0, 0.0, 1.5) for _ in range(self.num_envs)]
+        self.last_angle_deg = [0.0 for _ in range(self.num_envs)]
         
         self._setup_static_camera()
     
@@ -3635,18 +3956,67 @@ class StaticCameraManager:
                     self.use_synthetic_camera = True
                     return
             
-            # FIXED POSITIONING: Position camera to face the gate directly (match working example)
-            # Gate is positioned at ground level (Z=0), camera at 1.5m height looking at gate center
-            camera_pos = gymapi.Vec3(0.0, -3.0, 1.5)  # 3m behind gate, at gate center height
-            camera_target = gymapi.Vec3(0.0, 0.0, 1.5)  # Look directly at gate center
-            
-            # Set camera transform for each environment using fixed positioning
+            # Respect CLI/task_config base_y/base_z (with 'adaptive' support) for initial placement
+            try:
+                base_y = float(getattr(self.task_config, 'static_camera_base_y', float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))))
+            except Exception:
+                base_y = -3.0
+            # Determine base Z spawning mode: numeric or 'adaptive' to gate center per env
+            adaptive_z = False
+            base_z_value = 1.5
+            try:
+                cfg_base_z = getattr(self.task_config, 'static_camera_base_z', None)
+                if cfg_base_z is not None:
+                    if isinstance(cfg_base_z, str) and cfg_base_z.strip().lower() == 'adaptive':
+                        adaptive_z = True
+                    else:
+                        base_z_value = float(cfg_base_z)
+                else:
+                    env_base_z = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
+                    if env_base_z is not None and str(env_base_z).strip().lower() == 'adaptive':
+                        adaptive_z = True
+                    elif env_base_z is not None:
+                        base_z_value = float(env_base_z)
+            except Exception:
+                pass
+
+            # Try to read per-env adaptive gate center Z from global tensors (if available)
+            try:
+                gtd = self.env_manager.IGE_env.global_tensor_dict
+                gate_center_per_env = gtd.get('gate/center_height_per_env', None)
+            except Exception:
+                gate_center_per_env = None
+
+            # Set camera transform for each environment using configured positioning
             for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
-                # Use Isaac Gym's camera look_at functionality (match working example)
+                if adaptive_z and gate_center_per_env is not None and i < len(gate_center_per_env):
+                    env_base_z = float(gate_center_per_env[i].item())
+                else:
+                    env_base_z = float(base_z_value)
+                camera_pos = gymapi.Vec3(0.0, float(base_y), env_base_z)
+                # Look directly at the gate center height for that env
+                camera_target = gymapi.Vec3(0.0, 0.0, env_base_z)
                 self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-                logger.info(f"Set static camera {i} to look from ({camera_pos.x}, {camera_pos.y}, {camera_pos.z}) toward ({camera_target.x}, {camera_target.y}, {camera_target.z})")
-            
-            logger.info("✓ Static camera setup complete with fixed positioning")
+                logger.info(
+                    f"Set static camera {i} to look from ({camera_pos.x}, {camera_pos.y}, {camera_pos.z}) toward ({camera_target.x}, {camera_target.y}, {camera_target.z})"
+                )
+                # Store for debug
+                try:
+                    self.last_camera_pos[i] = (float(camera_pos.x), float(camera_pos.y), float(camera_pos.z))
+                    self.last_camera_target[i] = (float(camera_target.x), float(camera_target.y), float(camera_target.z))
+                    self.last_angle_deg[i] = 0.0
+                except Exception:
+                    pass
+
+            # Cache base values into global dict for downstream updates
+            try:
+                if hasattr(self.env_manager.IGE_env, 'global_tensor_dict'):
+                    self.env_manager.IGE_env.global_tensor_dict['static_camera/base_y'] = float(base_y)
+                    self.env_manager.IGE_env.global_tensor_dict['static_camera/base_z'] = ('adaptive' if adaptive_z else float(base_z_value))
+            except Exception:
+                pass
+
+            logger.info("✓ Static camera setup complete with configured positioning (base_y/base_z)")
             self.camera_setup_success = True
             self.use_synthetic_camera = False
             
@@ -3891,6 +4261,20 @@ class StaticCameraManager:
                 env_handle = self.env_handles[env_idx]
                 cam_handle = self.camera_handles[env_idx]
                 self.gym.set_camera_location(cam_handle, env_handle, base_camera_env_pos, new_target)
+                # Update debug caches
+                try:
+                    self.last_camera_pos[env_idx] = (float(base_camera_env_pos.x), float(base_camera_env_pos.y), float(base_camera_env_pos.z))
+                    self.last_camera_target[env_idx] = (float(new_target.x), float(new_target.y), float(new_target.z))
+                    self.last_angle_deg[env_idx] = float(angle_offset_degrees)
+                except Exception:
+                    pass
+                # Debug only for env 0 to avoid spam
+                if env_idx == 0:
+                    logger.warning(
+                        f"[StaticCamReset] env0 base_y={base_camera_env_pos.y:.3f} env_base_z={base_camera_env_pos.z:.3f} "
+                        f"pos=({base_camera_env_pos.x:.3f},{base_camera_env_pos.y:.3f},{base_camera_env_pos.z:.3f}) "
+                        f"target=({new_target.x:.3f},{new_target.y:.3f},{new_target.z:.3f}) angle_deg={angle_offset_degrees:.1f}"
+                    )
                 
                 # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{debug_max_range:.1f}°)")
             

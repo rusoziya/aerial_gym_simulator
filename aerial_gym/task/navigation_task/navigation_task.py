@@ -120,7 +120,7 @@ class NavigationTask(BaseTask):
                 "image_obs": Box(
                     low=-1.0,
                     high=1.0,
-                    shape=(1, 135, 240),
+                    shape=(1, 270, 480),
                     dtype=np.float32,
                 ),
             }

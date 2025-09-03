@@ -33,6 +33,8 @@ export CUBLAS_WORKSPACE_CONFIG=:16:8
 EXPERIMENT_NAME=""
 ENABLE_VIEWER=false
 ENABLE_GIFS=false
+EXTRA_ARGS=""
+ASYNC_RL=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -43,7 +45,7 @@ while [[ $# -gt 0 ]]; do
             echo "  - Environment: gate_env"
             echo "  - Robot: X500 with D455 camera"
             echo "  - Static camera: D455 behind gate (270x480 resolution)"
-            echo "  - Observation space: 141D (13D basic + 64D drone VAE + 64D static camera VAE) - PURE VISION"
+            echo "  - Observation space: 150D"
             echo "  - Action space: 4D (x_vel, y_vel, z_vel, yaw_rate) - VELOCITY CONTROLLER"
             echo "  - Memory optimization: Shared VAE model reduces GPU usage by ~50%"
             echo "  - Gradient monitoring: ENABLED - tracks static camera usage during training"
@@ -176,8 +178,53 @@ while [[ $# -gt 0 ]]; do
             STATIC_CAMERA_BASE_Z="${1#*=}"
             shift
             ;;
+        --async_rl=*)
+            ASYNC_RL="${1#*=}"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
         --train_steps=*)
             TRAIN_STEPS="${1#*=}"
+            shift
+            ;;
+        --num_epochs=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --num_batches_per_epoch=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --train_for_seconds=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --restart_behavior=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --load_checkpoint_kind=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --serial_mode=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --async_rl=*)
+            ASYNC_RL="${1#*=}"
+            shift
+            ;;
+        --policy_workers_per_policy=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --*)
+            # Pass through any other unknown --flags to the python command
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
             shift
             ;;
         --train_for_env_steps=*)
@@ -537,12 +584,12 @@ TRAIN_CMD="python train_aerialgym_custom_net_gate.py \
     --wandb_group=\"gate_navigation_training\" \
     --wandb_tags \"aerial_gym\" \"gate_navigation\" \"dual_camera\" \"x500\" \"sample_factory\" \"memory_optimized\" \
     --save_every_sec=1800 \
-    --save_best_every_sec=300 \
+    --save_best_every_sec=500 \
     --train_for_env_steps=${TRAIN_STEPS} \
     --train_for_seconds=0 \
-    --async_rl=false \
+    --async_rl=${ASYNC_RL} \
     --serial_mode=true \
-    --policy_workers_per_policy=1"
+    --policy_workers_per_policy=1 ${EXTRA_ARGS}"
 
 # Append seed if provided
 if [ -n "$SEED_VAL" ]; then

@@ -1,185 +1,210 @@
-import time
-import isaacgym
+import isaacgym  # noqa: F401 (ensures gym is loaded)
 
-# isort: on
 import torch
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import (
-    parse_aerialgym_cfg,
-)
+import os
 from aerial_gym.utils import get_args
 from aerial_gym.registry.task_registry import task_registry
 
+from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import (
+    DCE_RL_Navigation_Task_Gate,
+)
+from aerial_gym.examples.dce_rl_navigation.sf_inference_class_gate import (
+    NN_Inference_Class_Gate,
+)
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import (
+    parse_aerialgym_cfg,
+)
 
-from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import DCE_RL_Navigation_Task_Gate
-from aerial_gym.examples.dce_rl_navigation.sf_inference_class_gate import NN_Inference_Class
 
-import matplotlib
-import numpy as np
-from PIL import Image
-
-
-def sample_command(args):
-    use_warp = True
-    # Enable viewing by default for inference - user can override with --headless
-    headless = getattr(args, 'headless', False)  # Default to False (viewing enabled)
+def main():
+    args = get_args()
+    headless = getattr(args, "headless", False)
     print(f"DCE Gate Inference - Headless mode: {headless}")
-    
-    # seg_frames = []
-    # depth_frames = []
-    # merged_image_frames = []
 
-    rl_task = task_registry.make_task(
-        "dce_navigation_task_gate", seed=42, use_warp=use_warp, headless=headless
-    )
-    print("Number of environments", rl_task.num_envs)
-    
-    # 4D action space [x_vel, y_vel, z_vel, yaw_rate] for velocity controller
-    command_actions = torch.zeros((rl_task.num_envs, rl_task.task_config.action_space_dim), device=rl_task.device)
-    
-    # Initialize inference model
-    nn_model = get_network(rl_task.num_envs)
-    nn_model.eval()
-    
-    # Optionally load checkpoint (prefer explicit env var to avoid SF arg conflicts)
-    import os, glob
-    env_model = os.environ.get('DCE_MODEL', '').strip()
-    if env_model:
-        print(f"[Inference] DCE_MODEL={env_model}")
-    model_path = env_model or getattr(args, 'load_checkpoint', None) or getattr(args, 'checkpoint', None)
-    loaded = False
-    if model_path:
-        try:
-            nn_model.load_model(model_path)
-            loaded = True
-        except Exception as e:
-            print(f"[Inference] Warning: failed to load model '{model_path}': {e}")
-    # Auto-detect from Sample Factory cfg if not explicitly provided
-    if not loaded:
-        try:
-            cfg = getattr(nn_model, 'cfg', None)
-            td = getattr(cfg, 'train_dir', None)
-            ex = getattr(cfg, 'experiment', None)
-            kind = getattr(cfg, 'load_checkpoint_kind', 'best')
-            if td and ex:
-                ckpt_dir = os.path.join(str(td), str(ex), 'checkpoint_p0')
-                pattern = 'best*.pth' if str(kind) == 'best' else '*.pth'
-                candidates = sorted(glob.glob(os.path.join(ckpt_dir, pattern)))
-                if not candidates and str(kind) != 'best':
-                    candidates = sorted(glob.glob(os.path.join(ckpt_dir, 'best*.pth')))
-                if candidates:
-                    auto_ckpt = candidates[-1]
-                    print(f"[Inference] Auto-selected checkpoint: {auto_ckpt}")
-                    nn_model.load_model(auto_ckpt)
-                    loaded = True
-                else:
-                    print(f"[Inference] No checkpoints found in {ckpt_dir}")
-        except Exception as e:
-            print(f"[Inference] Auto-detect failed: {e}")
-    if not loaded:
-        print("[Inference] ERROR: No model loaded. Set DCE_MODEL to a valid .pth or provide train_dir/experiment with saved checkpoints.")
-        raise SystemExit(1)
-    
-    nn_model.reset_rnn_states()
-    rl_task.reset()
-    
-    for i in range(0, 50000):
-        start_time = time.time()
-        obs, rewards, termination, truncation, infos = rl_task.step(command_actions)
-
-        # Build batched obs for policy (150D)
-        obs_batch = obs["observations"]  # [N, 150]
-        
-        # Get batched actions from policy
-        try:
-            actions_np = nn_model.get_action_batched({"obs": obs_batch})
-        except Exception:
-            actions_np = nn_model.get_action_batched(obs_batch)
-        actions = torch.tensor(actions_np, device=rl_task.device)
-        command_actions[:] = actions
-
-        reset_ids = (termination + truncation).nonzero(as_tuple=True)
-        if torch.any(termination):
-            terminated_envs = termination.nonzero(as_tuple=True)
-            print(f"Resetting environments {terminated_envs} due to Termination")
-        if torch.any(truncation):
-            truncated_envs = truncation.nonzero(as_tuple=True)
-            print(f"Resetting environments {truncated_envs} due to Timeout")
-        nn_model.reset(reset_ids)
-
-    # # Uncomment the below lines to save the frames from an episode as a GIF
-    #     # save obs to file as a .gif
-    #     image1 = (
-    #         255.0 * rl_task.obs_dict["depth_range_pixels"][0, 0].cpu().numpy()
-    #     ).astype(np.uint8)
-    #     seg_image1 = rl_task.obs_dict["segmentation_pixels"][0, 0].cpu().numpy()
-    #     seg_image1[seg_image1 <= 0] = seg_image1[seg_image1 > 0].min()
-    #     seg_image1_normalized = (seg_image1 - seg_image1.min()) / (
-    #         seg_image1.max() - seg_image1.min()
-    #     )
-
-    #     # set colormap to plasma in matplotlib
-    #     seg_image1_normalized_plasma = matplotlib.cm.plasma(seg_image1_normalized)
-    #     seg_image1 = Image.fromarray((seg_image1_normalized_plasma * 255.0).astype(np.uint8))
-
-    #     depth_image1 = Image.fromarray(image1)
-    #     image_4d = np.zeros((image1.shape[0], image1.shape[1], 4))
-    #     image_4d[:, :, 0] = image1
-    #     image_4d[:, :, 1] = image1
-    #     image_4d[:, :, 2] = image1
-    #     image_4d[:, :, 3] = 255.0
-    #     merged_image = np.concatenate((image_4d, seg_image1_normalized_plasma * 255.0), axis=0)
-    #     # save frames to array:
-    #     seg_frames.append(seg_image1)
-    #     depth_frames.append(depth_image1)
-    #     merged_image_frames.append(Image.fromarray(merged_image.astype(np.uint8)))
-    # if termination[0] or truncation[0]:
-    #     print("i", i)
-    #     rl_task.reset()
-    #     # save frames as a gif:
-    #     seg_frames[0].save(
-    #         f"seg_frames_{i}.gif",
-    #         save_all=True,
-    #         append_images=seg_frames[1:],
-    #         duration=100,
-    #         loop=0,
-    #     )
-    #     depth_frames[0].save(
-    #         f"depth_frames_{i}.gif",
-    #         save_all=True,
-    #         append_images=depth_frames[1:],
-    #         duration=100,
-    #         loop=0,
-    #     )
-    #     merged_image_frames[0].save(
-    #         f"merged_image_frames_{i}.gif",
-    #         save_all=True,
-    #         append_images=merged_image_frames[1:],
-    #         duration=100,
-    #         loop=0,
-    #     )
-    #     seg_frames = []
-    #     depth_frames = []
-    #     merged_image_frames = []
-
-
-def get_network(num_envs):
-    """Script entry point."""
-    from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import register_aerialgym_custom_components
-    register_aerialgym_custom_components()
+    # Build eval cfg and apply static camera overrides to task config before registering
     cfg = parse_aerialgym_cfg(evaluation=True)
-    print("CFG is:", cfg)
-    # ENHANCED: 4D action space and 150D observation space for position-aware gate navigation
-    nn_model = NN_Inference_Class(num_envs, 4, 150, cfg)  # 4D action, 150D observation (position-aware)
-    return nn_model
+    # Instantiate task_config the same way as training does
+    task_config_class = task_registry.get_task_config("navigation_task_gate")
+    base_task_config = task_config_class()
+    try:
+        # Env count
+        if hasattr(cfg, "env_agents") and cfg.env_agents:
+            base_task_config.num_envs = int(cfg.env_agents)
+            os.environ["SF_ENV_AGENTS"] = str(int(cfg.env_agents))
+        # Apply viewer/headless explicitly (training script exports SF_HEADLESS; here set config directly too)
+        if hasattr(base_task_config, "headless"):
+            base_task_config.headless = bool(headless)
+        # Gate/obstacle overrides (mirror training subprocess setup)
+        if hasattr(cfg, "disable_gate_size_randomization"):
+            base_task_config.disable_gate_size_randomization = bool(getattr(cfg, "disable_gate_size_randomization", False))
+        if hasattr(cfg, "fixed_gate_scale_percent"):
+            base_task_config.fixed_gate_scale_percent = int(getattr(cfg, "fixed_gate_scale_percent", 100))
+        if hasattr(cfg, "disable_obstacle_randomization"):
+            base_task_config.disable_obstacle_randomization = bool(getattr(cfg, "disable_obstacle_randomization", False))
+        if hasattr(cfg, "fixed_obstacles_behind_gate"):
+            base_task_config.fixed_obstacles_behind_gate = int(getattr(cfg, "fixed_obstacles_behind_gate", 0))
+        # Static camera control flags
+        if hasattr(base_task_config, "static_camera_yaw_sweep_enabled"):
+            base_task_config.static_camera_yaw_sweep_enabled = bool(getattr(cfg, "enable_static_camera_yaw_sweep", False))
+        if hasattr(base_task_config, "enable_static_camera_yaw_sweep"):
+            base_task_config.enable_static_camera_yaw_sweep = bool(getattr(cfg, "enable_static_camera_yaw_sweep", False))
+        if hasattr(base_task_config, "static_camera_yaw_sweep_speed_deg"):
+            base_task_config.static_camera_yaw_sweep_speed_deg = float(getattr(cfg, "static_camera_yaw_sweep_speed_deg", 180.0))
+        # Base position overrides
+        if hasattr(base_task_config, "static_camera_base_y"):
+            base_task_config.static_camera_base_y = float(getattr(cfg, "static_camera_base_y", -3.0))
+        if hasattr(base_task_config, "static_camera_base_z"):
+            base_task_config.static_camera_base_z = getattr(cfg, "static_camera_base_z", "fixed")
+        # Orientation randomization toggle
+        if hasattr(base_task_config, "disable_static_camera_orientation_randomization"):
+            base_task_config.disable_static_camera_orientation_randomization = bool(getattr(cfg, "disable_static_camera_orientation_randomization", False))
+        # Dynamic camera following toggles
+        try:
+            cur = getattr(base_task_config, 'curriculum', None)
+            if cur is not None:
+                if hasattr(cfg, 'disable_dynamic_camera_following') and bool(getattr(cfg, 'disable_dynamic_camera_following', False)):
+                    setattr(cur, 'enable_dynamic_camera_following', False)
+                if hasattr(cfg, 'enable_dynamic_camera_following') and getattr(cfg, 'enable_dynamic_camera_following') is not None:
+                    setattr(cur, 'enable_dynamic_camera_following', bool(getattr(cfg, 'enable_dynamic_camera_following')))
+        except Exception:
+            pass
+    except Exception:
+        pass
 
-
-if __name__ == "__main__":
+    # Register gate task for inference with updated config
     task_registry.register_task(
         task_name="dce_navigation_task_gate",
         task_class=DCE_RL_Navigation_Task_Gate,
-        task_config=task_registry.get_task_config(
-            "navigation_task_gate"
-        ),  # use gate navigation task config
+        task_config=base_task_config,
     )
-    args = get_args()
-    sample_command(args) 
+
+    # Build env (respect CLI seed like training)
+    seed_val = None
+    try:
+        if hasattr(cfg, "seed") and cfg.seed is not None:
+            seed_val = int(cfg.seed)
+    except Exception:
+        seed_val = None
+    rl_task = task_registry.make_task(
+        "dce_navigation_task_gate", seed=seed_val, use_warp=True, headless=headless
+    )
+    print("Number of environments", rl_task.num_envs)
+
+    # Set compat attribute on the task
+    try:
+        setattr(rl_task, "sf_cfg", cfg)
+    except Exception:
+        pass
+
+    # obs/action dims for gate task
+    num_actions = rl_task.task_config.action_space_dim
+    num_obs = rl_task.task_config.observation_space_dim
+
+    # Inference wrapper uses Sample Factory checkpoints/config
+    nn_model = NN_Inference_Class_Gate(rl_task.num_envs, num_actions, num_obs, cfg)
+    nn_model.eval()
+    nn_model.reset(torch.arange(rl_task.num_envs))
+
+    with torch.no_grad():
+        reset_result = rl_task.reset()
+        obs_dict = reset_result[0] if isinstance(reset_result, tuple) else reset_result
+        # Determine the observation key the model expects
+        nn_obs_key = getattr(getattr(nn_model, "cfg", object()), "obs_key", "obs")
+        # Apply the same observation ablation used during training if requested via env vars
+        def _apply_obs_ablation(obs_tensor: torch.Tensor) -> torch.Tensor:
+            import os as _os
+            if obs_tensor is None:
+                return obs_tensor
+            # Work on a private copy to avoid aliasing/view issues
+            obs_tensor = obs_tensor.clone()
+            debug = _os.environ.get("ABLATE_DEBUG", "false").lower() == "true"
+            # Simple switch for drone position (parity with training wrapper)
+            if _os.environ.get("ABLATE_DRONE_POS", "false").lower() == "true":
+                start, end = 0, 3
+                obs_tensor[:, start:end] = 0.0
+                if debug:
+                    v = obs_tensor[:, start:end]
+                    print(f"[ABLATE_DEBUG] applied: {start}:{end}=zero | min={v.min().item():.3e} max={v.max().item():.3e} mean={v.mean().item():.3e} nonzero={int((v!=0).sum().item())}")
+            # General ranges
+            spec_str = _os.environ.get("ABLATE_OBS_RANGES", "").strip()
+            if not spec_str:
+                return obs_tensor
+            grad_mask = None
+            zero_ranges = []
+            zerograd_ranges = []
+            _dbg_count = 0
+            for spec in spec_str.split(","):
+                spec = spec.strip()
+                if not spec:
+                    continue
+                if "=" not in spec:
+                    continue
+                lhs, rhs = spec.split("=", 1)
+                lhs = lhs.strip(); rhs = rhs.strip()
+                if ":" not in lhs:
+                    continue
+                try:
+                    start_s, end_s = lhs.split(":", 1)
+                    start = int(start_s); end = int(end_s)
+                except Exception:
+                    continue
+                op = rhs
+                if op == "zero":
+                    if grad_mask is None:
+                        grad_mask = torch.ones_like(obs_tensor)
+                    grad_mask[:, start:end] = 0.0
+                    zero_ranges.append((start, end))
+                elif op == "zerograd":
+                    zerograd_ranges.append((start, end))
+                elif op == "shuffle":
+                    if obs_tensor.shape[0] > 1:
+                        perm = torch.randperm(obs_tensor.shape[0], device=obs_tensor.device)
+                        obs_tensor[:, start:end] = obs_tensor[perm, start:end]
+                    if debug and _dbg_count < 10:
+                        v = obs_tensor[:, start:end]
+                        print(f"[ABLATE_DEBUG] applied: {start}:{end}=shuffle | sample_env0={v[0].detach().cpu().numpy()} sample_env1={v[1].detach().cpu().numpy() if v.shape[0]>1 else 'NA'}")
+                        _dbg_count += 1
+                elif op.startswith("noise:"):
+                    try:
+                        std = float(op.split(":", 1)[1])
+                    except Exception:
+                        std = 0.0
+                    if std > 0.0:
+                        obs_tensor[:, start:end] = obs_tensor[:, start:end] + torch.randn_like(obs_tensor[:, start:end]) * std
+                    if debug and _dbg_count < 10:
+                        v = obs_tensor[:, start:end]
+                        print(f"[ABLATE_DEBUG] applied: {start}:{end}=noise:{std} | std_est={v.std().item():.3e} mean={v.mean().item():.3e}")
+                        _dbg_count += 1
+            if grad_mask is not None:
+                obs_tensor = obs_tensor * grad_mask
+                if debug:
+                    for (zs, ze) in zero_ranges:
+                        if _dbg_count >= 10:
+                            break
+                        v = obs_tensor[:, zs:ze]
+                        print(f"[ABLATE_DEBUG] applied: {zs}:{ze}=zero | min={v.min().item():.3e} max={v.max().item():.3e} mean={v.mean().item():.3e} nonzero={int((v!=0).sum().item())}")
+                        _dbg_count += 1
+            for (start, end) in zerograd_ranges:
+                zero_slice = torch.zeros_like(obs_tensor[:, start:end])
+                left = obs_tensor[:, :start]
+                right = obs_tensor[:, end:]
+                obs_tensor = torch.cat([left, zero_slice, right], dim=-1)
+                if debug and _dbg_count < 10:
+                    v = obs_tensor[:, start:end]
+                    print(f"[ABLATE_DEBUG] applied: {start}:{end}=zerograd | min={v.min().item():.3e} max={v.max().item():.3e} mean={v.mean().item():.3e} nonzero={int((v!=0).sum().item())}")
+                    _dbg_count += 1
+            return obs_tensor
+        while True:
+            vec = obs_dict["observations"] if isinstance(obs_dict, dict) and "observations" in obs_dict else obs_dict["obs"]
+            # Apply ablation if configured
+            vec = _apply_obs_ablation(vec)
+            model_obs = {nn_obs_key: vec}
+            actions = nn_model.get_action(model_obs)
+            step_result = rl_task.step(actions)
+            obs_dict = step_result[0] if isinstance(step_result, tuple) else step_result
+
+
+if __name__ == "__main__":
+    main()
+
+
