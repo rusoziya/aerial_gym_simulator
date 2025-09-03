@@ -1591,6 +1591,28 @@ class NavigationTaskGate(BaseTask):
         """Process drone camera observations with D455 curriculum-dependent noise."""
         # Get the drone's depth image (normalized 0.0–1.0)
         image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)  # shape: (num_envs, H, W)
+        # DEBUG: Compare per-env drone camera images to ensure diversity
+        try:
+            if (not hasattr(self, '_drone_cam_debug_last')) or (self.num_task_steps % 200 == 0):
+                ne = int(image_obs.shape[0])
+                def _mean_env(idx):
+                    return float(image_obs[idx].mean().item()) if idx < ne else float('nan')
+                def _same(idx):
+                    return (idx < ne) and bool(torch.allclose(image_obs[0], image_obs[idx]))
+                envs_to_check = [0, 1, 5, 8, 12]
+                means = {i: _mean_env(i) for i in envs_to_check}
+                sames = {i: _same(i) for i in [1, 5, 8, 12]}
+                logger.warning(
+                    f"[DroneCam] depth shape={tuple(image_obs.shape)} "
+                    f"env0_mean={means[0]:.4f} env1_mean={means.get(1, float('nan')):.4f} "
+                    f"env5_mean={means.get(5, float('nan')):.4f} env8_mean={means.get(8, float('nan')):.4f} "
+                    f"env12_mean={means.get(12, float('nan')):.4f} "
+                    f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
+                    f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
+                )
+                self._drone_cam_debug_last = self.num_task_steps
+        except Exception:
+            pass
         
         # Apply D455 camera noise if enabled and not ablated
         noised_image_obs = image_obs.clone()  # Start with clean image
@@ -1665,11 +1687,36 @@ class NavigationTaskGate(BaseTask):
         # Encode the (potentially noisy) image using VAE
         if self.task_config.vae_config.use_vae:
             self.image_latents[:] = self.shared_vae_model.encode(noised_image_obs)
+            # DEBUG: Compare per-env drone VAE latents
+            try:
+                if (not hasattr(self, '_drone_vae_debug_last')) or (self.num_task_steps % 200 == 0):
+                    z = self.image_latents
+                    ne = int(z.shape[0])
+                    def _absmean_env(idx):
+                        return float(torch.mean(torch.abs(z[idx])).item()) if idx < ne else float('nan')
+                    def _same(idx):
+                        return (idx < ne) and bool(torch.allclose(z[0], z[idx]))
+                    envs_to_check = [0, 1, 5, 8, 12]
+                    means = {i: _absmean_env(i) for i in envs_to_check}
+                    sames = {i: _same(i) for i in [1, 5, 8, 12]}
+                    logger.warning(
+                        f"[DroneVAE] latents shape={tuple(z.shape)} "
+                        f"env0_absmean={means[0]:.4f} env1_absmean={means.get(1, float('nan')):.4f} "
+                        f"env5_absmean={means.get(5, float('nan')):.4f} env8_absmean={means.get(8, float('nan')):.4f} "
+                        f"env12_absmean={means.get(12, float('nan')):.4f} "
+                        f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
+                        f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
+                    )
+                    self._drone_vae_debug_last = self.num_task_steps
+            except Exception:
+                pass
 
     def process_static_camera_observation(self):
         """Process static camera observations with D455 curriculum-dependent noise."""
         try:
-            static_depth, static_seg = self.static_camera_manager.capture_images()
+            # Request batched capture so each env gets its own image for VAE, while
+            # GIF/debug paths will still use env0 via non-batched calls where needed
+            static_depth, static_seg = self.static_camera_manager.capture_images(batched=True)
             
             # CRITICAL DEBUG: Log static camera capture success/failure
             if not hasattr(self, '_static_debug_logged'):
@@ -1678,13 +1725,42 @@ class NavigationTaskGate(BaseTask):
                     logger.warning(f"✅ Static camera capture successful: shape={static_depth.shape if hasattr(static_depth, 'shape') else 'N/A'}, type={type(static_depth)}")
                 else:
                     logger.warning("❌ Static camera capture failed: static_depth is None")
+            # Periodic per-env capture stats to confirm diversity
+            try:
+                if (not hasattr(self, '_static_cam_debug_last')) or (self.num_task_steps % 200 == 0):
+                    if hasattr(static_depth, 'shape') and getattr(static_depth, 'ndim', 0) == 3:
+                        x = static_depth  # (N,H,W)
+                        ne = int(x.shape[0])
+                        def _mean_env(idx):
+                            return float(x[idx].mean().item()) if idx < ne else float('nan')
+                        def _same(idx):
+                            return (idx < ne) and bool(np.allclose(x[0], x[idx])) if isinstance(x, np.ndarray) else bool(torch.allclose(x[0], x[idx]))
+                        envs_to_check = [0, 1, 5, 8, 12]
+                        means = {i: _mean_env(i) for i in envs_to_check}
+                        sames = {i: _same(i) for i in [1, 5, 8, 12]}
+                        logger.warning(
+                            f"[StaticCamCapture] depth shape={tuple(x.shape)} "
+                            f"env0_mean={means[0]:.4f} env1_mean={means.get(1, float('nan')):.4f} "
+                            f"env5_mean={means.get(5, float('nan')):.4f} env8_mean={means.get(8, float('nan')):.4f} "
+                            f"env12_mean={means.get(12, float('nan')):.4f} "
+                            f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
+                            f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
+                        )
+                        self._static_cam_debug_last = self.num_task_steps
+            except Exception:
+                pass
             
             if static_depth is not None and self.task_config.vae_config.use_vae:
-                # Store clean static camera image (original)
-                static_depth_clean = static_depth.copy() if isinstance(static_depth, np.ndarray) else static_depth.clone()
+                # Store clean static camera image (batched) and env0 view for GIF/debug
+                if isinstance(static_depth, np.ndarray):
+                    static_depth_clean_batched = static_depth.copy()
+                    static_depth_clean_env0 = static_depth_clean_batched[0]
+                else:
+                    static_depth_clean_batched = static_depth.clone()
+                    static_depth_clean_env0 = static_depth_clean_batched[0]
                 
-                # Apply D455 camera noise if enabled and not ablated
-                static_depth_noised = static_depth_clean.copy() if isinstance(static_depth_clean, np.ndarray) else static_depth_clean.clone()
+                # Apply D455 camera noise if enabled and not ablated (operate on batched copy)
+                static_depth_noised = static_depth_clean_batched.copy() if isinstance(static_depth_clean_batched, np.ndarray) else static_depth_clean_batched.clone()
                 static_noise_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/static_noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
                 global_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
                 if getattr(self.task_config.curriculum, "enable_camera_noise", False):
@@ -1746,9 +1822,10 @@ class NavigationTaskGate(BaseTask):
                     else:
                         self._prev_static_depth = static_depth_noised.clone()
                 
-                # Store noised static camera images for GIF generation
-                self.obs_dict["static_depth_clean"] = static_depth_clean
-                self.obs_dict["static_depth_noised"] = static_depth_noised
+                # Store env0-only static camera images for GIF/debug (keep pipeline unchanged)
+                self.obs_dict["static_depth_clean"] = static_depth_clean_env0
+                # If numpy/tensor batched, select env0 for GIF/debug without altering VAE input
+                self.obs_dict["static_depth_noised"] = static_depth_noised[0] if (hasattr(static_depth_noised, 'ndim') and (getattr(static_depth_noised, 'ndim') == 3)) else static_depth_noised
                 self.obs_dict["static_seg"] = static_seg
                 
                 # CRITICAL FIX: Enhanced VAE encoding with detailed debugging
@@ -1756,32 +1833,52 @@ class NavigationTaskGate(BaseTask):
                     # Convert to tensor and process through VAE (use noised version for training)
                     if isinstance(static_depth_noised, np.ndarray):
                         static_depth_tensor = torch.from_numpy(static_depth_noised).float().to(self.device)
-                        if static_depth_tensor.dim() == 2:
-                            static_depth_tensor = static_depth_tensor.unsqueeze(0)  # Add batch dimension
-                        # Ensure all environments get the same static camera view
-                        static_depth_expanded = static_depth_tensor.expand(self.sim_env.num_envs, -1, -1)
-                        
-                        # CRITICAL DEBUG: Log VAE encoding attempt
-                        if not hasattr(self, '_vae_debug_logged'):
-                            self._vae_debug_logged = True
-                            logger.warning(f"🔧 VAE encoding static camera: input_shape={static_depth_expanded.shape}, device={static_depth_expanded.device}")
-                        
-                        encoded_latents = self.shared_vae_model.encode(static_depth_expanded)
-                        self.static_image_latents[:] = encoded_latents
-                        
-                        # CRITICAL DEBUG: Verify VAE output
-                        if not hasattr(self, '_vae_output_logged'):
-                            self._vae_output_logged = True
-                            logger.warning(f"✅ VAE encoding successful: output_shape={encoded_latents.shape}, range=[{encoded_latents.min().item():.3f}, {encoded_latents.max().item():.3f}]")
-                        
                     else:
-                        # Direct tensor path with per-env identical static image
                         static_depth_tensor = static_depth_noised
-                        if static_depth_tensor.dim() == 2:
-                            static_depth_tensor = static_depth_tensor.unsqueeze(0)
-                        static_depth_expanded = static_depth_tensor.expand(self.sim_env.num_envs, -1, -1)
-                        encoded_latents = self.shared_vae_model.encode(static_depth_expanded)
-                        self.static_image_latents[:] = encoded_latents
+
+                    # Ensure shape is (num_envs, H, W). If single image (H, W), broadcast to all envs
+                    if static_depth_tensor.dim() == 2:
+                        static_depth_tensor = static_depth_tensor.unsqueeze(0).expand(self.sim_env.num_envs, -1, -1)
+                    elif static_depth_tensor.dim() == 3 and static_depth_tensor.shape[0] != self.sim_env.num_envs:
+                        # Safe fallback: pad/trim to num_envs
+                        n, h, w = static_depth_tensor.shape
+                        if n < self.sim_env.num_envs:
+                            reps = (self.sim_env.num_envs + n - 1) // n
+                            static_depth_tensor = static_depth_tensor.repeat(reps, 1, 1)[:self.sim_env.num_envs]
+                        else:
+                            static_depth_tensor = static_depth_tensor[:self.sim_env.num_envs]
+
+                    # CRITICAL DEBUG: Log VAE encoding attempt (once)
+                    if not hasattr(self, '_vae_debug_logged'):
+                        self._vae_debug_logged = True
+                        logger.warning(f"🔧 VAE encoding static camera: input_shape={static_depth_tensor.shape}, device={static_depth_tensor.device}")
+
+                    encoded_latents = self.shared_vae_model.encode(static_depth_tensor)
+                    self.static_image_latents[:] = encoded_latents
+
+                    # CRITICAL DEBUG: Verify VAE output periodically and compare across envs
+                    try:
+                        if (not hasattr(self, '_vae_output_logged')) or (self.num_task_steps % 200 == 0):
+                            self._vae_output_logged = True
+                            z = encoded_latents
+                            ne = int(z.shape[0])
+                            def _absmean_env(idx):
+                                return float(torch.mean(torch.abs(z[idx])).item()) if idx < ne else float('nan')
+                            def _same(idx):
+                                return (idx < ne) and bool(torch.allclose(z[0], z[idx]))
+                            envs_to_check = [0, 1, 5, 8, 12]
+                            means = {i: _absmean_env(i) for i in envs_to_check}
+                            sames = {i: _same(i) for i in [1, 5, 8, 12]}
+                            logger.warning(
+                                f"[StaticCamVAE] latents shape={tuple(z.shape)} "
+                                f"env0_absmean={means[0]:.4f} env1_absmean={means.get(1, float('nan')):.4f} "
+                                f"env5_absmean={means.get(5, float('nan')):.4f} env8_absmean={means.get(8, float('nan')):.4f} "
+                                f"env12_absmean={means.get(12, float('nan')):.4f} "
+                                f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
+                                f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
+                            )
+                    except Exception:
+                        pass
                 except Exception as e:
                     logger.warning(f"VAE encoding of static camera failed: {e}")
             else:
@@ -3898,6 +3995,13 @@ class StaticCameraManager:
         self.camera_handles = []
         self.camera_setup_success = False
         self.use_synthetic_camera = False  # Initialize synthetic camera flag
+        # Ensure device exists for tensor ops (fix jitter sampling fallback)
+        try:
+            self.device = getattr(env_manager, 'device', None)
+            if self.device is None:
+                self.device = getattr(task_config, 'device', 'cpu')
+        except Exception:
+            self.device = 'cpu'
         
         # Gate position (will be updated dynamically based on actual gate positions)
         self.gate_position = [0.0, 0.0, 0.0]  # Default, overridden by adaptive positioning
@@ -3910,6 +4014,16 @@ class StaticCameraManager:
         self.last_camera_pos = [(0.0, -3.0, 1.5) for _ in range(self.num_envs)]
         self.last_camera_target = [(0.0, 0.0, 1.5) for _ in range(self.num_envs)]
         self.last_angle_deg = [0.0 for _ in range(self.num_envs)]
+        # Per-env placement randomization (translation + small Euler jitter)
+        # Defaults are no jitter; can be enabled/configured via task_config
+        self.static_cam_randomize = bool(getattr(task_config, 'static_camera_randomize_placement', False))
+        self.static_cam_min_t = list(getattr(task_config, 'static_camera_min_translation', [0.0, 0.0, 0.0]))
+        self.static_cam_max_t = list(getattr(task_config, 'static_camera_max_translation', [0.0, 0.0, 0.0]))
+        self.static_cam_min_euler = list(getattr(task_config, 'static_camera_min_euler_deg', [0.0, 0.0, 0.0]))
+        self.static_cam_max_euler = list(getattr(task_config, 'static_camera_max_euler_deg', [0.0, 0.0, 0.0]))
+        # Storage for per-env jitter, refreshed on setup and per-episode resets
+        self._trans_jitter = [(0.0, 0.0, 0.0) for _ in range(self.num_envs)]
+        self._euler_jitter_deg = [(0.0, 0.0, 0.0) for _ in range(self.num_envs)]
         
         self._setup_static_camera()
     
@@ -3989,11 +4103,31 @@ class StaticCameraManager:
 
             # Set camera transform for each environment using configured positioning
             for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
+                # Initialize per-env jitter for the first episode
+                if self.static_cam_randomize:
+                    try:
+                        # Sample translation jitter uniformly between per-axis bounds
+                        u = torch.rand(3, device=self.device)
+                        tmin = torch.tensor(self.static_cam_min_t, device=self.device, dtype=torch.float32)
+                        tmax = torch.tensor(self.static_cam_max_t, device=self.device, dtype=torch.float32)
+                        t = (tmin + u * (tmax - tmin)).tolist()
+                        # Sample Euler jitter (roll, pitch, yaw) in degrees
+                        v = torch.rand(3, device=self.device)
+                        emin = torch.tensor(self.static_cam_min_euler, device=self.device, dtype=torch.float32)
+                        emax = torch.tensor(self.static_cam_max_euler, device=self.device, dtype=torch.float32)
+                        e = (emin + v * (emax - emin)).tolist()
+                        self._trans_jitter[i] = (float(t[0]), float(t[1]), float(t[2]))
+                        self._euler_jitter_deg[i] = (float(e[0]), float(e[1]), float(e[2]))
+                    except Exception:
+                        self._trans_jitter[i] = (0.0, 0.0, 0.0)
+                        self._euler_jitter_deg[i] = (0.0, 0.0, 0.0)
                 if adaptive_z and gate_center_per_env is not None and i < len(gate_center_per_env):
                     env_base_z = float(gate_center_per_env[i].item())
                 else:
                     env_base_z = float(base_z_value)
-                camera_pos = gymapi.Vec3(0.0, float(base_y), env_base_z)
+                # Apply translation jitter
+                jx, jy, jz = self._trans_jitter[i]
+                camera_pos = gymapi.Vec3(0.0 + jx, float(base_y) + jy, env_base_z + jz)
                 # Look directly at the gate center height for that env
                 camera_target = gymapi.Vec3(0.0, 0.0, env_base_z)
                 self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
@@ -4138,6 +4272,22 @@ class StaticCameraManager:
             for env_idx in env_ids:
                 if env_idx >= len(self.env_handles) or env_idx >= len(self.camera_handles):
                     continue
+                # Re-sample per-env jitter on reset for fresh episodes
+                if self.static_cam_randomize:
+                    try:
+                        u = torch.rand(3, device=self.device)
+                        tmin = torch.tensor(self.static_cam_min_t, device=self.device, dtype=torch.float32)
+                        tmax = torch.tensor(self.static_cam_max_t, device=self.device, dtype=torch.float32)
+                        t = (tmin + u * (tmax - tmin)).tolist()
+                        v = torch.rand(3, device=self.device)
+                        emin = torch.tensor(self.static_cam_min_euler, device=self.device, dtype=torch.float32)
+                        emax = torch.tensor(self.static_cam_max_euler, device=self.device, dtype=torch.float32)
+                        e = (emin + v * (emax - emin)).tolist()
+                        self._trans_jitter[env_idx] = (float(t[0]), float(t[1]), float(t[2]))
+                        self._euler_jitter_deg[env_idx] = (float(e[0]), float(e[1]), float(e[2]))
+                    except Exception:
+                        self._trans_jitter[env_idx] = (0.0, 0.0, 0.0)
+                        self._euler_jitter_deg[env_idx] = (0.0, 0.0, 0.0)
                     
                 # Optional: constant yaw sweep (±30°), curriculum-independent
                 try:
@@ -4234,6 +4384,13 @@ class StaticCameraManager:
                 
                 # Convert to radians and update camera
                 angle_offset_radians = angle_offset_degrees * (3.14159 / 180.0)
+                # Euler jitter policy: avoid yaw jitter if curriculum yaw/sweep active. Apply only pitch (small tilt)
+                jitter_roll_deg, jitter_pitch_deg, jitter_yaw_deg = self._euler_jitter_deg[env_idx] if (0 <= env_idx < len(self._euler_jitter_deg)) else (0.0, 0.0, 0.0)
+                if sweep_enabled or (not disable_flag and max_angle_range > 0):
+                    # Curriculum yaw active: zero yaw jitter
+                    jitter_yaw_deg = 0.0
+                # Apply pitch jitter as a small vertical target offset; roll is not supported via set_camera_location
+                pitch_rad = jitter_pitch_deg * (3.14159 / 180.0)
                 
                 # Resolve per-env base Z (adaptive to gate center if requested)
                 try:
@@ -4244,17 +4401,27 @@ class StaticCameraManager:
                 except Exception:
                     env_base_z = 1.5
                 base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
+                # Apply per-env translation jitter sampled at setup/reset
+                try:
+                    jx, jy, jz = self._trans_jitter[env_idx]
+                except Exception:
+                    jx, jy, jz = 0.0, 0.0, 0.0
+                base_camera_env_pos = gymapi.Vec3(base_camera_env_pos.x + jx, base_camera_env_pos.y + jy, base_camera_env_pos.z + jz)
 
                 # Calculate offset target position based on randomized angle for this environment
                 target_distance = abs(base_camera_env_pos.y)  # Keep look-at distance consistent with base Y
-                target_x = base_camera_env_pos.x + target_distance * math.sin(angle_offset_radians)
-                target_y = base_camera_env_pos.y + target_distance * math.cos(angle_offset_radians)
+                # Apply additional small yaw jitter around the curriculum yaw (if allowed)
+                yaw_total = angle_offset_radians + (jitter_yaw_deg * (3.14159 / 180.0))
+                target_x = base_camera_env_pos.x + target_distance * math.sin(yaw_total)
+                target_y = base_camera_env_pos.y + target_distance * math.cos(yaw_total)
                 # Look at gate adaptive center height, to keep camera pitched to the center
                 try:
                     gh = gtd.get('gate/center_height_per_env', None)
                     target_z = float(gh[env_idx].item()) if gh is not None else env_base_z
                 except Exception:
                     target_z = env_base_z
+                # Apply pitch jitter as small vertical offset in look-at target
+                target_z = target_z + math.tan(pitch_rad) * target_distance
                 new_target = gymapi.Vec3(target_x, target_y, target_z)
                 
                 # Update ONLY this environment's camera
@@ -4348,8 +4515,13 @@ class StaticCameraManager:
             logger.warning(f"Failed to update dynamic camera following: {e}")
             return
     
-    def capture_images(self):
-        """Capture depth and segmentation images from static camera."""
+    def capture_images(self, batched=False):
+        """Capture depth and segmentation images from static camera.
+        Args:
+            batched: when True, return stacked depth of shape (num_envs, H, W) and seg for env0;
+                     when False (default), return only env0 depth (H, W) and seg for compatibility
+                     with GIF/debug pipelines.
+        """
         if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
             # Generate synthetic camera data for headless training
             return self._generate_synthetic_camera_data()
@@ -4363,38 +4535,72 @@ class StaticCameraManager:
             self.gym.render_all_camera_sensors(self.sim)
             self.gym.start_access_image_tensors(self.sim)
             
-            # Get images from camera 0 (any env, all envs share same viewpoint)
-            env_handle = self.env_handles[0]
-            cam_handle = self.camera_handles[0]
-            
-            # Get depth image
-            depth_tensor = self.gym.get_camera_image_gpu_tensor(
-                self.sim, env_handle, cam_handle, gymapi.IMAGE_DEPTH
-            )
-            depth_img = gymtorch.wrap_tensor(depth_tensor).cpu().numpy()
-            
-            # Get segmentation image
-            seg_tensor = self.gym.get_camera_image_gpu_tensor(
-                self.sim, env_handle, cam_handle, gymapi.IMAGE_SEGMENTATION
-            )
-            seg_img = gymtorch.wrap_tensor(seg_tensor).cpu().numpy()
-            
-            # End access to image tensors
-            self.gym.end_access_image_tensors(self.sim)
-            
-            # Process depth for VAE (match working example processing)
-            if depth_img is not None:
-                # Convert to DCE format for consistency with robot camera processing
-                # Static camera gives raw depth values, need to normalize to [0,1] for DCE processing
-                depth_normalized = depth_img.copy()
-                depth_normalized[depth_normalized == -np.inf] = 20.0  # Use far_plane value
-                depth_normalized = np.abs(depth_normalized)  # Handle negative depths
-                depth_normalized = np.clip(depth_normalized, 0.4, 20.0)  # Clip to camera range
-                # Normalize to [0,1] range like DCE navigation expects
-                depth_normalized = (depth_normalized - 0.4) / (20.0 - 0.4)
-                depth_img = depth_normalized.astype(np.float32)
-            
-            return depth_img, seg_img
+            if batched:
+                # Get images from all environments so each env has its own view
+                depth_imgs = []
+                seg_imgs = []
+                for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
+                    # Depth image
+                    depth_tensor = self.gym.get_camera_image_gpu_tensor(
+                        self.sim, env_handle, cam_handle, gymapi.IMAGE_DEPTH
+                    )
+                    depth_img = gymtorch.wrap_tensor(depth_tensor).cpu().numpy()
+                    depth_imgs.append(depth_img)
+                    # Segmentation image (used only for GIF/debug, keep env0 for compatibility)
+                    seg_tensor = self.gym.get_camera_image_gpu_tensor(
+                        self.sim, env_handle, cam_handle, gymapi.IMAGE_SEGMENTATION
+                    )
+                    seg_img = gymtorch.wrap_tensor(seg_tensor).cpu().numpy()
+                    seg_imgs.append(seg_img)
+                
+                # End access to image tensors
+                self.gym.end_access_image_tensors(self.sim)
+                
+                # Stack per-env depth and normalize to [0, 1] like DCE expects
+                if len(depth_imgs) > 0 and depth_imgs[0] is not None:
+                    depth_stack = np.stack(depth_imgs, axis=0)
+                    depth_stack[depth_stack == -np.inf] = 20.0  # Use far_plane value
+                    depth_stack = np.abs(depth_stack)
+                    depth_stack = np.clip(depth_stack, 0.4, 20.0)
+                    depth_stack = (depth_stack - 0.4) / (20.0 - 0.4)
+                    depth_stack = depth_stack.astype(np.float32)
+                else:
+                    depth_stack = None
+                
+                # Keep only env0 segmentation for downstream GIF/debug compatibility
+                seg_img0 = seg_imgs[0] if len(seg_imgs) > 0 else None
+                
+                return depth_stack, seg_img0
+            else:
+                # Get images from camera 0 (single env for GIF/debug)
+                env_handle = self.env_handles[0]
+                cam_handle = self.camera_handles[0]
+                
+                # Get depth image
+                depth_tensor = self.gym.get_camera_image_gpu_tensor(
+                    self.sim, env_handle, cam_handle, gymapi.IMAGE_DEPTH
+                )
+                depth_img = gymtorch.wrap_tensor(depth_tensor).cpu().numpy()
+                
+                # Get segmentation image
+                seg_tensor = self.gym.get_camera_image_gpu_tensor(
+                    self.sim, env_handle, cam_handle, gymapi.IMAGE_SEGMENTATION
+                )
+                seg_img = gymtorch.wrap_tensor(seg_tensor).cpu().numpy()
+                
+                # End access to image tensors
+                self.gym.end_access_image_tensors(self.sim)
+                
+                # Normalize depth to [0,1]
+                if depth_img is not None:
+                    depth_normalized = depth_img.copy()
+                    depth_normalized[depth_normalized == -np.inf] = 20.0
+                    depth_normalized = np.abs(depth_normalized)
+                    depth_normalized = np.clip(depth_normalized, 0.4, 20.0)
+                    depth_normalized = (depth_normalized - 0.4) / (20.0 - 0.4)
+                    depth_img = depth_normalized.astype(np.float32)
+                
+                return depth_img, seg_img
                 
         except Exception as e:
             logger.debug(f"Static camera capture error, falling back to synthetic: {e}")

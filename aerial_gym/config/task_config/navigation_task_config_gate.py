@@ -14,6 +14,13 @@ class task_config:
     use_warp = True
     headless = False  # Enable visualization to view both cameras (can be overridden by Sample Factory)
     device = "cuda:0"
+    # Minimal static camera placement randomization (non-intrusive defaults)
+    static_camera_randomize_placement = True
+    static_camera_min_translation = [-0.02, -0.02, -0.01]
+    static_camera_max_translation = [0.02, 0.02, 0.01]
+    # Euler jitter kept tiny; yaw jitter is auto-disabled when curriculum yaw/sweep active
+    static_camera_min_euler_deg = [-1.0, -1.0, 0.0]   # roll, pitch, yaw (deg)
+    static_camera_max_euler_deg = [1.0,  1.0, 0.0]
     
     # Enhanced observation space: 3D drone position + 6D static camera pose + 3D full orientation + 10D state + 64D drone VAE + 64D static camera VAE = 150D
     # MODIFIED: Added drone absolute position (3D) and full yaw sensing (3D orientation instead of 2D)
@@ -581,13 +588,14 @@ class task_config:
                 else 23
             )
             max_camera_angle_degrees = 19
+            min_camera_angle_degrees = 2.0  # NEW: ensure ±2° minimum at level 3
             if level <= camera_start_level:
-                max_camera_angle = 0.0
+                max_camera_angle = min_camera_angle_degrees
             elif level >= max_level:
                 max_camera_angle = max_camera_angle_degrees
             else:
                 level_progress = (level - camera_start_level) / (max_level - camera_start_level)
-                max_camera_angle = level_progress * max_camera_angle_degrees
+                max_camera_angle = min_camera_angle_degrees + level_progress * (max_camera_angle_degrees - min_camera_angle_degrees)
             height_offset = 0.0
             distance_offset = 0.0
             return max_camera_angle, height_offset, distance_offset

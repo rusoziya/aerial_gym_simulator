@@ -13,11 +13,13 @@ class BaseDepthCameraConfig(BaseSensorConfig):
     # camera params VFOV is calcuated from the aspect ratio and HFOV
     # VFOV = 2 * atan(tan(HFOV/2) / aspect_ratio)
 
-    height = 135  # 270
-    width = 240  # 480
+    height = 270  # 270
+    width = 480  # 480
     horizontal_fov_deg = 87.000
-    max_range = 10.0
-    min_range = 0.2
+    # Align onboard drone camera range with static D455 normalization window
+    # so downstream processing can use a consistent [near, far] mapping.
+    max_range = 20.0
+    min_range = 0.4
 
     # Type of camera (depth, range, pointcloud, segmentation)
     # You can combine: (depth+segmentation), (range+segmentation), (pointcloud+segmentation)
