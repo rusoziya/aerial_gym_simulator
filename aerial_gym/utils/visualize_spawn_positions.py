@@ -29,8 +29,18 @@ def set_eval_env_overrides(args: argparse.Namespace) -> None:
 
 
 def get_spawn_cfg(level: int):
-    # Import after env overrides so task_config reads updated env vars
-    from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+    """Lightweight import of task_config without importing the full aerial_gym package.
+    This avoids initializing Isaac Gym / heavy deps when running visualization.
+    """
+    import importlib.util
+    # Resolve path to navigation_task_config_gate.py relative to this file
+    root_dir = os.path.dirname(os.path.dirname(__file__))  # aerial_gym/
+    cfg_path = os.path.join(root_dir, "config", "task_config", "navigation_task_config_gate.py")
+    spec = importlib.util.spec_from_file_location("nav_task_config", cfg_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    task_config = module.task_config
     return task_config.curriculum.get_spawn_ranges(level)
 
 

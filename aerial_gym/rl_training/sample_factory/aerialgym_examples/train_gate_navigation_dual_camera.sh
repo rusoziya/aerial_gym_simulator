@@ -265,6 +265,11 @@ else
     EXPERIMENT_NAME="${CONFIG_PREFIX}_$(date +%Y%m%d_%H%M%S)"
     echo "Auto-generated experiment name: $EXPERIMENT_NAME"
 fi
+# Define run output directory and ensure it exists; also export for Python side
+RUN_DIR="./train_dir/${EXPERIMENT_NAME}"
+mkdir -p "$RUN_DIR"
+export SF_TRAIN_DIR="$RUN_DIR"
+echo -e "${GREEN}Run directory: ${RUN_DIR}${NC}"
 
 # Total env steps to stop at (exactly 19 updates with 256 envs * 32 rollout)
 # Target W&B global_step set by user; adjust TRAIN_STEPS accordingly.
@@ -464,8 +469,7 @@ show_gpu_status()
 PY
 
 # Clear existing training directory for fresh start
-echo -e "${GREEN}✓ Cleared any existing training directory for fresh start${NC}"
-rm -rf ./train_dir
+echo -e "${YELLOW}Skipping deletion of ./train_dir to preserve previous experiments${NC}"
 
 # Clear GPU cache before training
 echo -e "${YELLOW}Clearing GPU cache...${NC}"
@@ -579,7 +583,7 @@ TRAIN_CMD="python train_aerialgym_custom_net_gate.py \
     --normalize_input=true \
     --use_env_info_cache=false \
     --with_wandb=true \
-    --wandb_project=\"ablation_studies\" \
+    --wandb_project=\"final_training_gate\" \
     --wandb_user=\"ziya-ruso-ucl\" \
     --wandb_group=\"gate_navigation_training\" \
     --wandb_tags \"aerial_gym\" \"gate_navigation\" \"dual_camera\" \"x500\" \"sample_factory\" \"memory_optimized\" \

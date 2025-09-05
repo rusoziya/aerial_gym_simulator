@@ -13,8 +13,8 @@ class BaseDepthCameraConfig(BaseSensorConfig):
     # camera params VFOV is calcuated from the aspect ratio and HFOV
     # VFOV = 2 * atan(tan(HFOV/2) / aspect_ratio)
 
-    height = 270  # 270
-    width = 480  # 480
+    height = 135  # 270 -> 135
+    width = 240  # 480 -> 240
     horizontal_fov_deg = 87.000
     # Align onboard drone camera range with static D455 normalization window
     # so downstream processing can use a consistent [near, far] mapping.
@@ -48,10 +48,10 @@ class BaseDepthCameraConfig(BaseSensorConfig):
     # what to do with out of range values
     far_out_of_range_value = (
         max_range if normalize_range == True else -1.0
-    )  # Will be [-1]U[0,1] if normalize_range is True, otherwise will be value set by user in place of -1.0
+    )  # With normalization, becomes 1.0
     near_out_of_range_value = (
-        -max_range if normalize_range == True else -1.0
-    )  # Will be [-1]U[0,1] if normalize_range is True, otherwise will be value set by user in place of -1.0
+        0.0 if normalize_range == True else -1.0
+    )  # With normalization, becomes 0.0 (no negatives)
 
     # randomize placement of the sensor
     randomize_placement = True

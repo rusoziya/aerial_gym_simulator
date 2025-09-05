@@ -516,16 +516,16 @@ class AerialGymVecEnv(gym.Env):
             #     )
             #     print(f"[GIF] Saved drone segmentation: {gif_path}")
             
-            # Save static camera GIFs (depth only)
-            if len(self.static_depth_frames[env_id]) > 0:
-                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_depth{level_suffix}.gif")
-                self.static_depth_frames[env_id][0].save(
-                    gif_path,
-                    save_all=True,
-                    append_images=self.static_depth_frames[env_id][1:],
-                    duration=100,
-                    loop=0
-                )
+            # Save static camera GIFs (depth only) [DISABLED]
+            # if len(self.static_depth_frames[env_id]) > 0:
+            #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_depth{level_suffix}.gif")
+            #     self.static_depth_frames[env_id][0].save(
+            #         gif_path,
+            #         save_all=True,
+            #         append_images=self.static_depth_frames[env_id][1:],
+            #         duration=100,
+            #         loop=0
+            #     )
                 print(f"[GIF] Saved static depth: {gif_path}")
             
             # if len(self.static_seg_frames[env_id]) > 0:
@@ -1125,6 +1125,16 @@ def make_aerialgym_env(
                 config.headless = True
                 print(f"[SUBPROCESS] FORCED headless mode for all Sample Factory training: headless={config.headless}")
                 print(f"[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes")
+                # Propagate optional max curriculum cap from CLI
+                try:
+                    cap = getattr(cfg, 'max_curriculum_level', None)
+                except Exception:
+                    cap = None
+                if cap is not None:
+                    try:
+                        config.max_curriculum_level = int(cap)
+                    except Exception:
+                        config.max_curriculum_level = None
                 
                 # CRITICAL FIX: Override action space to match inference expectations
                 if hasattr(config, 'sample_factory_action_space_dim'):
@@ -1268,6 +1278,8 @@ def add_extra_params_func(parser):
         type=str,
         default=None,
         help="Force a specific curriculum level for the entire run (disables auto curriculum progression). Use 'none' to disable forcing.")
+    # Optional maximum curriculum level cap (progression will not exceed this level). Does not affect scaling.
+    parser.add_argument("--max_curriculum_level", type=int, default=None, help="Maximum curriculum level cap for progression (e.g., 13). Scaling at each level remains unchanged.")
     
     # Fusion mode flags
     parser.add_argument("--fusion", type=str, default="gated", choices=["concat", "gated"], help="Fusion strategy: concat (early concat) or gated (dual gated late fusion)")

@@ -12,8 +12,8 @@ class RsD455Config(BaseDepthCameraConfig):
     # If you use more than one sensors above, there is a need to specify the sensor placement for each sensor
     # this can be added here, but the user can implement this if needed.
 
-    height = 270
-    width = 480
+    height = 135
+    width = 240
     horizontal_fov_deg = 87.000
     # camera params VFOV is calcuated from the aspect ratio and HFOV
     # VFOV = 2 * atan(tan(HFOV/2) / aspect_ratio)

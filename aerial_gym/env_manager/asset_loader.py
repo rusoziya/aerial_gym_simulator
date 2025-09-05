@@ -87,6 +87,15 @@ class AssetLoader:
             present = set(available_assets)
             deterministic_order = [f for f in DETERMINISTIC_GATE_OBJECTS if f in present]
             available_assets = deterministic_order
+        elif folder_basename.lower() == "smaller gates":
+            # Only load smaller gates (<= 58%, down to 50%) during eval stretch
+            import os as _os
+            stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+            if not stretch_enabled:
+                return []
+            # Deterministic ordering and filter to expected names gate_scale_050..gate_scale_058
+            available_assets = [f for f in available_assets if f.startswith("gate_scale_")]
+            available_assets.sort()
         else:
             # Deterministic ordering for reproducibility across envs
             available_assets.sort()

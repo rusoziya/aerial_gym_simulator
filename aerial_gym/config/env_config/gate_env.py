@@ -1,4 +1,4 @@
-from aerial_gym.config.asset_config.gate_asset_config import gate_asset_params
+from aerial_gym.config.asset_config.gate_asset_config import gate_asset_params, small_gate_asset_params
 from aerial_gym.config.asset_config.env_asset_config import (
     object_asset_params, 
     OBJECT_SEMANTIC_ID, 
@@ -270,6 +270,8 @@ class GateEnvCfg:
         # Mapping of asset type names to their configuration classes
         asset_type_to_dict_map = {
             "gate": gate_asset_params,
+            # Eval-only: smaller gates. Loader will skip when EVAL_STRETCH is disabled
+            "gate_small": small_gate_asset_params,
             "objects": gate_object_params,
             "left_wall": boundary_left_wall,
             "right_wall": boundary_right_wall,

@@ -19,8 +19,8 @@ class task_config:
     static_camera_min_translation = [-0.02, -0.02, -0.01]
     static_camera_max_translation = [0.02, 0.02, 0.01]
     # Euler jitter kept tiny; yaw jitter is auto-disabled when curriculum yaw/sweep active
-    static_camera_min_euler_deg = [-1.0, -1.0, 0.0]   # roll, pitch, yaw (deg)
-    static_camera_max_euler_deg = [1.0,  1.0, 0.0]
+    static_camera_min_euler_deg = [-1.0, -0.5, 0.0]   # roll, pitch, yaw (deg)
+    static_camera_max_euler_deg = [1.0,   0.5, 0.0]
     
     # Enhanced observation space: 3D drone position + 6D static camera pose + 3D full orientation + 10D state + 64D drone VAE + 64D static camera VAE = 150D
     # MODIFIED: Added drone absolute position (3D) and full yaw sensing (3D orientation instead of 2D)
@@ -41,18 +41,13 @@ class task_config:
     # DEBUG TOGGLES
     # Enable verbose guard logs (NaN/Inf in actions/observations) and reward outlier detection
     guard_debug_enabled = True
+    # Disable verbose comprehensive reward breakdown logs unless explicitly enabled
+    enable_comprehensive_reward_debug = False
     # Threshold below which a reward is considered an outlier and logged (collision is -100)
     reward_outlier_threshold = -180.0
     # Max number of env indices to include in a single outlier log line
     reward_outlier_log_limit_per_step = 8
-
-    # Target positions (goals) - keep targets on front side of gate
-    # Front side (positive Y) where obstacles are, forcing gate navigation
-    # Obstacles at Y = [+2.0, +3.2], so targets should be beyond Y = +3.6
-    # FIXED: Target Z-range within gate flyable zone (0.2-2.2m → ratios 0.05-0.55)
-    target_min_ratio = [0.2, 0.95, 0.35]  # Y=0.95 -> Y=+3.6 (beyond obstacles), Z=0.35 -> Z=1.4m (gate level)
-    target_max_ratio = [0.8, 0.99, 0.65]  # Y=0.99 -> Y=+3.92 (well beyond obstacles), Z=0.45 -> Z=1.8m (within gate)
-    
+   
     # GATE DIMENSIONS ANALYSIS (from gate.urdf):
     # - Gate opening: 2.5m wide (Y = ±1.25m) × 2.3m tall (Z = 0.1m to 2.4m)
     # - Usable flight space: Z = 0.2m to 2.2m (safe margins from gate structure)
@@ -67,12 +62,6 @@ class task_config:
     # - Objects/obstacles at Y ratios 0.75-0.9 = Y positions +2.0 to +3.2 (FRONT of gate)
     # - Static camera at Y = -3.0 (BEHIND gate)
     # - Drone must approach from BEHIND gate (negative Y) to fly through to FRONT
-    #
-    # RATIO TO POSITION CONVERSION: position = ratio * 8 - 4 (for X,Y), position = ratio * 4 (for Z)
-    # - Y ratio 0.0 → Y = -4.0 (far behind gate)
-    # - Y ratio 0.5 → Y = 0.0 (AT gate center)
-    # - Y ratio 0.75 → Y = +2.0 (obstacle start)  
-    # - Y ratio 1.0 → Y = +4.0 (far in front)
     
     # Enhanced reward parameters for gate navigation with 4D action space
     reward_parameters = {
@@ -161,7 +150,7 @@ class task_config:
         # Optional explicit lambda0 override (normally computed from total@horizon); set None to auto-compute
         # "time_penalty_lambda0": 0.0,
         # One-off penalty applied only at timeout (no success/crash)
-        "timeout_penalty": 60.0,
+        "timeout_penalty": 75.0,
     }
 
     # Shared VAE configuration for both drone and static cameras (Memory-Optimized)
@@ -360,12 +349,13 @@ class task_config:
                 progress = (lvl - min_level) / float(max_level - min_level) if max_level > min_level else 1.0
                 requested_obstacles = int(round(start_obstacles + progress * (end_obstacles - start_obstacles)))
             else:
-                # Beyond training max; only applies when stretch is enabled
+                # Evaluation stretch: extrapolate linearly using the same slope as training (3..23)
                 upper = max(max_level, effective_max_level)
                 lvl_clamped = min(lvl, upper)
-                extra_span = max(1, upper - max_level)
-                progress2 = (lvl_clamped - max_level) / float(extra_span)
-                requested_obstacles = int(round(end_obstacles + progress2 * (stretched_end_obstacles - end_obstacles)))
+                span_train = float(max(1, max_level - min_level))
+                slope = (end_obstacles - start_obstacles) / span_train  # obstacles per level in training
+                extra_levels = float(lvl_clamped - max_level)
+                requested_obstacles = int(round(end_obstacles + slope * extra_levels))
             
             # Safety clamps
             if requested_obstacles > total_asset_capacity:
@@ -395,27 +385,32 @@ class task_config:
             """
             # Linear progression constants
             camera_noise_start_level = 3       # Start at level 3
-            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
-            camera_noise_end_level = (
-                getattr(task_config.curriculum, 'eval_stretch_end_level', 23)
-                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
-                else 23
-            )
-            
-            # Level 3 starting values (5% of max) and Level 23 maximum values
+            camera_noise_end_train = 23        # End of training schedule
+            # Level 3 starting values (5% of max) and Level 23 maximum values (training caps)
             max_gaussian_noise_std = 0.0125    # Level 23: 0.0125
             max_pixel_dropout_rate = 0.0125    # Level 23: 0.0125
             min_gaussian_noise_std = max_gaussian_noise_std * 0.05    # Level 3: 0.000625 (5% of max)
             min_pixel_dropout_rate = max_pixel_dropout_rate * 0.05    # Level 3: 0.000625 (5% of max)
             
-            # Clamp level to valid range
-            level = max(camera_noise_start_level, min(camera_noise_end_level, level))
-            
-            # Linear interpolation from level 3 to level 23
-            level_progress = (level - camera_noise_start_level) / (camera_noise_end_level - camera_noise_start_level)
-            gaussian_std = min_gaussian_noise_std + level_progress * (max_gaussian_noise_std - min_gaussian_noise_std)
-            dropout_rate = min_pixel_dropout_rate + level_progress * (max_pixel_dropout_rate - min_pixel_dropout_rate)
-            
+            # Compute slope per level for training range 3..23
+            span_train = float(max(1, camera_noise_end_train - camera_noise_start_level))
+            slope_gauss = (max_gaussian_noise_std - min_gaussian_noise_std) / span_train
+            slope_drop = (max_pixel_dropout_rate - min_pixel_dropout_rate) / span_train
+
+            lvl = max(camera_noise_start_level, level)
+            if lvl <= camera_noise_end_train:
+                progress = (lvl - camera_noise_start_level) / span_train
+                gaussian_std = min_gaussian_noise_std + progress * (max_gaussian_noise_std - min_gaussian_noise_std)
+                dropout_rate = min_pixel_dropout_rate + progress * (max_pixel_dropout_rate - min_pixel_dropout_rate)
+            else:
+                # Evaluation stretch: extrapolate beyond training cap using the same slope
+                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', lvl))
+                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                    eval_end = camera_noise_end_train
+                lvl_clamped = min(lvl, eval_end)
+                extra = float(lvl_clamped - camera_noise_end_train)
+                gaussian_std = max_gaussian_noise_std + slope_gauss * extra
+                dropout_rate = max_pixel_dropout_rate + slope_drop * extra
             return gaussian_std, dropout_rate
 
         @staticmethod
@@ -433,12 +428,7 @@ class task_config:
               - 'drone_total' (freeze+blank), 'static_total' (freeze+blank)
             """
             start = task_config.curriculum.frame_dropout_start_level  # Level 3
-            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
-            end = (
-                getattr(task_config.curriculum, 'eval_stretch_end_level', task_config.curriculum.frame_dropout_end_level)
-                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
-                else task_config.curriculum.frame_dropout_end_level
-            )
+            end_train = task_config.curriculum.frame_dropout_end_level  # Level 23
             
             # Define start and end values for linear interpolation
             max_drone_freeze = task_config.curriculum.max_frame_freeze_prob_drone  # Level 23: 5%
@@ -452,15 +442,29 @@ class task_config:
             min_static_freeze = max_static_freeze * 0.05  # Level 3: 0.25% (5% of 5%)
             min_static_blank = max_static_blank * 0.05    # Level 3: 0.025% (5% of 0.5%)
             
-            # Clamp level to valid range
-            level = max(start, min(end, level))
-            
-            # Linear interpolation from level 3 to level 23
-            progress = (level - start) / float(end - start)
-            df = min_drone_freeze + progress * (max_drone_freeze - min_drone_freeze)
-            db = min_drone_blank + progress * (max_drone_blank - min_drone_blank)
-            sf = min_static_freeze + progress * (max_static_freeze - min_static_freeze)
-            sb = min_static_blank + progress * (max_static_blank - min_static_blank)
+            lvl = max(start, level)
+            span_train = float(max(1, end_train - start))
+            slope_df = (max_drone_freeze - min_drone_freeze) / span_train
+            slope_db = (max_drone_blank - min_drone_blank) / span_train
+            slope_sf = (max_static_freeze - min_static_freeze) / span_train
+            slope_sb = (max_static_blank - min_static_blank) / span_train
+
+            if lvl <= end_train:
+                progress = (lvl - start) / span_train
+                df = min_drone_freeze + progress * (max_drone_freeze - min_drone_freeze)
+                db = min_drone_blank + progress * (max_drone_blank - min_drone_blank)
+                sf = min_static_freeze + progress * (max_static_freeze - min_static_freeze)
+                sb = min_static_blank + progress * (max_static_blank - min_static_blank)
+            else:
+                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', lvl))
+                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                    eval_end = end_train
+                lvl_clamped = min(lvl, eval_end)
+                extra = float(lvl_clamped - end_train)
+                df = max_drone_freeze + slope_df * extra
+                db = max_drone_blank + slope_db * extra
+                sf = max_static_freeze + slope_sf * extra
+                sb = max_static_blank + slope_sb * extra
             
             return {
                 "drone_freeze": df,
@@ -486,12 +490,7 @@ class task_config:
               - static_pos_std_m, static_orient_std_rad
             """
             start = task_config.curriculum.state_noise_start_level  # Level 3
-            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
-            end = (
-                getattr(task_config.curriculum, 'eval_stretch_end_level', task_config.curriculum.state_noise_end_level)
-                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
-                else task_config.curriculum.state_noise_end_level
-            )
+            end_train = task_config.curriculum.state_noise_end_level  # Level 23
             
             # Define start and end values for linear interpolation
             max_drone_pos_noise = task_config.curriculum.max_drone_pos_noise_m  # Level 23: 0.02m
@@ -505,18 +504,34 @@ class task_config:
             min_static_pos_noise = max_static_pos_noise * 0.05  # Level 3: 0.0025m (5% of 0.05m)
             min_static_orient_noise = max_static_orient_noise * 0.05  # Level 3: ~0.05° (5% of 1.0°)
             
-            # Clamp level to valid range
-            level = max(start, min(end, level))
-            
-            # Linear interpolation from level 3 to level 23
-            progress = (level - start) / float(end - start)
-            
-            return {
-                "drone_pos_std_m": min_drone_pos_noise + progress * (max_drone_pos_noise - min_drone_pos_noise),
-                "drone_orient_std_rad": min_drone_orient_noise + progress * (max_drone_orient_noise - min_drone_orient_noise),
-                "static_pos_std_m": min_static_pos_noise + progress * (max_static_pos_noise - min_static_pos_noise),
-                "static_orient_std_rad": min_static_orient_noise + progress * (max_static_orient_noise - min_static_orient_noise),
+            lvl = max(start, level)
+            span_train = float(max(1, end_train - start))
+            slopes = {
+                "drone_pos_std_m": (max_drone_pos_noise - min_drone_pos_noise) / span_train,
+                "drone_orient_std_rad": (max_drone_orient_noise - min_drone_orient_noise) / span_train,
+                "static_pos_std_m": (max_static_pos_noise - min_static_pos_noise) / span_train,
+                "static_orient_std_rad": (max_static_orient_noise - min_static_orient_noise) / span_train,
             }
+            if lvl <= end_train:
+                progress = (lvl - start) / span_train
+                return {
+                    "drone_pos_std_m": min_drone_pos_noise + progress * (max_drone_pos_noise - min_drone_pos_noise),
+                    "drone_orient_std_rad": min_drone_orient_noise + progress * (max_drone_orient_noise - min_drone_orient_noise),
+                    "static_pos_std_m": min_static_pos_noise + progress * (max_static_pos_noise - min_static_pos_noise),
+                    "static_orient_std_rad": min_static_orient_noise + progress * (max_static_orient_noise - min_static_orient_noise),
+                }
+            else:
+                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', lvl))
+                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                    eval_end = end_train
+                lvl_clamped = min(lvl, eval_end)
+                extra = float(lvl_clamped - end_train)
+                return {
+                    "drone_pos_std_m": max_drone_pos_noise + slopes["drone_pos_std_m"] * extra,
+                    "drone_orient_std_rad": max_drone_orient_noise + slopes["drone_orient_std_rad"] * extra,
+                    "static_pos_std_m": max_static_pos_noise + slopes["static_pos_std_m"] * extra,
+                    "static_orient_std_rad": max_static_orient_noise + slopes["static_orient_std_rad"] * extra,
+                }
 
         @staticmethod
         def get_spawn_ranges(level):
@@ -529,12 +544,7 @@ class task_config:
               - yaw_abs_rad
             """
             s = task_config.curriculum.spawn_start_level
-            # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
-            e = (
-                getattr(task_config.curriculum, 'eval_stretch_end_level', task_config.curriculum.spawn_end_level)
-                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
-                else task_config.curriculum.spawn_end_level
-            )
+            e_train = task_config.curriculum.spawn_end_level  # 23
             if level <= s:
                 return {
                     "x_half_span_m": task_config.curriculum.spawn_easy_x_half_span_m,
@@ -544,16 +554,40 @@ class task_config:
                     "z_half_span_m": task_config.curriculum.spawn_easy_z_half_span_m,
                     "yaw_abs_rad": task_config.curriculum.spawn_easy_yaw_abs_rad,
                 }
-            if level >= e:
-                return {
-                    "x_half_span_m": task_config.curriculum.spawn_hard_x_half_span_m,
-                    "y_center_m": task_config.curriculum.spawn_hard_y_center_m,
-                    "y_half_span_m": task_config.curriculum.spawn_hard_y_half_span_m,
-                    "z_center_m": task_config.curriculum.spawn_hard_z_center_m,
-                    "z_half_span_m": task_config.curriculum.spawn_hard_z_half_span_m,
-                    "yaw_abs_rad": task_config.curriculum.spawn_hard_yaw_abs_rad,
+            if level >= e_train:
+                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                    return {
+                        "x_half_span_m": task_config.curriculum.spawn_hard_x_half_span_m,
+                        "y_center_m": task_config.curriculum.spawn_hard_y_center_m,
+                        "y_half_span_m": task_config.curriculum.spawn_hard_y_half_span_m,
+                        "z_center_m": task_config.curriculum.spawn_hard_z_center_m,
+                        "z_half_span_m": task_config.curriculum.spawn_hard_z_half_span_m,
+                        "yaw_abs_rad": task_config.curriculum.spawn_hard_yaw_abs_rad,
+                    }
+                # Evaluation stretch: extrapolate beyond hard values using training slope
+                span_train = float(max(1, e_train - s))
+                def lerp(a, b):
+                    return a + (e_train - s) / span_train * (b - a)
+                slopes = {
+                    "x_half_span_m": (task_config.curriculum.spawn_hard_x_half_span_m - task_config.curriculum.spawn_easy_x_half_span_m) / span_train,
+                    "y_center_m": (task_config.curriculum.spawn_hard_y_center_m - task_config.curriculum.spawn_easy_y_center_m) / span_train,
+                    "y_half_span_m": (task_config.curriculum.spawn_hard_y_half_span_m - task_config.curriculum.spawn_easy_y_half_span_m) / span_train,
+                    "z_center_m": (task_config.curriculum.spawn_hard_z_center_m - task_config.curriculum.spawn_easy_z_center_m) / span_train,
+                    "z_half_span_m": (task_config.curriculum.spawn_hard_z_half_span_m - task_config.curriculum.spawn_easy_z_half_span_m) / span_train,
+                    "yaw_abs_rad": (task_config.curriculum.spawn_hard_yaw_abs_rad - task_config.curriculum.spawn_easy_yaw_abs_rad) / span_train,
                 }
-            p = (level - s) / float(e - s)
+                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', level))
+                lvl_clamped = min(level, eval_end)
+                extra = float(lvl_clamped - e_train)
+                return {
+                    "x_half_span_m": task_config.curriculum.spawn_hard_x_half_span_m + slopes["x_half_span_m"] * extra,
+                    "y_center_m": task_config.curriculum.spawn_hard_y_center_m + slopes["y_center_m"] * extra,
+                    "y_half_span_m": task_config.curriculum.spawn_hard_y_half_span_m + slopes["y_half_span_m"] * extra,
+                    "z_center_m": task_config.curriculum.spawn_hard_z_center_m + slopes["z_center_m"] * extra,
+                    "z_half_span_m": task_config.curriculum.spawn_hard_z_half_span_m + slopes["z_half_span_m"] * extra,
+                    "yaw_abs_rad": task_config.curriculum.spawn_hard_yaw_abs_rad + slopes["yaw_abs_rad"] * extra,
+                }
+            p = (level - s) / float(e_train - s)
             def lerp(a, b):
                 return a + p * (b - a)
             return {

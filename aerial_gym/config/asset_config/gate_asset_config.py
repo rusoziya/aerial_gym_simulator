@@ -87,6 +87,15 @@ class GateAssetConfig:
 		# No collision mesh override needed
 		use_collision_mesh_instead_of_visual = False
 
+	class small_gate_asset_params(gate_asset_params):
+		"""
+		Evaluation-only smaller gates (50–58%). Loaded only when EVAL_STRETCH_ENABLED is set.
+		"""
+		num_assets = 5  # gate_scale_050, 052, 054, 056, 058
+		asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/smaller gates"
+		file = None
+
 
 # Create instances that can be imported
 gate_asset_params = GateAssetConfig.gate_asset_params 
+small_gate_asset_params = GateAssetConfig.small_gate_asset_params 

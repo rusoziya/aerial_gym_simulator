@@ -51,17 +51,17 @@ class NavigationTaskGate(BaseTask):
                 self.task_config.reward_parameters[key], device=self.device
             )
         
-        # CONFIG VERIFICATION: Print key reward parameters to verify loading
-        logger.warning("="*60)
-        logger.warning("CONFIG VERIFICATION - REWARD PARAMETERS:")
-        logger.warning(f"pos_reward_magnitude: {self.task_config.reward_parameters['pos_reward_magnitude']}")
-        logger.warning(f"very_close_to_goal_reward_magnitude: {self.task_config.reward_parameters['very_close_to_goal_reward_magnitude']}")
-        logger.warning(f"getting_closer_reward_multiplier: {self.task_config.reward_parameters['getting_closer_reward_multiplier']}")
-        logger.warning(f"gate_approach_reward_magnitude: {self.task_config.reward_parameters['gate_approach_reward_magnitude']}")
-        logger.warning(f"gate_passage_reward_magnitude: {self.task_config.reward_parameters['gate_passage_reward_magnitude']}")
-        logger.warning(f"camera_facing_reward_magnitude: {self.task_config.reward_parameters.get('camera_facing_reward_magnitude', 'NOT FOUND!')}")
-        logger.warning(f"collision_penalty: {self.task_config.reward_parameters['collision_penalty']}")
-        logger.warning("="*60)
+        # # CONFIG VERIFICATION: Print key reward parameters to verify loading
+        # logger.warning("="*60)
+        # logger.warning("CONFIG VERIFICATION - REWARD PARAMETERS:")
+        # logger.warning(f"pos_reward_magnitude: {self.task_config.reward_parameters['pos_reward_magnitude']}")
+        # logger.warning(f"very_close_to_goal_reward_magnitude: {self.task_config.reward_parameters['very_close_to_goal_reward_magnitude']}")
+        # logger.warning(f"getting_closer_reward_multiplier: {self.task_config.reward_parameters['getting_closer_reward_multiplier']}")
+        # logger.warning(f"gate_approach_reward_magnitude: {self.task_config.reward_parameters['gate_approach_reward_magnitude']}")
+        # logger.warning(f"gate_passage_reward_magnitude: {self.task_config.reward_parameters['gate_passage_reward_magnitude']}")
+        # logger.warning(f"camera_facing_reward_magnitude: {self.task_config.reward_parameters.get('camera_facing_reward_magnitude', 'NOT FOUND!')}")
+        # logger.warning(f"collision_penalty: {self.task_config.reward_parameters['collision_penalty']}")
+        # logger.warning("="*60)
         
         logger.info("Building environment for gate navigation task.")
         logger.info(
@@ -636,9 +636,7 @@ class NavigationTaskGate(BaseTask):
         )
         self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)  # 4D action space
         self.action_transformation_function = self.task_config.action_transformation_function
-
         self.num_envs = self.sim_env.num_envs
-
         # Enhanced task observations for gate navigation
         self.task_obs = {
             "observations": torch.zeros(
@@ -733,6 +731,38 @@ class NavigationTaskGate(BaseTask):
         
         # Ensure infos survive resets for logging back to the learner
         self._infos_to_return = None
+
+    def logging_sanity_check(self, infos):
+        """Sanity check for logging to detect issues with success/crash/timeout logic."""
+        successes = infos["successes"]
+        crashes = infos["crashes"]
+        timeouts = infos["timeouts"]
+        time_at_crash = torch.where(
+            crashes > 0,
+            self.sim_env.sim_steps,
+            self.task_config.episode_len_steps * torch.ones_like(self.sim_env.sim_steps),
+        )
+        env_list_for_toc = (time_at_crash < 5).nonzero(as_tuple=False).squeeze(-1)
+        crash_envs = crashes.nonzero(as_tuple=False).squeeze(-1)
+        success_envs = successes.nonzero(as_tuple=False).squeeze(-1)
+        timeout_envs = timeouts.nonzero(as_tuple=False).squeeze(-1)
+
+        if len(env_list_for_toc) > 0:
+            logger.critical("Crash is happening too soon.")
+            logger.critical(f"Envs crashing too soon: {env_list_for_toc}")
+            logger.critical(f"Time at crash: {time_at_crash[env_list_for_toc]}")
+
+        if torch.sum(torch.logical_and(successes, crashes)) > 0:
+            logger.critical("Success and crash are occuring at the same time")
+            logger.critical(
+                f"Number of crashes: {torch.count_nonzero(crashes)}, Crashed envs: {crash_envs}"
+            )
+            logger.critical(
+                f"Number of successes: {torch.count_nonzero(successes)}, Success envs: {success_envs}"
+            )
+            logger.critical(
+                f"Number of common instances: {torch.count_nonzero(torch.logical_and(crashes, successes))}"
+            )
 
     def close(self):
         try:
@@ -1042,9 +1072,15 @@ class NavigationTaskGate(BaseTask):
                 
                 urdf_path = None
                 for base_dir in possible_base_dirs:
-                    test_path = os.path.join(base_dir, "resources/models/environment_assets/gates", urdf_filename)
-                    if os.path.exists(test_path):
-                        urdf_path = test_path
+                    for sub_dir in (
+                        "resources/models/environment_assets/gates",
+                        "resources/models/environment_assets/smaller gates",
+                    ):
+                        test_path = os.path.join(base_dir, sub_dir, urdf_filename)
+                        if os.path.exists(test_path):
+                            urdf_path = test_path
+                            break
+                    if urdf_path is not None:
                         break
                 
                 if urdf_path is None:
@@ -1085,7 +1121,6 @@ class NavigationTaskGate(BaseTask):
 
     def render(self):
         return self.sim_env.render()
-
     def step(self, actions):
         # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
         # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
@@ -1273,9 +1308,9 @@ class NavigationTaskGate(BaseTask):
 
         # One-off timeout penalty: discourage hover-to-horizon strategies
         try:
-            timeout_penalty = float(self.task_config.reward_parameters.get('timeout_penalty', 60.0))
+            timeout_penalty = float(self.task_config.reward_parameters.get('timeout_penalty', 70.0))
         except Exception:
-            timeout_penalty = 60.0
+            timeout_penalty = 75.0
         if torch.any(timeouts):
             # Apply to the per-env reward vector maintained at the task level
             self.rewards = self.rewards - (timeouts.float() * timeout_penalty)
@@ -1383,7 +1418,7 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-        self.logging_sanity_check(self.infos)
+        # self.logging_sanity_check(self.infos)  # Disabled per user request
         self.check_and_update_curriculum_level(
             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
         )
@@ -1599,17 +1634,12 @@ class NavigationTaskGate(BaseTask):
                     return float(image_obs[idx].mean().item()) if idx < ne else float('nan')
                 def _same(idx):
                     return (idx < ne) and bool(torch.allclose(image_obs[0], image_obs[idx]))
-                envs_to_check = [0, 1, 5, 8, 12]
+                envs_to_check = [5]  # reduced debug output: only env5
                 means = {i: _mean_env(i) for i in envs_to_check}
                 sames = {i: _same(i) for i in [1, 5, 8, 12]}
-                logger.warning(
-                    f"[DroneCam] depth shape={tuple(image_obs.shape)} "
-                    f"env0_mean={means[0]:.4f} env1_mean={means.get(1, float('nan')):.4f} "
-                    f"env5_mean={means.get(5, float('nan')):.4f} env8_mean={means.get(8, float('nan')):.4f} "
-                    f"env12_mean={means.get(12, float('nan')):.4f} "
-                    f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
-                    f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
-                )
+                # logger.warning(
+                #     f"[DroneCam] depth shape={tuple(image_obs.shape)} env5_mean={means.get(5, float('nan')):.4f}"
+                # )
                 self._drone_cam_debug_last = self.num_task_steps
         except Exception:
             pass
@@ -1696,21 +1726,15 @@ class NavigationTaskGate(BaseTask):
                         return float(torch.mean(torch.abs(z[idx])).item()) if idx < ne else float('nan')
                     def _same(idx):
                         return (idx < ne) and bool(torch.allclose(z[0], z[idx]))
-                    envs_to_check = [0, 1, 5, 8, 12]
+                    envs_to_check = [5]  # reduced debug output: only env5
                     means = {i: _absmean_env(i) for i in envs_to_check}
                     sames = {i: _same(i) for i in [1, 5, 8, 12]}
-                    logger.warning(
-                        f"[DroneVAE] latents shape={tuple(z.shape)} "
-                        f"env0_absmean={means[0]:.4f} env1_absmean={means.get(1, float('nan')):.4f} "
-                        f"env5_absmean={means.get(5, float('nan')):.4f} env8_absmean={means.get(8, float('nan')):.4f} "
-                        f"env12_absmean={means.get(12, float('nan')):.4f} "
-                        f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
-                        f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
-                    )
+                    # logger.warning(
+                    #     f"[DroneVAE] latents shape={tuple(z.shape)} env5_absmean={means.get(5, float('nan')):.4f}"
+                    # )
                     self._drone_vae_debug_last = self.num_task_steps
             except Exception:
                 pass
-
     def process_static_camera_observation(self):
         """Process static camera observations with D455 curriculum-dependent noise."""
         try:
@@ -1735,17 +1759,12 @@ class NavigationTaskGate(BaseTask):
                             return float(x[idx].mean().item()) if idx < ne else float('nan')
                         def _same(idx):
                             return (idx < ne) and bool(np.allclose(x[0], x[idx])) if isinstance(x, np.ndarray) else bool(torch.allclose(x[0], x[idx]))
-                        envs_to_check = [0, 1, 5, 8, 12]
+                        envs_to_check = [5]  # reduced debug output: only env5
                         means = {i: _mean_env(i) for i in envs_to_check}
-                        sames = {i: _same(i) for i in [1, 5, 8, 12]}
-                        logger.warning(
-                            f"[StaticCamCapture] depth shape={tuple(x.shape)} "
-                            f"env0_mean={means[0]:.4f} env1_mean={means.get(1, float('nan')):.4f} "
-                            f"env5_mean={means.get(5, float('nan')):.4f} env8_mean={means.get(8, float('nan')):.4f} "
-                            f"env12_mean={means.get(12, float('nan')):.4f} "
-                            f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
-                            f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
-                        )
+                        # sames calculation omitted for brevity
+                        # logger.warning(
+                        #     f"[StaticCamCapture] depth shape={tuple(x.shape)} env5_mean={means.get(5, float('nan')):.4f}"
+                        # )
                         self._static_cam_debug_last = self.num_task_steps
             except Exception:
                 pass
@@ -1848,6 +1867,30 @@ class NavigationTaskGate(BaseTask):
                         else:
                             static_depth_tensor = static_depth_tensor[:self.sim_env.num_envs]
 
+                    # Periodic static camera depth summary (match DroneCam style)
+                    try:
+                        if (not hasattr(self, '_static_cam_depth_logged')) or (self.num_task_steps % 200 == 0):
+                            self._static_cam_depth_logged = True
+                            depth = static_depth_tensor
+                            ne = int(depth.shape[0])
+                            def _mean_env(idx):
+                                return float(torch.mean(depth[idx]).item()) if idx < ne else float('nan')
+                            def _same(idx):
+                                return (idx < ne) and bool(torch.allclose(depth[0], depth[idx]))
+                            envs_to_check = [0, 1, 5, 8, 12]
+                            means = {i: _mean_env(i) for i in envs_to_check}
+                            sames = {i: _same(i) for i in [1, 5, 8, 12]}
+                            # logger.warning(
+                            #     f"[StaticCam] depth shape={tuple(depth.shape)} "
+                            #     f"env0_mean={means[0]:.4f} env1_mean={means.get(1, float('nan')):.4f} "
+                            #     f"env5_mean={means.get(5, float('nan')):.4f} env8_mean={means.get(8, float('nan')):.4f} "
+                            #     f"env12_mean={means.get(12, float('nan')):.4f} "
+                            #     f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
+                            #     f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
+                            # )
+                    except Exception:
+                        pass
+
                     # CRITICAL DEBUG: Log VAE encoding attempt (once)
                     if not hasattr(self, '_vae_debug_logged'):
                         self._vae_debug_logged = True
@@ -1866,17 +1909,11 @@ class NavigationTaskGate(BaseTask):
                                 return float(torch.mean(torch.abs(z[idx])).item()) if idx < ne else float('nan')
                             def _same(idx):
                                 return (idx < ne) and bool(torch.allclose(z[0], z[idx]))
-                            envs_to_check = [0, 1, 5, 8, 12]
+                            envs_to_check = [5]  # reduced debug output: only env5
                             means = {i: _absmean_env(i) for i in envs_to_check}
-                            sames = {i: _same(i) for i in [1, 5, 8, 12]}
-                            logger.warning(
-                                f"[StaticCamVAE] latents shape={tuple(z.shape)} "
-                                f"env0_absmean={means[0]:.4f} env1_absmean={means.get(1, float('nan')):.4f} "
-                                f"env5_absmean={means.get(5, float('nan')):.4f} env8_absmean={means.get(8, float('nan')):.4f} "
-                                f"env12_absmean={means.get(12, float('nan')):.4f} "
-                                f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
-                                f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
-                            )
+                            # logger.warning(
+                            #     f"[StaticCamVAE] latents shape={tuple(z.shape)} env5_absmean={means.get(5, float('nan')):.4f}"
+                            # )
                     except Exception:
                         pass
                 except Exception as e:
@@ -2016,15 +2053,15 @@ class NavigationTaskGate(BaseTask):
                         ce = getattr(self, '_debug_cam_eul', None)
                         de0 = de[0] if isinstance(de, torch.Tensor) and de.shape[0] > 0 else torch.zeros(3, device=self.device)
                         ce0 = ce[0] if isinstance(ce, torch.Tensor) and ce.shape[0] > 0 else torch.zeros(3, device=self.device)
-                        logger.warning(
-                            f"[StaticObs] step={int(self.num_task_steps)} env0 "
-                            f"drone_w=({rp0[0].item():+.3f},{rp0[1].item():+.3f},{rp0[2].item():+.3f}) "
-                            f"cam_w=({cw0[0].item():+.3f},{cw0[1].item():+.3f},{cw0[2].item():+.3f}) "
-                            f"drone_eul_w=({de0[0].item():+.3f},{de0[1].item():+.3f},{de0[2].item():+.3f}) "
-                            f"cam_eul_w=({ce0[0].item():+.3f},{ce0[1].item():+.3f},{ce0[2].item():+.3f}) "
-                            f"pos_rel=({sp[0].item():+.3f},{sp[1].item():+.3f},{sp[2].item():+.3f}) "
-                            f"eul_rel=({so[0].item():+.3f},{so[1].item():+.3f},{so[2].item():+.3f})"
-                        )
+                        # logger.warning(
+                        #     f"[StaticObs] step={int(self.num_task_steps)} env0 "
+                        #     f"drone_w=({rp0[0].item():+.3f},{rp0[1].item():+.3f},{rp0[2].item():+.3f}) "
+                        #     f"cam_w=({cw0[0].item():+.3f},{cw0[1].item():+.3f},{cw0[2].item():+.3f}) "
+                        #     f"drone_eul_w=({de0[0].item():+.3f},{de0[1].item():+.3f},{de0[2].item():+.3f}) "
+                        #     f"cam_eul_w=({ce0[0].item():+.3f},{ce0[1].item():+.3f},{ce0[2].item():+.3f}) "
+                        #     f"pos_rel=({sp[0].item():+.3f},{sp[1].item():+.3f},{sp[2].item():+.3f}) "
+                        #     f"eul_rel=({so[0].item():+.3f},{so[1].item():+.3f},{so[2].item():+.3f})"
+                        # )
         except Exception:
             pass
         
@@ -2292,45 +2329,6 @@ class NavigationTaskGate(BaseTask):
                 euler_angles = euler_angles + torch.randn_like(euler_angles) * do_std
                 euler_angles = torch.atan2(torch.sin(euler_angles), torch.cos(euler_angles))
         self.task_obs["observations"][:, 9:12] = euler_angles  # MODIFIED: Include full yaw instead of setting to 0.0
-        
-        # ===== DRONE STATE OBSERVATIONS (10D) =====
-        # [12:15] = Robot body linear velocity
-        self.task_obs["observations"][:, 12:15] = self.obs_dict["robot_body_linvel"]
-        
-        # [15:18] = Robot body angular velocity  
-        self.task_obs["observations"][:, 15:18] = self.obs_dict["robot_body_angvel"]
-        
-        # [18:22] = Robot actions (x_vel, y_vel, z_vel, yaw_rate)
-        self.task_obs["observations"][:, 18:22] = self.obs_dict["robot_actions"]
-        
-        # ===== VISUAL OBSERVATIONS (128D) =====
-        # Optionally normalize 64D VAEs per env to balance scales
-        try:
-            normalize = bool(getattr(self.task_config.vae_config, 'normalize_vae_latents', False))
-            env_norm = os.environ.get('NORMALIZE_VAE_LATENTS', None)
-            if env_norm is not None:
-                normalize = str(env_norm).lower() == 'true'
-        except Exception:
-            normalize = False
-
-        if normalize:
-            # Per-env z-score on 64D latents to mean 0, std 1 (epsilon to avoid div-by-zero)
-            eps = 1e-6
-            drone_lat = self.image_latents
-            static_lat = self.static_image_latents
-            d_mean = drone_lat.mean(dim=1, keepdim=True)
-            d_std = drone_lat.std(dim=1, keepdim=True)
-            s_mean = static_lat.mean(dim=1, keepdim=True)
-            s_std = static_lat.std(dim=1, keepdim=True)
-            drone_lat = (drone_lat - d_mean) / (d_std + eps)
-            static_lat = (static_lat - s_mean) / (s_std + eps)
-            self.task_obs["observations"][:, 22:86] = drone_lat
-            self.task_obs["observations"][:, 86:150] = static_lat
-        else:
-            # [22:86] = Drone camera VAE latents (64D)
-            self.task_obs["observations"][:, 22:86] = self.image_latents
-            # [86:150] = Static camera VAE latents (64D)
-            self.task_obs["observations"][:, 86:150] = self.static_image_latents
 
         # (Removed W&B latent stats logging per request)
 
@@ -2631,12 +2629,15 @@ class NavigationTaskGate(BaseTask):
                         pass
         except Exception:
             pass
-        
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
         self.update_episode_reward_tracking(obs_dict, rewards, crashes)
-        
         # COMPREHENSIVE REWARD DEBUGGING: Print ALL reward components every 200 steps
-        if hasattr(self, 'num_task_steps') and self.num_task_steps % 200 == 0:
+        # Disabled by default via config flag `enable_comprehensive_reward_debug`
+        if (
+            hasattr(self, 'num_task_steps')
+            and self.num_task_steps % 200 == 0
+            and bool(getattr(self.task_config, 'enable_comprehensive_reward_debug', False))
+        ):
             # Recalculate components for debugging (without JIT optimization)
             dist = torch.norm(self.pos_error_vehicle_frame, dim=1)
             prev_dist = torch.norm(self.pos_error_vehicle_frame_prev, dim=1)
@@ -3088,7 +3089,6 @@ class NavigationTaskGate(BaseTask):
         self.camera_alignment_debug = camera_gate_alignment
         
         return rewards, crashes, camera_gate_alignment
-
     def check_and_update_curriculum_level(self, successes, crashes, timeouts):
         """
         COMPREHENSIVE MULTI-ASPECT CURRICULUM LEARNING SYSTEM
@@ -3168,6 +3168,18 @@ class NavigationTaskGate(BaseTask):
                     self.curriculum_level -= self.task_config.curriculum.decrease_step
                     self._curriculum_cooldown = getattr(self.task_config.curriculum, 'cooldown_windows', 0)
                     action_msg = f"LEVEL DECREASED: {old_level} -> {self.curriculum_level} (SR {success_rate:.3f} < threshold)"
+            # Apply optional maximum cap without changing per-level scaling
+            try:
+                import os
+                cap_env = os.environ.get('SF_MAX_CURRICULUM_LEVEL', None)
+                cap_cfg = getattr(self.task_config, 'max_curriculum_level', None)
+                cap = int(cap_env) if cap_env is not None else (int(cap_cfg) if cap_cfg is not None else None)
+                if cap is not None:
+                    if self.curriculum_level > cap:
+                        self.curriculum_level = cap
+                        action_msg = f"LEVEL CAPPED at {cap} (progression halted above cap)"
+            except Exception:
+                pass
             # Honor forced curriculum level: override and freeze progression
             try:
                 forced = os.environ.get('SF_FORCE_CURRICULUM_LEVEL', None)
@@ -3370,18 +3382,31 @@ class NavigationTaskGate(BaseTask):
                     self.log_curriculum_update(f"   4. GATE SIZE: randomization disabled, fixed scale = {fixed_scale}%")
                 else:
                     # Compute linear threshold from 80 -> 60 over levels 3..23
-                    if self.curriculum_level <= 3:
+                    # If EVAL_STRETCH_ENABLED, extend further to 50% by eval_end_level
+                    import os as _os
+                    stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+                    eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(getattr(self.task_config.curriculum, 'eval_stretch_end_level', 33))))
+                    level = int(self.curriculum_level)
+                    if level <= 3:
                         min_scale = 80
-                    elif self.curriculum_level >= 23:
-                        min_scale = 60
-                    else:
-                        frac = (self.curriculum_level - 3) / (23 - 3)
+                    elif level <= 23:
+                        frac = (level - 3) / (23 - 3)
                         raw = 80 - frac * (80 - 60)
                         min_scale = int((int(raw) // 2) * 2)
-                        if min_scale < 60:
-                            min_scale = 60
-                        if min_scale > 100:
-                            min_scale = 100
+                    elif stretch_enabled:
+                        # Extend 23->eval_end: 60% -> 50% linearly
+                        if level >= eval_end:
+                            min_scale = 50
+                        else:
+                            extra_frac = (level - 23) / max(1, (eval_end - 23))
+                            raw = 60 - extra_frac * (60 - 50)
+                            min_scale = int((int(raw) // 2) * 2)
+                    else:
+                        min_scale = 60
+                    if min_scale < 50:
+                        min_scale = 50
+                    if min_scale > 100:
+                        min_scale = 100
                     # Collect scales meeting threshold
                     scales = []
                     for n in gate_names:
@@ -3640,20 +3665,6 @@ class NavigationTaskGate(BaseTask):
             self.success_aggregate = 0
             self.crashes_aggregate = 0
             self.timeouts_aggregate = 0
-
-    def logging_sanity_check(self, infos):
-        """Logging sanity check for gate navigation."""
-        successes = infos["successes"]
-        crashes = infos["crashes"]
-        timeouts = infos["timeouts"]
-        
-        if torch.sum(torch.logical_and(successes, crashes)) > 0:
-            logger.critical("Success and crash are occuring at the same time")
-        if torch.sum(torch.logical_and(successes, timeouts)) > 0:
-            logger.critical("Success and timeout are occuring at the same time")
-        if torch.sum(torch.logical_and(crashes, timeouts)) > 0:
-            logger.critical("Crash and timeout are occuring at the same time")
-
     def update_episode_reward_tracking(self, obs_dict, rewards, crashes):
         """Update cumulative episode reward tracking for comprehensive debugging."""
         robot_position = obs_dict["robot_position"]
@@ -3981,8 +3992,6 @@ class NavigationTaskGate(BaseTask):
         self.episode_time_penalty[env_ids] = 0
         self.episode_timeout_penalty[env_ids] = 0
         self.episode_lengths[env_ids] = 0
-
-
 class StaticCameraManager:
     """Manages static camera for gate navigation using Isaac Gym native API."""
     
@@ -4037,18 +4046,15 @@ class StaticCameraManager:
         """Setup static camera using Isaac Gym native camera API with D455 specifications."""
         logger.info("Setting up static camera for gate navigation...")
         
-        # Check if simulation is running in headless mode
+        # Headless mode is supported for camera sensors; proceed with GPU camera setup
         if self.task_config.headless:
-            logger.info("Running in headless mode - static camera will use synthetic data for training")
-            self.camera_setup_success = False
-            self.use_synthetic_camera = True
-            return
+            logger.info("Headless mode detected - proceeding with static camera GPU setup")
         
         try:
             # Camera properties (D455 depth camera specifications - match working example)
             camera_props = gymapi.CameraProperties()
-            camera_props.width = 480  # D455 depth resolution width
-            camera_props.height = 270  # D455 depth resolution height
+            camera_props.width = 240  # Reduced depth resolution width
+            camera_props.height = 135  # Reduced depth resolution height
             camera_props.horizontal_fov = 87.0  # D455 FOV
             camera_props.near_plane = 0.4  # D455 minimum depth distance
             camera_props.far_plane = 20.0  # D455 maximum range
@@ -4066,9 +4072,7 @@ class StaticCameraManager:
                     logger.info(f"Created static camera sensor {i} in environment {i}")
                 else:
                     logger.warning(f"Failed to create camera for environment {i}, handle: {cam_handle}")
-                    self.camera_setup_success = False
-                    self.use_synthetic_camera = True
-                    return
+                    # Do not fall back to synthetic or return; proceed and mark setup incomplete
             
             # Respect CLI/task_config base_y/base_z (with 'adaptive' support) for initial placement
             try:
@@ -4150,14 +4154,19 @@ class StaticCameraManager:
             except Exception:
                 pass
 
-            logger.info("✓ Static camera setup complete with configured positioning (base_y/base_z)")
-            self.camera_setup_success = True
-            self.use_synthetic_camera = False
+            if len(self.camera_handles) == len(self.env_handles):
+                logger.info("✓ Static camera setup complete with configured positioning (base_y/base_z)")
+                self.camera_setup_success = True
+                self.use_synthetic_camera = False
+            else:
+                logger.error(f"Static camera setup incomplete: created {len(self.camera_handles)}/{len(self.env_handles)} cameras")
+                self.camera_setup_success = False
+                self.use_synthetic_camera = False
             
         except Exception as e:
-            logger.warning(f"Static camera setup failed, falling back to synthetic data: {e}")
+            logger.warning(f"Static camera setup failed: {e}")
             self.camera_setup_success = False
-            self.use_synthetic_camera = True
+            self.use_synthetic_camera = False
     
     def update_camera_positions(self, curriculum_level, env_ids):
         """Update static camera orientation ONLY for resetting environments."""
@@ -4300,15 +4309,73 @@ class StaticCameraManager:
                     sweep_speed_deg = 10.0
 
                 if sweep_enabled:
-                    # Compute time-based angle: A*sin(omega*t + phase). Use sim step as time base
-                    # A = ±30°, omega = speed_deg/s converted to rad/step using nominal dt=1/60 s
-                    A = FIXED_SWEEP_MAX_DEG
+                    # Compute time-based angle: A(level)*sin(omega*t + phase).
+                    # Per-level amplitude A is chosen so that the drone at worst-case X is inside
+                    # the horizontal FOV at some point during the sweep.
+                    # Formula: A = max(0, atan2(x_half, |y_center - base_y|) [deg] - half_fov) + margin
+                    # where half_fov = 87/2 deg for D455, margin = 2.5 deg.
+                    try:
+                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
+                        # Extend sweep amplitude during evaluation stretch (levels 23..eval_end)
+                        try:
+                            parent = getattr(self, 'env_manager', None)
+                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+                        except Exception:
+                            gtd_local = {}
+                        try:
+                            _eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
+                        except Exception:
+                            _eval_en = False
+                        if not _eval_en:
+                            # Fallback to env var if global dict not yet populated
+                            try:
+                                import os as _os
+                                _eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+                            except Exception:
+                                _eval_en = False
+                        try:
+                            _eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc.curriculum, 'eval_stretch_end_level', 23)))
+                        except Exception:
+                            _eval_end = int(getattr(_tc.curriculum, 'eval_stretch_end_level', 23))
+
+                        eff_level = min(curriculum_level, _eval_end) if _eval_en else curriculum_level
+                        sr = _tc.curriculum.get_spawn_ranges(eff_level)
+                        x_half = float(sr.get('x_half_span_m', 0.5))
+                        y_center = float(sr.get('y_center_m', -1.5))
+                        base_y_eval = float(base_y)
+                        dy = abs(y_center - base_y_eval)
+                        half_fov = 87.0 * 0.5
+                        margin = 2.5
+                        alpha = math.degrees(math.atan2(x_half, max(1e-6, dy)))
+                        A = max(0.0, alpha - half_fov) + margin
+                    except Exception:
+                        A = FIXED_SWEEP_MAX_DEG
                     dt = 1.0/60.0
                     # Keep peak angular speed similar to baseline A0=50° when changing amplitude.
                     # For theta(t)=A*sin(ωt), peak speed = A*ω. Compensate ω by (A0/A).
                     A0 = 50.0
                     comp = (A0 / max(A, 1e-6))
-                    sweep_speed_eff = sweep_speed_deg * comp
+                    # Additionally, increase sweep speed with curriculum level (1.0x -> 2.0x)
+                    try:
+                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc2
+                        # Respect eval stretch when enabled (eval only), otherwise cap at training max
+                        try:
+                            parent = getattr(self, 'env_manager', None)
+                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+                        except Exception:
+                            gtd_local = {}
+                        eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
+                        min_lvl = int(getattr(_tc2.curriculum, 'min_level', 1))
+                        max_lvl_cfg = int(getattr(_tc2.curriculum, 'max_level', min_lvl))
+                        max_lvl_eval = int(getattr(_tc2.curriculum, 'eval_stretch_end_level', max_lvl_cfg))
+                        max_lvl = max_lvl_eval if eval_en else max_lvl_cfg
+                        level_clamped = max(min(curriculum_level, max_lvl), min_lvl)
+                        denom = max(1, max_lvl - min_lvl)
+                        level_frac = float(level_clamped - min_lvl) / float(denom)
+                        speed_scale = 1.0 + level_frac
+                    except Exception:
+                        speed_scale = 1.0
+                    sweep_speed_eff = sweep_speed_deg * speed_scale * comp
                     omega = (sweep_speed_eff * 3.14159 / 180.0) * dt
                     # Use global sim step as t and per-env small phase to desynchronize
                     sim_steps = 0
@@ -4347,36 +4414,74 @@ class StaticCameraManager:
                     debug_max_range = A
                     # [YawSweep DEBUG DISABLED]
                 else:
-                # Spawn-aware angle selection: keep both gate (0°) and drone inside FOV; or 0 if disabled
+                    # Spawn-aware angle selection: keep both gate (0°) and drone inside FOV; or 0 if disabled
+                    # Extend the allowable angle range using the same per-level formula as yaw sweep:
+                    # A = max(0, atan2(x_half, |y_center - base_y|) - 43.5) + 2.5 (deg)
+                    # Also honor evaluation stretch during inference when enabled.
                     max_angle_range = _max_angle_range
+                    try:
+                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_fix
+                        # Detect eval-stretch
+                        try:
+                            parent = getattr(self, 'env_manager', None)
+                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+                        except Exception:
+                            gtd_local = {}
+                        eval_en = False
+                        try:
+                            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
+                        except Exception:
+                            eval_en = False
+                        if not eval_en:
+                            try:
+                                import os as _os
+                                eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+                            except Exception:
+                                eval_en = False
+                        try:
+                            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23)))
+                        except Exception:
+                            eval_end = int(getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23))
+                        eff_level = min(curriculum_level, eval_end) if eval_en else curriculum_level
+                        sr_fix = _tc_fix.curriculum.get_spawn_ranges(eff_level)
+                        x_half_fix = float(sr_fix.get('x_half_span_m', 0.5))
+                        y_center_fix = float(sr_fix.get('y_center_m', -1.5))
+                        dy_fix = abs(y_center_fix - float(base_y))
+                        half_fov_fix = 87.0 * 0.5
+                        margin_fix = 2.5
+                        alpha_fix = math.degrees(math.atan2(x_half_fix, max(1e-6, dy_fix)))
+                        sweep_like_max = max(0.0, alpha_fix - half_fov_fix) + margin_fix
+                        max_angle_range = max(max_angle_range, sweep_like_max)
+                    except Exception:
+                        pass
                     # When sweep is disabled, honor the orientation randomization disable flag
-                if disable_flag or max_angle_range <= 0:
-                    angle_offset_degrees = 0.0
-                else:
-                    horizontal_fov = 87.0
-                    half_fov = horizontal_fov * 0.5
-                    margin = 5.0
-                    if rp is not None and env_idx < rp.shape[0]:
-                        cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
-                        dx = float(rp[env_idx, 0].item()) - cam_x
-                        dy = float(rp[env_idx, 1].item()) - cam_y
-                        theta_r = math.degrees(math.atan2(dx, dy))  # 0° points to +Y
-                        gate_low, gate_high = -half_fov + margin, half_fov - margin
-                        rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
-                        low = max(gate_low, rob_low, -max_angle_range)
-                        high = min(gate_high, rob_high, max_angle_range)
-                        if high > low:
+                    if disable_flag or max_angle_range <= 0:
+                        angle_offset_degrees = 0.0
+                    else:
+                        horizontal_fov = 87.0
+                        half_fov = horizontal_fov * 0.5
+                        margin = 2.5
+                        if rp is not None and env_idx < rp.shape[0]:
+                            cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
+                            dx = float(rp[env_idx, 0].item()) - cam_x
+                            dy = float(rp[env_idx, 1].item()) - cam_y
+                            theta_r = math.degrees(math.atan2(dx, dy))  # 0° points to +Y
+                            gate_low, gate_high = -half_fov + margin, half_fov - margin
+                            rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
+                            low = max(gate_low, rob_low, -max_angle_range)
+                            high = min(gate_high, rob_high, max_angle_range)
+                            if high > low:
                                 # Seeded torch RNG for deterministic selection
                                 u = float(torch.rand(1, device=self.device).item())
                                 angle_offset_degrees = low + u * (high - low)
+                            else:
+                                target = max(min(theta_r, gate_high), gate_low)
+                                angle_offset_degrees = max(-max_angle_range, min(max_angle_range, target))
                         else:
-                            target = max(min(theta_r, gate_high), gate_low)
-                            angle_offset_degrees = max(-max_angle_range, min(max_angle_range, target))
-                    else:
                             # Seeded torch RNG for deterministic selection
                             u = float(torch.rand(1, device=self.device).item())
                             angle_offset_degrees = -max_angle_range + u * (2.0 * max_angle_range)
-                    debug_max_range = max_angle_range
+                        debug_max_range = max_angle_range
                 
                 # Store the angle for this environment
                 if env_idx < len(self.current_camera_angles):
@@ -4437,11 +4542,12 @@ class StaticCameraManager:
                     pass
                 # Debug only for env 0 to avoid spam
                 if env_idx == 0:
-                    logger.warning(
-                        f"[StaticCamReset] env0 base_y={base_camera_env_pos.y:.3f} env_base_z={base_camera_env_pos.z:.3f} "
-                        f"pos=({base_camera_env_pos.x:.3f},{base_camera_env_pos.y:.3f},{base_camera_env_pos.z:.3f}) "
-                        f"target=({new_target.x:.3f},{new_target.y:.3f},{new_target.z:.3f}) angle_deg={angle_offset_degrees:.1f}"
-                    )
+                    # logger.warning(
+                    #     f"[StaticCamReset] env0 base_y={base_camera_env_pos.y:.3f} env_base_z={base_camera_env_pos.z:.3f} "
+                    #     f"pos=({base_camera_env_pos.x:.3f},{base_camera_env_pos.y:.3f},{base_camera_env_pos.z:.3f}) "
+                    #     f"target=({new_target.x:.3f},{new_target.y:.3f},{new_target.z:.3f}) angle_deg={angle_offset_degrees:.1f}"
+                    # )
+                    pass
                 
                 # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{debug_max_range:.1f}°)")
             
@@ -4491,16 +4597,50 @@ class StaticCameraManager:
                 # Set camera position
                 camera_pos = gymapi.Vec3(camera_x, camera_y, camera_z)
                 
-                # Camera always looks at ADAPTIVE gate center (per environment)
+                # Compute a look direction that keeps the DRONE centered (primary), while
+                # minimally steering toward the gate center if the gate is outside the FOV (secondary).
                 gate_pos = gate_positions[env_idx]
                 gate_center_height = gate_center_heights[env_idx]
                 
-                # Create adaptive gate target position using actual gate position and center height
-                camera_target = gymapi.Vec3(
-                    float(gate_pos[0].item()),  # Gate X position
-                    float(gate_pos[1].item()),  # Gate Y position  
-                    float(gate_center_height.item())  # Adaptive gate center height
-                )
+                # Vectors from camera to drone and gate
+                dx_d = float(drone_pos[0].item()) - camera_x
+                dy_d = float(drone_pos[1].item()) - camera_y
+                dz_d = float(drone_pos[2].item()) - camera_z
+                dx_g = float(gate_pos[0].item()) - camera_x
+                dy_g = float(gate_pos[1].item()) - camera_y
+                dz_g = float(gate_center_height.item()) - camera_z
+                
+                # Yaw angles (0° points to +Y)
+                yaw_drone = math.degrees(math.atan2(dx_d, dy_d))
+                yaw_gate = math.degrees(math.atan2(dx_g, dy_g))
+                # Normalize delta to [-180, 180]
+                delta = yaw_gate - yaw_drone
+                while delta > 180.0:
+                    delta -= 360.0
+                while delta < -180.0:
+                    delta += 360.0
+                
+                # Horizontal FOV limits with margin
+                horizontal_fov = 87.0
+                half_fov = horizontal_fov * 0.5
+                margin = 5.0
+                yaw_final = yaw_drone
+                # If gate is outside FOV from drone-centered view, rotate just enough to include it
+                if abs(delta) > (half_fov - margin):
+                    adjust = math.copysign(abs(delta) - (half_fov - margin), delta)
+                    yaw_final = yaw_drone + adjust
+                
+                # Choose a reasonable target distance (use XY dist to gate so gate is likely visible)
+                target_dist_xy = max(1.0, math.hypot(dx_g, dy_g))
+                # Blend vertical target slightly toward gate center (drone is primary)
+                z_weight = 0.3
+                target_z = (1.0 - z_weight) * (camera_z + dz_d) + z_weight * (camera_z + dz_g)
+                
+                # Build target from yaw_final and chosen distance; keep Z blended
+                yaw_rad = yaw_final * (math.pi / 180.0)
+                target_x = camera_x + target_dist_xy * math.sin(yaw_rad)
+                target_y = camera_y + target_dist_xy * math.cos(yaw_rad)
+                camera_target = gymapi.Vec3(target_x, target_y, float(target_z))
                 
                 # Update camera location
                 cam_handle = self.camera_handles[env_idx]
@@ -4509,7 +4649,11 @@ class StaticCameraManager:
                 
                 # Optional debug logging
                 if getattr(self.task_config.curriculum, 'log_camera_following', False) and env_idx == 0:
-                    logger.debug(f"Dynamic camera env{env_idx}: drone=({drone_pos[0]:.2f},{drone_pos[1]:.2f},{drone_pos[2]:.2f}) -> camera=({camera_x:.2f},{camera_y:.2f},{camera_z:.2f}) -> gate_target=({gate_pos[0]:.2f},{gate_pos[1]:.2f},{gate_center_height:.2f})")
+                    logger.debug(
+                        f"Dynamic camera env{env_idx}: drone=({drone_pos[0]:.2f},{drone_pos[1]:.2f},{drone_pos[2]:.2f}) "
+                        f"camera=({camera_x:.2f},{camera_y:.2f},{camera_z:.2f}) yaw_drone={yaw_drone:.1f}° yaw_gate={yaw_gate:.1f}° "
+                        f"-> yaw_final={yaw_final:.1f}° target=({target_x:.2f},{target_y:.2f},{target_z:.2f})"
+                    )
             
         except Exception as e:
             logger.warning(f"Failed to update dynamic camera following: {e}")
@@ -4523,11 +4667,29 @@ class StaticCameraManager:
                      with GIF/debug pipelines.
         """
         if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            # Generate synthetic camera data for headless training
-            return self._generate_synthetic_camera_data()
+            logger.error("Static camera synthetic mode disabled; no images will be generated.")
+            return None, None
         
         if not self.camera_setup_success or len(self.camera_handles) == 0:
-            return self._generate_synthetic_camera_data()
+            # One-time lazy re-initialization attempt
+            try:
+                if (not hasattr(self, '_lazy_setup_attempted')) or (self._lazy_setup_attempted is False):
+                    self._lazy_setup_attempted = True
+                    logger.warning("Static camera not set up; attempting one-time lazy initialization")
+                    try:
+                        self._setup_static_camera()
+                    except Exception as e:
+                        logger.warning(f"Lazy static camera setup attempt failed: {e}")
+                    # Re-check after lazy init
+                    if not self.camera_setup_success or len(self.camera_handles) == 0:
+                        logger.error("Static camera still not set up after lazy init; returning no images.")
+                        return None, None
+                else:
+                    logger.error("Static camera not set up; returning no images.")
+                    return None, None
+            except Exception:
+                logger.error("Static camera not set up; returning no images.")
+                return None, None
         
         try:
             # Step graphics and render all cameras
@@ -4603,28 +4765,28 @@ class StaticCameraManager:
                 return depth_img, seg_img
                 
         except Exception as e:
-            logger.debug(f"Static camera capture error, falling back to synthetic: {e}")
-            return self._generate_synthetic_camera_data()
-    
+            logger.error(f"Static camera capture error: {e}")
+            return None, None
     def _generate_synthetic_camera_data(self):
         """Generate synthetic camera data for headless training."""
         try:
-            # Create synthetic depth image (480x270) with reasonable gate-like features
-            height, width = 270, 480
+            # Create synthetic depth image (240x135) with reasonable gate-like features
+            height, width = 135, 240
             depth_img = np.full((height, width), 0.5, dtype=np.float32)  # Mid-range depth
             
-            # Add gate-like features to the synthetic depth
-            # Create a rectangular opening (gate) in the center
-            gate_x_start = width // 2 - 60  # Gate width ~120 pixels
-            gate_x_end = width // 2 + 60
-            gate_y_start = height // 2 - 40  # Gate height ~80 pixels
-            gate_y_end = height // 2 + 40
+            # Add gate-like features to the synthetic depth (scaled to new resolution)
+            gate_w = max(1, width // 4)   # ~60 px at 240 width
+            gate_h = max(1, height // 3)  # ~45 px at 135 height
+            gate_x_start = width // 2 - gate_w // 2
+            gate_x_end = width // 2 + gate_w // 2
+            gate_y_start = height // 2 - gate_h // 2
+            gate_y_end = height // 2 + gate_h // 2
             
             # Gate opening (closer depth)
             depth_img[gate_y_start:gate_y_end, gate_x_start:gate_x_end] = 0.8
             
             # Gate frame (farther depth)
-            frame_thickness = 10
+            frame_thickness = max(1, min(width, height) // 24)  # scale thickness
             # Top and bottom frame
             depth_img[gate_y_start-frame_thickness:gate_y_start, gate_x_start-frame_thickness:gate_x_end+frame_thickness] = 0.2
             depth_img[gate_y_end:gate_y_end+frame_thickness, gate_x_start-frame_thickness:gate_x_end+frame_thickness] = 0.2
@@ -4645,7 +4807,7 @@ class StaticCameraManager:
         except Exception as e:
             logger.debug(f"Synthetic camera data generation error: {e}")
             # Return zero arrays as fallback
-            return np.zeros((270, 480), dtype=np.float32), np.zeros((270, 480), dtype=np.uint8)
+            return np.zeros((135, 240), dtype=np.float32), np.zeros((135, 240), dtype=np.uint8)
 
 
 @torch.jit.script
