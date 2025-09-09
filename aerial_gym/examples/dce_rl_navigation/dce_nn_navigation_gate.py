@@ -14,6 +14,7 @@ from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import (
 from aerial_gym.examples.dce_rl_navigation.sf_inference_class_gate import (
     NN_Inference_Class_Gate,
 )
+from sample_factory.algo.utils.rl_utils import prepare_and_normalize_obs
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import (
     parse_aerialgym_cfg,
 )
@@ -273,8 +274,22 @@ def main():
                 save_gifs = False
         _gif_drone_noised_frames = []
         _gif_static_noised_frames = []
+        _gif_static_seg_frames = []
+        _gif_drone_recon_frames = []
+        _gif_static_recon_frames = []
         _gif_episode_counter_env0 = 0
-        _gif_every_n = 5  # save every N episodes for env 0
+        _gif_every_n = 1  # save every episode for env 0 (inference only)
+
+        # One-time per-frame latent logging for env 0
+        _print_env0_once = os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true'
+        # state: 0=armed (wait for nonzero), 1=active (printing this episode), 2=done (printed one episode)
+        _env0_log_state = 0 if _print_env0_once else 2
+        _env0_step_in_ep = 0
+
+        # One-time per-frame NORMALIZED latent logging for env 0
+        _print_env0_norm_once = os.environ.get('PRINT_ENV0_LATENTS_ONCE_NORM', 'false').lower() == 'true'
+        _env0_norm_log_state = 0 if _print_env0_norm_once else 2
+        _env0_norm_step_in_ep = 0
 
         def _to_pil_gray(image_data):
             try:
@@ -292,7 +307,7 @@ def main():
                 return None
 
         def _save_gif(frames, filename):
-            if not frames or len(frames) < 2:
+            if not frames or len(frames) < 1:
                 return
             try:
                 frames[0].save(
@@ -481,6 +496,73 @@ def main():
             vec = obs_dict["observations"] if isinstance(obs_dict, dict) and "observations" in obs_dict else obs_dict["obs"]
             # Apply ablation if configured
             vec = _apply_obs_ablation(vec)
+            # Optional: print env0 latent stats every frame for one episode only
+            if _env0_log_state != 2:
+                try:
+                    if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[0] > 0 and vec.shape[1] >= 150:
+                        ze0 = vec[0, 22:86]
+                        zs0 = vec[0, 86:150]
+                        ze_abs = float(torch.mean(torch.abs(ze0)).item())
+                        zs_abs = float(torch.mean(torch.abs(zs0)).item())
+                        if _env0_log_state == 0:
+                            # arm -> activate only when latents become nonzero to avoid printing a 0-only reset frame
+                            if (ze_abs > 1e-6) or (zs_abs > 1e-6):
+                                _env0_log_state = 1
+                                _env0_step_in_ep = 0
+                                print(f"[ENV0_LATENTS] step={_env0_step_in_ep} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                                # Also print normalized latents for the same step
+                                try:
+                                    norm = prepare_and_normalize_obs(nn_model.actor_critic, {nn_obs_key: vec})
+                                    pvec = norm.get(nn_obs_key, None)
+                                    if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
+                                        ze0n = pvec[0, 22:86]
+                                        zs0n = pvec[0, 86:150]
+                                        ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
+                                        zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
+                                        print(f"[ENV0_LATENTS_NORM] step={_env0_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
+                                except Exception:
+                                    pass
+                                _env0_step_in_ep += 1
+                        elif _env0_log_state == 1:
+                            print(f"[ENV0_LATENTS] step={_env0_step_in_ep} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                            # Also print normalized latents for the same step
+                            try:
+                                norm = prepare_and_normalize_obs(nn_model.actor_critic, {nn_obs_key: vec})
+                                pvec = norm.get(nn_obs_key, None)
+                                if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
+                                    ze0n = pvec[0, 22:86]
+                                    zs0n = pvec[0, 86:150]
+                                    ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
+                                    zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
+                                    print(f"[ENV0_LATENTS_NORM] step={_env0_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
+                            except Exception:
+                                pass
+                            _env0_step_in_ep += 1
+                except Exception:
+                    pass
+
+            # Optional: print env0 NORMALIZED latent stats every frame for one episode only
+            if _env0_norm_log_state != 2:
+                try:
+                    mo = {nn_obs_key: vec}
+                    norm = prepare_and_normalize_obs(nn_model.actor_critic, mo)
+                    pvec = norm.get(nn_obs_key, None)
+                    if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
+                        ze0n = pvec[0, 22:86]
+                        zs0n = pvec[0, 86:150]
+                        ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
+                        zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
+                        if _env0_norm_log_state == 0:
+                            if (ze_nabs > 1e-6) or (zs_nabs > 1e-6):
+                                _env0_norm_log_state = 1
+                                _env0_norm_step_in_ep = 0
+                                print(f"[ENV0_LATENTS_NORM] step={_env0_norm_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
+                                _env0_norm_step_in_ep += 1
+                        elif _env0_norm_log_state == 1:
+                            print(f"[ENV0_LATENTS_NORM] step={_env0_norm_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
+                            _env0_norm_step_in_ep += 1
+                except Exception:
+                    pass
             model_obs = {nn_obs_key: vec}
             actions = nn_model.get_action(model_obs)
             step_result = rl_task.step(actions)
@@ -530,6 +612,19 @@ def main():
                             pil = _to_pil_gray(dd[0, 0])
                             if pil is not None:
                                 _gif_drone_noised_frames.append(pil)
+                            # Reconstruct from latents if available on the task
+                            try:
+                                vae = getattr(rl_task, 'shared_vae_model', None)
+                                lat = getattr(rl_task, 'image_latents', None)
+                                if vae is not None and lat is not None and isinstance(lat, torch.Tensor) and lat.shape[0] > 0:
+                                    rec = vae.decode(lat[0:1])  # (1,1,H,W)
+                                    if isinstance(rec, torch.Tensor):
+                                        rec_img = rec[0, 0]
+                                        pil_rec = _to_pil_gray(rec_img)
+                                        if pil_rec is not None:
+                                            _gif_drone_recon_frames.append(pil_rec)
+                            except Exception:
+                                pass
                     if isinstance(d, dict) and 'static_depth_noised' in d:
                         sd = d['static_depth_noised']
                         # static_depth_noised may be tensor (H,W) or (N,H,W); pick env 0
@@ -542,6 +637,41 @@ def main():
                             pil = _to_pil_gray(sd)
                         if pil is not None:
                             _gif_static_noised_frames.append(pil)
+                        # Reconstruct from static latents if available
+                        try:
+                            vae = getattr(rl_task, 'shared_vae_model', None)
+                            slat = getattr(rl_task, 'static_image_latents', None)
+                            if vae is not None and slat is not None and isinstance(slat, torch.Tensor) and slat.shape[0] > 0:
+                                srec = vae.decode(slat[0:1])  # (1,1,H,W)
+                                if isinstance(srec, torch.Tensor):
+                                    srec_img = srec[0, 0]
+                                    pil_srec = _to_pil_gray(srec_img)
+                                    if pil_srec is not None:
+                                        _gif_static_recon_frames.append(pil_srec)
+                        except Exception:
+                            pass
+                    # Also collect static segmentation directly from StaticCameraManager (env 0)
+                    try:
+                        scm = getattr(rl_task, 'static_camera_manager', None)
+                        if scm is not None and hasattr(scm, 'capture_images'):
+                            _d, _seg = scm.capture_images(batched=False)
+                            if _seg is not None:
+                                # Normalize to [0,1] for visualization
+                                import numpy as _np
+                                seg = _seg
+                                if isinstance(seg, _np.ndarray) and seg.ndim > 2:
+                                    seg = _np.squeeze(seg)
+                                seg_min = _np.min(seg)
+                                seg_max = _np.max(seg)
+                                if (seg_max - seg_min) > 0:
+                                    seg_norm = (seg - seg_min) / float(seg_max - seg_min)
+                                else:
+                                    seg_norm = _np.zeros_like(seg, dtype=_np.float32)
+                                pil_seg = _to_pil_gray(seg_norm)
+                                if pil_seg is not None:
+                                    _gif_static_seg_frames.append(pil_seg)
+                    except Exception:
+                        pass
                 except Exception:
                     pass
 
@@ -659,6 +789,15 @@ def main():
                                 ids_cpu = ids.cpu()
                                 ret = _ep_return[ids_cpu].numpy()
                                 length = _ep_length[ids_cpu].numpy()
+                                # Stop env0 one-episode logging when env 0 resets
+                                if _env0_log_state == 1:
+                                    if 0 in ids_cpu.tolist():
+                                        _env0_log_state = 2
+                                        print(f"[ENV0_LATENTS] episode_end steps={_env0_step_in_ep}")
+                                if _env0_norm_log_state == 1:
+                                    if 0 in ids_cpu.tolist():
+                                        _env0_norm_log_state = 2
+                                        print(f"[ENV0_LATENTS_NORM] episode_end steps={_env0_norm_step_in_ep}")
                                 # Reset accumulators for those envs
                                 _ep_return[ids_cpu] = 0.0
                                 _ep_length[ids_cpu] = 0
@@ -744,6 +883,8 @@ def main():
                                 _success_ema = (1 - _ema_alpha) * _success_ema + _ema_alpha * payload.get('curriculum/success_rate', 0.0)
                             if _success_ema is not None:
                                 payload['success_rate_running'] = float(_success_ema)
+                                # Also expose as target success running mean for clearer naming in dashboards
+                                payload['target_success_running_mean'] = float(_success_ema)
                         except Exception:
                             pass
                         # Spatial quantiles
@@ -804,9 +945,15 @@ def main():
                             if (_gif_episode_counter_env0 % _gif_every_n) == 0:
                                 _save_gif(_gif_drone_noised_frames, f"episode_{_gif_episode_counter_env0:04d}_drone_depth_D455_NOISED.gif")
                                 _save_gif(_gif_static_noised_frames, f"episode_{_gif_episode_counter_env0:04d}_static_depth_D455_NOISED.gif")
+                                _save_gif(_gif_static_seg_frames, f"episode_{_gif_episode_counter_env0:04d}_static_seg.gif")
+                                _save_gif(_gif_drone_recon_frames, f"episode_{_gif_episode_counter_env0:04d}_drone_depth_VAE_RECON.gif")
+                                _save_gif(_gif_static_recon_frames, f"episode_{_gif_episode_counter_env0:04d}_static_depth_VAE_RECON.gif")
                             # Clear buffers for env 0 episode
                             _gif_drone_noised_frames = []
                             _gif_static_noised_frames = []
+                            _gif_static_seg_frames = []
+                            _gif_drone_recon_frames = []
+                            _gif_static_recon_frames = []
                     except Exception:
                         _episodes_done += 1
             except Exception:

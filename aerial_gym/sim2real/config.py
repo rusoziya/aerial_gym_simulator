@@ -23,9 +23,10 @@ TOTAL_IP_DIMS = (
 
 DIST_DIVIDER = 1.0
 INCLINATION_MULTIPLER = math.pi / 6.0
+# YAW_RATE_MULTIPLIER = 1.5  # match sim limit for 1:1 scaling to ±1.5 rad/s
+# MAX_YAW_RATE = 1.5
 YAW_RATE_MULTIPLIER = 1.2 * math.pi / 3.0
 MAX_YAW_RATE = math.pi / 3.0
-
 
 YAW_CLIP_VALUE = math.pi / 3.0
 

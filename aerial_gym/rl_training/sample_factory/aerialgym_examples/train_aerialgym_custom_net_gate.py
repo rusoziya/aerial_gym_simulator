@@ -528,16 +528,16 @@ class AerialGymVecEnv(gym.Env):
             #     )
                 print(f"[GIF] Saved static depth: {gif_path}")
             
-            # if len(self.static_seg_frames[env_id]) > 0:
-            #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_seg{level_suffix}.gif")
-            #     self.static_seg_frames[env_id][0].save(
-            #         gif_path,
-            #         save_all=True,
-            #         append_images=self.static_seg_frames[env_id][1:],
-            #         duration=100,
-            #         loop=0
-            #     )
-            #     print(f"[GIF] Saved static segmentation: {gif_path}")
+            if len(self.static_seg_frames[env_id]) > 0:
+                gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_seg{level_suffix}.gif")
+                self.static_seg_frames[env_id][0].save(
+                    gif_path,
+                    save_all=True,
+                    append_images=self.static_seg_frames[env_id][1:],
+                    duration=100,
+                    loop=0
+                )
+                print(f"[GIF] Saved static segmentation: {gif_path}")
             
             # if len(self.merged_frames[env_id]) > 0:
             #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_CLEAN{level_suffix}.gif")
@@ -664,6 +664,48 @@ class AerialGymVecEnv(gym.Env):
         transformed_obs = {"obs": obs["observations"]}
         # Apply return-drop ablation if requested
         transformed_obs["obs"] = self._apply_obs_ablation(transformed_obs["obs"]) 
+        # Optional: print the full obs vector for env0 each step for one episode
+        try:
+            if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true':
+                if not hasattr(self, '_train_env0_obs_state'):
+                    self._train_env0_obs_state = 0  # 0=armed, 1=active, 2=done
+                    self._train_env0_obs_step = 0
+                vec = transformed_obs.get('obs', None)
+                if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[0] > 0:
+                    obs0 = vec[0]
+                    # Activate on first nonzero norm
+                    if self._train_env0_obs_state == 0:
+                        if float(torch.norm(obs0).item()) > 0.0:
+                            self._train_env0_obs_state = 1
+                            self._train_env0_obs_step = 0
+                            print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
+                            self._train_env0_obs_step += 1
+                    elif self._train_env0_obs_state == 1:
+                        print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
+                        self._train_env0_obs_step += 1
+        except Exception:
+            pass
+        # Optional: one-episode env0 latent per-frame logging during training
+        try:
+            if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true':
+                if not hasattr(self, '_train_env0_log_state'):
+                    self._train_env0_log_state = 0  # 0=armed, 1=active, 2=done
+                    self._train_env0_step = 0
+                vec = transformed_obs.get('obs', None)
+                if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[0] > 0 and vec.shape[1] >= 150:
+                    ze0 = vec[0, 22:86]; zs0 = vec[0, 86:150]
+                    ze_abs = float(torch.mean(torch.abs(ze0)).item()); zs_abs = float(torch.mean(torch.abs(zs0)).item())
+                    if self._train_env0_log_state == 0:
+                        if (ze_abs > 1e-6) or (zs_abs > 1e-6):
+                            self._train_env0_log_state = 1
+                            self._train_env0_step = 0
+                            print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                            self._train_env0_step += 1
+                    elif self._train_env0_log_state == 1:
+                        print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                        self._train_env0_step += 1
+        except Exception:
+            pass
         
         # Collect first frame if GIF saving is enabled
         if self.save_gifs:
@@ -697,6 +739,20 @@ class AerialGymVecEnv(gym.Env):
                     self._clear_frames(env_id=0)
                     self.episode_count += 1
                     return transformed_obs, rew, terminated, truncated, infos
+                # End training latent logging when env0 resets once
+                try:
+                    if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_log_state', 2) == 1:
+                        reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+                        if len(reset_ids) > 0 and 0 in reset_ids.tolist():
+                            self._train_env0_log_state = 2
+                            print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
+                    if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_obs_state', 2) == 1:
+                        reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+                        if len(reset_ids) > 0 and 0 in reset_ids.tolist():
+                            self._train_env0_obs_state = 2
+                            print(f"[TRAIN_ENV0_OBS] episode_end steps={self._train_env0_obs_step}")
+                except Exception:
+                    pass
                 # Save every 5 episodes for env 0
                 if self.episode_count % 5 == 0:
                     if terminated[0]:
@@ -1248,6 +1304,7 @@ def add_extra_params_func(parser):
     parser.add_argument("--disable_static_camera_frame_dropout", type=lambda x: x.lower() == 'true', default=None, help="Disable frame dropout for STATIC camera only (overrides global when set)")
     # Static camera yaw sweep (constant oscillation)
     parser.add_argument("--enable_static_camera_yaw_sweep", type=lambda x: x.lower() == 'true', default=False, help="Enable constant yaw oscillation for static camera (±30°)")
+    parser.add_argument("--enable_static_camera_locked", type=lambda x: x.lower() == 'true', default=False, help="Lock static camera position and rotate to center the drone")
     parser.add_argument("--static_camera_yaw_sweep_speed_deg", type=float, default=10.0, help="Yaw sweep speed in deg/s (default 10)")
     # Static camera base position overrides (Y back distance, Z height)
     parser.add_argument("--static_camera_base_y", type=float, default=None, help="Override static camera base Y (meters; negative is behind gate). Default -3.0 if not set")
@@ -1280,6 +1337,8 @@ def add_extra_params_func(parser):
         help="Force a specific curriculum level for the entire run (disables auto curriculum progression). Use 'none' to disable forcing.")
     # Optional maximum curriculum level cap (progression will not exceed this level). Does not affect scaling.
     parser.add_argument("--max_curriculum_level", type=int, default=None, help="Maximum curriculum level cap for progression (e.g., 13). Scaling at each level remains unchanged.")
+    # NEW: Minimum curriculum level to START training from (training only; inference unaffected)
+    parser.add_argument("--min_curriculum_level", type=int, default=None, help="Minimum curriculum level to start from during TRAINING (e.g., 13). Auto-progression proceeds up to max_curriculum_level or config max. Inference ignores this flag.")
     
     # Fusion mode flags
     parser.add_argument("--fusion", type=str, default="gated", choices=["concat", "gated"], help="Fusion strategy: concat (early concat) or gated (dual gated late fusion)")
@@ -1774,6 +1833,7 @@ class DualFusionEncoder(Encoder):
                 except Exception:
                     continue
                 if rhs in ('zero', 'zerograd'):
+                    # Exact-match ablations
                     if a == self.slice_drone_vae[0] and b == self.slice_drone_vae[1]:
                         self._ablate_drone_zero = True
                     if a == self.slice_static_vae[0] and b == self.slice_static_vae[1]:
@@ -1802,8 +1862,10 @@ class DualFusionEncoder(Encoder):
         # Debug counters/last stats for fusion monitoring
         self._fwd_count = 0
         self._last_gate_stats = None
+        # Encoder tap counter for periodic debug printing
+        self._tap_count = 0
 
-        # One-time info
+        # One-time info (print only in evaluation/inference)
         try:
             print(f"[FUSION] Using fusion mode: {self.fusion_mode} (gate_per_feature={int(self.gate_per_feature)})")
         except Exception:
@@ -1826,6 +1888,57 @@ class DualFusionEncoder(Encoder):
         x = obs_dict['obs']
         z_e, z_s = self._slice_latents(x)
         rest = self._remove_latents(x)
+        # Encoder tap: print what the encoder actually receives (before any LayerNorm/projections)
+        try:
+            import os
+            tap_on = os.environ.get('ENC_TAP_DEBUG', os.environ.get('ABLATE_DEBUG', 'false')).lower() == 'true'
+        except Exception:
+            tap_on = False
+        if tap_on:
+            self._tap_count += 1
+            if (self._tap_count % 50) == 0:
+                try:
+                    is_eval = False
+                    try:
+                        is_eval = bool(getattr(self, 'cfg', None) is None or getattr(self.cfg, 'evaluation', True))
+                    except Exception:
+                        is_eval = True
+                    if is_eval:
+                        z_e_abs = float(z_e.abs().mean().item()) if hasattr(z_e, 'abs') else float('nan')
+                        z_s_abs = float(z_s.abs().mean().item()) if hasattr(z_s, 'abs') else float('nan')
+                        print(f"[ENC_TAP] preLN abs_mean: drone(22:86)={z_e_abs:.6e} static(86:150)={z_s_abs:.6e}")
+                except Exception:
+                    pass
+        # Optional: training-time normalized env0 latents per-frame (one episode)
+        try:
+            import os as _os
+            if _os.environ.get('TRAIN_ENV0_LATENTS_NORM', 'false').lower() == 'true':
+                # Only print from the first env
+                ze0 = z_e[0]
+                zs0 = z_s[0]
+                # After projection+LayerNorm to match branch inputs, but before gating
+                e0 = self.ego_proj(ze0.unsqueeze(0))[0]
+                s0 = self.static_proj(zs0.unsqueeze(0))[0]
+                e_abs = float(e0.abs().mean().item())
+                s_abs = float(s0.abs().mean().item())
+                # Also compute raw (pre-normalization) abs-means for comparison
+                e_raw_abs = float(ze0.abs().mean().item())
+                s_raw_abs = float(zs0.abs().mean().item())
+                if not hasattr(self, '_train_env0_norm_state'):
+                    self._train_env0_norm_state = 0
+                    self._train_env0_norm_step = 0
+                if self._train_env0_norm_state == 0:
+                    # Arm -> activate on first nonzero
+                    if (e_abs > 1e-6) or (s_abs > 1e-6):
+                        self._train_env0_norm_state = 1
+                        self._train_env0_norm_step = 0
+                        print(f"[TRAIN_ENV0_LATENTS_NORM] step={self._train_env0_norm_step} abs_mean: drone_norm={e_abs:.6f} static_norm={s_abs:.6f} | drone_raw={e_raw_abs:.6f} static_raw={s_raw_abs:.6f}")
+                        self._train_env0_norm_step += 1
+                elif self._train_env0_norm_state == 1:
+                    print(f"[TRAIN_ENV0_LATENTS_NORM] step={self._train_env0_norm_step} abs_mean: drone_norm={e_abs:.6f} static_norm={s_abs:.6f} | drone_raw={e_raw_abs:.6f} static_raw={s_raw_abs:.6f}")
+                    self._train_env0_norm_step += 1
+        except Exception:
+            pass
         if self.fusion_mode == 'gated':
             # If a full-slice zero ablation was requested, detach those inputs so grads cannot route via gate
             if self._ablate_drone_zero:
@@ -1833,13 +1946,16 @@ class DualFusionEncoder(Encoder):
             if self._ablate_static_zero:
                 z_s = (z_s * 0.0).detach()
 
-            # Short-circuit: when one branch is ablated, ignore it entirely in forward
+            # NOTE: Do not auto-ablated based on runtime magnitudes in inference.
+            # Only honor explicit ABLATE_OBS_RANGES to avoid false positives.
+
+            # Short-circuit: when one branch is ablated, ignore it entirely in forward (training behavior retained)
             if self._ablate_static_zero and not self._ablate_drone_zero:
                 # Use only ego branch
                 e = self.ego_proj(z_e)
                 z = e
                 fused = torch.cat([rest, z], dim=-1)
-                # Periodic debug for ablated-static case
+                # Periodic debug for ablated-static case (evaluation only)
                 self._fwd_count += 1
                 if (self._fwd_count % 200) == 0:
                     try:
@@ -1875,7 +1991,7 @@ class DualFusionEncoder(Encoder):
                 s = self.static_proj(z_s)
                 z = s
                 fused = torch.cat([rest, z], dim=-1)
-                # Periodic debug for ablated-drone case
+                # Periodic debug for ablated-drone case (evaluation only)
                 self._fwd_count += 1
                 if (self._fwd_count % 200) == 0:
                     try:
@@ -1910,7 +2026,7 @@ class DualFusionEncoder(Encoder):
                 # Both ablated: feed zeros latent
                 z = torch.zeros_like(z_e)
                 fused = torch.cat([rest, z], dim=-1)
-                # Periodic debug for both ablated
+                # Periodic debug for both ablated (evaluation only)
                 self._fwd_count += 1
                 if (self._fwd_count % 200) == 0:
                     try:
@@ -2179,6 +2295,9 @@ def parse_aerialgym_cfg(evaluation=False):
             print(f"[CFG] Static camera yaw sweep enabled: {final_cfg.enable_static_camera_yaw_sweep}")
         if hasattr(final_cfg, 'static_camera_yaw_sweep_speed_deg'):
             os.environ['SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG'] = str(float(final_cfg.static_camera_yaw_sweep_speed_deg))
+        if hasattr(final_cfg, 'enable_static_camera_locked'):
+            os.environ['SF_STATIC_CAMERA_LOCKED_FOLLOW'] = 'true' if final_cfg.enable_static_camera_locked else 'false'
+            print(f"[CFG] Static camera locked-follow enabled: {final_cfg.enable_static_camera_locked}")
             print(f"[CFG] Static camera yaw sweep speed: {final_cfg.static_camera_yaw_sweep_speed_deg} deg/s")
         # Static camera base position overrides to env for workers
         if hasattr(final_cfg, 'static_camera_base_y') and final_cfg.static_camera_base_y is not None:
@@ -2224,6 +2343,23 @@ def parse_aerialgym_cfg(evaluation=False):
                     print("[CFG] force curriculum level: none (disabled)")
             except Exception:
                 pass
+        # Apply min_curriculum_level ONLY during training; do not affect evaluation/inference
+        try:
+            if not getattr(final_cfg, 'evaluation', False):
+                min_lvl_override = getattr(final_cfg, 'min_curriculum_level', None)
+                if min_lvl_override is not None:
+                    try:
+                        min_lvl = int(min_lvl_override)
+                        # Respect any explicit max cap if provided
+                        max_cap = getattr(final_cfg, 'max_curriculum_level', None)
+                        if max_cap is not None:
+                            os.environ['SF_MAX_CURRICULUM_LEVEL'] = str(int(max_cap))
+                        os.environ['SF_MIN_CURRICULUM_LEVEL'] = str(min_lvl)
+                        print(f"[CFG] Curriculum start level (training): min_level={min_lvl}, max_level={max_cap if max_cap is not None else 'config default'}")
+                    except Exception:
+                        pass
+        except Exception:
+            pass
     except Exception:
         pass
     return final_cfg

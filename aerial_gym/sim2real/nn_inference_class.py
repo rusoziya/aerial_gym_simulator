@@ -80,7 +80,31 @@ class Sim2RealInferenceClass(nn.Module):
     def get_action(self, obs, get_np=False, get_robot_zero=False):
         with torch.no_grad():
             # put obs to device
-            processed_obs = prepare_and_normalize_obs(self.actor_critic, obs)
+            import os
+            disable_norm = os.environ.get("DISABLE_NORM", "false").lower() == "true"
+            norm_tap = os.environ.get("NORM_TAP_DEBUG", "false").lower() == "true"
+            if norm_tap:
+                try:
+                    vec = obs.get('observations', None)
+                    if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
+                        z_e = vec[:, 22:86]; z_s = vec[:, 86:150]
+                        print(f"[NORM_TAP] pre abs_mean: drone(22:86)={float(z_e.abs().mean().item()):.6e} static(86:150)={float(z_s.abs().mean().item()):.6e}")
+                except Exception:
+                    pass
+            if disable_norm:
+                processed_obs = obs
+                if norm_tap:
+                    print("[NORM_TAP] normalization disabled: post == pre (bypassed)")
+            else:
+                processed_obs = prepare_and_normalize_obs(self.actor_critic, obs)
+                if norm_tap:
+                    try:
+                        pvec = processed_obs.get('observations', None)
+                        if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[1] >= 150:
+                            z_e2 = pvec[:, 22:86]; z_s2 = pvec[:, 86:150]
+                            print(f"[NORM_TAP] post abs_mean: drone(22:86)={float(z_e2.abs().mean().item()):.6e} static(86:150)={float(z_s2.abs().mean().item()):.6e}")
+                    except Exception:
+                        pass
             policy_outputs = self.actor_critic(processed_obs, self.rnn_states)
             # sample actions from the distribution by default
             actions = policy_outputs["actions"]

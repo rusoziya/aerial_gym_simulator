@@ -45,6 +45,32 @@ class NavigationTaskGate(BaseTask):
         super().__init__(task_config)
         self.device = self.task_config.device
         
+        # If static latents (86:150) are fully ablated, disable static FOV visibility reward
+        try:
+            import os as _os
+            spec_str = _os.environ.get('ABLATE_OBS_RANGES', '').strip()
+            static_ablated = False
+            if spec_str:
+                for spec in [s.strip() for s in spec_str.split(',') if s.strip() and '=' in s]:
+                    lhs, rhs = spec.split('=', 1)
+                    lhs = lhs.strip(); rhs = rhs.strip()
+                    if ':' in lhs:
+                        try:
+                            a, b = lhs.split(':', 1)
+                            a = int(a); b = int(b)
+                        except Exception:
+                            continue
+                        if rhs in ('zero', 'zerograd') and a <= 86 and b >= 150:
+                            static_ablated = True
+                            break
+            if static_ablated:
+                try:
+                    self.task_config.reward_parameters["static_fov_visibility_reward_magnitude"] = 0.0
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
         # set the each of the elements of reward parameter to a torch tensor
         for key in self.task_config.reward_parameters.keys():
             self.task_config.reward_parameters[key] = torch.tensor(
@@ -260,6 +286,12 @@ class NavigationTaskGate(BaseTask):
                     yaw_sweep_speed_deg = 10.0
                 gtd['static_camera/yaw_sweep_enabled'] = 'true' if yaw_sweep_enabled else 'false'
                 gtd['static_camera/yaw_sweep_speed_deg'] = float(yaw_sweep_speed_deg)
+                # Locked-follow mode: position fixed, orientation always points at the drone
+                try:
+                    locked_follow = str(os.getenv('SF_STATIC_CAMERA_LOCKED_FOLLOW', 'false')).lower() in ('1','true','yes','y')
+                except Exception:
+                    locked_follow = False
+                gtd['static_camera/locked_follow'] = locked_follow
                 
                 # Dynamic camera following enable flag (overrides config setting)
                 try:
@@ -2081,12 +2113,21 @@ class NavigationTaskGate(BaseTask):
             gtd = self.sim_env.global_tensor_dict
             sweep_enabled_flag = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
             # Do not run sweep updates when dynamic following is active
-            if sweep_enabled_flag and not (dynamic_enabled and not dynamic_disabled):
+            locked_follow = bool(gtd.get('static_camera/locked_follow', False))
+            if locked_follow and not (dynamic_enabled and not dynamic_disabled):
+                # Update orientation-only to keep the drone centered
+                self.static_camera_manager.update_locked_follow(self.obs_dict["robot_position"]) 
+            elif sweep_enabled_flag and not (dynamic_enabled and not dynamic_disabled):
                 env_ids_all = torch.arange(self.sim_env.num_envs, device=self.device)
                 self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids_all)
-                # Temporary debug for yaw sweep status
-                if (int(gtd.get('sim_steps', torch.tensor([0], device=self.device))[0].item()) % 60) == 0:
-                    logger.warning("[YawSweep] Per-step camera orientation update executed for all envs")
+                # Temporary debug for yaw sweep status (print ~once every 5 seconds at 60Hz)
+                try:
+                    sim_steps = int(gtd.get('sim_steps', torch.tensor([0], device=self.device))[0].item())
+                except Exception:
+                    sim_steps = 0
+                # Reduce spam: every 300 steps instead of every 60
+                if (sim_steps % 300) == 0:
+                    logger.warning("[YawSweep] Camera orientation update running (sweeping/locked-follow active)")
         except Exception as e:
             logger.debug(f"[YawSweep] Per-step update skipped due to: {e}")
         
@@ -2330,6 +2371,42 @@ class NavigationTaskGate(BaseTask):
                 euler_angles = torch.atan2(torch.sin(euler_angles), torch.cos(euler_angles))
         self.task_obs["observations"][:, 9:12] = euler_angles  # MODIFIED: Include full yaw instead of setting to 0.0
 
+        # ===== DRONE STATE (VELOCITIES) AND ACTIONS =====
+        # [12:15] = Robot body linear velocity (3D)
+        try:
+            self.task_obs["observations"][:, 12:15] = self.obs_dict["robot_body_linvel"]
+        except Exception:
+            pass
+
+        # [15:18] = Robot body angular velocity (3D)
+        try:
+            self.task_obs["observations"][:, 15:18] = self.obs_dict["robot_body_angvel"]
+        except Exception:
+            pass
+
+        # [18:22] = Last applied robot actions (4D for gate navigation)
+        try:
+            self.task_obs["observations"][:, 18:22] = self.obs_dict["robot_actions"]
+        except Exception:
+            pass
+
+        # ===== CAMERA LATENTS (DRONE AND STATIC, 64D EACH) =====
+        # [22:86] = Drone camera VAE latents (64D)
+        try:
+            if hasattr(self, "image_latents") and isinstance(self.image_latents, torch.Tensor):
+                if self.image_latents.shape[1] >= 64:
+                    self.task_obs["observations"][:, 22:86] = self.image_latents[:, :64]
+        except Exception:
+            pass
+
+        # [86:150] = Static camera VAE latents (64D)
+        try:
+            if hasattr(self, "static_image_latents") and isinstance(self.static_image_latents, torch.Tensor):
+                if self.static_image_latents.shape[1] >= 64:
+                    self.task_obs["observations"][:, 86:150] = self.static_image_latents[:, :64]
+        except Exception:
+            pass
+
         # (Removed W&B latent stats logging per request)
 
         # Final observation NaN/Inf guard: sanitize outgoing observations tensor
@@ -2516,6 +2593,13 @@ class NavigationTaskGate(BaseTask):
         try:
             try:
                 fov_mag = float(self.task_config.reward_parameters.get("static_fov_visibility_reward_magnitude", 0.0))
+            except Exception:
+                fov_mag = 0.0
+            # If env var SF_ENABLE_STATIC_FOV_REWARD is not explicitly true, force-disable
+            try:
+                _env_flag = os.environ.get('SF_ENABLE_STATIC_FOV_REWARD', '').strip().lower()
+                if _env_flag not in ('1', 'true', 'yes', 'y'):
+                    fov_mag = 0.0
             except Exception:
                 fov_mag = 0.0
             try:
@@ -3152,6 +3236,26 @@ class NavigationTaskGate(BaseTask):
             # Track cooldown state
             if not hasattr(self, '_curriculum_cooldown'): self._curriculum_cooldown = 0
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Cooldown windows remaining: {self._curriculum_cooldown}")
+            # Maintain per-window success history (trim to last 3 windows)
+            try:
+                sr_float = float(success_rate.item()) if hasattr(success_rate, 'item') else float(success_rate)
+            except Exception:
+                sr_float = float(success_rate)
+            if not hasattr(self, '_success_window_history'):
+                self._success_window_history = []
+            self._success_window_history.append(sr_float)
+            if len(self._success_window_history) > 3:
+                self._success_window_history.pop(0)
+            # Compute current-window success and 3-window average (including current)
+            s_t = sr_float
+            if len(self._success_window_history) >= 3:
+                avg3 = sum(self._success_window_history[-3:]) / 3.0
+            else:
+                # Use available windows until 3 are accumulated
+                denom = max(1, len(self._success_window_history))
+                avg3 = sum(self._success_window_history) / denom
+            self.infos["curriculum/success_window_s_t"] = torch.tensor(s_t, dtype=torch.float32)
+            self.infos["curriculum/success_avg3"] = torch.tensor(avg3, dtype=torch.float32)
 
             action_msg = "LEVEL UNCHANGED"
             # Respect cooldown
@@ -3159,11 +3263,17 @@ class NavigationTaskGate(BaseTask):
                 self._curriculum_cooldown -= 1
                 action_msg = f"LEVEL HOLD (cooldown {self._curriculum_cooldown} left)"
             else:
-                if success_rate > self.task_config.curriculum.success_rate_for_increase:
+                # Check only at cooldown boundary
+                inc_threshold = float(self.task_config.curriculum.success_rate_for_increase)
+                avg3_threshold = float(getattr(self.task_config.curriculum, 'avg3_success_for_increase', 0.50))
+                if (len(self._success_window_history) >= 3) and (s_t >= inc_threshold) and (avg3 >= avg3_threshold):
                     self.curriculum_level += self.task_config.curriculum.increase_step
                     self.max_curriculum_level_reached = max(self.max_curriculum_level_reached, self.curriculum_level)
                     self._curriculum_cooldown = getattr(self.task_config.curriculum, 'cooldown_windows', 0)
-                    action_msg = f"LEVEL INCREASED: {old_level} -> {self.curriculum_level} (SR {success_rate:.3f} > threshold)"
+                    action_msg = (
+                        f"LEVEL INCREASED: {old_level} -> {self.curriculum_level} "
+                        f"(s_t {s_t:.3f} >= {inc_threshold:.2f} and avg3 {avg3:.3f} >= {avg3_threshold:.2f})"
+                    )
                 elif success_rate < self.task_config.curriculum.success_rate_for_decrease and self.curriculum_level > self.task_config.curriculum.min_level:
                     self.curriculum_level -= self.task_config.curriculum.decrease_step
                     self._curriculum_cooldown = getattr(self.task_config.curriculum, 'cooldown_windows', 0)
@@ -3178,6 +3288,16 @@ class NavigationTaskGate(BaseTask):
                     if self.curriculum_level > cap:
                         self.curriculum_level = cap
                         action_msg = f"LEVEL CAPPED at {cap} (progression halted above cap)"
+            except Exception:
+                pass
+            # Apply optional minimum start level (training only; no effect in inference)
+            try:
+                min_env = os.environ.get('SF_MIN_CURRICULUM_LEVEL', None)
+                if min_env is not None:
+                    min_cap = int(min_env)
+                    if self.curriculum_level < min_cap:
+                        self.curriculum_level = min_cap
+                        action_msg = f"LEVEL RAISED to start min {min_cap}"
             except Exception:
                 pass
             # Honor forced curriculum level: override and freeze progression
@@ -4310,46 +4430,18 @@ class StaticCameraManager:
 
                 if sweep_enabled:
                     # Compute time-based angle: A(level)*sin(omega*t + phase).
-                    # Per-level amplitude A is chosen so that the drone at worst-case X is inside
-                    # the horizontal FOV at some point during the sweep.
-                    # Formula: A = max(0, atan2(x_half, |y_center - base_y|) [deg] - half_fov) + margin
-                    # where half_fov = 87/2 deg for D455, margin = 2.5 deg.
-                    try:
-                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
-                        # Extend sweep amplitude during evaluation stretch (levels 23..eval_end)
-                        try:
-                            parent = getattr(self, 'env_manager', None)
-                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                        except Exception:
-                            gtd_local = {}
-                        try:
-                            _eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        except Exception:
-                            _eval_en = False
-                        if not _eval_en:
-                            # Fallback to env var if global dict not yet populated
-                            try:
-                                import os as _os
-                                _eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                            except Exception:
-                                _eval_en = False
-                        try:
-                            _eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc.curriculum, 'eval_stretch_end_level', 23)))
-                        except Exception:
-                            _eval_end = int(getattr(_tc.curriculum, 'eval_stretch_end_level', 23))
-
-                        eff_level = min(curriculum_level, _eval_end) if _eval_en else curriculum_level
-                        sr = _tc.curriculum.get_spawn_ranges(eff_level)
-                        x_half = float(sr.get('x_half_span_m', 0.5))
-                        y_center = float(sr.get('y_center_m', -1.5))
-                        base_y_eval = float(base_y)
-                        dy = abs(y_center - base_y_eval)
-                        half_fov = 87.0 * 0.5
-                        margin = 2.5
-                        alpha = math.degrees(math.atan2(x_half, max(1e-6, dy)))
-                        A = max(0.0, alpha - half_fov) + margin
-                    except Exception:
-                        A = FIXED_SWEEP_MAX_DEG
+                    # Linear amplitude schedule: 2° at level 3 → 19° at level 23; clamp outside.
+                    start_level = 3
+                    end_level = 23
+                    A_min = 2.0
+                    A_max = 19.0
+                    if curriculum_level <= start_level:
+                        A = A_min
+                    elif curriculum_level >= end_level:
+                        A = A_max
+                    else:
+                        frac = float(curriculum_level - start_level) / float(end_level - start_level)
+                        A = A_min + frac * (A_max - A_min)
                     dt = 1.0/60.0
                     # Keep peak angular speed similar to baseline A0=50° when changing amplitude.
                     # For theta(t)=A*sin(ωt), peak speed = A*ω. Compensate ω by (A0/A).
@@ -4560,103 +4652,108 @@ class StaticCameraManager:
             return
     
     def update_dynamic_camera_following(self, robot_positions, gate_positions, gate_center_heights):
-        """
-        Update camera positions to follow drones from behind while facing the gate.
-        Called every frame when dynamic following is enabled.
-        
+        """Reimplemented dynamic follow: keep camera 1 m behind the drone (−Y),
+        same height, and primarily look at the drone. If the gate is far outside
+        the view, minimally steer the look target toward the gate while keeping
+        the drone in frame.
+
         Args:
-            robot_positions: Tensor of shape (num_envs, 3) with drone positions
-            gate_positions: Tensor of shape (num_envs, 3) with adaptive gate positions  
-            gate_center_heights: Tensor of shape (num_envs,) with adaptive gate center heights
+            robot_positions: (N,3) drone world positions
+            gate_positions:  (N,3) gate world positions
+            gate_center_heights: (N,) gate center Z per env
         """
         if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            # In synthetic mode, dynamic following is handled in observation processing
-            if getattr(self.task_config.curriculum, 'log_camera_following', False):
-                logger.debug("Synthetic camera mode - dynamic following handled in observation processing")
             return
-            
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
-        
         try:
-            # Get dynamic camera follow offset from config
-            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
-            x_offset, y_offset, z_offset = task_config.curriculum.get_dynamic_camera_follow_offset()
-            
-            # Update each camera to follow its respective drone
+            from isaacgym import gymapi
+            import math
+            # Fixed offsets in world frame
+            x_off, y_off, z_off = 0.0, -1.0, 0.0
+            half_fov = 87.0 * 0.5
+            margin = 5.0
             for env_idx in range(min(len(self.env_handles), len(self.camera_handles), robot_positions.shape[0])):
-                if env_idx >= len(self.env_handles) or env_idx >= len(self.camera_handles):
-                    continue
-                
-                # Calculate camera position: drone position + offset
-                drone_pos = robot_positions[env_idx]
-                camera_x = float(drone_pos[0].item()) + x_offset
-                camera_y = float(drone_pos[1].item()) + y_offset
-                camera_z = float(drone_pos[2].item()) + z_offset
-                
-                # Set camera position
-                camera_pos = gymapi.Vec3(camera_x, camera_y, camera_z)
-                
-                # Compute a look direction that keeps the DRONE centered (primary), while
-                # minimally steering toward the gate center if the gate is outside the FOV (secondary).
-                gate_pos = gate_positions[env_idx]
-                gate_center_height = gate_center_heights[env_idx]
-                
-                # Vectors from camera to drone and gate
-                dx_d = float(drone_pos[0].item()) - camera_x
-                dy_d = float(drone_pos[1].item()) - camera_y
-                dz_d = float(drone_pos[2].item()) - camera_z
-                dx_g = float(gate_pos[0].item()) - camera_x
-                dy_g = float(gate_pos[1].item()) - camera_y
-                dz_g = float(gate_center_height.item()) - camera_z
-                
-                # Yaw angles (0° points to +Y)
-                yaw_drone = math.degrees(math.atan2(dx_d, dy_d))
-                yaw_gate = math.degrees(math.atan2(dx_g, dy_g))
-                # Normalize delta to [-180, 180]
-                delta = yaw_gate - yaw_drone
+                drone = robot_positions[env_idx]
+                cam_x = float(drone[0].item()) + x_off
+                cam_y = float(drone[1].item()) + y_off
+                cam_z = float(drone[2].item()) + z_off
+                camera_pos = gymapi.Vec3(cam_x, cam_y, cam_z)
+
+                # Default look target: the drone itself
+                target_drone = gymapi.Vec3(float(drone[0].item()), float(drone[1].item()), float(drone[2].item()))
+
+                # Check gate visibility and minimally bias toward it if necessary
+                gate = gate_positions[env_idx]
+                gate_cz = float(gate_center_heights[env_idx].item())
+                # yaw to drone and gate (0° toward +Y)
+                yaw_d = math.degrees(math.atan2(target_drone.x - cam_x, target_drone.y - cam_y))
+                yaw_g = math.degrees(math.atan2(float(gate[0].item()) - cam_x, float(gate[1].item()) - cam_y))
+                delta = yaw_g - yaw_d
                 while delta > 180.0:
                     delta -= 360.0
                 while delta < -180.0:
                     delta += 360.0
-                
-                # Horizontal FOV limits with margin
-                horizontal_fov = 87.0
-                half_fov = horizontal_fov * 0.5
-                margin = 5.0
-                yaw_final = yaw_drone
-                # If gate is outside FOV from drone-centered view, rotate just enough to include it
+                # If gate is outside FOV when centered on drone, gently blend target
                 if abs(delta) > (half_fov - margin):
-                    adjust = math.copysign(abs(delta) - (half_fov - margin), delta)
-                    yaw_final = yaw_drone + adjust
-                
-                # Choose a reasonable target distance (use XY dist to gate so gate is likely visible)
-                target_dist_xy = max(1.0, math.hypot(dx_g, dy_g))
-                # Blend vertical target slightly toward gate center (drone is primary)
-                z_weight = 0.3
-                target_z = (1.0 - z_weight) * (camera_z + dz_d) + z_weight * (camera_z + dz_g)
-                
-                # Build target from yaw_final and chosen distance; keep Z blended
-                yaw_rad = yaw_final * (math.pi / 180.0)
-                target_x = camera_x + target_dist_xy * math.sin(yaw_rad)
-                target_y = camera_y + target_dist_xy * math.cos(yaw_rad)
-                camera_target = gymapi.Vec3(target_x, target_y, float(target_z))
-                
-                # Update camera location
+                    w = 0.2  # small bias toward gate
+                    tgx = (1.0 - w) * target_drone.x + w * float(gate[0].item())
+                    tgy = (1.0 - w) * target_drone.y + w * float(gate[1].item())
+                    tgz = (1.0 - w) * target_drone.z + w * gate_cz
+                    camera_target = gymapi.Vec3(tgx, tgy, tgz)
+                else:
+                    camera_target = target_drone
+
                 cam_handle = self.camera_handles[env_idx]
                 env_handle = self.env_handles[env_idx]
                 self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-                
-                # Optional debug logging
-                if getattr(self.task_config.curriculum, 'log_camera_following', False) and env_idx == 0:
-                    logger.debug(
-                        f"Dynamic camera env{env_idx}: drone=({drone_pos[0]:.2f},{drone_pos[1]:.2f},{drone_pos[2]:.2f}) "
-                        f"camera=({camera_x:.2f},{camera_y:.2f},{camera_z:.2f}) yaw_drone={yaw_drone:.1f}° yaw_gate={yaw_gate:.1f}° "
-                        f"-> yaw_final={yaw_final:.1f}° target=({target_x:.2f},{target_y:.2f},{target_z:.2f})"
-                    )
-            
         except Exception as e:
             logger.warning(f"Failed to update dynamic camera following: {e}")
+            return
+
+    def update_locked_follow(self, robot_positions):
+        """Keep camera position fixed; rotate to always center the drone.
+
+        Args:
+            robot_positions: Tensor (num_envs, 3) with drone positions in world coords.
+        """
+        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
+            return
+        if not self.camera_setup_success or len(self.camera_handles) == 0:
+            return
+        try:
+            # Base camera position for all envs
+            from isaacgym import gymapi
+            base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))
+            base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', '1.5')
+            if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':
+                # Try to read per-env adaptive Z from global tensors; fallback to 1.5
+                try:
+                    gtd = self.env_manager.IGE_env.global_tensor_dict
+                    gate_center_per_env = gtd.get('gate/center_height_per_env', None)
+                except Exception:
+                    gate_center_per_env = None
+            else:
+                gate_center_per_env = None
+            for env_idx in range(min(len(self.env_handles), len(self.camera_handles), robot_positions.shape[0])):
+                cam_x = 0.0
+                cam_y = base_y
+                if gate_center_per_env is not None and env_idx < len(gate_center_per_env):
+                    cam_z = float(gate_center_per_env[env_idx].item())
+                else:
+                    try:
+                        cam_z = float(base_z_env)
+                    except Exception:
+                        cam_z = 1.5
+                # Build camera and target
+                camera_pos = gymapi.Vec3(cam_x, cam_y, cam_z)
+                drone = robot_positions[env_idx]
+                target = gymapi.Vec3(float(drone[0].item()), float(drone[1].item()), float(drone[2].item()))
+                cam_handle = self.camera_handles[env_idx]
+                env_handle = self.env_handles[env_idx]
+                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, target)
+        except Exception as e:
+            logger.warning(f"Failed to update locked-follow camera: {e}")
             return
     
     def capture_images(self, batched=False):

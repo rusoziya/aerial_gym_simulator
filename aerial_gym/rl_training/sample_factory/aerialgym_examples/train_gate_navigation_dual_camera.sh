@@ -178,6 +178,14 @@ while [[ $# -gt 0 ]]; do
             STATIC_CAMERA_BASE_Z="${1#*=}"
             shift
             ;;
+        --enable_static_fov_reward=*)
+            ENABLE_STATIC_FOV_REWARD="${1#*=}"
+            shift
+            ;;
+        --enable_static_camera_locked=*)
+            ENABLE_STATIC_CAMERA_LOCKED="${1#*=}"
+            shift
+            ;;
         --async_rl=*)
             ASYNC_RL="${1#*=}"
             shift
@@ -539,6 +547,12 @@ if [ -n "$STATIC_CAMERA_BASE_Y" ]; then
 fi
 if [ -n "$STATIC_CAMERA_BASE_Z" ]; then
     export SF_STATIC_CAMERA_BASE_Z=$STATIC_CAMERA_BASE_Z
+fi
+if [ -n "$ENABLE_STATIC_FOV_REWARD" ]; then
+    export SF_ENABLE_STATIC_FOV_REWARD=$ENABLE_STATIC_FOV_REWARD
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_LOCKED" ]; then
+    export SF_STATIC_CAMERA_LOCKED_FOLLOW=$ENABLE_STATIC_CAMERA_LOCKED
 fi
 
 # Export headless setting for both main process and worker processes

@@ -73,12 +73,17 @@ class task_config:
         "getting_closer_reward_multiplier": 5.0,  # REDUCED from 10.0 (10x reduction)
         
         # Action smoothness penalties (match base navigation)
+        # gate config default
         "x_action_diff_penalty_magnitude": 0.8,
         "x_action_diff_penalty_exponent": 3.333,
         "y_action_diff_penalty_magnitude": 0.8,  # Y-axis smoothness penalty  
         "y_action_diff_penalty_exponent": 3.333,
+
+        # navigation original:
         # "z_action_diff_penalty_magnitude": 0.8,  # REDUCED from 0.8 to allow necessary altitude adjustments
         # "z_action_diff_penalty_exponent": 5.0,  # REDUCED from 3.333 for gentler Z-smoothness
+
+        # gate config default
         "z_action_diff_penalty_magnitude": 0.4,  # REDUCED from 0.8 to allow necessary altitude adjustments
         "z_action_diff_penalty_exponent": 2.0,  # REDUCED from 3.333 for even gentler Z-smoothness
 
@@ -87,21 +92,29 @@ class task_config:
         "yawrate_action_diff_penalty_magnitude": 0.5,  # REDUCED from 0.8 for less restrictive yaw control
         "yawrate_action_diff_penalty_exponent": 2.5,  # REDUCED from 3.33 for less restrictive yaw control
         
-        # Action magnitude penalties (match base navigation for crash prevention)
+        # Action magnitude penalties (match base navigation for crash prevention)#
+        # gate config default
         "x_absolute_action_penalty_magnitude": 0.1,
         "x_absolute_action_penalty_exponent": 0.3,
         "y_absolute_action_penalty_magnitude": 0.1,  # Y-axis action penalty
         "y_absolute_action_penalty_exponent": 0.3,
+
+        # navigation original:
         # "z_absolute_action_penalty_magnitude": 1.5,  # Strong vertical movement penalty
         # "z_absolute_action_penalty_exponent": 1.0,
         # "z_absolute_action_penalty_magnitude": 0.1,  # REDUCED from 0.1 to allow necessary Z-movements
         # "z_absolute_action_penalty_exponent": 0.3,   # REDUCED from 0.3 for even gentler Z-penalty
+
+        # gate config default
         "z_absolute_action_penalty_magnitude": 0.05,  # REDUCED from 0.1 to allow necessary Z-movements
         "z_absolute_action_penalty_exponent": 0.2,   # REDUCED from 0.3 for even gentler Z-penalty
+
+        # navigation original:
         # "yawrate_absolute_action_penalty_magnitude": 1.5,
         # "yawrate_absolute_action_penalty_exponent": 2.0,
+        
         "yawrate_absolute_action_penalty_magnitude": 1.0,  # REDUCED from 1.5 for less restrictive yaw control
-        "yawrate_absolute_action_penalty_exponent": 1.5,  # REDUCED from 2.0 for less restrictive yaw control
+        "yawrate_absolute_action_penalty_exponent": 1.1,  # REDUCED from 2.0 for less restrictive yaw control
         
         # CRITICAL: Strong collision penalty to prevent ground crashes
         "collision_penalty": -100.0,  # Match base navigation - STRONG penalty for any collision
@@ -111,7 +124,7 @@ class task_config:
         # "gate_approach_reward_magnitude": 2.0,  # OLD value
         "gate_alignment_reward_magnitude": 0.5,  # REDUCED from 2.0 (10x reduction)
         # "gate_alignment_reward_magnitude": 1.0,  # OLD value
-        "gate_passage_reward_magnitude": 50.0,  # INCREASED from 10.0 (one-time bonus should be high)
+        "gate_passage_reward_magnitude": 100.0,  # INCREASED from 10.0 (one-time bonus should be high)
         "gate_center_bonus_magnitude": 1.25,  # REDUCED from 5.0 (10x reduction)
         # "gate_center_passage_bonus_magnitude": 15.0,  # OLD value
         "gate_center_passage_bonus_magnitude": 100.0,  # INCREASED from 50.0 (one-time center bonus should be high)
@@ -125,13 +138,10 @@ class task_config:
 
         # Static camera FOV visibility reward (shaped inside-frustum score)
         # Set magnitude > 0 to enable; exponent controls rolloff near edges
-        # "static_fov_visibility_reward_magnitude": 0.25,
-        # "static_fov_visibility_exponent": 2.0,
-        "static_fov_visibility_reward_magnitude": 0,
-        "static_fov_visibility_exponent": 0,
+        # "static_fov_visibility_reward_magnitude": 0.2,
+        "static_fov_visibility_reward_magnitude": 0.0,
+        "static_fov_visibility_exponent": 2.0,
 
-
-        
         # NEW: Altitude maintenance reward to encourage proper gate-level flying
         "altitude_maintenance_reward_magnitude": 0.0,  # Reward for staying at gate height (1.2-1.8m)
         "altitude_maintenance_reward_exponent": 0.0,   # Exponential reward for being at optimal altitude
@@ -188,15 +198,18 @@ class task_config:
         enable_camera_noise = True                # Enable curriculum-dependent camera noise
         camera_noise_start_level = 3             # Start minimal noise from level 3 
         camera_noise_end_level = 23              # Reach maximum noise at level 23
-        max_gaussian_noise_std = 0.0125          # Maximum Gaussian noise: 1.25% of depth range
-        max_pixel_dropout_rate = 0.0125          # Halved: 1.25% of pixels
-        
+        max_gaussian_noise_std = 0.00625         # Halved: 0.625% of depth range
+        max_pixel_dropout_rate = 0.00625         # Halved: 0.625% of pixels
+
+        # max_gaussian_noise_std = 0.0125          # Maximum Gaussian noise: 1.25% of depth range
+        # max_pixel_dropout_rate = 0.0125          # Halved: 1.25% of pixels
+
         # 6. CAMERA FRAME DROPOUT (entire-frame) parameters (split freeze/blank)
         enable_camera_frame_dropout = True
-        max_frame_freeze_prob_drone = 0.05       # 5% freeze at level 23
-        max_frame_blank_prob_drone = 0.005       # 0.5% blank at level 23
-        max_frame_freeze_prob_static = 0.05      # 5% freeze at level 23
-        max_frame_blank_prob_static = 0.005      # 0.5% blank at level 23
+        max_frame_freeze_prob_drone = 0.0125      # Halved: 1.25% freeze at level 23
+        max_frame_blank_prob_drone = 0.0025      # Halved: 0.25% blank at level 23
+        max_frame_freeze_prob_static = 0.0125     # Halved: 1.25% freeze at level 23
+        max_frame_blank_prob_static = 0.0025     # Halved: 0.25% blank at level 23
         frame_dropout_start_level = 3
         frame_dropout_end_level = 23
         # Back-compat flag; when split is used, freeze is default when not blank
@@ -209,8 +222,8 @@ class task_config:
         # Maxima at level 23
         max_drone_pos_noise_m = 0.02                # per-axis std in meters
         max_static_pos_noise_m = 0.05               # per-axis std in meters
-        max_static_orient_noise_rad = 0.017453292519943295  # 1.0 deg
-        max_drone_orient_noise_rad = 0.008726646259971648   # 0.5 deg
+        max_static_orient_noise_rad = 0.0175  # 1.0 deg
+        max_drone_orient_noise_rad = 0.00873   # 0.5 deg
 
         # 8. SPAWN RANGE PROGRESSION (Levels 3-23) — curriculum-controlled spawn
         # OLD (kept for easy rollback):
@@ -234,7 +247,7 @@ class task_config:
         # - Z range: [0.75, 1.50] at L3 → [0.50, 1.75] at L23 (linear)
         #   Both intervals are centered at 1.125m, so center stays constant; half-span grows 0.375 → 0.625
         spawn_easy_x_half_span_m = 0.50
-        spawn_hard_x_half_span_m = 2.00
+        spawn_hard_x_half_span_m = 1.50
         
         spawn_easy_y_center_m = -1.50
         spawn_hard_y_center_m = -1.50
@@ -249,15 +262,17 @@ class task_config:
         
         # Yaw jitter schedule: keep 0° at easy; 30° at hard (unchanged)
         spawn_easy_yaw_abs_rad = 1.0 * 3.141592653589793 / 180.0
-        spawn_hard_yaw_abs_rad = 30.0 * 3.141592653589793 / 180.0
+        spawn_hard_yaw_abs_rad = 20.0 * 3.141592653589793 / 180.0
         
         # EVALUATION PARAMETERS
         check_after_log_instances = 256  # Check curriculum every 256 instances for reduced variance
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
         decrease_step = 1  # Allow decreases by 1 level when success collapses
-        success_rate_for_increase = 0.6  # Promote when SR > 60%
-        success_rate_for_decrease = 0.3   # Demote when SR < 25%
-        cooldown_windows = 3  # After any change, hold level for this many evaluation windows
+        # success_rate_for_increase = 0.5  # Promote when SR > 50%
+        # success_rate_for_decrease = 0.25   # Demote when SR < 25%
+        success_rate_for_increase = 0.55  # Promote when SR > 55%
+        success_rate_for_decrease = 0.25   # Demote when SR < 30%
+        cooldown_windows = 12  # After any change, hold level for this many evaluation windows
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
         # Each curriculum level controls multiple aspects of difficulty:
@@ -387,8 +402,8 @@ class task_config:
             camera_noise_start_level = 3       # Start at level 3
             camera_noise_end_train = 23        # End of training schedule
             # Level 3 starting values (5% of max) and Level 23 maximum values (training caps)
-            max_gaussian_noise_std = 0.0125    # Level 23: 0.0125
-            max_pixel_dropout_rate = 0.0125    # Level 23: 0.0125
+            max_gaussian_noise_std = 0.00625   # Level 23: 0.00625 (halved)
+            max_pixel_dropout_rate = 0.00625   # Level 23: 0.00625 (halved)
             min_gaussian_noise_std = max_gaussian_noise_std * 0.05    # Level 3: 0.000625 (5% of max)
             min_pixel_dropout_rate = max_pixel_dropout_rate * 0.05    # Level 3: 0.000625 (5% of max)
             
@@ -737,27 +752,29 @@ class task_config:
     def action_transformation_4d_velocity_control(actions):
         # type: (Tensor) -> Tensor
         """
-        Transform 4D actions for VELOCITY CONTROLLER - conservative scaling for stability.
+        Transform 4D actions for VELOCITY CONTROLLER with conservative default limits.
         Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
         Output: [x_vel, y_vel, z_vel, yaw_rate] in real units
         
-        Conservative velocity controller constraints for improved stability:
-        - X,Y velocity: ±0.6 m/s (CONSERVATIVE scaling for velocity controller stability)
-        - Z velocity: ±0.4 m/s (REDUCED for smooth altitude control without position feedback)
-        - Yaw rate: ±28.6°/s (±0.5 rad/s) (CONSERVATIVE for smooth yaw without position correction)
+        Default limits (reverted, +25% yaw):
+        - X velocity: ±0.6 m/s
+        - Y velocity: ±0.6 m/s
+        - Z velocity: ±0.4 m/s
+        - Yaw rate: ±0.625 rad/s (≈ ±35.8°/s)
         """
         transformed_actions = torch.zeros_like(actions)
         
-        # X,Y velocity: ±0.6 m/s (CONSERVATIVE for velocity controller stability)
+        # X, Y velocities
         transformed_actions[:, 0] = actions[:, 0] * 0.6  # x_vel
         transformed_actions[:, 1] = actions[:, 1] * 0.6  # y_vel
         
-        # Z velocity: ±0.4 m/s (REDUCED for smooth altitude control)
+        # Z velocity
         transformed_actions[:, 2] = actions[:, 2] * 0.4  # z_vel
         
-        # Yaw rate: ±28.6°/s (±0.5 rad/s) (CONSERVATIVE for smooth yaw control)
-        transformed_actions[:, 3] = actions[:, 3] * 0.5  # yaw_rate (28.6 degrees/sec)
-        
+        # Yaw rate
+        transformed_actions[:, 3] = actions[:, 3] * 0.5  # yaw_rate
+
+
         return transformed_actions
 
     action_transformation_function = action_transformation_4d_velocity_control

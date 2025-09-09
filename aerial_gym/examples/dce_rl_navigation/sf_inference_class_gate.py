@@ -59,6 +59,12 @@ class NN_Inference_Class_Gate(nn.Module):
                 self.cfg.gate_per_feature = getattr(cfg, 'gate_per_feature')
         except Exception:
             pass
+        # One-time report of evaluation mode for clarity
+        try:
+            print(f"[EVAL_MODE] eval_deterministic={bool(getattr(self.cfg, 'eval_deterministic', False))}"
+                  f" | deterministic=greedy argmax (no sampling), stochastic=samples from policy distribution")
+        except Exception:
+            pass
         self.cfg.num_envs = num_envs
         self.num_actions = num_actions
         self.num_obs = num_obs
@@ -110,6 +116,8 @@ class NN_Inference_Class_Gate(nn.Module):
         self.rnn_states = torch.zeros(
             [self.num_agents, get_rnn_size(self.cfg)], dtype=torch.float32, device=self.device
         )
+        # Notice flag for ABLATE_ZERO_RNN to avoid spamming
+        self._abl_zero_rnn_notice_shown = False
 
     def init_env_info(self):
         self.env_info = EnvInfo(
@@ -133,7 +141,34 @@ class NN_Inference_Class_Gate(nn.Module):
 
     def get_action(self, obs: Dict, get_np: bool = False, get_robot_zero: bool = False):
         with torch.no_grad():
-            processed_obs = prepare_and_normalize_obs(self.actor_critic, obs)
+            # Optional pre/post-normalization latent taps for debugging
+            norm_tap = os.environ.get("NORM_TAP_DEBUG", "false").lower() == "true"
+            disable_norm = os.environ.get("DISABLE_NORM", "false").lower() == "true"
+            if norm_tap:
+                try:
+                    vec = obs.get(getattr(self.cfg, 'obs_key', 'obs'), None)
+                    if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
+                        z_e = vec[:, 22:86]
+                        z_s = vec[:, 86:150]
+                        print(f"[NORM_TAP] pre abs_mean: drone(22:86)={float(z_e.abs().mean().item()):.6e} static(86:150)={float(z_s.abs().mean().item()):.6e}")
+                except Exception:
+                    pass
+
+            if disable_norm:
+                processed_obs = obs
+                if norm_tap:
+                    print("[NORM_TAP] normalization disabled: post == pre (bypassed)")
+            else:
+                processed_obs = prepare_and_normalize_obs(self.actor_critic, obs)
+                if norm_tap:
+                    try:
+                        pvec = processed_obs.get(getattr(self.cfg, 'obs_key', 'obs'), None)
+                        if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[1] >= 150:
+                            z_e2 = pvec[:, 22:86]
+                            z_s2 = pvec[:, 86:150]
+                            print(f"[NORM_TAP] post abs_mean: drone(22:86)={float(z_e2.abs().mean().item()):.6e} static(86:150)={float(z_s2.abs().mean().item()):.6e}")
+                    except Exception:
+                        pass
             policy_outputs = self.actor_critic(processed_obs, self.rnn_states)
             actions = policy_outputs["actions"]
             if self.cfg.eval_deterministic:
