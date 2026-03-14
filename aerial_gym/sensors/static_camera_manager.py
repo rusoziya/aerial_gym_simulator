@@ -98,32 +98,29 @@ class StaticCameraManager:
             # Respect CLI/task_config base_y/base_z (with 'adaptive' support) for initial placement
             try:
                 base_y = float(getattr(self.task_config, 'static_camera_base_y', float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))))
-            except Exception:
+            except (ValueError, TypeError):
                 base_y = -3.0
             # Determine base Z spawning mode: numeric or 'adaptive' to gate center per env
             adaptive_z = False
             base_z_value = 1.5
-            try:
-                cfg_base_z = getattr(self.task_config, 'static_camera_base_z', None)
-                if cfg_base_z is not None:
-                    if isinstance(cfg_base_z, str) and cfg_base_z.strip().lower() == 'adaptive':
-                        adaptive_z = True
-                    else:
-                        base_z_value = float(cfg_base_z)
+            cfg_base_z = getattr(self.task_config, 'static_camera_base_z', None)
+            if cfg_base_z is not None:
+                if isinstance(cfg_base_z, str) and cfg_base_z.strip().lower() == 'adaptive':
+                    adaptive_z = True
                 else:
-                    env_base_z = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
-                    if env_base_z is not None and str(env_base_z).strip().lower() == 'adaptive':
-                        adaptive_z = True
-                    elif env_base_z is not None:
-                        base_z_value = float(env_base_z)
-            except Exception:
-                pass
+                    base_z_value = float(cfg_base_z)
+            else:
+                env_base_z = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
+                if env_base_z is not None and str(env_base_z).strip().lower() == 'adaptive':
+                    adaptive_z = True
+                elif env_base_z is not None:
+                    base_z_value = float(env_base_z)
 
             # Try to read per-env adaptive gate center Z from global tensors (if available)
             try:
                 gtd = self.env_manager.IGE_env.global_tensor_dict
                 gate_center_per_env = gtd.get('gate/center_height_per_env', None)
-            except Exception:
+            except (KeyError, TypeError):
                 gate_center_per_env = None
 
             # Set camera transform for each environment using configured positioning
@@ -143,7 +140,7 @@ class StaticCameraManager:
                         e = (emin + v * (emax - emin)).tolist()
                         self._trans_jitter[i] = (float(t[0]), float(t[1]), float(t[2]))
                         self._euler_jitter_deg[i] = (float(e[0]), float(e[1]), float(e[2]))
-                    except Exception:
+                    except (ValueError, TypeError):
                         self._trans_jitter[i] = (0.0, 0.0, 0.0)
                         self._euler_jitter_deg[i] = (0.0, 0.0, 0.0)
                 if adaptive_z and gate_center_per_env is not None and i < len(gate_center_per_env):
@@ -160,20 +157,14 @@ class StaticCameraManager:
                     f"Set static camera {i} to look from ({camera_pos.x}, {camera_pos.y}, {camera_pos.z}) toward ({camera_target.x}, {camera_target.y}, {camera_target.z})"
                 )
                 # Store for debug
-                try:
-                    self.last_camera_pos[i] = (float(camera_pos.x), float(camera_pos.y), float(camera_pos.z))
-                    self.last_camera_target[i] = (float(camera_target.x), float(camera_target.y), float(camera_target.z))
-                    self.last_angle_deg[i] = 0.0
-                except Exception:
-                    pass
+                self.last_camera_pos[i] = (float(camera_pos.x), float(camera_pos.y), float(camera_pos.z))
+                self.last_camera_target[i] = (float(camera_target.x), float(camera_target.y), float(camera_target.z))
+                self.last_angle_deg[i] = 0.0
 
             # Cache base values into global dict for downstream updates
-            try:
-                if hasattr(self.env_manager.IGE_env, 'global_tensor_dict'):
-                    self.env_manager.IGE_env.global_tensor_dict['static_camera/base_y'] = float(base_y)
-                    self.env_manager.IGE_env.global_tensor_dict['static_camera/base_z'] = ('adaptive' if adaptive_z else float(base_z_value))
-            except Exception:
-                pass
+            if hasattr(self.env_manager.IGE_env, 'global_tensor_dict'):
+                self.env_manager.IGE_env.global_tensor_dict['static_camera/base_y'] = float(base_y)
+                self.env_manager.IGE_env.global_tensor_dict['static_camera/base_z'] = ('adaptive' if adaptive_z else float(base_z_value))
 
             if len(self.camera_handles) == len(self.env_handles):
                 logger.info("✓ Static camera setup complete with configured positioning (base_y/base_z)")
@@ -184,7 +175,7 @@ class StaticCameraManager:
                 self.camera_setup_success = False
                 self.use_synthetic_camera = False
             
-        except Exception as e:
+        except RuntimeError as e:
             logger.warning(f"Static camera setup failed: {e}")
             self.camera_setup_success = False
             self.use_synthetic_camera = False
@@ -204,7 +195,7 @@ class StaticCameraManager:
                     gtd = parent.global_tensor_dict
                     disable_flag = bool(gtd.get('static_camera_randomization/orientation_disabled', False))
                     rp = gtd.get('robot_position', None)
-            except Exception:
+            except (KeyError, TypeError):
                 disable_flag = False
                 rp = None
             import random, math
@@ -253,7 +244,7 @@ class StaticCameraManager:
                 gtd = parent.global_tensor_dict
                 disable_flag = bool(gtd.get('static_camera_randomization/orientation_disabled', False))
                 rp = gtd.get('robot_position', None)
-        except Exception:
+        except (KeyError, TypeError):
             disable_flag = False
             rp = None
         
@@ -266,7 +257,7 @@ class StaticCameraManager:
                 gtd = {}
             try:
                 base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
-            except Exception:
+            except (ValueError, TypeError):
                 base_y = -3.0
             # Determine base Z spawning mode: numeric or 'adaptive' to gate center
             try:
@@ -278,12 +269,12 @@ class StaticCameraManager:
                     base_z = None  # Means adaptive per env
                 else:
                     base_z = float(base_z_env)
-            except Exception:
+            except (ValueError, TypeError):
                 base_z = 1.5
             # If base_z is None (adaptive per env), use a numeric placeholder for Vec3; per-env Z resolved below
             try:
                 base_z_for_vec = 1.5 if base_z is None else float(base_z)
-            except Exception:
+            except (ValueError, TypeError):
                 base_z_for_vec = 1.5
             base_camera_pos = gymapi.Vec3(0.0, base_y, base_z_for_vec)
             
@@ -291,12 +282,9 @@ class StaticCameraManager:
             import random
             
             # Ensure per-env randomized sweep parameters exist
-            try:
-                if not hasattr(self, 'sweep_phase_offsets') or (len(getattr(self, 'sweep_phase_offsets', [])) != len(self.env_handles)):
-                    self.sweep_phase_offsets = [0.0 for _ in range(len(self.env_handles))]
-                    self.sweep_directions = [1.0 for _ in range(len(self.env_handles))]
-            except Exception:
-                pass
+            if not hasattr(self, 'sweep_phase_offsets') or (len(getattr(self, 'sweep_phase_offsets', [])) != len(self.env_handles)):
+                self.sweep_phase_offsets = [0.0 for _ in range(len(self.env_handles))]
+                self.sweep_directions = [1.0 for _ in range(len(self.env_handles))]
             
             # Update camera orientation ONLY for the specified environments (those resetting)
             for env_idx in env_ids:
@@ -315,7 +303,7 @@ class StaticCameraManager:
                         e = (emin + v * (emax - emin)).tolist()
                         self._trans_jitter[env_idx] = (float(t[0]), float(t[1]), float(t[2]))
                         self._euler_jitter_deg[env_idx] = (float(e[0]), float(e[1]), float(e[2]))
-                    except Exception:
+                    except (ValueError, TypeError):
                         self._trans_jitter[env_idx] = (0.0, 0.0, 0.0)
                         self._euler_jitter_deg[env_idx] = (0.0, 0.0, 0.0)
                     
@@ -325,7 +313,7 @@ class StaticCameraManager:
                     gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                     sweep_enabled = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
                     sweep_speed_deg = float(gtd.get('static_camera/yaw_sweep_speed_deg', 10.0))
-                except Exception:
+                except (ValueError, TypeError):
                     sweep_enabled = False
                     sweep_speed_deg = 10.0
 
@@ -348,10 +336,10 @@ class StaticCameraManager:
                             eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
                         try:
                             eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23)))
-                        except Exception:
+                        except (ValueError, TypeError):
                             eval_end = int(getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23))
                         end_level = int(eval_end) if eval_en else 23
-                    except Exception:
+                    except (ValueError, TypeError):
                         end_level = 23
                     A_min = 2.0
                     A_max = 19.0
@@ -385,7 +373,7 @@ class StaticCameraManager:
                         denom = max(1, max_lvl - min_lvl)
                         level_frac = float(level_clamped - min_lvl) / float(denom)
                         speed_scale = 1.0 + level_frac
-                    except Exception:
+                    except (ValueError, TypeError):
                         speed_scale = 1.0
                     sweep_speed_eff = sweep_speed_deg * speed_scale * comp
                     omega = (sweep_speed_eff * 3.14159 / 180.0) * dt
@@ -402,11 +390,11 @@ class StaticCameraManager:
                                 else:
                                     idx = env_idx if env_idx < steps_obj.shape[0] else 0
                                     sim_steps = int(steps_obj[idx].item())
-                            except Exception:
+                            except (ValueError, TypeError):
                                 sim_steps = 0
                         else:
                             sim_steps = int(steps_obj)
-                    except Exception:
+                    except (ValueError, TypeError):
                         sim_steps = 0
                     # Per-env randomized phase and direction so starting angle and direction vary
                     # Re-randomize on first step after reset for each env (sim_steps == 0)
@@ -419,7 +407,7 @@ class StaticCameraManager:
                             self.sweep_directions[env_idx] = 1.0 if dir_flag == 1 else -1.0
                         phi0 = self.sweep_phase_offsets[env_idx]
                         direction = self.sweep_directions[env_idx]
-                    except Exception:
+                    except (ValueError, TypeError):
                         phi0 = 0.0
                         direction = 1.0
                     angle_offset_degrees = A * math.sin(direction * (omega * sim_steps) + phi0)
@@ -442,17 +430,17 @@ class StaticCameraManager:
                         eval_en = False
                         try:
                             eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        except Exception:
+                        except (KeyError, TypeError):
                             eval_en = False
                         if not eval_en:
                             try:
                                 import os as _os
                                 eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                            except Exception:
+                            except (KeyError, TypeError):
                                 eval_en = False
                         try:
                             eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23)))
-                        except Exception:
+                        except (ValueError, TypeError):
                             eval_end = int(getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23))
                         eff_level = min(curriculum_level, eval_end) if eval_en else curriculum_level
                         sr_fix = _tc_fix.curriculum.get_spawn_ranges(eff_level)
@@ -464,7 +452,7 @@ class StaticCameraManager:
                         alpha_fix = math.degrees(math.atan2(x_half_fix, max(1e-6, dy_fix)))
                         sweep_like_max = max(0.0, alpha_fix - half_fov_fix) + margin_fix
                         max_angle_range = max(max_angle_range, sweep_like_max)
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
                     # When sweep is disabled, honor the orientation randomization disable flag
                     if disable_flag or max_angle_range <= 0:
@@ -491,7 +479,7 @@ class StaticCameraManager:
                                 # e.g., +25% headroom when at eval_end
                                 frac = float(min(curriculum_level, eval_end) - 23) / max(1.0, float(eval_end - 23))
                                 max_angle_range = max_angle_range * (1.0 + 0.25 * frac)
-                        except Exception:
+                        except (ValueError, TypeError):
                             pass
                         if rp is not None and env_idx < rp.shape[0]:
                             cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
@@ -535,7 +523,7 @@ class StaticCameraManager:
                     if env_base_z is None:
                         gh = gtd.get('gate/center_height_per_env', None)
                         env_base_z = float(gh[env_idx].item()) if gh is not None else 1.5
-                except Exception:
+                except (ValueError, TypeError):
                     env_base_z = 1.5
                 base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
                 # Apply per-env translation jitter sampled at setup/reset
@@ -555,7 +543,7 @@ class StaticCameraManager:
                 try:
                     gh = gtd.get('gate/center_height_per_env', None)
                     target_z = float(gh[env_idx].item()) if gh is not None else env_base_z
-                except Exception:
+                except (ValueError, TypeError):
                     target_z = env_base_z
                 # Apply pitch jitter as small vertical offset in look-at target
                 target_z = target_z + math.tan(pitch_rad) * target_distance
@@ -566,12 +554,9 @@ class StaticCameraManager:
                 cam_handle = self.camera_handles[env_idx]
                 self.gym.set_camera_location(cam_handle, env_handle, base_camera_env_pos, new_target)
                 # Update debug caches
-                try:
-                    self.last_camera_pos[env_idx] = (float(base_camera_env_pos.x), float(base_camera_env_pos.y), float(base_camera_env_pos.z))
-                    self.last_camera_target[env_idx] = (float(new_target.x), float(new_target.y), float(new_target.z))
-                    self.last_angle_deg[env_idx] = float(angle_offset_degrees)
-                except Exception:
-                    pass
+                self.last_camera_pos[env_idx] = (float(base_camera_env_pos.x), float(base_camera_env_pos.y), float(base_camera_env_pos.z))
+                self.last_camera_target[env_idx] = (float(new_target.x), float(new_target.y), float(new_target.z))
+                self.last_angle_deg[env_idx] = float(angle_offset_degrees)
                 # Debug only for env 0 to avoid spam
                 if env_idx == 0:
                     pass
@@ -580,7 +565,7 @@ class StaticCameraManager:
             
             # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera orientation for {len(env_ids)} environments")
             
-        except Exception as e:
+        except RuntimeError as e:
             logger.warning(f"Failed to update static camera orientation: {e}")
             # Fall back to fixed positioning if update fails
             logger.debug(f"Static camera orientation update failed - using fixed positioning")
@@ -602,15 +587,12 @@ class StaticCameraManager:
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         try:
-            from aerial_gym.task.task_config_protocol import TaskConfig
-from aerial_gym.env_manager.env_manager import EnvManager
-from isaacgym import gymapi
             import math
             # Fixed offsets in world frame (Y offset can be overridden via global tensor dict)
             try:
                 gtd = self.env_manager.IGE_env.global_tensor_dict
                 y_off = float(gtd.get('dynamic_camera_following/offset_y_m', -1.0))
-            except Exception:
+            except (ValueError, TypeError):
                 y_off = -1.0
             x_off, z_off = 0.0, 0.0
             half_fov = 87.0 * 0.5
@@ -639,7 +621,7 @@ from isaacgym import gymapi
                 # If gate is outside FOV when centered on drone, optionally blend target
                 try:
                     disable_blend = bool(self.env_manager.IGE_env.global_tensor_dict.get('dynamic_camera_following/disable_gate_blending', False))
-                except Exception:
+                except (KeyError, TypeError):
                     disable_blend = False
                 if not disable_blend and abs(delta) > (half_fov - margin):
                     w = 0.2  # small bias toward gate
@@ -654,17 +636,14 @@ from isaacgym import gymapi
                 env_handle = self.env_handles[env_idx]
                 self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
                 # Update debug caches so visibility/FOV metrics use the correct dynamic camera pose
-                try:
-                    self.last_camera_pos[env_idx] = (
-                        float(camera_pos.x), float(camera_pos.y), float(camera_pos.z)
-                    )
-                    self.last_camera_target[env_idx] = (
-                        float(camera_target.x), float(camera_target.y), float(camera_target.z)
-                    )
-                    self.last_angle_deg[env_idx] = 0.0
-                except Exception:
-                    pass
-        except Exception as e:
+                self.last_camera_pos[env_idx] = (
+                    float(camera_pos.x), float(camera_pos.y), float(camera_pos.z)
+                )
+                self.last_camera_target[env_idx] = (
+                    float(camera_target.x), float(camera_target.y), float(camera_target.z)
+                )
+                self.last_angle_deg[env_idx] = 0.0
+        except RuntimeError as e:
             logger.warning(f"Failed to update dynamic camera following: {e}")
             return
 
@@ -683,9 +662,6 @@ from isaacgym import gymapi
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         try:
-            from aerial_gym.task.task_config_protocol import TaskConfig
-from aerial_gym.env_manager.env_manager import EnvManager
-from isaacgym import gymapi
             import math
             # Read global sim steps for a smooth arc oscillation per env
             try:
@@ -697,7 +673,7 @@ from isaacgym import gymapi
                 else:
                     step_val = int(sim_steps_obj)
                     get_step = lambda idx: step_val
-            except Exception:
+            except (ValueError, TypeError):
                 get_step = lambda idx: 0
 
             # Oscillation parameters (slow arc motion)
@@ -730,7 +706,7 @@ from isaacgym import gymapi
                 cam_handle = self.camera_handles[env_idx]
                 env_handle = self.env_handles[env_idx]
                 self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-        except Exception as e:
+        except RuntimeError as e:
             logger.warning(f"Failed to update arc-follow camera: {e}")
             return
 
@@ -746,9 +722,6 @@ from isaacgym import gymapi
             return
         try:
             # Base camera position for all envs
-            from aerial_gym.task.task_config_protocol import TaskConfig
-from aerial_gym.env_manager.env_manager import EnvManager
-from isaacgym import gymapi
             base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))
             base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', '1.5')
             if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':
@@ -756,7 +729,7 @@ from isaacgym import gymapi
                 try:
                     gtd = self.env_manager.IGE_env.global_tensor_dict
                     gate_center_per_env = gtd.get('gate/center_height_per_env', None)
-                except Exception:
+                except (KeyError, TypeError):
                     gate_center_per_env = None
             else:
                 gate_center_per_env = None
@@ -768,7 +741,7 @@ from isaacgym import gymapi
                 else:
                     try:
                         cam_z = float(base_z_env)
-                    except Exception:
+                    except (ValueError, TypeError):
                         cam_z = 1.5
                 # Build camera and target
                 camera_pos = gymapi.Vec3(cam_x, cam_y, cam_z)
@@ -777,7 +750,7 @@ from isaacgym import gymapi
                 cam_handle = self.camera_handles[env_idx]
                 env_handle = self.env_handles[env_idx]
                 self.gym.set_camera_location(cam_handle, env_handle, camera_pos, target)
-        except Exception as e:
+        except RuntimeError as e:
             logger.warning(f"Failed to update locked-follow camera: {e}")
             return
     
@@ -886,7 +859,7 @@ from isaacgym import gymapi
                 
                 return depth_img, seg_img
                 
-        except Exception as e:
+        except RuntimeError as e:
             logger.error(f"Static camera capture error: {e}")
             return None, None
     def _generate_synthetic_camera_data(self) -> tuple[np.ndarray, np.ndarray]:
