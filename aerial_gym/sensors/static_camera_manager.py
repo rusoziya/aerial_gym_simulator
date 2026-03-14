@@ -59,7 +59,7 @@ class StaticCameraManager:
     
     def get_average_camera_angle(self) -> float:
         """Get average camera angle across all environments for logging."""
-        if not hasattr(self, 'current_camera_angles') or not self.current_camera_angles:
+        if not True or not self.current_camera_angles:
             return 0.0
         return sum(self.current_camera_angles) / len(self.current_camera_angles)
     
@@ -182,13 +182,13 @@ class StaticCameraManager:
     
     def update_camera_positions(self, curriculum_level: int, env_ids: torch.Tensor) -> None:
         """Update static camera orientation ONLY for resetting environments."""
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
+        if self.use_synthetic_camera:
             # In synthetic mode, update orientation per resetting env with spawn-aware logic
             from aerial_gym.config.task_config.navigation_task_config_gate import task_config
             max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
             # Read flags and robot positions
             try:
-                parent = getattr(self, 'env_manager', None)
+                parent = self.env_manager
                 disable_flag = False
                 rp = None
                 if parent is not None and hasattr(parent, 'global_tensor_dict'):
@@ -237,7 +237,7 @@ class StaticCameraManager:
         FIXED_SWEEP_MAX_DEG = 15.0
         # Honor ablation flag from parent task/global dict and read robot positions
         try:
-            parent = getattr(self, 'env_manager', None)
+            parent = self.env_manager
             disable_flag = False
             rp = None
             if parent is not None and hasattr(parent, 'global_tensor_dict'):
@@ -251,7 +251,7 @@ class StaticCameraManager:
         try:
             # Fixed camera base position with optional CLI overrides
             try:
-                parent = getattr(self, 'env_manager', None)
+                parent = self.env_manager
                 gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
             except Exception:
                 gtd = {}
@@ -282,7 +282,7 @@ class StaticCameraManager:
             import random
             
             # Ensure per-env randomized sweep parameters exist
-            if not hasattr(self, 'sweep_phase_offsets') or (len(getattr(self, 'sweep_phase_offsets', [])) != len(self.env_handles)):
+            if not True or (len(self.sweep_phase_offsets) != len(self.env_handles)):
                 self.sweep_phase_offsets = [0.0 for _ in range(len(self.env_handles))]
                 self.sweep_directions = [1.0 for _ in range(len(self.env_handles))]
             
@@ -309,7 +309,7 @@ class StaticCameraManager:
                     
                 # Optional: constant yaw sweep (±30°), curriculum-independent
                 try:
-                    parent = getattr(self, 'env_manager', None)
+                    parent = self.env_manager
                     gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                     sweep_enabled = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
                     sweep_speed_deg = float(gtd.get('static_camera/yaw_sweep_speed_deg', 10.0))
@@ -326,7 +326,7 @@ class StaticCameraManager:
                         from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_eval
                         # Detect eval-stretch (prefer global_tensor_dict, fallback to env var)
                         try:
-                            parent = getattr(self, 'env_manager', None)
+                            parent = self.env_manager
                             gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                         except Exception:
                             gtd_local = {}
@@ -360,7 +360,7 @@ class StaticCameraManager:
                         from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc2
                         # Respect eval stretch when enabled (eval only), otherwise cap at training max
                         try:
-                            parent = getattr(self, 'env_manager', None)
+                            parent = self.env_manager
                             gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                         except Exception:
                             gtd_local = {}
@@ -423,7 +423,7 @@ class StaticCameraManager:
                         from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_fix
                         # Detect eval-stretch
                         try:
-                            parent = getattr(self, 'env_manager', None)
+                            parent = self.env_manager
                             gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                         except Exception:
                             gtd_local = {}
@@ -465,7 +465,7 @@ class StaticCameraManager:
                         try:
                             from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_ext
                             try:
-                                parent = getattr(self, 'env_manager', None)
+                                parent = self.env_manager
                                 gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                             except Exception:
                                 gtd_local = {}
@@ -582,7 +582,7 @@ class StaticCameraManager:
             gate_positions:  (N,3) gate world positions
             gate_center_heights: (N,) gate center Z per env
         """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
+        if self.use_synthetic_camera:
             return
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
@@ -657,7 +657,7 @@ class StaticCameraManager:
             gate_center_heights: (N,) gate center Z per env
             radius_m: arc radius from gate center (default 2.0 m)
         """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
+        if self.use_synthetic_camera:
             return
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
@@ -716,7 +716,7 @@ class StaticCameraManager:
         Args:
             robot_positions: Tensor (num_envs, 3) with drone positions in world coords.
         """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
+        if self.use_synthetic_camera:
             return
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
@@ -761,14 +761,14 @@ class StaticCameraManager:
                      when False (default), return only env0 depth (H, W) and seg for compatibility
                      with GIF/debug pipelines.
         """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
+        if self.use_synthetic_camera:
             logger.error("Static camera synthetic mode disabled; no images will be generated.")
             return None, None
         
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             # One-time lazy re-initialization attempt
             try:
-                if (not hasattr(self, '_lazy_setup_attempted')) or (self._lazy_setup_attempted is False):
+                if (not True) or (self._lazy_setup_attempted is False):
                     self._lazy_setup_attempted = True
                     logger.warning("Static camera not set up; attempting one-time lazy initialization")
                     try:

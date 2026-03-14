@@ -80,7 +80,7 @@ def main():
             "help": "Pre-logging warm-up steps to prime GRU hidden state (0 disables).",
         },
     ])
-    headless = getattr(args, "headless", False)
+    headless = args.headless
     print(f"DCE Gate Inference - Headless mode: {headless}")
 
     # Build eval cfg and apply static camera overrides to task config before registering
@@ -90,45 +90,38 @@ def main():
     base_task_config = task_config_class()
     try:
         # Env count
-        if hasattr(cfg, "env_agents") and cfg.env_agents:
+        if cfg.env_agents:
             base_task_config.num_envs = int(cfg.env_agents)
             os.environ["SF_ENV_AGENTS"] = str(int(cfg.env_agents))
         # Apply viewer/headless explicitly (training script exports SF_HEADLESS; here set config directly too)
-        if hasattr(base_task_config, "headless"):
-            base_task_config.headless = bool(headless)
+        base_task_config.headless = bool(headless)
         # Gate/obstacle overrides (mirror training subprocess setup)
-        if hasattr(cfg, "disable_gate_size_randomization"):
-            base_task_config.disable_gate_size_randomization = bool(getattr(cfg, "disable_gate_size_randomization", False))
-        if hasattr(cfg, "fixed_gate_scale_percent"):
-            base_task_config.fixed_gate_scale_percent = int(getattr(cfg, "fixed_gate_scale_percent", 100))
-        if hasattr(cfg, "disable_obstacle_randomization"):
-            base_task_config.disable_obstacle_randomization = bool(getattr(cfg, "disable_obstacle_randomization", False))
-        if hasattr(cfg, "fixed_obstacles_behind_gate"):
-            base_task_config.fixed_obstacles_behind_gate = int(getattr(cfg, "fixed_obstacles_behind_gate", 0))
+        if cfg.disable_gate_size_randomization is not None:
+            base_task_config.disable_gate_size_randomization = bool(cfg.disable_gate_size_randomization)
+        if cfg.fixed_gate_scale_percent is not None:
+            base_task_config.fixed_gate_scale_percent = int(cfg.fixed_gate_scale_percent)
+        if cfg.disable_obstacle_randomization is not None:
+            base_task_config.disable_obstacle_randomization = bool(cfg.disable_obstacle_randomization)
+        if cfg.fixed_obstacles_behind_gate is not None:
+            base_task_config.fixed_obstacles_behind_gate = int(cfg.fixed_obstacles_behind_gate)
         # Static camera control flags
-        if hasattr(base_task_config, "static_camera_yaw_sweep_enabled"):
-            base_task_config.static_camera_yaw_sweep_enabled = bool(getattr(cfg, "enable_static_camera_yaw_sweep", False))
-        if hasattr(base_task_config, "enable_static_camera_yaw_sweep"):
-            base_task_config.enable_static_camera_yaw_sweep = bool(getattr(cfg, "enable_static_camera_yaw_sweep", False))
-        if hasattr(base_task_config, "static_camera_yaw_sweep_speed_deg"):
-            base_task_config.static_camera_yaw_sweep_speed_deg = float(getattr(cfg, "static_camera_yaw_sweep_speed_deg", 180.0))
+        base_task_config.static_camera_yaw_sweep_enabled = bool(cfg.enable_static_camera_yaw_sweep)
+        base_task_config.enable_static_camera_yaw_sweep = bool(cfg.enable_static_camera_yaw_sweep)
+        base_task_config.static_camera_yaw_sweep_speed_deg = float(cfg.static_camera_yaw_sweep_speed_deg)
         # Base position overrides
-        if hasattr(base_task_config, "static_camera_base_y"):
-            base_task_config.static_camera_base_y = float(getattr(cfg, "static_camera_base_y", -3.0))
-        if hasattr(base_task_config, "static_camera_base_z"):
-            base_task_config.static_camera_base_z = getattr(cfg, "static_camera_base_z", "fixed")
+        base_task_config.static_camera_base_y = float(getattr(cfg, "static_camera_base_y", -3.0))
+        base_task_config.static_camera_base_z = getattr(cfg, "static_camera_base_z", "fixed")
         # Orientation randomization toggle
-        if hasattr(base_task_config, "disable_static_camera_orientation_randomization"):
-            base_task_config.disable_static_camera_orientation_randomization = bool(getattr(cfg, "disable_static_camera_orientation_randomization", False))
+        base_task_config.disable_static_camera_orientation_randomization = bool(cfg.disable_static_camera_orientation_randomization)
         # Dynamic camera following toggles
         cur = getattr(base_task_config, 'curriculum', None)
         if cur is not None:
-            if hasattr(cfg, 'disable_dynamic_camera_following') and bool(getattr(cfg, 'disable_dynamic_camera_following', False)):
+            if hasattr(cfg, 'disable_dynamic_camera_following') and bool(cfg.disable_dynamic_camera_following):
                 setattr(cur, 'enable_dynamic_camera_following', False)
             if hasattr(cfg, 'enable_dynamic_camera_following') and getattr(cfg, 'enable_dynamic_camera_following') is not None:
                 setattr(cur, 'enable_dynamic_camera_following', bool(getattr(cfg, 'enable_dynamic_camera_following')))
         # Arc-follow overrides to env variables
-        if bool(getattr(args, 'enable_static_camera_arc_follow', False)):
+        if bool(args.enable_static_camera_arc_follow):
             os.environ['SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW'] = 'true'
         if hasattr(args, 'static_camera_arc_radius_m') and args.static_camera_arc_radius_m is not None:
             os.environ['SF_STATIC_CAMERA_ARC_RADIUS_M'] = str(float(args.static_camera_arc_radius_m))
@@ -182,7 +175,7 @@ def main():
         # and DO NOT reset the env after warm-up. We reset RNN state only for
         # envs that finish during warm-up to avoid stale memory.
         try:
-            warmup_steps = max(0, int(getattr(args, 'rnn_warmup_steps', 0)))
+            warmup_steps = max(0, int(args.rnn_warmup_steps))
         except (ValueError, TypeError):
             warmup_steps = 0
         # Fallback to environment variable if CLI flag not provided
@@ -228,24 +221,24 @@ def main():
                 import wandb  # noqa: F401
                 # Resolve project/entity with override order: CLI > ENV > CFG > default
                 project = (
-                    getattr(args, 'wandb_project', '') or
+                    args.wandb_project or
                     _os.environ.get('WANDB_PROJECT', '') or
                     getattr(cfg, 'wandb_project', '') or
                     'gate_eval_runs'
                 )
                 entity = (
-                    getattr(args, 'wandb_entity', '') or
+                    args.wandb_entity or
                     _os.environ.get('WANDB_ENTITY', '') or
                     getattr(cfg, 'wandb_user', None)
                 ) or None
                 # Determine run name: CLI flag > env var > default pattern
-                cli_run_name = getattr(args, 'run_name', '') or ''
+                cli_run_name = args.run_name or ''
                 env_run_name = _os.environ.get('WANDB_RUN_NAME', '')
                 fallback_name = f"eval_{getattr(cfg, 'experiment', getattr(cfg, 'algo', 'sf'))}"
                 run_name = cli_run_name if len(cli_run_name) > 0 else (env_run_name if len(env_run_name) > 0 else fallback_name)
                 mode = _os.environ.get("WANDB_MODE", "online")
                 # Optional custom local directory for run files
-                dir_path = getattr(args, 'wandb_dir', '') or _os.environ.get('WANDB_DIR', '')
+                dir_path = args.wandb_dir or _os.environ.get('WANDB_DIR', '')
                 if dir_path:
                     wandb_run = wandb.init(project=project, entity=entity, name=run_name, mode=mode, dir=dir_path)
                 else:
@@ -311,7 +304,7 @@ def main():
         _frames = 0
         _episodes_done = 0
         try:
-            _max_episodes = int(getattr(cfg, 'max_num_episodes', 0))
+            _max_episodes = int(cfg.max_num_episodes)
         except (ValueError, TypeError):
             _max_episodes = 0
 
@@ -388,7 +381,7 @@ def main():
         _episode_counter_total = 0
 
         # GIF saving (optional)
-        save_gifs = bool(getattr(cfg, 'save_gifs', False))
+        save_gifs = bool(cfg.save_gifs)
         # Save GIFs alongside the inference script directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
         gif_dir = os.path.join(script_dir, 'gif_episodes')
