@@ -446,22 +446,6 @@ class NavigationTask(BaseTask):
 
 
 @torch.jit.script
-def exponential_reward_function(
-    magnitude: float, exponent: float, value: torch.Tensor
-) -> torch.Tensor:
-    """Exponential reward function"""
-    return magnitude * torch.exp(-(value * value) * exponent)
-
-
-@torch.jit.script
-def exponential_penalty_function(
-    magnitude: float, exponent: float, value: torch.Tensor
-) -> torch.Tensor:
-    """Exponential reward function"""
-    return magnitude * (torch.exp(-(value * value) * exponent) - 1.0)
-
-
-@torch.jit.script
 def compute_reward(
     pos_error,
     prev_pos_error,

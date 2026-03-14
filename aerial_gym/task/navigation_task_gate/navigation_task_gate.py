@@ -18,6 +18,14 @@ from gym.spaces import Dict, Box
 from isaacgym import gymapi, gymtorch
 from typing import Tuple
 
+from aerial_gym.sensors.static_camera_manager import StaticCameraManager
+from aerial_gym.utils.env_flag_utils import (
+    read_env_bool,
+    read_env_int,
+    parse_ablation_flags,
+    apply_ablation_flags_to_tensor_dict,
+)
+
 logger = CustomLogger("navigation_task_gate")
 
 # VERSION: 2025.01.09_v2 - Fixed AttributeError curriculum_log_file in subprocesses
@@ -91,21 +99,12 @@ class NavigationTaskGate(BaseTask):
         # This ensures the asset manager gets the correct count from the start
         self.curriculum_level = self.task_config.curriculum.min_level
         # Obstacle ablation: if disabled, force to fixed count (default 0)
-        try:
-            import os
-            env_obs_dis = os.getenv('SF_DISABLE_OBSTACLE_RANDOMIZATION', None)
-            env_obs_fix = os.getenv('SF_FIXED_OBSTACLES_BEHIND_GATE', None)
-            if env_obs_dis is not None:
-                obstacles_disable = str(env_obs_dis).lower() == 'true'
-            else:
-                obstacles_disable = bool(getattr(self.task_config, 'disable_obstacle_randomization', False))
-            if env_obs_fix is not None:
-                obstacles_fixed = int(env_obs_fix)
-            else:
-                obstacles_fixed = int(getattr(self.task_config, 'fixed_obstacles_behind_gate', 0))
-        except Exception:
-            obstacles_disable = bool(getattr(self.task_config, 'disable_obstacle_randomization', False))
-            obstacles_fixed = int(getattr(self.task_config, 'fixed_obstacles_behind_gate', 0))
+        obstacles_disable = read_env_bool(
+            "SF_DISABLE_OBSTACLE_RANDOMIZATION", self.task_config.disable_obstacle_randomization
+        )
+        obstacles_fixed = read_env_int(
+            "SF_FIXED_OBSTACLES_BEHIND_GATE", self.task_config.fixed_obstacles_behind_gate
+        )
         if obstacles_disable:
             obstacles_behind_gate = max(0, obstacles_fixed)
         else:
@@ -139,188 +138,24 @@ class NavigationTaskGate(BaseTask):
         # Ensure num_envs is available before any observation processing that may rely on it
         self.num_envs = self.sim_env.num_envs
         
-        # Propagate ablation flags (gate size and obstacles) to global tensor dict for EnvManager to consume
-        try:
-            if hasattr(self.sim_env, 'global_tensor_dict'):
-                gtd = self.sim_env.global_tensor_dict
-                import os
-                # Read from env first (worker-safe), fall back to task_config
-                env_dis = os.getenv('SF_DISABLE_GATE_SIZE_RANDOMIZATION', None)
-                env_fix = os.getenv('SF_FIXED_GATE_SCALE_PERCENT', None)
-                if env_dis is not None:
-                    disable_flag = str(env_dis).lower() == 'true'
-                else:
-                    disable_flag = bool(getattr(self.task_config, 'disable_gate_size_randomization', False))
-                if env_fix is not None:
-                    try:
-                        fixed_scale = int(env_fix)
-                    except Exception:
-                        fixed_scale = int(getattr(self.task_config, 'fixed_gate_scale_percent', 100))
-                else:
-                    fixed_scale = int(getattr(self.task_config, 'fixed_gate_scale_percent', 100))
-                gtd['gate_randomization/disabled'] = disable_flag
-                gtd['gate_randomization/fixed_scale_percent'] = fixed_scale
-                # Obstacles ablation flags
-                if env_obs_dis is not None:
-                    obstacles_disable = str(env_obs_dis).lower() == 'true'
-                if env_obs_fix is not None:
-                    try:
-                        obstacles_fixed = int(env_obs_fix)
-                    except Exception:
-                        obstacles_fixed = int(getattr(self.task_config, 'fixed_obstacles_behind_gate', 0))
-                gtd['obstacles_randomization/disabled'] = obstacles_disable
-                gtd['obstacles_randomization/fixed_count'] = int(max(0, obstacles_fixed))
-                # Static camera orientation randomization ablation flag
-                try:
-                    env_cam_orient_dis = os.getenv('SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION', None)
-                    if env_cam_orient_dis is not None:
-                        disable_cam_orient = str(env_cam_orient_dis).lower() == 'true'
-                    else:
-                        disable_cam_orient = bool(getattr(self.task_config, 'disable_static_camera_orientation_randomization', False))
-                except Exception:
-                    disable_cam_orient = bool(getattr(self.task_config, 'disable_static_camera_orientation_randomization', False))
-                gtd['static_camera_randomization/orientation_disabled'] = disable_cam_orient
-                # Mirror into the task instance for quick access
-                self.disable_static_camera_orientation_randomization = disable_cam_orient
-                # Camera noise randomization flags
-                try:
-                    env_cam_noise_dis = os.getenv('SF_DISABLE_CAMERA_NOISE_RANDOMIZATION', None)
-                    if env_cam_noise_dis is not None:
-                        disable_cam_noise = str(env_cam_noise_dis).lower() == 'true'
-                    else:
-                        disable_cam_noise = bool(getattr(self.task_config, 'disable_camera_noise_randomization', False))
-                except Exception:
-                    disable_cam_noise = bool(getattr(self.task_config, 'disable_camera_noise_randomization', False))
-                gtd['camera_randomization/noise_disabled'] = disable_cam_noise
-                # Per-camera overrides
-                try:
-                    env_drone_noise = os.getenv('SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION', None)
-                    env_static_noise = os.getenv('SF_DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION', None)
-                    if env_drone_noise is not None:
-                        gtd['camera_randomization/drone_noise_disabled'] = str(env_drone_noise).lower() == 'true'
-                    if env_static_noise is not None:
-                        gtd['camera_randomization/static_noise_disabled'] = str(env_static_noise).lower() == 'true'
-                except Exception:
-                    pass
-                # Camera frame dropout ablation flag (both drone & static)
-                try:
-                    env_cam_fd_dis = os.getenv('SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION', None)
-                    if env_cam_fd_dis is not None:
-                        disable_cam_fd = str(env_cam_fd_dis).lower() == 'true'
-                    else:
-                        disable_cam_fd = bool(getattr(self.task_config, 'disable_camera_frame_dropout_randomization', False))
-                except Exception:
-                    disable_cam_fd = bool(getattr(self.task_config, 'disable_camera_frame_dropout_randomization', False))
-                gtd['camera_randomization/frame_dropout_disabled'] = disable_cam_fd
-                # Per-camera frame-drop overrides
-                try:
-                    env_drone_fd = os.getenv('SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT', None)
-                    env_static_fd = os.getenv('SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT', None)
-                    if env_drone_fd is not None:
-                        gtd['camera_randomization/drone_frame_dropout_disabled'] = str(env_drone_fd).lower() == 'true'
-                    if env_static_fd is not None:
-                        gtd['camera_randomization/static_frame_dropout_disabled'] = str(env_static_fd).lower() == 'true'
-                except Exception:
-                    pass
-                self.disable_camera_frame_dropout_randomization = disable_cam_fd
-                self.disable_camera_noise_randomization = disable_cam_noise
-                # Spawn ablation flags (position/orientation): store in global dict
-                try:
-                    env_spawn_pos_dis = os.getenv('SF_DISABLE_SPAWN_POSITION_RANDOMIZATION', None)
-                    env_spawn_orient_dis = os.getenv('SF_DISABLE_SPAWN_ORIENTATION_RANDOMIZATION', None)
-                    if env_spawn_pos_dis is not None:
-                        disable_spawn_pos = str(env_spawn_pos_dis).lower() == 'true'
-                    else:
-                        disable_spawn_pos = bool(getattr(self.task_config, 'disable_spawn_position_randomization', False))
-                    if env_spawn_orient_dis is not None:
-                        disable_spawn_orient = str(env_spawn_orient_dis).lower() == 'true'
-                    else:
-                        disable_spawn_orient = bool(getattr(self.task_config, 'disable_spawn_orientation_randomization', False))
-                except Exception:
-                    disable_spawn_pos = bool(getattr(self.task_config, 'disable_spawn_position_randomization', False))
-                    disable_spawn_orient = bool(getattr(self.task_config, 'disable_spawn_orientation_randomization', False))
-                gtd['spawn_randomization/position_disabled'] = disable_spawn_pos
-                gtd['spawn_randomization/orientation_disabled'] = disable_spawn_orient
-                # State noise ablation flag (pose)
-                try:
-                    env_state_noise_dis = os.getenv('SF_DISABLE_STATE_NOISE_RANDOMIZATION', None)
-                    if env_state_noise_dis is not None:
-                        disable_state_noise = str(env_state_noise_dis).lower() == 'true'
-                    else:
-                        disable_state_noise = bool(getattr(self.task_config, 'disable_state_noise_randomization', False))
-                except Exception:
-                    disable_state_noise = bool(getattr(self.task_config, 'disable_state_noise_randomization', False))
-                gtd['state_randomization/noise_disabled'] = disable_state_noise
-                self.disable_state_noise_randomization = disable_state_noise
-                
-                # Dynamic camera following ablation flag
-                try:
-                    env_dynamic_camera_dis = os.environ.get('disable_dynamic_camera_following', None)
-                    if env_dynamic_camera_dis is not None:
-                        disable_dynamic_camera = str(env_dynamic_camera_dis).lower() == 'true'
-                    else:
-                        disable_dynamic_camera = bool(getattr(self.task_config, 'disable_dynamic_camera_following', False))
-                except Exception:
-                    disable_dynamic_camera = bool(getattr(self.task_config, 'disable_dynamic_camera_following', False))
-                gtd['dynamic_camera_following/disabled'] = disable_dynamic_camera
-                self.disable_dynamic_camera_following = disable_dynamic_camera
-                # Static camera yaw sweep controls (curriculum-independent for now)
-                try:
-                    yaw_sweep_enabled = str(os.getenv('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
-                    yaw_sweep_speed_deg = float(os.getenv('SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG', '10.0'))
-                except Exception:
-                    yaw_sweep_enabled = False
-                    yaw_sweep_speed_deg = 10.0
-                gtd['static_camera/yaw_sweep_enabled'] = 'true' if yaw_sweep_enabled else 'false'
-                gtd['static_camera/yaw_sweep_speed_deg'] = float(yaw_sweep_speed_deg)
-                # Locked-follow mode: position fixed, orientation always points at the drone
-                try:
-                    locked_follow = str(os.getenv('SF_STATIC_CAMERA_LOCKED_FOLLOW', 'false')).lower() in ('1','true','yes','y')
-                except Exception:
-                    locked_follow = False
-                gtd['static_camera/locked_follow'] = locked_follow
-                
-                # Dynamic camera following enable flag (overrides config setting)
-                try:
-                    env_dynamic_camera_enable = os.environ.get('enable_dynamic_camera_following', None)
-                    if env_dynamic_camera_enable is not None:
-                        enable_dynamic_camera = str(env_dynamic_camera_enable).lower() == 'true'
-                        # Override the config setting
-                        self.task_config.curriculum.enable_dynamic_camera_following = enable_dynamic_camera
-                        gtd['dynamic_camera_following/config_overridden'] = True
-                        logger.warning(f"[Dynamic Camera] Config overridden by command line: enable_dynamic_camera_following = {enable_dynamic_camera}")
-                    else:
-                        gtd['dynamic_camera_following/config_overridden'] = False
-                except Exception:
-                    gtd['dynamic_camera_following/config_overridden'] = False
-                
-                # Arc-follow mode (separate from dynamic following): keep camera on an arc at fixed radius from gate center
-                try:
-                    arc_follow_enabled = str(os.getenv('SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW', 'false')).lower() in ('1','true','yes','y')
-                except Exception:
-                    arc_follow_enabled = False
-                gtd['static_camera/arc_follow_enabled'] = bool(arc_follow_enabled)
-                try:
-                    arc_radius = float(os.getenv('SF_STATIC_CAMERA_ARC_RADIUS_M', '2.0'))
-                except Exception:
-                    arc_radius = 2.0
-                gtd['static_camera/arc_follow_radius_m'] = float(arc_radius)
-
-                # Dynamic camera follow offset (Y) override (only used when dynamic-follow is enabled)
-                try:
-                    dyn_off_y = float(os.getenv('SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y', '-1.0'))
-                except Exception:
-                    dyn_off_y = -1.0
-                gtd['dynamic_camera_following/offset_y_m'] = float(dyn_off_y)
-                # Dynamic follow gate blending disable flag
-                try:
-                    dis_blend = str(os.getenv('SF_DISABLE_DYNAMIC_FOLLOW_GATE_BLENDING', 'false')).lower() in ('1','true','yes','y')
-                except Exception:
-                    dis_blend = False
-                gtd['dynamic_camera_following/disable_gate_blending'] = bool(dis_blend)
-
-        except Exception:
-            pass
+        # Propagate ablation flags to global tensor dict for EnvManager to consume
+        if hasattr(self.sim_env, "global_tensor_dict"):
+            flags = parse_ablation_flags(self.task_config)
+            apply_ablation_flags_to_tensor_dict(
+                self.sim_env.global_tensor_dict, flags, self.task_config, logger
+            )
+            # Mirror commonly-accessed flags onto self for quick access
+            self.disable_static_camera_orientation_randomization = flags[
+                "static_camera_orient_disabled"
+            ]
+            self.disable_camera_frame_dropout_randomization = flags[
+                "camera_frame_dropout_disabled"
+            ]
+            self.disable_camera_noise_randomization = flags["camera_noise_disabled"]
+            self.disable_state_noise_randomization = flags["state_noise_disabled"]
+            self.disable_dynamic_camera_following = flags[
+                "dynamic_camera_following_disabled"
+            ]
 
         # Immediately select a random gate variant once after creation (safety)
         if hasattr(self.sim_env, 'apply_gate_variant_selection'):
@@ -355,41 +190,8 @@ class NavigationTaskGate(BaseTask):
         self.crashes_aggregate = 0
         self.timeouts_aggregate = 0
 
-        # Gate-specific tracking and adaptive dimensions
-        self.gate_position = torch.zeros((self.sim_env.num_envs, 3), device=self.device)
-        self.gate_approach_distance = torch.zeros(self.sim_env.num_envs, device=self.device)
-        
-        # Gate dimensions for adaptive rewards (updated per environment based on selected gate)
-        self.gate_width = torch.zeros((self.sim_env.num_envs,), device=self.device)  # Y-axis width
-        self.gate_height = torch.zeros((self.sim_env.num_envs,), device=self.device)  # Z-axis height  
-        self.gate_center_height = torch.zeros((self.sim_env.num_envs,), device=self.device)  # Center height for rewards
-        
-        # Gate scale factors for each environment (will be updated when gate is selected)
-        self.gate_scale_factors = torch.ones((self.sim_env.num_envs,), device=self.device)
-
-        # Initialize single shared VAE model for both drone and static cameras
-        # This optimization reduces GPU memory usage by ~50% compared to loading two separate models
-        if self.task_config.vae_config.use_vae:
-            self.shared_vae_model = VAEImageEncoder(config=self.task_config.vae_config, device=self.device)
-            self.image_latents = torch.zeros(
-                (self.sim_env.num_envs, self.task_config.vae_config.latent_dims),
-                device=self.device,
-                requires_grad=False,
-            )
-            # Reuse the same VAE model for static camera processing
-            self.static_image_latents = torch.zeros(
-                (self.sim_env.num_envs, self.task_config.vae_config.latent_dims),  # Same latent dims
-                device=self.device,
-                requires_grad=False,
-            )
-        else:
-            self.shared_vae_model = lambda x: x
-            self.image_latents = torch.zeros(
-                (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
-            )
-            self.static_image_latents = torch.zeros(
-                (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
-            )
+        self._init_gate_tracking_tensors()
+        self._init_vae_model()
 
         # Static camera management using Isaac Gym native API
         self.static_camera_manager = StaticCameraManager(self.sim_env, self.task_config)
@@ -624,10 +426,7 @@ class NavigationTaskGate(BaseTask):
         
         logger.info(f"   8. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
         # Curriculum multiplier debug (initial) - compute fraction directly (attribute may not exist yet)
-        try:
-            cm_disabled = str(os.environ.get('SF_DISABLE_CURRICULUM_MULTIPLIER', 'false')).lower() == 'true'
-        except Exception:
-            cm_disabled = False
+        cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
         if not cm_disabled:
             try:
                 cm_disabled = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
@@ -661,13 +460,83 @@ class NavigationTaskGate(BaseTask):
         self.truncations = self.obs_dict["truncations"]
         self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
 
-        # Enhanced observation space for gate navigation with static camera
+        self._init_observation_action_spaces()
+        self._init_task_observations()
+
+        self.num_task_steps = 0
+        
+        # Curriculum logging already initialized earlier in __init__
+
+        self.pos_error_vehicle_frame = torch.zeros(
+            self.num_envs, 3, device=self.device
+        )
+        self.pos_error_vehicle_frame_prev = torch.zeros(
+            self.num_envs, 3, device=self.device
+        )
+        self.gate_passed = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        # Episode-level tracking flags
+        self._ep_target_success_flag = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        self.camera_alignment_debug = torch.zeros(self.num_envs, device=self.device)
+        self.num_task_steps = 0
+        self.curriculum_progress_fraction = 0.0
+        
+        self._init_episode_reward_tracking()
+        self._init_episode_trajectory_state()
+        
+        # Initialize gate dimensions for all environments after full initialization
+        logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
+        self.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
+        
+        # Ensure infos survive resets for logging back to the learner
+        self._infos_to_return = None
+
+    # ------------------------------------------------------------------
+    # Private init helpers (extracted from __init__ for readability)
+    # ------------------------------------------------------------------
+
+    def _init_gate_tracking_tensors(self):
+        """Initialise gate-specific tracking tensors and adaptive dimensions."""
+        self.gate_position = torch.zeros((self.sim_env.num_envs, 3), device=self.device)
+        self.gate_approach_distance = torch.zeros(self.sim_env.num_envs, device=self.device)
+        self.gate_width = torch.zeros((self.sim_env.num_envs,), device=self.device)
+        self.gate_height = torch.zeros((self.sim_env.num_envs,), device=self.device)
+        self.gate_center_height = torch.zeros((self.sim_env.num_envs,), device=self.device)
+        self.gate_scale_factors = torch.ones((self.sim_env.num_envs,), device=self.device)
+
+    def _init_vae_model(self):
+        """Set up shared VAE encoder (or identity fallback) and latent buffers."""
+        if self.task_config.vae_config.use_vae:
+            self.shared_vae_model = VAEImageEncoder(
+                config=self.task_config.vae_config, device=self.device
+            )
+            latent_dims = self.task_config.vae_config.latent_dims
+            self.image_latents = torch.zeros(
+                (self.sim_env.num_envs, latent_dims),
+                device=self.device,
+                requires_grad=False,
+            )
+            self.static_image_latents = torch.zeros(
+                (self.sim_env.num_envs, latent_dims),
+                device=self.device,
+                requires_grad=False,
+            )
+        else:
+            self.shared_vae_model = lambda x: x
+            self.image_latents = torch.zeros(
+                (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
+            )
+            self.static_image_latents = torch.zeros(
+                (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
+            )
+
+    def _init_observation_action_spaces(self):
+        """Define Gymnasium observation and action spaces."""
         self.observation_space = Dict(
             {
                 "observations": Box(
                     low=-1.0,
                     high=1.0,
-                    shape=(self.task_config.observation_space_dim,),  # 150D: 3D drone position + 6D static camera pose + 3D full orientation + 10D state + 64D drone VAE + 64D static camera VAE
+                    shape=(self.task_config.observation_space_dim,),
                     dtype=np.float32,
                 ),
                 "image_obs": Box(
@@ -678,10 +547,12 @@ class NavigationTaskGate(BaseTask):
                 ),
             }
         )
-        self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)  # 4D action space
+        self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
         self.action_transformation_function = self.task_config.action_transformation_function
         self.num_envs = self.sim_env.num_envs
-        # Enhanced task observations for gate navigation
+
+    def _init_task_observations(self):
+        """Allocate task observation tensors."""
         self.task_obs = {
             "observations": torch.zeros(
                 (self.sim_env.num_envs, self.task_config.observation_space_dim),
@@ -704,24 +575,8 @@ class NavigationTaskGate(BaseTask):
             ),
         }
 
-        self.num_task_steps = 0
-        
-        # Curriculum logging already initialized earlier in __init__
-
-        self.pos_error_vehicle_frame = torch.zeros(
-            self.num_envs, 3, device=self.device
-        )
-        self.pos_error_vehicle_frame_prev = torch.zeros(
-            self.num_envs, 3, device=self.device
-        )
-        self.gate_passed = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
-        # Episode-level tracking flags
-        self._ep_target_success_flag = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
-        self.camera_alignment_debug = torch.zeros(self.num_envs, device=self.device)
-        self.num_task_steps = 0
-        self.curriculum_progress_fraction = 0.0
-        
-        # EPISODE-LEVEL REWARD TRACKING: Track cumulative contributions per episode
+    def _init_episode_reward_tracking(self):
+        """Allocate per-component episode reward accumulators and statistics tensors."""
         self.episode_pos_reward = torch.zeros(self.num_envs, device=self.device)
         self.episode_very_close_reward = torch.zeros(self.num_envs, device=self.device)
         self.episode_getting_closer_reward = torch.zeros(self.num_envs, device=self.device)
@@ -732,49 +587,45 @@ class NavigationTaskGate(BaseTask):
         self.episode_gate_passage_reward = torch.zeros(self.num_envs, device=self.device)
         self.episode_collision_penalty = torch.zeros(self.num_envs, device=self.device)
         self.episode_image_reward = torch.zeros(self.num_envs, device=self.device)
-        # Static camera FOV visibility reward accumulator (shaped inside-frustum score)
         self.episode_static_fov_visibility_reward = torch.zeros(self.num_envs, device=self.device)
         self.episode_boundary_violation_penalty = torch.zeros(self.num_envs, device=self.device)
-        
-        # Track episode statistics
         self.episode_lengths = torch.zeros(self.num_envs, device=self.device)
-        # New: track time-related penalties for analysis
         self.episode_time_penalty = torch.zeros(self.num_envs, device=self.device)
         self.episode_timeout_penalty = torch.zeros(self.num_envs, device=self.device)
-        self.completed_episodes = []  # Store last 10 episode breakdowns
+        self.completed_episodes = []
         self.max_stored_episodes = 10
-        
-        # ===== Per-env episode trajectory state (replaces global buffers) =====
-        # Mark envs that have just been reset; spawn/last positions captured on first step
-        self._episode_fresh = torch.ones(self.num_envs, dtype=torch.bool, device=self.device)
-        # Spawn position captured at first step after reset
+
+    def _init_episode_trajectory_state(self):
+        """Allocate per-environment episode trajectory tracking state."""
+        self._episode_fresh = torch.ones(
+            self.num_envs, dtype=torch.bool, device=self.device
+        )
         self._ep_spawn_pos = torch.zeros((self.num_envs, 3), device=self.device)
-        # Gate center captured at spawn for a stable denominator in path efficiency
         self._ep_gate_center_at_spawn = torch.zeros((self.num_envs, 3), device=self.device)
-        # Last position for incremental path length accumulation
         self._ep_last_pos = torch.zeros((self.num_envs, 3), device=self.device)
-        # Accumulated path length within the episode
         self._ep_path_len = torch.zeros(self.num_envs, device=self.device)
-        # Per-env episode step counter (increments each step until reset)
-        self._ep_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        # Min distance to gate center observed within the episode
-        self._ep_min_gate_dist = torch.full((self.num_envs,), float('inf'), device=self.device)
-        # Crossing state and metrics captured at first crossing
-        self._ep_gate_crossed = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        self._ep_time_to_gate = torch.full((self.num_envs,), float('nan'), device=self.device)
-        self._ep_center_offset_cross = torch.full((self.num_envs,), float('nan'), device=self.device)
-        self._ep_height_offset_cross = torch.full((self.num_envs,), float('nan'), device=self.device)
-        # Boundary violation debug state for env0 (rising-edge print)
+        self._ep_steps = torch.zeros(
+            self.num_envs, dtype=torch.long, device=self.device
+        )
+        self._ep_min_gate_dist = torch.full(
+            (self.num_envs,), float("inf"), device=self.device
+        )
+        self._ep_gate_crossed = torch.zeros(
+            self.num_envs, dtype=torch.bool, device=self.device
+        )
+        self._ep_time_to_gate = torch.full(
+            (self.num_envs,), float("nan"), device=self.device
+        )
+        self._ep_center_offset_cross = torch.full(
+            (self.num_envs,), float("nan"), device=self.device
+        )
+        self._ep_height_offset_cross = torch.full(
+            (self.num_envs,), float("nan"), device=self.device
+        )
         self._bv_prev_env0 = False
-        # Boundary violation per-episode flag (one-shot per env)
-        self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        
-        # Initialize gate dimensions for all environments after full initialization
-        logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
-        self.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
-        
-        # Ensure infos survive resets for logging back to the learner
-        self._infos_to_return = None
+        self._bv_flag_episode = torch.zeros(
+            self.num_envs, dtype=torch.bool, device=self.device
+        )
 
     def logging_sanity_check(self, infos):
         """Sanity check for logging to detect issues with success/crash/timeout logic."""
@@ -2024,115 +1875,8 @@ class NavigationTaskGate(BaseTask):
         # Apply the image rewards
         self.rewards[~self.terminations] += image_rewards
 
-    def get_return_tuple(self):
-        self.process_obs_for_task()
-        # If we have stashed infos from the previous step (pre-reset), use them once
-        if hasattr(self, '_infos_to_return') and self._infos_to_return is not None:
-            infos_to_return = self._infos_to_return
-            self._infos_to_return = None
-        else:
-            infos_to_return = self.infos
-        
-        # ADDITIONAL DEBUG: Verify observations in get_return_tuple (called every step)
-        if not hasattr(self, '_return_tuple_debug_printed'):
-            self._return_tuple_debug_printed = True
-            logger.warning("🎯 OBSERVATION VERIFICATION IN get_return_tuple():")
-            
-            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
-                obs_shape = self.task_obs['observations'].shape
-                logger.warning(f"📊 Final task_obs shape: {obs_shape}")
-                
-                if obs_shape[1] >= 150:
-                    obs_sample = self.task_obs["observations"][0]
-                    
-                    # Core verification of static camera data
-                    static_pos = obs_sample[3:6]
-                    static_orient = obs_sample[6:9]
-                    static_vae = obs_sample[86:150] if obs_shape[1] >= 150 else obs_sample[86:]
-                    
-                    logger.warning(f"🔍 FINAL VERIFICATION:")
-                    logger.warning(f"  Static pos: {static_pos.cpu().numpy()}")
-                    logger.warning(f"  Static orient: {static_orient.cpu().numpy()}")
-                    logger.warning(f"  Static VAE range: [{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]")
-                    
-                    # Check if properly populated
-                    pos_nonzero = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
-                    orient_nonzero = not torch.allclose(static_orient, torch.zeros_like(static_orient), atol=1e-6) 
-                    vae_nonzero = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
-                    
-                    logger.warning(f"  ✅ Static camera working: pos={pos_nonzero}, orient={orient_nonzero}, vae={vae_nonzero}")
-                    
-                    if not (pos_nonzero and orient_nonzero and vae_nonzero):
-                        logger.error("❌ CRITICAL: Static camera data is missing!")
-                    else:
-                        logger.warning("✅ SUCCESS: All static camera data populated correctly!")
-                else:
-                    logger.error(f"❌ WRONG OBSERVATION DIMENSION: {obs_shape[1]} (expected 150)")
-            else:
-                logger.error("❌ task_obs not available in get_return_tuple")
-        # Periodic static camera obs debug (env 0): print every 120 steps
-        try:
-            if hasattr(self, 'num_task_steps') and (int(self.num_task_steps) % 120 == 0):
-                if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
-                    obs_all = self.task_obs['observations']
-                    if obs_all.shape[0] > 0 and obs_all.shape[1] >= 9:
-                        sp = obs_all[0, 3:6]
-                        so = obs_all[0, 6:9]
-                        # Drone and camera world positions
-                        rp = self.obs_dict.get('robot_position', None)
-                        rp0 = rp[0] if isinstance(rp, torch.Tensor) and rp.shape[0] > 0 else torch.zeros(3, device=self.device)
-                        cw = getattr(self, '_debug_cam_world', None)
-                        cw0 = cw[0] if isinstance(cw, torch.Tensor) and cw.shape[0] > 0 else torch.zeros(3, device=self.device)
-                        # Drone & camera world orientations (Euler)
-                        de = getattr(self, '_debug_drone_eul', None)
-                        ce = getattr(self, '_debug_cam_eul', None)
-                        de0 = de[0] if isinstance(de, torch.Tensor) and de.shape[0] > 0 else torch.zeros(3, device=self.device)
-                        ce0 = ce[0] if isinstance(ce, torch.Tensor) and ce.shape[0] > 0 else torch.zeros(3, device=self.device)
-        except Exception:
-            pass
-        
-        # Update camera modes in priority order: arc-follow (new mode) > dynamic-follow > yaw-sweep/locked-follow
-        dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
-        dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
-        arc_follow_enabled = bool(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_enabled', False))
-        
-        if arc_follow_enabled:
-            self.static_camera_manager.update_arc_follow(
-                self.obs_dict["robot_position"],
-                self.gate_position,
-                self.gate_center_height,
-                float(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_radius_m', 2.0))
-            )
-        elif dynamic_enabled and not dynamic_disabled:
-            self.static_camera_manager.update_dynamic_camera_following(
-                self.obs_dict["robot_position"], 
-                self.gate_position, 
-                self.gate_center_height
-            )
-        
-        # If static camera yaw sweep is enabled, update static camera orientation every frame
-        try:
-            gtd = self.sim_env.global_tensor_dict
-            sweep_enabled_flag = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
-            # Do not run sweep updates when dynamic following is active
-            locked_follow = bool(gtd.get('static_camera/locked_follow', False))
-            if locked_follow and not (dynamic_enabled and not dynamic_disabled) and not arc_follow_enabled:
-                # Update orientation-only to keep the drone centered
-                self.static_camera_manager.update_locked_follow(self.obs_dict["robot_position"]) 
-            elif sweep_enabled_flag and not (dynamic_enabled and not dynamic_disabled) and not arc_follow_enabled:
-                env_ids_all = torch.arange(self.sim_env.num_envs, device=self.device)
-                self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids_all)
-                # Temporary debug for yaw sweep status (print ~once every 5 seconds at 60Hz)
-                try:
-                    sim_steps = int(gtd.get('sim_steps', torch.tensor([0], device=self.device))[0].item())
-                except Exception:
-                    sim_steps = 0
-                # Reduce spam: every 300 steps instead of every 60
-                if (sim_steps % 300) == 0:
-                    logger.warning("[YawSweep] Camera orientation update running (sweeping/locked-follow active)")
-        except Exception as e:
-            logger.debug(f"[YawSweep] Per-step update skipped due to: {e}")
-
+    def _compute_visibility_metrics(self, infos_to_return):
+        """Compute geometric gate visibility and static FOV metrics (non-reward, for logging)."""
         # Geometric gate visibility metric (pose-only, no pixels)
         # Disabled by default; enable with SF_ENABLE_GEOM_VISIBILITY, static_visibility/enable, or VISIBILITY_DEBUG
         try:
@@ -2354,6 +2098,118 @@ class NavigationTaskGate(BaseTask):
                     pass
         except Exception:
             pass
+
+    def get_return_tuple(self):
+        self.process_obs_for_task()
+        # If we have stashed infos from the previous step (pre-reset), use them once
+        if hasattr(self, '_infos_to_return') and self._infos_to_return is not None:
+            infos_to_return = self._infos_to_return
+            self._infos_to_return = None
+        else:
+            infos_to_return = self.infos
+        
+        # ADDITIONAL DEBUG: Verify observations in get_return_tuple (called every step)
+        if not hasattr(self, '_return_tuple_debug_printed'):
+            self._return_tuple_debug_printed = True
+            logger.warning("🎯 OBSERVATION VERIFICATION IN get_return_tuple():")
+            
+            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+                obs_shape = self.task_obs['observations'].shape
+                logger.warning(f"📊 Final task_obs shape: {obs_shape}")
+                
+                if obs_shape[1] >= 150:
+                    obs_sample = self.task_obs["observations"][0]
+                    
+                    # Core verification of static camera data
+                    static_pos = obs_sample[3:6]
+                    static_orient = obs_sample[6:9]
+                    static_vae = obs_sample[86:150] if obs_shape[1] >= 150 else obs_sample[86:]
+                    
+                    logger.warning(f"🔍 FINAL VERIFICATION:")
+                    logger.warning(f"  Static pos: {static_pos.cpu().numpy()}")
+                    logger.warning(f"  Static orient: {static_orient.cpu().numpy()}")
+                    logger.warning(f"  Static VAE range: [{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]")
+                    
+                    # Check if properly populated
+                    pos_nonzero = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
+                    orient_nonzero = not torch.allclose(static_orient, torch.zeros_like(static_orient), atol=1e-6) 
+                    vae_nonzero = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
+                    
+                    logger.warning(f"  ✅ Static camera working: pos={pos_nonzero}, orient={orient_nonzero}, vae={vae_nonzero}")
+                    
+                    if not (pos_nonzero and orient_nonzero and vae_nonzero):
+                        logger.error("❌ CRITICAL: Static camera data is missing!")
+                    else:
+                        logger.warning("✅ SUCCESS: All static camera data populated correctly!")
+                else:
+                    logger.error(f"❌ WRONG OBSERVATION DIMENSION: {obs_shape[1]} (expected 150)")
+            else:
+                logger.error("❌ task_obs not available in get_return_tuple")
+        # Periodic static camera obs debug (env 0): print every 120 steps
+        try:
+            if hasattr(self, 'num_task_steps') and (int(self.num_task_steps) % 120 == 0):
+                if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+                    obs_all = self.task_obs['observations']
+                    if obs_all.shape[0] > 0 and obs_all.shape[1] >= 9:
+                        sp = obs_all[0, 3:6]
+                        so = obs_all[0, 6:9]
+                        # Drone and camera world positions
+                        rp = self.obs_dict.get('robot_position', None)
+                        rp0 = rp[0] if isinstance(rp, torch.Tensor) and rp.shape[0] > 0 else torch.zeros(3, device=self.device)
+                        cw = getattr(self, '_debug_cam_world', None)
+                        cw0 = cw[0] if isinstance(cw, torch.Tensor) and cw.shape[0] > 0 else torch.zeros(3, device=self.device)
+                        # Drone & camera world orientations (Euler)
+                        de = getattr(self, '_debug_drone_eul', None)
+                        ce = getattr(self, '_debug_cam_eul', None)
+                        de0 = de[0] if isinstance(de, torch.Tensor) and de.shape[0] > 0 else torch.zeros(3, device=self.device)
+                        ce0 = ce[0] if isinstance(ce, torch.Tensor) and ce.shape[0] > 0 else torch.zeros(3, device=self.device)
+        except Exception:
+            pass
+        
+        # Update camera modes in priority order: arc-follow (new mode) > dynamic-follow > yaw-sweep/locked-follow
+        dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+        dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+        arc_follow_enabled = bool(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_enabled', False))
+        
+        if arc_follow_enabled:
+            self.static_camera_manager.update_arc_follow(
+                self.obs_dict["robot_position"],
+                self.gate_position,
+                self.gate_center_height,
+                float(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_radius_m', 2.0))
+            )
+        elif dynamic_enabled and not dynamic_disabled:
+            self.static_camera_manager.update_dynamic_camera_following(
+                self.obs_dict["robot_position"], 
+                self.gate_position, 
+                self.gate_center_height
+            )
+        
+        # If static camera yaw sweep is enabled, update static camera orientation every frame
+        try:
+            gtd = self.sim_env.global_tensor_dict
+            sweep_enabled_flag = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
+            # Do not run sweep updates when dynamic following is active
+            locked_follow = bool(gtd.get('static_camera/locked_follow', False))
+            if locked_follow and not (dynamic_enabled and not dynamic_disabled) and not arc_follow_enabled:
+                # Update orientation-only to keep the drone centered
+                self.static_camera_manager.update_locked_follow(self.obs_dict["robot_position"]) 
+            elif sweep_enabled_flag and not (dynamic_enabled and not dynamic_disabled) and not arc_follow_enabled:
+                env_ids_all = torch.arange(self.sim_env.num_envs, device=self.device)
+                self.static_camera_manager.update_camera_positions(self.curriculum_level, env_ids_all)
+                # Temporary debug for yaw sweep status (print ~once every 5 seconds at 60Hz)
+                try:
+                    sim_steps = int(gtd.get('sim_steps', torch.tensor([0], device=self.device))[0].item())
+                except Exception:
+                    sim_steps = 0
+                # Reduce spam: every 300 steps instead of every 60
+                if (sim_steps % 300) == 0:
+                    logger.warning("[YawSweep] Camera orientation update running (sweeping/locked-follow active)")
+        except Exception as e:
+            logger.debug(f"[YawSweep] Per-step update skipped due to: {e}")
+
+        self._compute_visibility_metrics(infos_to_return)
+
         
         return (
             self.task_obs,
@@ -2681,10 +2537,7 @@ class NavigationTaskGate(BaseTask):
                 prev_actions_for_reward[fresh_mask] = current_actions[fresh_mask]
         
         # Curriculum multiplier ablation: pass effective fraction to scripted reward
-        try:
-            cm_disabled = str(os.environ.get('SF_DISABLE_CURRICULUM_MULTIPLIER', 'false')).lower() == 'true'
-        except Exception:
-            cm_disabled = False
+        cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
         if not cm_disabled:
             try:
                 cm_disabled = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
@@ -2699,59 +2552,7 @@ class NavigationTaskGate(BaseTask):
         frac_eff = 0.0 if cm_disabled else float(frac_current)
         self._curriculum_multiplier_factor = 1.0 + 0.5 * frac_eff
 
-        # Compute one-shot boundary violation mask in Python: trigger when crossing to front side
-        # outside passage window and not yet passed in this episode; apply once and latch
-        try:
-            y_margin = 0.2
-            behind_gate_mask = (robot_position[:, 1] > (self.gate_position[:, 1] + y_margin))
-            gate_passage_width_tolerance = self.gate_width * 0.5
-            gate_min_height = self.gate_position[:, 2] + self.gate_height * 0.0
-            gate_max_height = self.gate_position[:, 2] + self.gate_height * 1.0
-            within_passage_window = (
-                (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_passage_width_tolerance)
-                & (robot_position[:, 2] > gate_min_height)
-                & (robot_position[:, 2] < gate_max_height)
-            )
-            misaligned_cross_mask = behind_gate_mask & (~within_passage_window) & (~self.gate_passed)
-            # Latch: apply penalty only once per episode per env
-            if not hasattr(self, '_bv_flag_episode'):
-                self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-            boundary_violation_one_shot_mask = misaligned_cross_mask & (~self._bv_flag_episode)
-            # Update latch for envs that just violated
-            self._bv_flag_episode |= boundary_violation_one_shot_mask
-            # Debug detection: log when boundary violation triggers, including where it happened
-            # if getattr(self.task_config, 'guard_debug_enabled', True) and torch.any(boundary_violation_one_shot_mask):
-            #     try:
-            #         _ids = torch.nonzero(boundary_violation_one_shot_mask, as_tuple=False).squeeze(-1).tolist()
-            #         logger.warning(f"[BoundaryViolation] One-shot penalty applied in envs {_ids}")
-            #         # Print per-env details (limit to first few to avoid spam)
-            #         try:
-            #             max_list = int(getattr(self.task_config, 'reward_outlier_log_limit_per_step', 8))
-            #         except Exception:
-            #             max_list = 8
-            #         for eid in _ids[:max_list]:
-            #             try:
-            #                 rx = float(self.obs_dict["robot_position"][eid, 0].item())
-            #                 ry = float(self.obs_dict["robot_position"][eid, 1].item())
-            #                 rz = float(self.obs_dict["robot_position"][eid, 2].item())
-            #                 gx = float(self.gate_position[eid, 0].item())
-            #                 gy = float(self.gate_position[eid, 1].item())
-            #                 gz = float(self.gate_position[eid, 2].item())
-            #                 gw = float(self.gate_width[eid].item() if hasattr(self.gate_width, 'shape') else self.gate_width)
-            #                 gh = float(self.gate_height[eid].item() if hasattr(self.gate_height, 'shape') else self.gate_height)
-            #                 tol = float((self.gate_width[eid] * 0.5).item()) if hasattr(self.gate_width, 'shape') else float(self.gate_width * 0.5)
-            #                 zmin = float(gz + 0.0 * gh)
-            #                 zmax = float(gz + 1.0 * gh)
-            #                 x_off = abs(rx - gx)
-            #                 logger.warning(
-            #                     f"[BoundaryViolation] Env{eid} pos=({rx:.3f},{ry:.3f},{rz:.3f}), gate_y={gy:.3f}, x_off={x_off:.3f} (tol={tol:.3f}), z_window=({zmin:.3f},{zmax:.3f}), gate_size=(w={gw:.3f}, h={gh:.3f})"
-            #                 )
-            #             except Exception:
-            #                 pass
-            #     except Exception:
-            #         pass
-        except Exception:
-            boundary_violation_one_shot_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        boundary_violation_one_shot_mask = self._detect_boundary_violation(robot_position)
 
         # Disable nvFuser optimizations for this scripted block to avoid CUDA fuser fallback warnings
         # (no change in semantics; prevents noisy warnings from TorchScript fuser)
@@ -2944,6 +2745,36 @@ class NavigationTaskGate(BaseTask):
             pass
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
         self.update_episode_reward_tracking(obs_dict, rewards, crashes)
+        self._log_comprehensive_reward_debug(obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment)
+        
+        # Store camera alignment for debugging
+        self.camera_alignment_debug = camera_gate_alignment
+        
+        return rewards, crashes, camera_gate_alignment
+    def _detect_boundary_violation(self, robot_position):
+        """Detect one-shot boundary violations (crossing gate plane outside passage window)."""
+        try:
+            y_margin = 0.2
+            behind_gate_mask = robot_position[:, 1] > (self.gate_position[:, 1] + y_margin)
+            gate_passage_width_tolerance = self.gate_width * 0.5
+            gate_min_height = self.gate_position[:, 2] + self.gate_height * 0.0
+            gate_max_height = self.gate_position[:, 2] + self.gate_height * 1.0
+            within_passage_window = (
+                (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_passage_width_tolerance)
+                & (robot_position[:, 2] > gate_min_height)
+                & (robot_position[:, 2] < gate_max_height)
+            )
+            misaligned_cross_mask = behind_gate_mask & (~within_passage_window) & (~self.gate_passed)
+            if not hasattr(self, "_bv_flag_episode"):
+                self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+            boundary_violation_one_shot_mask = misaligned_cross_mask & (~self._bv_flag_episode)
+            self._bv_flag_episode |= boundary_violation_one_shot_mask
+        except Exception:
+            boundary_violation_one_shot_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        return boundary_violation_one_shot_mask
+
+    def _log_comprehensive_reward_debug(self, obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment):
+        """Recalculate and log all reward components (every 200 steps, gated by config flag)."""
         # COMPREHENSIVE REWARD DEBUGGING: Print ALL reward components every 200 steps
         # Disabled by default via config flag `enable_comprehensive_reward_debug`
         if (
@@ -3388,11 +3219,395 @@ class NavigationTaskGate(BaseTask):
                     logger.warning(f"[RewardOutlier] dist={_dist.tolist()} y={_y.tolist()} boundary_violation={_bv}")
         except Exception:
             pass
+
+    def _log_curriculum_details(self, success_rate, crash_rate, timeout_rate, obstacles_behind_gate, total_obstacles_in_env):
+        """Log comprehensive curriculum state after level update."""
+        # ===== COMPREHENSIVE CURRICULUM LOGGING =====
+        self.log_curriculum_update(f"Gate Navigation Curriculum Level: {self.curriculum_level}, Progress: {self.curriculum_progress_fraction:.3f}")
+        self.log_curriculum_update(f"\nSuccess Rate: {success_rate:.3f}\nCrash Rate: {crash_rate:.3f}\nTimeout Rate: {timeout_rate:.3f}")
         
-        # Store camera alignment for debugging
-        self.camera_alignment_debug = camera_gate_alignment
+        self.log_curriculum_update(f"\nCURRICULUM APPLIED:")
+        # Report yaw sweep status in curriculum update debug (takes precedence over orientation randomization)
+        try:
+            yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
+            yaw_speed = float(os.environ.get('SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG', '10.0'))
+        except Exception:
+            yaw_enabled = False
+            yaw_speed = 10.0
+        # Determine dynamic camera effective state (needed below)
+        try:
+            dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+            dynamic_effective = bool(dyn_cfg and not dyn_dis)
+        except Exception:
+            dynamic_effective = False
+        # Report sweep with effective status and orientation/dynamic interactions
+        if yaw_enabled and not dynamic_effective:
+            self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: ENABLED (speed={yaw_speed:.1f} deg/s)")
+        elif yaw_enabled and dynamic_effective:
+            self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: ENABLED but IGNORED (dynamic camera active)")
+        else:
+            self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: DISABLED")
+        # Report arc-follow status
+        try:
+            arc_follow_enabled = bool(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_enabled', False))
+            arc_radius = float(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_radius_m', 2.0))
+        except Exception:
+            arc_follow_enabled = False
+            arc_radius = 2.0
+        if arc_follow_enabled:
+            self.log_curriculum_update(f"   3b. STATIC CAMERA ARC-FOLLOW: ENABLED (radius={arc_radius:.1f} m)")
+        if obs_dis:
+            self.log_curriculum_update(f"   1. OBSTACLES: fixed to {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
+        else:
+            self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
+        try:
+            baseline_level = int(getattr(self.task_config.curriculum, 'min_level', 3))
+            pos_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/position_disabled', False))
+            yaw_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
+            sr_active = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
+            sr_base = self.task_config.curriculum.get_spawn_ranges(baseline_level)
+            sr_use = {
+                'x_half_span_m': sr_base['x_half_span_m'] if pos_dis else sr_active['x_half_span_m'],
+                'y_center_m':    sr_base['y_center_m']    if pos_dis else sr_active['y_center_m'],
+                'y_half_span_m': sr_base['y_half_span_m'] if pos_dis else sr_active['y_half_span_m'],
+                'z_center_m':    sr_base['z_center_m']    if pos_dis else sr_active['z_center_m'],
+                'z_half_span_m': sr_base['z_half_span_m'] if pos_dis else sr_active['z_half_span_m'],
+                'yaw_abs_rad':   sr_base['yaw_abs_rad']   if yaw_dis else sr_active['yaw_abs_rad'],
+            }
+            if pos_dis or yaw_dis:
+                status_pos = "DISABLED" if pos_dis else "ENABLED"
+                status_yaw = "DISABLED" if yaw_dis else "ENABLED"
+                self.log_curriculum_update(f"   2. SPAWN RANDOMIZATION: position={status_pos}, orientation={status_yaw}")
+            self.log_curriculum_update(
+                f"   2. SPAWN: X∈[{(-sr_use['x_half_span_m']):.1f}, {(+sr_use['x_half_span_m']):.1f}] m, "
+                f"Y∈[{(sr_use['y_center_m']-sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m']+sr_use['y_half_span_m']):.1f}] m, "
+                f"Z∈[{(sr_use['z_center_m']-sr_use['z_half_span_m']):.1f}, {(sr_use['z_center_m']+sr_use['z_half_span_m']):.1f}] m; yaw ±{(sr_use['yaw_abs_rad']*57.2958):.1f}°"
+            )
+        except Exception as e:
+            self.log_curriculum_update(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
+        # Get current randomized angle for first environment (representative)
+        current_angle = 0.0
+        if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
+            current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
+        # Report static camera orientation randomization status (only relevant when yaw sweep is DISABLED)
+        try:
+            cam_orient_disabled = bool(self.sim_env.global_tensor_dict.get('static_camera_randomization/orientation_disabled', False))
+        except Exception:
+            cam_orient_disabled = False
+        if yaw_enabled and not dynamic_effective:
+            self.log_curriculum_update(f"   4. CAMERA ANGLE: overridden by yaw sweep (env0 current: {current_angle:.1f}°)")
+        elif dynamic_effective:
+            self.log_curriculum_update(f"   4. CAMERA ANGLE: suppressed (dynamic camera following active)")
+        elif cam_orient_disabled:
+            self.log_curriculum_update(f"   4. CAMERA ANGLE: randomization DISABLED, fixed at 0.0° (env0: {current_angle:.1f}°)")
+        else:
+            self.log_curriculum_update(f"   4. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
         
-        return rewards, crashes, camera_gate_alignment
+        # 4. GATE SIZE UNLOCKS (Curriculum-gated randomization) or Fixed (ablation)
+        if hasattr(self.sim_env, 'global_tensor_dict'):
+            gate_names = []
+            if len(self.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])) > 0:
+                gate_names = self.sim_env.global_tensor_dict["gate_variant_names_per_env"][0]
+            # Report fixed mode if enabled
+            disable_flag = self.sim_env.global_tensor_dict.get('gate_randomization/disabled', False)
+            try:
+                if hasattr(disable_flag, 'item'):
+                    disable_flag = bool(disable_flag.item())
+                else:
+                    disable_flag = bool(disable_flag)
+            except Exception:
+                disable_flag = False
+            if disable_flag:
+                try:
+                    fixed_scale = self.sim_env.global_tensor_dict.get('gate_randomization/fixed_scale_percent', 100)
+                    if hasattr(fixed_scale, 'item'):
+                        fixed_scale = int(fixed_scale.item())
+                    else:
+                        fixed_scale = int(fixed_scale)
+                except Exception:
+                    fixed_scale = 100
+                self.log_curriculum_update(f"   4. GATE SIZE: randomization disabled, fixed scale = {fixed_scale}%")
+            else:
+                # Compute linear threshold from 80 -> 60 over levels 3..23
+                # If EVAL_STRETCH_ENABLED, extend further to 50% by eval_end_level
+                import os as _os
+                stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+                eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(getattr(self.task_config.curriculum, 'eval_stretch_end_level', 33))))
+                level = int(self.curriculum_level)
+                if level <= 3:
+                    min_scale = 80
+                elif level <= 23:
+                    frac = (level - 3) / (23 - 3)
+                    raw = 80 - frac * (80 - 60)
+                    min_scale = int((int(raw) // 2) * 2)
+                elif stretch_enabled:
+                    # Extend 23->eval_end: 60% -> 50% linearly
+                    if level >= eval_end:
+                        min_scale = 50
+                    else:
+                        extra_frac = (level - 23) / max(1, (eval_end - 23))
+                        raw = 60 - extra_frac * (60 - 50)
+                        min_scale = int((int(raw) // 2) * 2)
+                else:
+                    min_scale = 60
+                if min_scale < 50:
+                    min_scale = 50
+                if min_scale > 100:
+                    min_scale = 100
+                # Collect scales meeting threshold
+                scales = []
+                for n in gate_names:
+                    if isinstance(n, str) and "gate_scale_" in n:
+                        try:
+                            s = int(n.replace("gate_scale_", ""))
+                            if s >= min_scale:
+                                scales.append(s)
+                        except:
+                            pass
+                # Report unique scales only (avoid duplicates from config classes)
+                scales = sorted(list(set(scales)), reverse=True)
+                self.log_curriculum_update(f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> {scales if scales else [100]} (uniform across unique scales)")
+        
+        # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
+        camera_gaussian_std, camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
+        try:
+            cam_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False))
+        except Exception:
+            cam_noise_disabled = False
+        # Per-camera overrides for noise (presence-based overrides)
+        try:
+            gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+            drone_noise_key_present = 'camera_randomization/drone_noise_disabled' in gtd
+            static_noise_key_present = 'camera_randomization/static_noise_disabled' in gtd
+            drone_noise_flag = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if drone_noise_key_present else cam_noise_disabled
+            static_noise_flag = bool(gtd.get('camera_randomization/static_noise_disabled', False)) if static_noise_key_present else cam_noise_disabled
+        except Exception:
+            drone_noise_flag = cam_noise_disabled
+            static_noise_flag = cam_noise_disabled
+        # Level-3 fallbacks when disabled
+        d_std_min, d_drop_min = self.task_config.curriculum.get_camera_noise(3)
+        eff_drone_std = camera_gaussian_std if not drone_noise_flag else d_std_min
+        eff_static_std = camera_gaussian_std if not static_noise_flag else d_std_min
+        eff_drone_drop = camera_dropout_rate if not drone_noise_flag else d_drop_min
+        eff_static_drop = camera_dropout_rate if not static_noise_flag else d_drop_min
+        self.log_curriculum_update(
+            f"   5. CAMERA NOISE: drone(std={eff_drone_std:.4f}, pixel_drop={eff_drone_drop*100:.1f}%), static(std={eff_static_std:.4f}, pixel_drop={eff_static_drop*100:.1f}%)"
+        )
+        
+        # 6. CAMERA FRAME DROPOUT (entire-frame)
+        fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+        try:
+            cam_fd_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False))
+        except Exception:
+            cam_fd_disabled = False
+        # Per-camera overrides for frame dropout (presence-based overrides)
+        try:
+            gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+            drone_fd_key_present = 'camera_randomization/drone_frame_dropout_disabled' in gtd
+            static_fd_key_present = 'camera_randomization/static_frame_dropout_disabled' in gtd
+            drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if drone_fd_key_present else cam_fd_disabled
+            static_fd_flag = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False)) if static_fd_key_present else cam_fd_disabled
+        except Exception:
+            drone_fd_flag = cam_fd_disabled
+            static_fd_flag = cam_fd_disabled
+        # After change: when disabled, show level-3 minimum totals instead of 0
+        fd_min = self.task_config.curriculum.get_camera_frame_dropout(3)
+        eff_drone_tot = fd['drone_total'] if not drone_fd_flag else fd_min['drone_total']
+        eff_static_tot = fd['static_total'] if not static_fd_flag else fd_min['static_total']
+        eff_drone_freeze = fd['drone_freeze'] if not drone_fd_flag else fd_min['drone_freeze']
+        eff_drone_blank = fd['drone_blank'] if not drone_fd_flag else fd_min['drone_blank']
+        eff_static_freeze = fd['static_freeze'] if not static_fd_flag else fd_min['static_freeze']
+        eff_static_blank = fd['static_blank'] if not static_fd_flag else fd_min['static_blank']
+        self.log_curriculum_update(
+            f"   6. CAMERA FRAME DROPOUT: drone_total={eff_drone_tot*100:.1f}% (freeze {eff_drone_freeze*100:.1f}%, blank {eff_drone_blank*100:.1f}%), static_total={eff_static_tot*100:.1f}% (freeze {eff_static_freeze*100:.1f}%, blank {eff_static_blank*100:.1f}%)"
+        )
+        
+        # 7. STATE NOISE (pose)
+        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+            try:
+                state_noise_disabled = bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False))
+            except Exception:
+                state_noise_disabled = False
+            if state_noise_disabled:
+                self.log_curriculum_update("   7. STATE NOISE: DISABLED (all std=0)")
+            else:
+                sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+                self.log_curriculum_update(
+                    f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad']*57.2958:.3f} deg, "
+                    f"static_pos_std={sn['static_pos_std_m']:.4f} m, static_orient_std={sn['static_orient_std_rad']*57.2958:.3f} deg"
+                )
+        else:
+            self.log_curriculum_update("   7. STATE NOISE: disabled")
+        
+        # 8. DYNAMIC CAMERA FOLLOWING
+        dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+        try:
+            dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+            config_overridden = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/config_overridden', False))
+        except Exception:
+            dynamic_disabled = False
+            config_overridden = False
+        
+        if dynamic_enabled and not dynamic_disabled:
+            if config_overridden:
+                self.log_curriculum_update("   8. DYNAMIC CAMERA: ENABLED by flag (--enable_dynamic_camera_following=true) - camera follows drone with adaptive gate targeting")
+            else:
+                self.log_curriculum_update("   8. DYNAMIC CAMERA: ENABLED (camera follows drone with adaptive gate targeting)")
+        elif dynamic_enabled and dynamic_disabled:
+            self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED by flag (--disable_dynamic_camera_following=true)")
+        else:
+            if config_overridden:
+                self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED by flag (--enable_dynamic_camera_following=false)")
+            else:
+                self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED (static camera mode - curriculum-based positioning)")
+        
+        # Curriculum multiplier debug (update block)
+        cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
+        if not cm_disabled:
+            try:
+                cm_disabled = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
+            except Exception:
+                cm_disabled = False
+        frac_eff = 0.0 if cm_disabled else float(self.curriculum_progress_fraction)
+        factor = 1.0 + 0.5 * frac_eff
+        self.log_curriculum_update(f"   8. CURRICULUM MULTIPLIER: {'DISABLED' if cm_disabled else 'ENABLED'} (factor={factor:.3f})")
+        
+        # ===== CURRICULUM DEBUGGING: Final state after update =====
+        self.log_curriculum_update(f"[CURRICULUM UPDATE] FINAL STATE:")
+        self.log_curriculum_update(f"[CURRICULUM UPDATE]   Level: {self.curriculum_level} (range: {self.task_config.curriculum.min_level}-{self.task_config.curriculum.max_level})")
+        self.log_curriculum_update(f"[CURRICULUM UPDATE]   Max level reached: {self.max_curriculum_level_reached} (DECREASE ENABLED)")
+        self.log_curriculum_update(f"[CURRICULUM UPDATE]   Progress: {self.curriculum_progress_fraction:.3f}")
+        self.log_curriculum_update(f"[CURRICULUM UPDATE]   Obstacles behind gate: {obstacles_behind_gate} (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
+        self.log_curriculum_update(f"[CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
+        # Report spawn ablation status with effective ranges
+        try:
+            baseline_level = int(getattr(self.task_config.curriculum, 'min_level', 3))
+            pos_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/position_disabled', False))
+            yaw_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
+            sr_active = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
+            sr_base = self.task_config.curriculum.get_spawn_ranges(baseline_level)
+            sr_use = {
+                'x_half_span_m': sr_base['x_half_span_m'] if pos_dis else sr_active['x_half_span_m'],
+                'y_center_m':    sr_base['y_center_m']    if pos_dis else sr_active['y_center_m'],
+                'y_half_span_m': sr_base['y_half_span_m'] if pos_dis else sr_active['y_half_span_m'],
+                'z_center_m':    sr_base['z_center_m']    if pos_dis else sr_active['z_center_m'],
+                'z_half_span_m': sr_base['z_half_span_m'] if pos_dis else sr_active['z_half_span_m'],
+                'yaw_abs_rad':   sr_base['yaw_abs_rad']   if yaw_dis else sr_active['yaw_abs_rad'],
+            }
+            status_pos = "DISABLED" if pos_dis else "ENABLED"
+            status_yaw = "DISABLED" if yaw_dis else "ENABLED"
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Spawn randomization: position={status_pos}, orientation={status_yaw}")
+            self.log_curriculum_update(
+                f"[CURRICULUM UPDATE]   Spawn ranges: X∈[{(-sr_use['x_half_span_m']):.1f}, {(+sr_use['x_half_span_m']):.1f}] m, "
+                f"Y∈[{(sr_use['y_center_m']-sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m']+sr_use['y_half_span_m']):.1f}] m, "
+                f"Z∈[{(sr_use['z_center_m']-sr_use['z_half_span_m']):.1f}, {(sr_use['z_center_m']+sr_use['z_half_span_m']):.1f}] m; yaw ±{(sr_use['yaw_abs_rad']*57.2958):.1f}°"
+            )
+        except Exception:
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Spawn difficulty: LMF2 config (fallback)")
+        # When yaw sweep is enabled and dynamic camera is not active, suppress static camera angle randomization message
+        try:
+            yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
+        except Exception:
+            yaw_enabled = False
+        dynamic_effective = False
+        try:
+            dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+            dynamic_effective = bool(dyn_cfg and not dyn_dis)
+        except Exception:
+            dynamic_effective = False
+        if yaw_enabled and not dynamic_effective:
+            # Already logged as overridden by yaw sweep earlier
+            pass
+        else:
+            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Camera angle: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
+        
+        # ===== END CURRICULUM DEBUGGING =====
+
+    def _populate_curriculum_infos(self, success_rate, crash_rate, timeout_rate, obstacles_behind_gate, total_obstacles_in_env):
+        """Populate self.infos with curriculum metrics for wandb logging."""
+        # Add comprehensive curriculum metrics to infos for wandb logging
+        self.infos["curriculum/level"] = torch.as_tensor(self.curriculum_level, dtype=torch.float32)
+        self.infos["curriculum/progress"] = torch.as_tensor(self.curriculum_progress_fraction, dtype=torch.float32)
+        self.infos["curriculum/success_rate"] = torch.as_tensor(success_rate, dtype=torch.float32)
+        self.infos["curriculum/crash_rate"] = torch.as_tensor(crash_rate, dtype=torch.float32)
+        self.infos["curriculum/timeout_rate"] = torch.as_tensor(timeout_rate, dtype=torch.float32)
+        
+        # Add curriculum metrics
+        self.infos["curriculum/obstacles_behind_gate"] = torch.as_tensor(obstacles_behind_gate, dtype=torch.float32)
+        self.infos["curriculum/total_assets"] = torch.as_tensor(total_obstacles_in_env, dtype=torch.float32)
+        self.infos["curriculum/max_level_reached"] = torch.as_tensor(self.max_curriculum_level_reached, dtype=torch.float32)
+        
+        # Add camera noise metrics (D455 simulation) — report effective per-camera values in logs above
+        self.infos["curriculum/camera_gaussian_std"] = torch.as_tensor(camera_gaussian_std, dtype=torch.float32)
+        self.infos["curriculum/camera_dropout_rate"] = torch.as_tensor(camera_dropout_rate, dtype=torch.float32)
+        # Per-camera effective values (respecting per-camera disable overrides) — level-3 fallback when disabled
+        try:
+            gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+            drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False))
+            static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False))
+            # Level-3 minimums
+            d_std_min, d_drop_min = self.task_config.curriculum.get_camera_noise(3)
+            # Effective Gaussian std per camera
+            eff_gauss_drone = camera_gaussian_std if not drone_noise_dis else d_std_min
+            eff_gauss_static = camera_gaussian_std if not static_noise_dis else d_std_min
+            # Effective pixel dropout per camera
+            eff_drop_drone = camera_dropout_rate if not drone_noise_dis else d_drop_min
+            eff_drop_static = camera_dropout_rate if not static_noise_dis else d_drop_min
+            self.infos["curriculum/camera_noise_drone_gaussian_std"] = torch.tensor(eff_gauss_drone, dtype=torch.float32)
+            self.infos["curriculum/camera_noise_static_gaussian_std"] = torch.tensor(eff_gauss_static, dtype=torch.float32)
+            self.infos["curriculum/camera_noise_drone_dropout_rate"] = torch.tensor(eff_drop_drone, dtype=torch.float32)
+            self.infos["curriculum/camera_noise_static_dropout_rate"] = torch.tensor(eff_drop_static, dtype=torch.float32)
+        except Exception:
+            pass
+        # Add camera frame dropout metrics (effective per-camera, with level-3 fallback when disabled)
+        fd_sched = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
+        try:
+            gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+            drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False))
+            static_fd_flag = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False))
+        except Exception:
+            drone_fd_flag = False
+            static_fd_flag = False
+        fd_min = self.task_config.curriculum.get_camera_frame_dropout(3)
+        eff = {
+            'drone_total':  fd_sched['drone_total']  if not drone_fd_flag else fd_min['drone_total'],
+            'static_total': fd_sched['static_total'] if not static_fd_flag else fd_min['static_total'],
+            'drone_freeze': fd_sched['drone_freeze'] if not drone_fd_flag else fd_min['drone_freeze'],
+            'drone_blank':  fd_sched['drone_blank']  if not drone_fd_flag else fd_min['drone_blank'],
+            'static_freeze':fd_sched['static_freeze']if not static_fd_flag else fd_min['static_freeze'],
+            'static_blank': fd_sched['static_blank'] if not static_fd_flag else fd_min['static_blank'],
+        }
+        self.infos["curriculum/camera_frame_dropout_drone_total"] = torch.tensor(eff["drone_total"], dtype=torch.float32)
+        self.infos["curriculum/camera_frame_dropout_static_total"] = torch.tensor(eff["static_total"], dtype=torch.float32)
+        self.infos["curriculum/camera_frame_freeze_drone"] = torch.tensor(eff["drone_freeze"], dtype=torch.float32)
+        self.infos["curriculum/camera_frame_blank_drone"] = torch.tensor(eff["drone_blank"], dtype=torch.float32)
+        self.infos["curriculum/camera_frame_freeze_static"] = torch.tensor(eff["static_freeze"], dtype=torch.float32)
+        self.infos["curriculum/camera_frame_blank_static"] = torch.tensor(eff["static_blank"], dtype=torch.float32)
+        
+        # Add camera angle metrics
+        self.infos["curriculum/camera_max_angle"] = torch.tensor(self.max_camera_angle, dtype=torch.float32)
+        # Use first environment's angle as representative for wandb tracking
+        current_angle = 0.0
+        if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
+            current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
+        self.infos["curriculum/camera_current_angle"] = torch.tensor(current_angle, dtype=torch.float32)
+        # Track ablation flag in infos
+        try:
+            cam_orient_disabled = bool(self.sim_env.global_tensor_dict.get('static_camera_randomization/orientation_disabled', False))
+        except Exception:
+            cam_orient_disabled = False
+        self.infos["curriculum/camera_orientation_randomization_disabled"] = torch.tensor(1.0 if cam_orient_disabled else 0.0, dtype=torch.float32)
+        
+        # Add state noise metrics
+        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+            sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
+            self.infos["curriculum/state_noise_drone_pos_std_m"] = torch.tensor(sn["drone_pos_std_m"], dtype=torch.float32)
+            self.infos["curriculum/state_noise_drone_orient_std_deg"] = torch.tensor(sn["drone_orient_std_rad"]*57.2958, dtype=torch.float32)
+            self.infos["curriculum/state_noise_static_pos_std_m"] = torch.tensor(sn["static_pos_std_m"], dtype=torch.float32)
+            self.infos["curriculum/state_noise_static_orient_std_deg"] = torch.tensor(sn["static_orient_std_rad"]*57.2958, dtype=torch.float32)
+
     def check_and_update_curriculum_level(self, successes, crashes, timeouts):
         """
         COMPREHENSIVE MULTI-ASPECT CURRICULUM LEARNING SYSTEM
@@ -3621,392 +3836,9 @@ class NavigationTaskGate(BaseTask):
                 self.curriculum_level - self.task_config.curriculum.min_level
             ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
 
-            # ===== COMPREHENSIVE CURRICULUM LOGGING =====
-            self.log_curriculum_update(f"Gate Navigation Curriculum Level: {self.curriculum_level}, Progress: {self.curriculum_progress_fraction:.3f}")
-            self.log_curriculum_update(f"\nSuccess Rate: {success_rate:.3f}\nCrash Rate: {crash_rate:.3f}\nTimeout Rate: {timeout_rate:.3f}")
-            
-            self.log_curriculum_update(f"\nCURRICULUM APPLIED:")
-            # Report yaw sweep status in curriculum update debug (takes precedence over orientation randomization)
-            try:
-                yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
-                yaw_speed = float(os.environ.get('SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG', '10.0'))
-            except Exception:
-                yaw_enabled = False
-                yaw_speed = 10.0
-            # Determine dynamic camera effective state (needed below)
-            try:
-                dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
-                dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
-                dynamic_effective = bool(dyn_cfg and not dyn_dis)
-            except Exception:
-                dynamic_effective = False
-            # Report sweep with effective status and orientation/dynamic interactions
-            if yaw_enabled and not dynamic_effective:
-                self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: ENABLED (speed={yaw_speed:.1f} deg/s)")
-            elif yaw_enabled and dynamic_effective:
-                self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: ENABLED but IGNORED (dynamic camera active)")
-            else:
-                self.log_curriculum_update(f"   3. STATIC CAMERA YAW SWEEP: DISABLED")
-            # Report arc-follow status
-            try:
-                arc_follow_enabled = bool(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_enabled', False))
-                arc_radius = float(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_radius_m', 2.0))
-            except Exception:
-                arc_follow_enabled = False
-                arc_radius = 2.0
-            if arc_follow_enabled:
-                self.log_curriculum_update(f"   3b. STATIC CAMERA ARC-FOLLOW: ENABLED (radius={arc_radius:.1f} m)")
-            if obs_dis:
-                self.log_curriculum_update(f"   1. OBSTACLES: fixed to {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
-            else:
-                self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
-            try:
-                baseline_level = int(getattr(self.task_config.curriculum, 'min_level', 3))
-                pos_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/position_disabled', False))
-                yaw_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
-                sr_active = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
-                sr_base = self.task_config.curriculum.get_spawn_ranges(baseline_level)
-                sr_use = {
-                    'x_half_span_m': sr_base['x_half_span_m'] if pos_dis else sr_active['x_half_span_m'],
-                    'y_center_m':    sr_base['y_center_m']    if pos_dis else sr_active['y_center_m'],
-                    'y_half_span_m': sr_base['y_half_span_m'] if pos_dis else sr_active['y_half_span_m'],
-                    'z_center_m':    sr_base['z_center_m']    if pos_dis else sr_active['z_center_m'],
-                    'z_half_span_m': sr_base['z_half_span_m'] if pos_dis else sr_active['z_half_span_m'],
-                    'yaw_abs_rad':   sr_base['yaw_abs_rad']   if yaw_dis else sr_active['yaw_abs_rad'],
-                }
-                if pos_dis or yaw_dis:
-                    status_pos = "DISABLED" if pos_dis else "ENABLED"
-                    status_yaw = "DISABLED" if yaw_dis else "ENABLED"
-                    self.log_curriculum_update(f"   2. SPAWN RANDOMIZATION: position={status_pos}, orientation={status_yaw}")
-                self.log_curriculum_update(
-                    f"   2. SPAWN: X∈[{(-sr_use['x_half_span_m']):.1f}, {(+sr_use['x_half_span_m']):.1f}] m, "
-                    f"Y∈[{(sr_use['y_center_m']-sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m']+sr_use['y_half_span_m']):.1f}] m, "
-                    f"Z∈[{(sr_use['z_center_m']-sr_use['z_half_span_m']):.1f}, {(sr_use['z_center_m']+sr_use['z_half_span_m']):.1f}] m; yaw ±{(sr_use['yaw_abs_rad']*57.2958):.1f}°"
-                )
-            except Exception as e:
-                self.log_curriculum_update(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
-            # Get current randomized angle for first environment (representative)
-            current_angle = 0.0
-            if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
-                current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
-            # Report static camera orientation randomization status (only relevant when yaw sweep is DISABLED)
-            try:
-                cam_orient_disabled = bool(self.sim_env.global_tensor_dict.get('static_camera_randomization/orientation_disabled', False))
-            except Exception:
-                cam_orient_disabled = False
-            if yaw_enabled and not dynamic_effective:
-                self.log_curriculum_update(f"   4. CAMERA ANGLE: overridden by yaw sweep (env0 current: {current_angle:.1f}°)")
-            elif dynamic_effective:
-                self.log_curriculum_update(f"   4. CAMERA ANGLE: suppressed (dynamic camera following active)")
-            elif cam_orient_disabled:
-                self.log_curriculum_update(f"   4. CAMERA ANGLE: randomization DISABLED, fixed at 0.0° (env0: {current_angle:.1f}°)")
-            else:
-                self.log_curriculum_update(f"   4. CAMERA ANGLE: ±{self.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
-            
-            # 4. GATE SIZE UNLOCKS (Curriculum-gated randomization) or Fixed (ablation)
-            if hasattr(self.sim_env, 'global_tensor_dict'):
-                gate_names = []
-                if len(self.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])) > 0:
-                    gate_names = self.sim_env.global_tensor_dict["gate_variant_names_per_env"][0]
-                # Report fixed mode if enabled
-                disable_flag = self.sim_env.global_tensor_dict.get('gate_randomization/disabled', False)
-                try:
-                    if hasattr(disable_flag, 'item'):
-                        disable_flag = bool(disable_flag.item())
-                    else:
-                        disable_flag = bool(disable_flag)
-                except Exception:
-                    disable_flag = False
-                if disable_flag:
-                    try:
-                        fixed_scale = self.sim_env.global_tensor_dict.get('gate_randomization/fixed_scale_percent', 100)
-                        if hasattr(fixed_scale, 'item'):
-                            fixed_scale = int(fixed_scale.item())
-                        else:
-                            fixed_scale = int(fixed_scale)
-                    except Exception:
-                        fixed_scale = 100
-                    self.log_curriculum_update(f"   4. GATE SIZE: randomization disabled, fixed scale = {fixed_scale}%")
-                else:
-                    # Compute linear threshold from 80 -> 60 over levels 3..23
-                    # If EVAL_STRETCH_ENABLED, extend further to 50% by eval_end_level
-                    import os as _os
-                    stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                    eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(getattr(self.task_config.curriculum, 'eval_stretch_end_level', 33))))
-                    level = int(self.curriculum_level)
-                    if level <= 3:
-                        min_scale = 80
-                    elif level <= 23:
-                        frac = (level - 3) / (23 - 3)
-                        raw = 80 - frac * (80 - 60)
-                        min_scale = int((int(raw) // 2) * 2)
-                    elif stretch_enabled:
-                        # Extend 23->eval_end: 60% -> 50% linearly
-                        if level >= eval_end:
-                            min_scale = 50
-                        else:
-                            extra_frac = (level - 23) / max(1, (eval_end - 23))
-                            raw = 60 - extra_frac * (60 - 50)
-                            min_scale = int((int(raw) // 2) * 2)
-                    else:
-                        min_scale = 60
-                    if min_scale < 50:
-                        min_scale = 50
-                    if min_scale > 100:
-                        min_scale = 100
-                    # Collect scales meeting threshold
-                    scales = []
-                    for n in gate_names:
-                        if isinstance(n, str) and "gate_scale_" in n:
-                            try:
-                                s = int(n.replace("gate_scale_", ""))
-                                if s >= min_scale:
-                                    scales.append(s)
-                            except:
-                                pass
-                    # Report unique scales only (avoid duplicates from config classes)
-                    scales = sorted(list(set(scales)), reverse=True)
-                    self.log_curriculum_update(f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> {scales if scales else [100]} (uniform across unique scales)")
-            
-            # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
-            camera_gaussian_std, camera_dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
-            try:
-                cam_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False))
-            except Exception:
-                cam_noise_disabled = False
-            # Per-camera overrides for noise (presence-based overrides)
-            try:
-                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
-                drone_noise_key_present = 'camera_randomization/drone_noise_disabled' in gtd
-                static_noise_key_present = 'camera_randomization/static_noise_disabled' in gtd
-                drone_noise_flag = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if drone_noise_key_present else cam_noise_disabled
-                static_noise_flag = bool(gtd.get('camera_randomization/static_noise_disabled', False)) if static_noise_key_present else cam_noise_disabled
-            except Exception:
-                drone_noise_flag = cam_noise_disabled
-                static_noise_flag = cam_noise_disabled
-            # Level-3 fallbacks when disabled
-            d_std_min, d_drop_min = self.task_config.curriculum.get_camera_noise(3)
-            eff_drone_std = camera_gaussian_std if not drone_noise_flag else d_std_min
-            eff_static_std = camera_gaussian_std if not static_noise_flag else d_std_min
-            eff_drone_drop = camera_dropout_rate if not drone_noise_flag else d_drop_min
-            eff_static_drop = camera_dropout_rate if not static_noise_flag else d_drop_min
-            self.log_curriculum_update(
-                f"   5. CAMERA NOISE: drone(std={eff_drone_std:.4f}, pixel_drop={eff_drone_drop*100:.1f}%), static(std={eff_static_std:.4f}, pixel_drop={eff_static_drop*100:.1f}%)"
-            )
-            
-            # 6. CAMERA FRAME DROPOUT (entire-frame)
-            fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
-            try:
-                cam_fd_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False))
-            except Exception:
-                cam_fd_disabled = False
-            # Per-camera overrides for frame dropout (presence-based overrides)
-            try:
-                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
-                drone_fd_key_present = 'camera_randomization/drone_frame_dropout_disabled' in gtd
-                static_fd_key_present = 'camera_randomization/static_frame_dropout_disabled' in gtd
-                drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if drone_fd_key_present else cam_fd_disabled
-                static_fd_flag = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False)) if static_fd_key_present else cam_fd_disabled
-            except Exception:
-                drone_fd_flag = cam_fd_disabled
-                static_fd_flag = cam_fd_disabled
-            # After change: when disabled, show level-3 minimum totals instead of 0
-            fd_min = self.task_config.curriculum.get_camera_frame_dropout(3)
-            eff_drone_tot = fd['drone_total'] if not drone_fd_flag else fd_min['drone_total']
-            eff_static_tot = fd['static_total'] if not static_fd_flag else fd_min['static_total']
-            eff_drone_freeze = fd['drone_freeze'] if not drone_fd_flag else fd_min['drone_freeze']
-            eff_drone_blank = fd['drone_blank'] if not drone_fd_flag else fd_min['drone_blank']
-            eff_static_freeze = fd['static_freeze'] if not static_fd_flag else fd_min['static_freeze']
-            eff_static_blank = fd['static_blank'] if not static_fd_flag else fd_min['static_blank']
-            self.log_curriculum_update(
-                f"   6. CAMERA FRAME DROPOUT: drone_total={eff_drone_tot*100:.1f}% (freeze {eff_drone_freeze*100:.1f}%, blank {eff_drone_blank*100:.1f}%), static_total={eff_static_tot*100:.1f}% (freeze {eff_static_freeze*100:.1f}%, blank {eff_static_blank*100:.1f}%)"
-            )
-            
-            # 7. STATE NOISE (pose)
-            if getattr(self.task_config.curriculum, "enable_state_noise", False):
-                try:
-                    state_noise_disabled = bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False))
-                except Exception:
-                    state_noise_disabled = False
-                if state_noise_disabled:
-                    self.log_curriculum_update("   7. STATE NOISE: DISABLED (all std=0)")
-                else:
-                    sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
-                    self.log_curriculum_update(
-                        f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad']*57.2958:.3f} deg, "
-                        f"static_pos_std={sn['static_pos_std_m']:.4f} m, static_orient_std={sn['static_orient_std_rad']*57.2958:.3f} deg"
-                    )
-            else:
-                self.log_curriculum_update("   7. STATE NOISE: disabled")
-            
-            # 8. DYNAMIC CAMERA FOLLOWING
-            dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
-            try:
-                dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
-                config_overridden = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/config_overridden', False))
-            except Exception:
-                dynamic_disabled = False
-                config_overridden = False
-            
-            if dynamic_enabled and not dynamic_disabled:
-                if config_overridden:
-                    self.log_curriculum_update("   8. DYNAMIC CAMERA: ENABLED by flag (--enable_dynamic_camera_following=true) - camera follows drone with adaptive gate targeting")
-                else:
-                    self.log_curriculum_update("   8. DYNAMIC CAMERA: ENABLED (camera follows drone with adaptive gate targeting)")
-            elif dynamic_enabled and dynamic_disabled:
-                self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED by flag (--disable_dynamic_camera_following=true)")
-            else:
-                if config_overridden:
-                    self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED by flag (--enable_dynamic_camera_following=false)")
-                else:
-                    self.log_curriculum_update("   8. DYNAMIC CAMERA: DISABLED (static camera mode - curriculum-based positioning)")
-            
-            # Curriculum multiplier debug (update block)
-            try:
-                cm_disabled = str(os.environ.get('SF_DISABLE_CURRICULUM_MULTIPLIER', 'false')).lower() == 'true'
-            except Exception:
-                cm_disabled = False
-            if not cm_disabled:
-                try:
-                    cm_disabled = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
-                except Exception:
-                    cm_disabled = False
-            frac_eff = 0.0 if cm_disabled else float(self.curriculum_progress_fraction)
-            factor = 1.0 + 0.5 * frac_eff
-            self.log_curriculum_update(f"   8. CURRICULUM MULTIPLIER: {'DISABLED' if cm_disabled else 'ENABLED'} (factor={factor:.3f})")
-            
-            # ===== CURRICULUM DEBUGGING: Final state after update =====
-            self.log_curriculum_update(f"[CURRICULUM UPDATE] FINAL STATE:")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Level: {self.curriculum_level} (range: {self.task_config.curriculum.min_level}-{self.task_config.curriculum.max_level})")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Max level reached: {self.max_curriculum_level_reached} (DECREASE ENABLED)")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Progress: {self.curriculum_progress_fraction:.3f}")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Obstacles behind gate: {obstacles_behind_gate} (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
-            self.log_curriculum_update(f"[CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
-            # Report spawn ablation status with effective ranges
-            try:
-                baseline_level = int(getattr(self.task_config.curriculum, 'min_level', 3))
-                pos_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/position_disabled', False))
-                yaw_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
-                sr_active = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
-                sr_base = self.task_config.curriculum.get_spawn_ranges(baseline_level)
-                sr_use = {
-                    'x_half_span_m': sr_base['x_half_span_m'] if pos_dis else sr_active['x_half_span_m'],
-                    'y_center_m':    sr_base['y_center_m']    if pos_dis else sr_active['y_center_m'],
-                    'y_half_span_m': sr_base['y_half_span_m'] if pos_dis else sr_active['y_half_span_m'],
-                    'z_center_m':    sr_base['z_center_m']    if pos_dis else sr_active['z_center_m'],
-                    'z_half_span_m': sr_base['z_half_span_m'] if pos_dis else sr_active['z_half_span_m'],
-                    'yaw_abs_rad':   sr_base['yaw_abs_rad']   if yaw_dis else sr_active['yaw_abs_rad'],
-                }
-                status_pos = "DISABLED" if pos_dis else "ENABLED"
-                status_yaw = "DISABLED" if yaw_dis else "ENABLED"
-                self.log_curriculum_update(f"[CURRICULUM UPDATE]   Spawn randomization: position={status_pos}, orientation={status_yaw}")
-                self.log_curriculum_update(
-                    f"[CURRICULUM UPDATE]   Spawn ranges: X∈[{(-sr_use['x_half_span_m']):.1f}, {(+sr_use['x_half_span_m']):.1f}] m, "
-                    f"Y∈[{(sr_use['y_center_m']-sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m']+sr_use['y_half_span_m']):.1f}] m, "
-                    f"Z∈[{(sr_use['z_center_m']-sr_use['z_half_span_m']):.1f}, {(sr_use['z_center_m']+sr_use['z_half_span_m']):.1f}] m; yaw ±{(sr_use['yaw_abs_rad']*57.2958):.1f}°"
-                )
-            except Exception:
-                self.log_curriculum_update(f"[CURRICULUM UPDATE]   Spawn difficulty: LMF2 config (fallback)")
-            # When yaw sweep is enabled and dynamic camera is not active, suppress static camera angle randomization message
-            try:
-                yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
-            except Exception:
-                yaw_enabled = False
-            dynamic_effective = False
-            try:
-                dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
-                dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
-                dynamic_effective = bool(dyn_cfg and not dyn_dis)
-            except Exception:
-                dynamic_effective = False
-            if yaw_enabled and not dynamic_effective:
-                # Already logged as overridden by yaw sweep earlier
-                pass
-            else:
-                self.log_curriculum_update(f"[CURRICULUM UPDATE]   Camera angle: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
-            
-            # ===== END CURRICULUM DEBUGGING =====
-            
-            # Add comprehensive curriculum metrics to infos for wandb logging
-            self.infos["curriculum/level"] = torch.as_tensor(self.curriculum_level, dtype=torch.float32)
-            self.infos["curriculum/progress"] = torch.as_tensor(self.curriculum_progress_fraction, dtype=torch.float32)
-            self.infos["curriculum/success_rate"] = torch.as_tensor(success_rate, dtype=torch.float32)
-            self.infos["curriculum/crash_rate"] = torch.as_tensor(crash_rate, dtype=torch.float32)
-            self.infos["curriculum/timeout_rate"] = torch.as_tensor(timeout_rate, dtype=torch.float32)
-            
-            # Add curriculum metrics
-            self.infos["curriculum/obstacles_behind_gate"] = torch.as_tensor(obstacles_behind_gate, dtype=torch.float32)
-            self.infos["curriculum/total_assets"] = torch.as_tensor(total_obstacles_in_env, dtype=torch.float32)
-            self.infos["curriculum/max_level_reached"] = torch.as_tensor(self.max_curriculum_level_reached, dtype=torch.float32)
-            
-            # Add camera noise metrics (D455 simulation) — report effective per-camera values in logs above
-            self.infos["curriculum/camera_gaussian_std"] = torch.as_tensor(camera_gaussian_std, dtype=torch.float32)
-            self.infos["curriculum/camera_dropout_rate"] = torch.as_tensor(camera_dropout_rate, dtype=torch.float32)
-            # Per-camera effective values (respecting per-camera disable overrides) — level-3 fallback when disabled
-            try:
-                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
-                drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False))
-                static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False))
-                # Level-3 minimums
-                d_std_min, d_drop_min = self.task_config.curriculum.get_camera_noise(3)
-                # Effective Gaussian std per camera
-                eff_gauss_drone = camera_gaussian_std if not drone_noise_dis else d_std_min
-                eff_gauss_static = camera_gaussian_std if not static_noise_dis else d_std_min
-                # Effective pixel dropout per camera
-                eff_drop_drone = camera_dropout_rate if not drone_noise_dis else d_drop_min
-                eff_drop_static = camera_dropout_rate if not static_noise_dis else d_drop_min
-                self.infos["curriculum/camera_noise_drone_gaussian_std"] = torch.tensor(eff_gauss_drone, dtype=torch.float32)
-                self.infos["curriculum/camera_noise_static_gaussian_std"] = torch.tensor(eff_gauss_static, dtype=torch.float32)
-                self.infos["curriculum/camera_noise_drone_dropout_rate"] = torch.tensor(eff_drop_drone, dtype=torch.float32)
-                self.infos["curriculum/camera_noise_static_dropout_rate"] = torch.tensor(eff_drop_static, dtype=torch.float32)
-            except Exception:
-                pass
-            # Add camera frame dropout metrics (effective per-camera, with level-3 fallback when disabled)
-            fd_sched = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
-            try:
-                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
-                drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False))
-                static_fd_flag = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False))
-            except Exception:
-                drone_fd_flag = False
-                static_fd_flag = False
-            fd_min = self.task_config.curriculum.get_camera_frame_dropout(3)
-            eff = {
-                'drone_total':  fd_sched['drone_total']  if not drone_fd_flag else fd_min['drone_total'],
-                'static_total': fd_sched['static_total'] if not static_fd_flag else fd_min['static_total'],
-                'drone_freeze': fd_sched['drone_freeze'] if not drone_fd_flag else fd_min['drone_freeze'],
-                'drone_blank':  fd_sched['drone_blank']  if not drone_fd_flag else fd_min['drone_blank'],
-                'static_freeze':fd_sched['static_freeze']if not static_fd_flag else fd_min['static_freeze'],
-                'static_blank': fd_sched['static_blank'] if not static_fd_flag else fd_min['static_blank'],
-            }
-            self.infos["curriculum/camera_frame_dropout_drone_total"] = torch.tensor(eff["drone_total"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_dropout_static_total"] = torch.tensor(eff["static_total"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_freeze_drone"] = torch.tensor(eff["drone_freeze"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_blank_drone"] = torch.tensor(eff["drone_blank"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_freeze_static"] = torch.tensor(eff["static_freeze"], dtype=torch.float32)
-            self.infos["curriculum/camera_frame_blank_static"] = torch.tensor(eff["static_blank"], dtype=torch.float32)
-            
-            # Add camera angle metrics
-            self.infos["curriculum/camera_max_angle"] = torch.tensor(self.max_camera_angle, dtype=torch.float32)
-            # Use first environment's angle as representative for wandb tracking
-            current_angle = 0.0
-            if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
-                current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
-            self.infos["curriculum/camera_current_angle"] = torch.tensor(current_angle, dtype=torch.float32)
-            # Track ablation flag in infos
-            try:
-                cam_orient_disabled = bool(self.sim_env.global_tensor_dict.get('static_camera_randomization/orientation_disabled', False))
-            except Exception:
-                cam_orient_disabled = False
-            self.infos["curriculum/camera_orientation_randomization_disabled"] = torch.tensor(1.0 if cam_orient_disabled else 0.0, dtype=torch.float32)
-            
-            # Add state noise metrics
-            if getattr(self.task_config.curriculum, "enable_state_noise", False):
-                sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
-                self.infos["curriculum/state_noise_drone_pos_std_m"] = torch.tensor(sn["drone_pos_std_m"], dtype=torch.float32)
-                self.infos["curriculum/state_noise_drone_orient_std_deg"] = torch.tensor(sn["drone_orient_std_rad"]*57.2958, dtype=torch.float32)
-                self.infos["curriculum/state_noise_static_pos_std_m"] = torch.tensor(sn["static_pos_std_m"], dtype=torch.float32)
-                self.infos["curriculum/state_noise_static_orient_std_deg"] = torch.tensor(sn["static_orient_std_rad"]*57.2958, dtype=torch.float32)
+            self._log_curriculum_details(success_rate, crash_rate, timeout_rate, obstacles_behind_gate, total_obstacles_in_env)
+
+            self._populate_curriculum_infos(success_rate, crash_rate, timeout_rate, obstacles_behind_gate, total_obstacles_in_env)
             
             self.log_curriculum_update(f"[CURRICULUM UPDATE] RESETTING counters for next evaluation period")
             self.success_aggregate = 0
@@ -4339,939 +4171,7 @@ class NavigationTaskGate(BaseTask):
         self.episode_time_penalty[env_ids] = 0
         self.episode_timeout_penalty[env_ids] = 0
         self.episode_lengths[env_ids] = 0
-class StaticCameraManager:
-    """Manages static camera for gate navigation using Isaac Gym native API."""
-    
-    def __init__(self, env_manager, task_config):
-        self.env_manager = env_manager
-        self.task_config = task_config
-        self.gym = env_manager.IGE_env.gym
-        self.sim = env_manager.IGE_env.sim
-        self.env_handles = env_manager.IGE_env.env_handles
-        self.camera_handles = []
-        self.camera_setup_success = False
-        self.use_synthetic_camera = False  # Initialize synthetic camera flag
-        # Ensure device exists for tensor ops (fix jitter sampling fallback)
-        try:
-            self.device = getattr(env_manager, 'device', None)
-            if self.device is None:
-                self.device = getattr(task_config, 'device', 'cpu')
-        except Exception:
-            self.device = 'cpu'
-        
-        # Gate position (will be updated dynamically based on actual gate positions)
-        self.gate_position = [0.0, 0.0, 0.0]  # Default, overridden by adaptive positioning
-        self.env_bounds = [[-4.0, -4.0, 0.0], [4.0, 4.0, 4.0]]  # Updated for gate_env bounds
-        
-        # Per-environment camera angle tracking - FIXED during each episode
-        self.num_envs = len(self.env_handles)
-        self.current_camera_angles = [0.0] * self.num_envs  # Track angle per environment
-        # Debug tracking of last camera placement and target per env
-        self.last_camera_pos = [(0.0, -3.0, 1.5) for _ in range(self.num_envs)]
-        self.last_camera_target = [(0.0, 0.0, 1.5) for _ in range(self.num_envs)]
-        self.last_angle_deg = [0.0 for _ in range(self.num_envs)]
-        # Per-env placement randomization (translation + small Euler jitter)
-        # Defaults are no jitter; can be enabled/configured via task_config
-        self.static_cam_randomize = bool(getattr(task_config, 'static_camera_randomize_placement', False))
-        self.static_cam_min_t = list(getattr(task_config, 'static_camera_min_translation', [0.0, 0.0, 0.0]))
-        self.static_cam_max_t = list(getattr(task_config, 'static_camera_max_translation', [0.0, 0.0, 0.0]))
-        self.static_cam_min_euler = list(getattr(task_config, 'static_camera_min_euler_deg', [0.0, 0.0, 0.0]))
-        self.static_cam_max_euler = list(getattr(task_config, 'static_camera_max_euler_deg', [0.0, 0.0, 0.0]))
-        # Storage for per-env jitter, refreshed on setup and per-episode resets
-        self._trans_jitter = [(0.0, 0.0, 0.0) for _ in range(self.num_envs)]
-        self._euler_jitter_deg = [(0.0, 0.0, 0.0) for _ in range(self.num_envs)]
-        
-        self._setup_static_camera()
-    
-    def get_average_camera_angle(self):
-        """Get average camera angle across all environments for logging."""
-        if not hasattr(self, 'current_camera_angles') or not self.current_camera_angles:
-            return 0.0
-        return sum(self.current_camera_angles) / len(self.current_camera_angles)
-    
-    def _setup_static_camera(self):
-        """Setup static camera using Isaac Gym native camera API with D455 specifications."""
-        logger.info("Setting up static camera for gate navigation...")
-        
-        # Headless mode is supported for camera sensors; proceed with GPU camera setup
-        if self.task_config.headless:
-            logger.info("Headless mode detected - proceeding with static camera GPU setup")
-        
-        try:
-            # Camera properties (D455 depth camera specifications - match working example)
-            camera_props = gymapi.CameraProperties()
-            camera_props.width = 240  # Reduced depth resolution width
-            camera_props.height = 135  # Reduced depth resolution height
-            camera_props.horizontal_fov = 87.0  # D455 FOV
-            camera_props.near_plane = 0.4  # D455 minimum depth distance
-            camera_props.far_plane = 20.0  # D455 maximum range
-            camera_props.enable_tensors = True  # Enable GPU tensor access
-            
-            logger.info(f"Static camera properties (D455 specs): {camera_props.width}x{camera_props.height}, FOV: {camera_props.horizontal_fov}°")
-            logger.info(f"Static camera depth range: {camera_props.near_plane}m - {camera_props.far_plane}m")
-        
-            # Create camera sensor in each environment
-            self.camera_handles = []
-            for i, env_handle in enumerate(self.env_handles):
-                cam_handle = self.gym.create_camera_sensor(env_handle, camera_props)
-                if cam_handle >= 0:  # Valid camera handle
-                    self.camera_handles.append(cam_handle)
-                    logger.info(f"Created static camera sensor {i} in environment {i}")
-                else:
-                    logger.warning(f"Failed to create camera for environment {i}, handle: {cam_handle}")
-                    # Do not fall back to synthetic or return; proceed and mark setup incomplete
-            
-            # Respect CLI/task_config base_y/base_z (with 'adaptive' support) for initial placement
-            try:
-                base_y = float(getattr(self.task_config, 'static_camera_base_y', float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))))
-            except Exception:
-                base_y = -3.0
-            # Determine base Z spawning mode: numeric or 'adaptive' to gate center per env
-            adaptive_z = False
-            base_z_value = 1.5
-            try:
-                cfg_base_z = getattr(self.task_config, 'static_camera_base_z', None)
-                if cfg_base_z is not None:
-                    if isinstance(cfg_base_z, str) and cfg_base_z.strip().lower() == 'adaptive':
-                        adaptive_z = True
-                    else:
-                        base_z_value = float(cfg_base_z)
-                else:
-                    env_base_z = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
-                    if env_base_z is not None and str(env_base_z).strip().lower() == 'adaptive':
-                        adaptive_z = True
-                    elif env_base_z is not None:
-                        base_z_value = float(env_base_z)
-            except Exception:
-                pass
 
-            # Try to read per-env adaptive gate center Z from global tensors (if available)
-            try:
-                gtd = self.env_manager.IGE_env.global_tensor_dict
-                gate_center_per_env = gtd.get('gate/center_height_per_env', None)
-            except Exception:
-                gate_center_per_env = None
-
-            # Set camera transform for each environment using configured positioning
-            for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
-                # Initialize per-env jitter for the first episode
-                if self.static_cam_randomize:
-                    try:
-                        # Sample translation jitter uniformly between per-axis bounds
-                        u = torch.rand(3, device=self.device)
-                        tmin = torch.tensor(self.static_cam_min_t, device=self.device, dtype=torch.float32)
-                        tmax = torch.tensor(self.static_cam_max_t, device=self.device, dtype=torch.float32)
-                        t = (tmin + u * (tmax - tmin)).tolist()
-                        # Sample Euler jitter (roll, pitch, yaw) in degrees
-                        v = torch.rand(3, device=self.device)
-                        emin = torch.tensor(self.static_cam_min_euler, device=self.device, dtype=torch.float32)
-                        emax = torch.tensor(self.static_cam_max_euler, device=self.device, dtype=torch.float32)
-                        e = (emin + v * (emax - emin)).tolist()
-                        self._trans_jitter[i] = (float(t[0]), float(t[1]), float(t[2]))
-                        self._euler_jitter_deg[i] = (float(e[0]), float(e[1]), float(e[2]))
-                    except Exception:
-                        self._trans_jitter[i] = (0.0, 0.0, 0.0)
-                        self._euler_jitter_deg[i] = (0.0, 0.0, 0.0)
-                if adaptive_z and gate_center_per_env is not None and i < len(gate_center_per_env):
-                    env_base_z = float(gate_center_per_env[i].item())
-                else:
-                    env_base_z = float(base_z_value)
-                # Apply translation jitter
-                jx, jy, jz = self._trans_jitter[i]
-                camera_pos = gymapi.Vec3(0.0 + jx, float(base_y) + jy, env_base_z + jz)
-                # Look directly at the gate center height for that env
-                camera_target = gymapi.Vec3(0.0, 0.0, env_base_z)
-                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-                logger.info(
-                    f"Set static camera {i} to look from ({camera_pos.x}, {camera_pos.y}, {camera_pos.z}) toward ({camera_target.x}, {camera_target.y}, {camera_target.z})"
-                )
-                # Store for debug
-                try:
-                    self.last_camera_pos[i] = (float(camera_pos.x), float(camera_pos.y), float(camera_pos.z))
-                    self.last_camera_target[i] = (float(camera_target.x), float(camera_target.y), float(camera_target.z))
-                    self.last_angle_deg[i] = 0.0
-                except Exception:
-                    pass
-
-            # Cache base values into global dict for downstream updates
-            try:
-                if hasattr(self.env_manager.IGE_env, 'global_tensor_dict'):
-                    self.env_manager.IGE_env.global_tensor_dict['static_camera/base_y'] = float(base_y)
-                    self.env_manager.IGE_env.global_tensor_dict['static_camera/base_z'] = ('adaptive' if adaptive_z else float(base_z_value))
-            except Exception:
-                pass
-
-            if len(self.camera_handles) == len(self.env_handles):
-                logger.info("✓ Static camera setup complete with configured positioning (base_y/base_z)")
-                self.camera_setup_success = True
-                self.use_synthetic_camera = False
-            else:
-                logger.error(f"Static camera setup incomplete: created {len(self.camera_handles)}/{len(self.env_handles)} cameras")
-                self.camera_setup_success = False
-                self.use_synthetic_camera = False
-            
-        except Exception as e:
-            logger.warning(f"Static camera setup failed: {e}")
-            self.camera_setup_success = False
-            self.use_synthetic_camera = False
-    
-    def update_camera_positions(self, curriculum_level, env_ids):
-        """Update static camera orientation ONLY for resetting environments."""
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            # In synthetic mode, update orientation per resetting env with spawn-aware logic
-            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
-            max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
-            # Read flags and robot positions
-            try:
-                parent = getattr(self, 'env_manager', None)
-                disable_flag = False
-                rp = None
-                if parent is not None and hasattr(parent, 'global_tensor_dict'):
-                    gtd = parent.global_tensor_dict
-                    disable_flag = bool(gtd.get('static_camera_randomization/orientation_disabled', False))
-                    rp = gtd.get('robot_position', None)
-            except Exception:
-                disable_flag = False
-                rp = None
-            import random, math
-            horizontal_fov = 87.0
-            half_fov = horizontal_fov * 0.5
-            margin = 5.0
-            for env_idx in env_ids:
-                if env_idx < len(self.current_camera_angles):
-                    if disable_flag or max_angle_range <= 0:
-                        ang = 0.0
-                    else:
-                        # Camera at (0,-3) looks toward +Y (0°). Keep both gate (0°) and drone in FOV.
-                        if rp is not None and env_idx < rp.shape[0]:
-                            cam_x, cam_y = 0.0, -3.0
-                            dx = float(rp[env_idx, 0].item()) - cam_x
-                            dy = float(rp[env_idx, 1].item()) - cam_y
-                            theta_r = math.degrees(math.atan2(dx, dy))
-                            gate_low, gate_high = -half_fov + margin, half_fov - margin
-                            rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
-                            low = max(gate_low, rob_low, -max_angle_range)
-                            high = min(gate_high, rob_high, max_angle_range)
-                            if high > low:
-                                ang = random.uniform(low, high)
-                            else:
-                                target = max(min(theta_r, gate_high), gate_low)
-                                ang = max(-max_angle_range, min(max_angle_range, target))
-                        else:
-                            ang = random.uniform(-max_angle_range, max_angle_range)
-                    self.current_camera_angles[env_idx] = ang
-            logger.debug(f"Synthetic camera mode - updated angles for envs {env_ids.tolist()}")
-            return
-            
-        if not self.camera_setup_success or len(self.camera_handles) == 0:
-            return
-        
-        # Get maximum angle range. For yaw sweep feature we use fixed ±30° (curriculum-independent)
-        from aerial_gym.config.task_config.navigation_task_config_gate import task_config
-        _max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
-        FIXED_SWEEP_MAX_DEG = 15.0
-        # Honor ablation flag from parent task/global dict and read robot positions
-        try:
-            parent = getattr(self, 'env_manager', None)
-            disable_flag = False
-            rp = None
-            if parent is not None and hasattr(parent, 'global_tensor_dict'):
-                gtd = parent.global_tensor_dict
-                disable_flag = bool(gtd.get('static_camera_randomization/orientation_disabled', False))
-                rp = gtd.get('robot_position', None)
-        except Exception:
-            disable_flag = False
-            rp = None
-        
-        try:
-            # Fixed camera base position with optional CLI overrides
-            try:
-                parent = getattr(self, 'env_manager', None)
-                gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-            except Exception:
-                gtd = {}
-            try:
-                base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
-            except Exception:
-                base_y = -3.0
-            # Determine base Z spawning mode: numeric or 'adaptive' to gate center
-            try:
-                base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
-                if base_z_env is None:
-                    base_z_env = gtd.get('static_camera/base_z', 1.5)
-                # Accept string 'adaptive' (case-insensitive) to enable adaptive Z per env
-                if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':
-                    base_z = None  # Means adaptive per env
-                else:
-                    base_z = float(base_z_env)
-            except Exception:
-                base_z = 1.5
-            # If base_z is None (adaptive per env), use a numeric placeholder for Vec3; per-env Z resolved below
-            try:
-                base_z_for_vec = 1.5 if base_z is None else float(base_z)
-            except Exception:
-                base_z_for_vec = 1.5
-            base_camera_pos = gymapi.Vec3(0.0, base_y, base_z_for_vec)
-            
-            import math
-            import random
-            
-            # Ensure per-env randomized sweep parameters exist
-            try:
-                if not hasattr(self, 'sweep_phase_offsets') or (len(getattr(self, 'sweep_phase_offsets', [])) != len(self.env_handles)):
-                    self.sweep_phase_offsets = [0.0 for _ in range(len(self.env_handles))]
-                    self.sweep_directions = [1.0 for _ in range(len(self.env_handles))]
-            except Exception:
-                pass
-            
-            # Update camera orientation ONLY for the specified environments (those resetting)
-            for env_idx in env_ids:
-                if env_idx >= len(self.env_handles) or env_idx >= len(self.camera_handles):
-                    continue
-                # Re-sample per-env jitter on reset for fresh episodes
-                if self.static_cam_randomize:
-                    try:
-                        u = torch.rand(3, device=self.device)
-                        tmin = torch.tensor(self.static_cam_min_t, device=self.device, dtype=torch.float32)
-                        tmax = torch.tensor(self.static_cam_max_t, device=self.device, dtype=torch.float32)
-                        t = (tmin + u * (tmax - tmin)).tolist()
-                        v = torch.rand(3, device=self.device)
-                        emin = torch.tensor(self.static_cam_min_euler, device=self.device, dtype=torch.float32)
-                        emax = torch.tensor(self.static_cam_max_euler, device=self.device, dtype=torch.float32)
-                        e = (emin + v * (emax - emin)).tolist()
-                        self._trans_jitter[env_idx] = (float(t[0]), float(t[1]), float(t[2]))
-                        self._euler_jitter_deg[env_idx] = (float(e[0]), float(e[1]), float(e[2]))
-                    except Exception:
-                        self._trans_jitter[env_idx] = (0.0, 0.0, 0.0)
-                        self._euler_jitter_deg[env_idx] = (0.0, 0.0, 0.0)
-                    
-                # Optional: constant yaw sweep (±30°), curriculum-independent
-                try:
-                    parent = getattr(self, 'env_manager', None)
-                    gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                    sweep_enabled = str(gtd.get('static_camera/yaw_sweep_enabled', 'false')).lower() == 'true'
-                    sweep_speed_deg = float(gtd.get('static_camera/yaw_sweep_speed_deg', 10.0))
-                except Exception:
-                    sweep_enabled = False
-                    sweep_speed_deg = 10.0
-
-                if sweep_enabled:
-                    # Compute time-based angle: A(level)*sin(omega*t + phase).
-                    # Linear amplitude schedule: 2° at level 3 → 19° at level end_level; clamp outside.
-                    start_level = 3
-                    # Honor evaluation stretch: extend beyond 23 up to eval_end when enabled
-                    try:
-                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_eval
-                        # Detect eval-stretch (prefer global_tensor_dict, fallback to env var)
-                        try:
-                            parent = getattr(self, 'env_manager', None)
-                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                        except Exception:
-                            gtd_local = {}
-                        eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        if not eval_en:
-                            import os as _os
-                            eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                        try:
-                            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23)))
-                        except Exception:
-                            eval_end = int(getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23))
-                        end_level = int(eval_end) if eval_en else 23
-                    except Exception:
-                        end_level = 23
-                    A_min = 2.0
-                    A_max = 19.0
-                    if curriculum_level <= start_level:
-                        A = A_min
-                    elif curriculum_level >= end_level:
-                        A = A_max
-                    else:
-                        frac = float(curriculum_level - start_level) / max(1.0, float(end_level - start_level))
-                        A = A_min + frac * (A_max - A_min)
-                    dt = 1.0/60.0
-                    # Keep peak angular speed similar to baseline A0=50° when changing amplitude.
-                    # For theta(t)=A*sin(ωt), peak speed = A*ω. Compensate ω by (A0/A).
-                    A0 = 50.0
-                    comp = (A0 / max(A, 1e-6))
-                    # Additionally, increase sweep speed with curriculum level (1.0x -> 2.0x)
-                    try:
-                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc2
-                        # Respect eval stretch when enabled (eval only), otherwise cap at training max
-                        try:
-                            parent = getattr(self, 'env_manager', None)
-                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                        except Exception:
-                            gtd_local = {}
-                        eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        min_lvl = int(getattr(_tc2.curriculum, 'min_level', 1))
-                        max_lvl_cfg = int(getattr(_tc2.curriculum, 'max_level', min_lvl))
-                        max_lvl_eval = int(getattr(_tc2.curriculum, 'eval_stretch_end_level', max_lvl_cfg))
-                        max_lvl = max_lvl_eval if eval_en else max_lvl_cfg
-                        level_clamped = max(min(curriculum_level, max_lvl), min_lvl)
-                        denom = max(1, max_lvl - min_lvl)
-                        level_frac = float(level_clamped - min_lvl) / float(denom)
-                        speed_scale = 1.0 + level_frac
-                    except Exception:
-                        speed_scale = 1.0
-                    sweep_speed_eff = sweep_speed_deg * speed_scale * comp
-                    omega = (sweep_speed_eff * 3.14159 / 180.0) * dt
-                    # Use global sim step as t and per-env small phase to desynchronize
-                    sim_steps = 0
-                    try:
-                        steps_obj = gtd.get('sim_steps', 0)
-                        # Support torch tensors or plain ints
-                        if hasattr(steps_obj, 'shape') or hasattr(steps_obj, 'ndim'):
-                            # Torch tensor
-                            try:
-                                if getattr(steps_obj, 'ndim', 0) == 0:
-                                    sim_steps = int(steps_obj.item())
-                                else:
-                                    idx = env_idx if env_idx < steps_obj.shape[0] else 0
-                                    sim_steps = int(steps_obj[idx].item())
-                            except Exception:
-                                sim_steps = 0
-                        else:
-                            sim_steps = int(steps_obj)
-                    except Exception:
-                        sim_steps = 0
-                    # Per-env randomized phase and direction so starting angle and direction vary
-                    # Re-randomize on first step after reset for each env (sim_steps == 0)
-                    try:
-                        if sim_steps == 0:
-                            # Use seeded torch RNG for determinism across runs with the same --seed
-                            rand_phase = float(torch.rand(1, device=self.device).item())  # [0,1)
-                            self.sweep_phase_offsets[env_idx] = -math.pi + (2.0 * math.pi * rand_phase)
-                            dir_flag = int(torch.randint(low=0, high=2, size=(1,), device=self.device).item())
-                            self.sweep_directions[env_idx] = 1.0 if dir_flag == 1 else -1.0
-                        phi0 = self.sweep_phase_offsets[env_idx]
-                        direction = self.sweep_directions[env_idx]
-                    except Exception:
-                        phi0 = 0.0
-                        direction = 1.0
-                    angle_offset_degrees = A * math.sin(direction * (omega * sim_steps) + phi0)
-                    debug_max_range = A
-                    # [YawSweep DEBUG DISABLED]
-                else:
-                    # Spawn-aware angle selection: keep both gate (0°) and drone inside FOV; or 0 if disabled
-                    # Extend the allowable angle range using the same per-level formula as yaw sweep:
-                    # A = max(0, atan2(x_half, |y_center - base_y|) - 43.5) + 2.5 (deg)
-                    # Also honor evaluation stretch during inference when enabled.
-                    max_angle_range = _max_angle_range
-                    try:
-                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_fix
-                        # Detect eval-stretch
-                        try:
-                            parent = getattr(self, 'env_manager', None)
-                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                        except Exception:
-                            gtd_local = {}
-                        eval_en = False
-                        try:
-                            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        except Exception:
-                            eval_en = False
-                        if not eval_en:
-                            try:
-                                import os as _os
-                                eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                            except Exception:
-                                eval_en = False
-                        try:
-                            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23)))
-                        except Exception:
-                            eval_end = int(getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23))
-                        eff_level = min(curriculum_level, eval_end) if eval_en else curriculum_level
-                        sr_fix = _tc_fix.curriculum.get_spawn_ranges(eff_level)
-                        x_half_fix = float(sr_fix.get('x_half_span_m', 0.5))
-                        y_center_fix = float(sr_fix.get('y_center_m', -1.5))
-                        dy_fix = abs(y_center_fix - float(base_y))
-                        half_fov_fix = 87.0 * 0.5
-                        margin_fix = 2.5
-                        alpha_fix = math.degrees(math.atan2(x_half_fix, max(1e-6, dy_fix)))
-                        sweep_like_max = max(0.0, alpha_fix - half_fov_fix) + margin_fix
-                        max_angle_range = max(max_angle_range, sweep_like_max)
-                    except Exception:
-                        pass
-                    # When sweep is disabled, honor the orientation randomization disable flag
-                    if disable_flag or max_angle_range <= 0:
-                        angle_offset_degrees = 0.0
-                    else:
-                        horizontal_fov = 87.0
-                        half_fov = horizontal_fov * 0.5
-                        margin = 2.5
-                        # Extend allowable randomization range further under eval-stretch (levels beyond 23)
-                        try:
-                            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_ext
-                            try:
-                                parent = getattr(self, 'env_manager', None)
-                                gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                            except Exception:
-                                gtd_local = {}
-                            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                            if not eval_en:
-                                import os as _os
-                                eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_ext.curriculum, 'eval_stretch_end_level', 23)))
-                            if eval_en and curriculum_level > 23:
-                                # Scale max_angle_range slightly up to eval_end to keep randomization non-zero
-                                # e.g., +25% headroom when at eval_end
-                                frac = float(min(curriculum_level, eval_end) - 23) / max(1.0, float(eval_end - 23))
-                                max_angle_range = max_angle_range * (1.0 + 0.25 * frac)
-                        except Exception:
-                            pass
-                        if rp is not None and env_idx < rp.shape[0]:
-                            cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
-                            dx = float(rp[env_idx, 0].item()) - cam_x
-                            dy = float(rp[env_idx, 1].item()) - cam_y
-                            theta_r = math.degrees(math.atan2(dx, dy))  # 0° points to +Y
-                            gate_low, gate_high = -half_fov + margin, half_fov - margin
-                            rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
-                            low = max(gate_low, rob_low, -max_angle_range)
-                            high = min(gate_high, rob_high, max_angle_range)
-                            if high > low:
-                                # Seeded torch RNG for deterministic selection
-                                u = float(torch.rand(1, device=self.device).item())
-                                angle_offset_degrees = low + u * (high - low)
-                            else:
-                                target = max(min(theta_r, gate_high), gate_low)
-                                angle_offset_degrees = max(-max_angle_range, min(max_angle_range, target))
-                        else:
-                            # Seeded torch RNG for deterministic selection
-                            u = float(torch.rand(1, device=self.device).item())
-                            angle_offset_degrees = -max_angle_range + u * (2.0 * max_angle_range)
-                        debug_max_range = max_angle_range
-                
-                # Store the angle for this environment
-                if env_idx < len(self.current_camera_angles):
-                    self.current_camera_angles[env_idx] = angle_offset_degrees
-                
-                # Convert to radians and update camera
-                angle_offset_radians = angle_offset_degrees * (3.14159 / 180.0)
-                # Euler jitter policy: avoid yaw jitter if curriculum yaw/sweep active. Apply only pitch (small tilt)
-                jitter_roll_deg, jitter_pitch_deg, jitter_yaw_deg = self._euler_jitter_deg[env_idx] if (0 <= env_idx < len(self._euler_jitter_deg)) else (0.0, 0.0, 0.0)
-                if sweep_enabled or (not disable_flag and max_angle_range > 0):
-                    # Curriculum yaw active: zero yaw jitter
-                    jitter_yaw_deg = 0.0
-                # Apply pitch jitter as a small vertical target offset; roll is not supported via set_camera_location
-                pitch_rad = jitter_pitch_deg * (3.14159 / 180.0)
-                
-                # Resolve per-env base Z (adaptive to gate center if requested)
-                try:
-                    env_base_z = base_z
-                    if env_base_z is None:
-                        gh = gtd.get('gate/center_height_per_env', None)
-                        env_base_z = float(gh[env_idx].item()) if gh is not None else 1.5
-                except Exception:
-                    env_base_z = 1.5
-                base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
-                # Apply per-env translation jitter sampled at setup/reset
-                try:
-                    jx, jy, jz = self._trans_jitter[env_idx]
-                except Exception:
-                    jx, jy, jz = 0.0, 0.0, 0.0
-                base_camera_env_pos = gymapi.Vec3(base_camera_env_pos.x + jx, base_camera_env_pos.y + jy, base_camera_env_pos.z + jz)
-
-                # Calculate offset target position based on randomized angle for this environment
-                target_distance = abs(base_camera_env_pos.y)  # Keep look-at distance consistent with base Y
-                # Apply additional small yaw jitter around the curriculum yaw (if allowed)
-                yaw_total = angle_offset_radians + (jitter_yaw_deg * (3.14159 / 180.0))
-                target_x = base_camera_env_pos.x + target_distance * math.sin(yaw_total)
-                target_y = base_camera_env_pos.y + target_distance * math.cos(yaw_total)
-                # Look at gate adaptive center height, to keep camera pitched to the center
-                try:
-                    gh = gtd.get('gate/center_height_per_env', None)
-                    target_z = float(gh[env_idx].item()) if gh is not None else env_base_z
-                except Exception:
-                    target_z = env_base_z
-                # Apply pitch jitter as small vertical offset in look-at target
-                target_z = target_z + math.tan(pitch_rad) * target_distance
-                new_target = gymapi.Vec3(target_x, target_y, target_z)
-                
-                # Update ONLY this environment's camera
-                env_handle = self.env_handles[env_idx]
-                cam_handle = self.camera_handles[env_idx]
-                self.gym.set_camera_location(cam_handle, env_handle, base_camera_env_pos, new_target)
-                # Update debug caches
-                try:
-                    self.last_camera_pos[env_idx] = (float(base_camera_env_pos.x), float(base_camera_env_pos.y), float(base_camera_env_pos.z))
-                    self.last_camera_target[env_idx] = (float(new_target.x), float(new_target.y), float(new_target.z))
-                    self.last_angle_deg[env_idx] = float(angle_offset_degrees)
-                except Exception:
-                    pass
-                # Debug only for env 0 to avoid spam
-                if env_idx == 0:
-                    pass
-                
-                # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{debug_max_range:.1f}°)")
-            
-            # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera orientation for {len(env_ids)} environments")
-            
-        except Exception as e:
-            logger.warning(f"Failed to update static camera orientation: {e}")
-            # Fall back to fixed positioning if update fails
-            logger.debug(f"Static camera orientation update failed - using fixed positioning")
-            return
-    
-    def update_dynamic_camera_following(self, robot_positions, gate_positions, gate_center_heights):
-        """Reimplemented dynamic follow: keep camera 1 m behind the drone (−Y),
-        same height, and primarily look at the drone. If the gate is far outside
-        the view, minimally steer the look target toward the gate while keeping
-        the drone in frame.
-
-        Args:
-            robot_positions: (N,3) drone world positions
-            gate_positions:  (N,3) gate world positions
-            gate_center_heights: (N,) gate center Z per env
-        """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            return
-        if not self.camera_setup_success or len(self.camera_handles) == 0:
-            return
-        try:
-            from isaacgym import gymapi
-            import math
-            # Fixed offsets in world frame (Y offset can be overridden via global tensor dict)
-            try:
-                gtd = self.env_manager.IGE_env.global_tensor_dict
-                y_off = float(gtd.get('dynamic_camera_following/offset_y_m', -1.0))
-            except Exception:
-                y_off = -1.0
-            x_off, z_off = 0.0, 0.0
-            half_fov = 87.0 * 0.5
-            margin = 5.0
-            for env_idx in range(min(len(self.env_handles), len(self.camera_handles), robot_positions.shape[0])):
-                drone = robot_positions[env_idx]
-                cam_x = float(drone[0].item()) + x_off
-                cam_y = float(drone[1].item()) + y_off
-                cam_z = float(drone[2].item()) + z_off
-                camera_pos = gymapi.Vec3(cam_x, cam_y, cam_z)
-
-                # Default look target: the drone itself
-                target_drone = gymapi.Vec3(float(drone[0].item()), float(drone[1].item()), float(drone[2].item()))
-
-                # Check gate visibility and minimally bias toward it if necessary
-                gate = gate_positions[env_idx]
-                gate_cz = float(gate_center_heights[env_idx].item())
-                # yaw to drone and gate (0° toward +Y)
-                yaw_d = math.degrees(math.atan2(target_drone.x - cam_x, target_drone.y - cam_y))
-                yaw_g = math.degrees(math.atan2(float(gate[0].item()) - cam_x, float(gate[1].item()) - cam_y))
-                delta = yaw_g - yaw_d
-                while delta > 180.0:
-                    delta -= 360.0
-                while delta < -180.0:
-                    delta += 360.0
-                # If gate is outside FOV when centered on drone, optionally blend target
-                try:
-                    disable_blend = bool(self.env_manager.IGE_env.global_tensor_dict.get('dynamic_camera_following/disable_gate_blending', False))
-                except Exception:
-                    disable_blend = False
-                if not disable_blend and abs(delta) > (half_fov - margin):
-                    w = 0.2  # small bias toward gate
-                    tgx = (1.0 - w) * target_drone.x + w * float(gate[0].item())
-                    tgy = (1.0 - w) * target_drone.y + w * float(gate[1].item())
-                    tgz = (1.0 - w) * target_drone.z + w * gate_cz
-                    camera_target = gymapi.Vec3(tgx, tgy, tgz)
-                else:
-                    camera_target = target_drone
-
-                cam_handle = self.camera_handles[env_idx]
-                env_handle = self.env_handles[env_idx]
-                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-                # Update debug caches so visibility/FOV metrics use the correct dynamic camera pose
-                try:
-                    self.last_camera_pos[env_idx] = (
-                        float(camera_pos.x), float(camera_pos.y), float(camera_pos.z)
-                    )
-                    self.last_camera_target[env_idx] = (
-                        float(camera_target.x), float(camera_target.y), float(camera_target.z)
-                    )
-                    self.last_angle_deg[env_idx] = 0.0
-                except Exception:
-                    pass
-        except Exception as e:
-            logger.warning(f"Failed to update dynamic camera following: {e}")
-            return
-
-    def update_arc_follow(self, robot_positions, gate_positions, gate_center_heights, radius_m: float = 2.0):
-        """Arc-follow: constrain camera to a circular arc of fixed radius around the gate center
-        (in X–Y), oscillating along the arc but always looking at a blend of drone and gate.
-
-        Args:
-            robot_positions: (N,3) drone world positions
-            gate_positions:  (N,3) gate world positions
-            gate_center_heights: (N,) gate center Z per env
-            radius_m: arc radius from gate center (default 2.0 m)
-        """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            return
-        if not self.camera_setup_success or len(self.camera_handles) == 0:
-            return
-        try:
-            from isaacgym import gymapi
-            import math
-            # Read global sim steps for a smooth arc oscillation per env
-            try:
-                gtd = self.env_manager.IGE_env.global_tensor_dict
-                sim_steps_obj = gtd.get('sim_steps', 0)
-                if hasattr(sim_steps_obj, 'shape') or hasattr(sim_steps_obj, 'ndim'):
-                    # tensor: take env-specific index when available
-                    get_step = lambda idx: int(sim_steps_obj[idx].item()) if getattr(sim_steps_obj, 'ndim', 0) > 0 and idx < sim_steps_obj.shape[0] else int(sim_steps_obj.item())
-                else:
-                    step_val = int(sim_steps_obj)
-                    get_step = lambda idx: step_val
-            except Exception:
-                get_step = lambda idx: 0
-
-            # Oscillation parameters (slow arc motion)
-            omega = 2.0 * math.pi / 600.0  # one full cycle ~600 frames (~10s at 60Hz)
-            phase_per_env = 0.0
-            for env_idx in range(min(len(self.env_handles), len(self.camera_handles), robot_positions.shape[0])):
-                steps = get_step(env_idx)
-                # Gate center (x,y) and desired arc point
-                gx = float(gate_positions[env_idx, 0].item())
-                gy = float(gate_positions[env_idx, 1].item())
-                gz_center = float(gate_center_heights[env_idx].item())
-
-                # Arc angle oscillates with time; small per-env phase for de-sync
-                theta = omega * steps + (0.17 * env_idx)
-                arc_x = gx + radius_m * math.sin(theta)
-                arc_y = gy - radius_m * math.cos(theta)  # "behind" gate is negative Y direction
-
-                # Keep camera near gate center height (or slightly above)
-                cam_z = gz_center
-                camera_pos = gymapi.Vec3(arc_x, arc_y, cam_z)
-
-                # Blend look target between drone and gate to keep both in frame
-                drone = robot_positions[env_idx]
-                w = 0.3  # bias toward gate to stabilize
-                tgt_x = (1.0 - w) * float(drone[0].item()) + w * gx
-                tgt_y = (1.0 - w) * float(drone[1].item()) + w * gy
-                tgt_z = (1.0 - w) * float(drone[2].item()) + w * gz_center
-                camera_target = gymapi.Vec3(tgt_x, tgt_y, tgt_z)
-
-                cam_handle = self.camera_handles[env_idx]
-                env_handle = self.env_handles[env_idx]
-                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-        except Exception as e:
-            logger.warning(f"Failed to update arc-follow camera: {e}")
-            return
-
-    def update_locked_follow(self, robot_positions):
-        """Keep camera position fixed; rotate to always center the drone.
-
-        Args:
-            robot_positions: Tensor (num_envs, 3) with drone positions in world coords.
-        """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            return
-        if not self.camera_setup_success or len(self.camera_handles) == 0:
-            return
-        try:
-            # Base camera position for all envs
-            from isaacgym import gymapi
-            base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))
-            base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', '1.5')
-            if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':
-                # Try to read per-env adaptive Z from global tensors; fallback to 1.5
-                try:
-                    gtd = self.env_manager.IGE_env.global_tensor_dict
-                    gate_center_per_env = gtd.get('gate/center_height_per_env', None)
-                except Exception:
-                    gate_center_per_env = None
-            else:
-                gate_center_per_env = None
-            for env_idx in range(min(len(self.env_handles), len(self.camera_handles), robot_positions.shape[0])):
-                cam_x = 0.0
-                cam_y = base_y
-                if gate_center_per_env is not None and env_idx < len(gate_center_per_env):
-                    cam_z = float(gate_center_per_env[env_idx].item())
-                else:
-                    try:
-                        cam_z = float(base_z_env)
-                    except Exception:
-                        cam_z = 1.5
-                # Build camera and target
-                camera_pos = gymapi.Vec3(cam_x, cam_y, cam_z)
-                drone = robot_positions[env_idx]
-                target = gymapi.Vec3(float(drone[0].item()), float(drone[1].item()), float(drone[2].item()))
-                cam_handle = self.camera_handles[env_idx]
-                env_handle = self.env_handles[env_idx]
-                self.gym.set_camera_location(cam_handle, env_handle, camera_pos, target)
-        except Exception as e:
-            logger.warning(f"Failed to update locked-follow camera: {e}")
-            return
-    
-    def capture_images(self, batched=False):
-        """Capture depth and segmentation images from static camera.
-        Args:
-            batched: when True, return stacked depth of shape (num_envs, H, W) and seg for env0;
-                     when False (default), return only env0 depth (H, W) and seg for compatibility
-                     with GIF/debug pipelines.
-        """
-        if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
-            logger.error("Static camera synthetic mode disabled; no images will be generated.")
-            return None, None
-        
-        if not self.camera_setup_success or len(self.camera_handles) == 0:
-            # One-time lazy re-initialization attempt
-            try:
-                if (not hasattr(self, '_lazy_setup_attempted')) or (self._lazy_setup_attempted is False):
-                    self._lazy_setup_attempted = True
-                    logger.warning("Static camera not set up; attempting one-time lazy initialization")
-                    try:
-                        self._setup_static_camera()
-                    except Exception as e:
-                        logger.warning(f"Lazy static camera setup attempt failed: {e}")
-                    # Re-check after lazy init
-                    if not self.camera_setup_success or len(self.camera_handles) == 0:
-                        logger.error("Static camera still not set up after lazy init; returning no images.")
-                        return None, None
-                else:
-                    logger.error("Static camera not set up; returning no images.")
-                    return None, None
-            except Exception:
-                logger.error("Static camera not set up; returning no images.")
-                return None, None
-        
-        try:
-            # Step graphics and render all cameras
-            self.gym.step_graphics(self.sim)
-            self.gym.render_all_camera_sensors(self.sim)
-            self.gym.start_access_image_tensors(self.sim)
-            
-            if batched:
-                # Get images from all environments so each env has its own view
-                depth_imgs = []
-                seg_imgs = []
-                for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
-                    # Depth image
-                    depth_tensor = self.gym.get_camera_image_gpu_tensor(
-                        self.sim, env_handle, cam_handle, gymapi.IMAGE_DEPTH
-                    )
-                    depth_img = gymtorch.wrap_tensor(depth_tensor).cpu().numpy()
-                    depth_imgs.append(depth_img)
-                    # Segmentation image (used only for GIF/debug, keep env0 for compatibility)
-                    seg_tensor = self.gym.get_camera_image_gpu_tensor(
-                        self.sim, env_handle, cam_handle, gymapi.IMAGE_SEGMENTATION
-                    )
-                    seg_img = gymtorch.wrap_tensor(seg_tensor).cpu().numpy()
-                    seg_imgs.append(seg_img)
-                
-                # End access to image tensors
-                self.gym.end_access_image_tensors(self.sim)
-                
-                # Stack per-env depth and normalize to [0, 1] like DCE expects
-                if len(depth_imgs) > 0 and depth_imgs[0] is not None:
-                    depth_stack = np.stack(depth_imgs, axis=0)
-                    depth_stack[depth_stack == -np.inf] = 20.0  # Use far_plane value
-                    depth_stack = np.abs(depth_stack)
-                    depth_stack = np.clip(depth_stack, 0.4, 20.0)
-                    depth_stack = (depth_stack - 0.4) / (20.0 - 0.4)
-                    depth_stack = depth_stack.astype(np.float32)
-                else:
-                    depth_stack = None
-                
-                # Keep only env0 segmentation for downstream GIF/debug compatibility
-                seg_img0 = seg_imgs[0] if len(seg_imgs) > 0 else None
-                
-                return depth_stack, seg_img0
-            else:
-                # Get images from camera 0 (single env for GIF/debug)
-                env_handle = self.env_handles[0]
-                cam_handle = self.camera_handles[0]
-                
-                # Get depth image
-                depth_tensor = self.gym.get_camera_image_gpu_tensor(
-                    self.sim, env_handle, cam_handle, gymapi.IMAGE_DEPTH
-                )
-                depth_img = gymtorch.wrap_tensor(depth_tensor).cpu().numpy()
-                
-                # Get segmentation image
-                seg_tensor = self.gym.get_camera_image_gpu_tensor(
-                    self.sim, env_handle, cam_handle, gymapi.IMAGE_SEGMENTATION
-                )
-                seg_img = gymtorch.wrap_tensor(seg_tensor).cpu().numpy()
-                
-                # End access to image tensors
-                self.gym.end_access_image_tensors(self.sim)
-                
-                # Normalize depth to [0,1]
-                if depth_img is not None:
-                    depth_normalized = depth_img.copy()
-                    depth_normalized[depth_normalized == -np.inf] = 20.0
-                    depth_normalized = np.abs(depth_normalized)
-                    depth_normalized = np.clip(depth_normalized, 0.4, 20.0)
-                    depth_normalized = (depth_normalized - 0.4) / (20.0 - 0.4)
-                    depth_img = depth_normalized.astype(np.float32)
-                
-                return depth_img, seg_img
-                
-        except Exception as e:
-            logger.error(f"Static camera capture error: {e}")
-            return None, None
-    def _generate_synthetic_camera_data(self):
-        """Generate synthetic camera data for headless training."""
-        try:
-            # Create synthetic depth image (240x135) with reasonable gate-like features
-            height, width = 135, 240
-            depth_img = np.full((height, width), 0.5, dtype=np.float32)  # Mid-range depth
-            
-            # Add gate-like features to the synthetic depth (scaled to new resolution)
-            gate_w = max(1, width // 4)   # ~60 px at 240 width
-            gate_h = max(1, height // 3)  # ~45 px at 135 height
-            gate_x_start = width // 2 - gate_w // 2
-            gate_x_end = width // 2 + gate_w // 2
-            gate_y_start = height // 2 - gate_h // 2
-            gate_y_end = height // 2 + gate_h // 2
-            
-            # Gate opening (closer depth)
-            depth_img[gate_y_start:gate_y_end, gate_x_start:gate_x_end] = 0.8
-            
-            # Gate frame (farther depth)
-            frame_thickness = max(1, min(width, height) // 24)  # scale thickness
-            # Top and bottom frame
-            depth_img[gate_y_start-frame_thickness:gate_y_start, gate_x_start-frame_thickness:gate_x_end+frame_thickness] = 0.2
-            depth_img[gate_y_end:gate_y_end+frame_thickness, gate_x_start-frame_thickness:gate_x_end+frame_thickness] = 0.2
-            # Left and right frame
-            depth_img[gate_y_start:gate_y_end, gate_x_start-frame_thickness:gate_x_start] = 0.2
-            depth_img[gate_y_start:gate_y_end, gate_x_end:gate_x_end+frame_thickness] = 0.2
-            
-            # Add some noise for realism
-            noise = np.random.normal(0, 0.02, (height, width)).astype(np.float32)
-            depth_img = np.clip(depth_img + noise, 0.0, 1.0)
-            
-            # Create synthetic segmentation image
-            seg_img = np.zeros((height, width), dtype=np.uint8)
-            seg_img[gate_y_start:gate_y_end, gate_x_start:gate_x_end] = 1  # Gate opening
-            
-            return depth_img, seg_img
-            
-        except Exception as e:
-            logger.debug(f"Synthetic camera data generation error: {e}")
-            # Return zero arrays as fallback
-            return np.zeros((135, 240), dtype=np.float32), np.zeros((135, 240), dtype=np.uint8)
-
-
-@torch.jit.script
-def exponential_reward_function(
-    magnitude: float, exponent: float, value: torch.Tensor
-) -> torch.Tensor:
-    """Exponential reward function"""
-    return magnitude * torch.exp(-(value * value) * exponent)
-
-
-@torch.jit.script
-def exponential_penalty_function(
-    magnitude: float, exponent: float, value: torch.Tensor
-) -> torch.Tensor:
-    """Exponential penalty function"""
-    return magnitude * (torch.exp(-(value * value) * exponent) - 1.0)
-
-
-@torch.jit.script
-def ssa(a: torch.Tensor) -> torch.Tensor:
-    """Smallest signed angle"""
-    return torch.remainder(a + torch.pi, 2 * torch.pi) - torch.pi
 
 
 @torch.jit.script

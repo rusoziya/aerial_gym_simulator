@@ -3,7 +3,7 @@ from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
 
-from aerial_gym.utils.math import quat_rotate_inverse, get_euler_xyz_tensor
+from aerial_gym.utils.math import quat_rotate_inverse, get_euler_xyz_tensor, ssa
 import torch
 
 
@@ -67,9 +67,3 @@ class DCE_RL_Navigation_Task(NavigationTask):
         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
         self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]
         self.task_obs["observations"][:, 17:81] = self.image_latents
-
-
-@torch.jit.script
-def ssa(a: torch.Tensor) -> torch.Tensor:
-    """Smallest signed angle"""
-    return torch.remainder(a + torch.pi, 2 * torch.pi) - torch.pi

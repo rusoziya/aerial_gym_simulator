@@ -38,14 +38,32 @@ class task_config:
     )
     # user can set the above to true if they so desire
 
+    # Ablation flags (defaults; overridable via SF_DISABLE_* env vars)
+    disable_obstacle_randomization = False
+    fixed_obstacles_behind_gate = 0
+    disable_gate_size_randomization = False
+    fixed_gate_scale_percent = 100
+    disable_static_camera_orientation_randomization = False
+    disable_camera_noise_randomization = False
+    disable_camera_frame_dropout_randomization = False
+    disable_spawn_position_randomization = False
+    disable_spawn_orientation_randomization = False
+    disable_state_noise_randomization = False
+    disable_dynamic_camera_following = False
+    disable_curriculum_multiplier = False
+
+    # Static camera base placement (overridable via SF_STATIC_CAMERA_BASE_Y/Z env vars)
+    static_camera_base_y = -3.0
+    static_camera_base_z = 1.5
+
+    # Forced curriculum level override (None = use normal progression)
+    force_curriculum_level = None
+    max_curriculum_level = None  # None = use curriculum.max_level
+
     # DEBUG TOGGLES
-    # Enable verbose guard logs (NaN/Inf in actions/observations) and reward outlier detection
     guard_debug_enabled = True
-    # Disable verbose comprehensive reward breakdown logs unless explicitly enabled
     enable_comprehensive_reward_debug = False
-    # Threshold below which a reward is considered an outlier and logged (collision is -100)
     reward_outlier_threshold = -180.0
-    # Max number of env indices to include in a single outlier log line
     reward_outlier_log_limit_per_step = 8
    
     # GATE DIMENSIONS ANALYSIS (from gate.urdf):
@@ -273,6 +291,7 @@ class task_config:
         success_rate_for_increase = 0.55  # Promote when SR > 55%
         success_rate_for_decrease = 0.25   # Demote when SR < 30%
         cooldown_windows = 12  # After any change, hold level for this many evaluation windows
+        avg3_success_for_increase = None  # Optional rolling-3 success threshold (None = disabled)
         
         # MULTI-ASPECT DIFFICULTY PROGRESSION
         # Each curriculum level controls multiple aspects of difficulty:
@@ -343,17 +362,17 @@ class task_config:
             - Level 23: 10 obstacles
             - Linear interpolation in between (rounded to nearest int)
             """
-            min_level = getattr(task_config.curriculum, 'min_level', 3)
-            max_level = getattr(task_config.curriculum, 'max_level', 23)
+            min_level = task_config.curriculum.min_level
+            max_level = task_config.curriculum.max_level
             # Use stretched end level for evaluation if enabled
             effective_max_level = (
-                getattr(task_config.curriculum, 'eval_stretch_end_level', max_level)
-                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                task_config.curriculum.eval_stretch_end_level
+                if task_config.curriculum.eval_stretch_enabled
                 else max_level
             )
             start_obstacles = 3
             end_obstacles = 10
-            stretched_end_obstacles = getattr(task_config.curriculum, 'stretched_end_obstacles', 25)
+            stretched_end_obstacles = task_config.curriculum.stretched_end_obstacles
             total_asset_capacity = 30  # Must match gate_object_params.num_assets in gate_env.py
             
             # Piecewise linear progression:
@@ -419,8 +438,8 @@ class task_config:
                 dropout_rate = min_pixel_dropout_rate + progress * (max_pixel_dropout_rate - min_pixel_dropout_rate)
             else:
                 # Evaluation stretch: extrapolate beyond training cap using the same slope
-                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', lvl))
-                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                eval_end = int(task_config.curriculum.eval_stretch_end_level)
+                if not task_config.curriculum.eval_stretch_enabled:
                     eval_end = camera_noise_end_train
                 lvl_clamped = min(lvl, eval_end)
                 extra = float(lvl_clamped - camera_noise_end_train)
@@ -471,8 +490,8 @@ class task_config:
                 sf = min_static_freeze + progress * (max_static_freeze - min_static_freeze)
                 sb = min_static_blank + progress * (max_static_blank - min_static_blank)
             else:
-                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', lvl))
-                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                eval_end = int(task_config.curriculum.eval_stretch_end_level)
+                if not task_config.curriculum.eval_stretch_enabled:
                     eval_end = end_train
                 lvl_clamped = min(lvl, eval_end)
                 extra = float(lvl_clamped - end_train)
@@ -536,8 +555,8 @@ class task_config:
                     "static_orient_std_rad": min_static_orient_noise + progress * (max_static_orient_noise - min_static_orient_noise),
                 }
             else:
-                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', lvl))
-                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                eval_end = int(task_config.curriculum.eval_stretch_end_level)
+                if not task_config.curriculum.eval_stretch_enabled:
                     eval_end = end_train
                 lvl_clamped = min(lvl, eval_end)
                 extra = float(lvl_clamped - end_train)
@@ -570,7 +589,7 @@ class task_config:
                     "yaw_abs_rad": task_config.curriculum.spawn_easy_yaw_abs_rad,
                 }
             if level >= e_train:
-                if not getattr(task_config.curriculum, 'eval_stretch_enabled', False):
+                if not task_config.curriculum.eval_stretch_enabled:
                     return {
                         "x_half_span_m": task_config.curriculum.spawn_hard_x_half_span_m,
                         "y_center_m": task_config.curriculum.spawn_hard_y_center_m,
@@ -591,7 +610,7 @@ class task_config:
                     "z_half_span_m": (task_config.curriculum.spawn_hard_z_half_span_m - task_config.curriculum.spawn_easy_z_half_span_m) / span_train,
                     "yaw_abs_rad": (task_config.curriculum.spawn_hard_yaw_abs_rad - task_config.curriculum.spawn_easy_yaw_abs_rad) / span_train,
                 }
-                eval_end = int(getattr(task_config.curriculum, 'eval_stretch_end_level', level))
+                eval_end = int(task_config.curriculum.eval_stretch_end_level)
                 lvl_clamped = min(level, eval_end)
                 extra = float(lvl_clamped - e_train)
                 return {
@@ -632,8 +651,8 @@ class task_config:
             camera_start_level = 3
             # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
             max_level = (
-                getattr(task_config.curriculum, 'eval_stretch_end_level', 23)
-                if getattr(task_config.curriculum, 'eval_stretch_enabled', False)
+                task_config.curriculum.eval_stretch_end_level
+                if task_config.curriculum.eval_stretch_enabled
                 else 23
             )
             max_camera_angle_degrees = 19
