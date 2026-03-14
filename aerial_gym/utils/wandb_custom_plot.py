@@ -109,7 +109,7 @@ def _fetch_runs(api: Api, entity: str, project: str, run_ids: Optional[List[str]
     return api.runs(path=path, filters=filt or {})
 
 
-def _get_series(run, x_key: str, y_key: str):
+def _get_series(run, x_key: str, y_key: str) -> None:
     # Prefer pandas History for speed and filtering
     try:
         df = run.history(keys=[x_key, y_key], pandas=True)
@@ -141,7 +141,7 @@ def _get_series(run, x_key: str, y_key: str):
         return x[good], y[good]
 
 
-def main():
+def main() -> None:
     args = parse_args()
     if args.per_run and args.avg_across_runs:
         print("Choose either --per_run or --avg_across_runs, not both", file=sys.stderr)

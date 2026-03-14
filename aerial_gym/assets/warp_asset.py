@@ -18,7 +18,7 @@ class WarpAsset(BaseAsset):
         super().__init__(asset_name, asset_file, loading_options)
         self.load_from_file(self.file)
 
-    def load_from_file(self, asset_file):
+    def load_from_file(self, asset_file) -> None:
         self.file = asset_file
         # get trimesh collision and visual meshes
         self.urdf_asset = URDF.load(asset_file)

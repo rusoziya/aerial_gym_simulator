@@ -23,7 +23,7 @@ class MultiAgentAerialGymWrapper:
         # Create observation and action spaces for each agent
         self._setup_spaces()
         
-    def _setup_spaces(self):
+    def _setup_spaces(self) -> None:
         """Setup observation and action spaces compatible with MARL libraries"""
         # Individual observation space for each agent
         single_obs_shape = self.task.multi_agent_observation_space.shape[1]
@@ -49,7 +49,7 @@ class MultiAgentAerialGymWrapper:
             for agent_id in self.agent_ids
         }
         
-    def reset(self, **kwargs):
+    def reset(self, **kwargs) -> None:
         """Reset environment and return observations for all agents"""
         observations = self.task.reset()
         
@@ -62,7 +62,7 @@ class MultiAgentAerialGymWrapper:
                 
         return agent_observations
         
-    def step(self, actions_dict):
+    def step(self, actions_dict) -> None:
         """
         Step environment with actions from all agents
         
@@ -132,15 +132,15 @@ class RLLibMultiAgentWrapper(MultiAgentAerialGymWrapper):
     def __init__(self, task, agent_ids=None):
         super().__init__(task, agent_ids)
         
-    def observation_space(self, agent_id):
+    def observation_space(self, agent_id) -> None:
         """Get observation space for specific agent"""
         return self.observation_spaces[agent_id]
         
-    def action_space(self, agent_id):
+    def action_space(self, agent_id) -> None:
         """Get action space for specific agent"""
         return self.action_spaces[agent_id]
         
-    def get_agent_ids(self):
+    def get_agent_ids(self) -> None:
         """Get list of all agent IDs"""
         agent_ids = []
         for env_idx in range(self.task.num_envs):
@@ -156,7 +156,7 @@ class MAPPOWrapper(MultiAgentAerialGymWrapper):
     def __init__(self, task, agent_ids=None):
         super().__init__(task, agent_ids)
         
-    def get_global_state(self):
+    def get_global_state(self) -> None:
         """Get global state for centralized critic"""
         # Collect all robot positions and velocities
         robot_observations = self.task.env_manager.get_observations()
@@ -173,7 +173,7 @@ class MAPPOWrapper(MultiAgentAerialGymWrapper):
         
         return global_state.cpu().numpy()
         
-    def get_state_size(self):
+    def get_state_size(self) -> None:
         """Get size of global state for centralized critic"""
         return self.num_agents * 6  # pos (3) + vel (3) per agent
 
@@ -188,7 +188,7 @@ class QMIXWrapper(MultiAgentAerialGymWrapper):
         # Convert to discrete action space for QMIX
         self._discretize_action_space()
         
-    def _discretize_action_space(self):
+    def _discretize_action_space(self) -> None:
         """Convert continuous actions to discrete for QMIX"""
         # Define discrete action grid
         self.action_discretization = 5  # 5 levels per action dimension
@@ -205,7 +205,7 @@ class QMIXWrapper(MultiAgentAerialGymWrapper):
         # Create mapping from discrete to continuous actions
         self._create_action_mapping(action_dim)
         
-    def _create_action_mapping(self, action_dim):
+    def _create_action_mapping(self, action_dim) -> None:
         """Create mapping from discrete action indices to continuous actions"""
         self.discrete_to_continuous = {}
         
@@ -218,7 +218,7 @@ class QMIXWrapper(MultiAgentAerialGymWrapper):
             self.discrete_to_continuous[action_idx] = continuous_action
             action_idx += 1
             
-    def step(self, actions_dict):
+    def step(self, actions_dict) -> None:
         """Step with discrete actions converted to continuous"""
         # Convert discrete actions to continuous
         continuous_actions_dict = {}
@@ -230,7 +230,7 @@ class QMIXWrapper(MultiAgentAerialGymWrapper):
         # Use parent step method with continuous actions
         return super().step(continuous_actions_dict)
 
-def create_multi_agent_env(task_config_class, algorithm="ppo", **kwargs):
+def create_multi_agent_env(task_config_class, algorithm="ppo", **kwargs) -> None:
     """
     Factory function to create multi-agent environment with appropriate wrapper
     
@@ -302,7 +302,7 @@ def create_multi_agent_env(task_config_class, algorithm="ppo", **kwargs):
         return MultiAgentAerialGymWrapper(task)
 
 # Example usage patterns for different algorithms
-def get_rllib_config():
+def get_rllib_config() -> None:
     """Example RLLib configuration"""
     return {
         "multiagent": {
@@ -316,7 +316,7 @@ def get_rllib_config():
         "train_batch_size": 4000,
     }
 
-def get_mappo_config():
+def get_mappo_config() -> None:
     """Example MAPPO configuration"""
     return {
         "use_centralized_critic": True,
@@ -327,7 +327,7 @@ def get_mappo_config():
         "entropy_coef": 0.01,
     }
 
-def get_qmix_config():
+def get_qmix_config() -> None:
     """Example QMIX configuration"""
     return {
         "mixer": "qmix",

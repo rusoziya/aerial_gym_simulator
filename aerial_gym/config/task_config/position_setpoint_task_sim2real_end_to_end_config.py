@@ -27,7 +27,7 @@ if EVAL == False:
         action_limit_max = torch.ones(action_space_dim,device=device) * 1.2
         action_limit_min = torch.ones(action_space_dim,device=device) * 0.2
 
-        def process_actions_for_task(actions, min_limit, max_limit):
+        def process_actions_for_task(actions, min_limit, max_limit) -> None:
             actions_clipped = torch.clamp(actions, -1, 1)
 
             rescaled_command_actions = actions_clipped * (max_limit - min_limit)/2 + (max_limit + min_limit)/2
@@ -57,7 +57,7 @@ else:
         action_limit_max = torch.ones(action_space_dim,device=device) * 1.2
         action_limit_min = torch.ones(action_space_dim,device=device) * 0.2
 
-        def process_actions_for_task(actions, min_limit, max_limit):
+        def process_actions_for_task(actions, min_limit, max_limit) -> None:
             actions_clipped = torch.clamp(actions, -1, 1)
 
             rescaled_command_actions = actions_clipped * (max_limit - min_limit)/2 + (max_limit + min_limit)/2

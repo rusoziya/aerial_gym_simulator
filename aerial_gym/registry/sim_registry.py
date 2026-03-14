@@ -9,25 +9,25 @@ class SimConfigRegistry:
     def __init__(self) -> None:
         self.sim_configs = {}
 
-    def register(self, sim_name, sim_config):
+    def register(self, sim_name, sim_config) -> None:
         """
         Add a sim to the sim dictionary.
         """
         self.sim_configs[sim_name] = sim_config
 
-    def get_sim_config(self, sim_name):
+    def get_sim_config(self, sim_name) -> None:
         """
         Get a sim from the sim dictionary.
         """
         return self.sim_configs[sim_name]
 
-    def get_sim_names(self):
+    def get_sim_names(self) -> None:
         """
         Get the sim names from the sim dictionary.
         """
         return self.sim_configs.keys()
 
-    def make_sim(self, sim_name):
+    def make_sim(self, sim_name) -> None:
         """
         Make a sim from the sim dictionary.
         """

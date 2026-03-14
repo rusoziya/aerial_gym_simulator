@@ -24,7 +24,7 @@ _spec.loader.exec_module(_mod)
 VAE = _mod.VAE
 
 
-def clean_state_dict(state_dict):
+def clean_state_dict(state_dict) -> None:
     clean = {}
     for k, v in state_dict.items():
         if k.startswith("module."):
@@ -35,7 +35,7 @@ def clean_state_dict(state_dict):
     return clean
 
 
-def load_index(index_csv, split):
+def load_index(index_csv, split) -> None:
     rows = []
     with open(index_csv, "r") as f:
         reader = csv.DictReader(f)
@@ -46,7 +46,7 @@ def load_index(index_csv, split):
     return rows
 
 
-def read_image_gray(path, resize_wh=None):
+def read_image_gray(path, resize_wh=None) -> None:
     # Returns float32 tensor in [0,1] with shape [1, H, W]
     img = Image.open(path).convert("L")
     if resize_wh is not None:
@@ -56,14 +56,14 @@ def read_image_gray(path, resize_wh=None):
     return t
 
 
-def psnr(x, y, max_val=1.0):
+def psnr(x, y, max_val=1.0) -> None:
     mse = F.mse_loss(x, y).item()
     if mse <= 1e-12:
         return 99.0
     return 20.0 * math.log10(max_val) - 10.0 * math.log10(mse)
 
 
-def psnr_masked(x, y, mask, max_val=1.0):
+def psnr_masked(x, y, mask, max_val=1.0) -> None:
     # x,y,mask: [1,H,W] in [0,1]; mask in {0,1}
     mse = ((x - y) ** 2 * mask).sum() / (mask.sum() + 1e-12)
     mse = float(mse.item())
@@ -72,7 +72,7 @@ def psnr_masked(x, y, mask, max_val=1.0):
     return 20.0 * math.log10(max_val) - 10.0 * math.log10(mse)
 
 
-def ssim_torch(x, y, C1=0.01 ** 2, C2=0.03 ** 2):
+def ssim_torch(x, y, C1=0.01 ** 2, C2=0.03 ** 2) -> None:
     # x,y: [1,H,W] in [0,1]; simple global SSIM (not windowed)
     mu_x = x.mean()
     mu_y = y.mean()
@@ -84,7 +84,7 @@ def ssim_torch(x, y, C1=0.01 ** 2, C2=0.03 ** 2):
     return (num / (den + 1e-12)).item()
 
 
-def save_grid(samples, out_path, ncols=8):
+def save_grid(samples, out_path, ncols=8) -> None:
     # samples: list of (input_t, recon_t) tensors in [0,1] [1,H,W]
     if not samples:
         return
@@ -108,7 +108,7 @@ def save_grid(samples, out_path, ncols=8):
     grid.save(out_path)
 
 
-def main():
+def main() -> None:
     p = argparse.ArgumentParser(description="Validate/test VAE on static-camera depth frames.")
     p.add_argument("--index_csv", type=str, required=True, help="CSV built by extract_static_vae_frames.py")
     p.add_argument("--weights", type=str, required=True, help="Path to VAE checkpoint .pth")
@@ -149,13 +149,13 @@ def main():
     vae.load_state_dict(state)
     vae.eval()
 
-    def to_meters(t_norm):
+    def to_meters(t_norm) -> None:
         return args.near + t_norm * (args.far - args.near)
 
-    def to_norm(meters):
+    def to_norm(meters) -> None:
         return torch.clamp((meters - args.near) / (args.far - args.near), 0.0, 1.0)
 
-    def collision_image(depth_norm):
+    def collision_image(depth_norm) -> None:
         # depth-dependent multi-bin min-pooling
         B, C, H, W = depth_norm.shape
         z_m = to_meters(depth_norm)

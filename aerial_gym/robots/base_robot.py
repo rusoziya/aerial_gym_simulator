@@ -36,7 +36,7 @@ class BaseRobot(ABC):
         self.num_actions = self.controller_config.num_actions
 
     @abstractmethod
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict) -> None:
         self.dt = global_tensor_dict["dt"]
         self.gravity = global_tensor_dict["gravity"]
         self.robot_state = global_tensor_dict["robot_state_tensor"]
@@ -55,15 +55,15 @@ class BaseRobot(ABC):
         self._global_tensor_dict = global_tensor_dict
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         pass
 
     @abstractmethod
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         pass
 
     @abstractmethod
-    def step(self):
+    def step(self) -> None:
         pass
 
     # @abstractmethod

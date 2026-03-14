@@ -19,7 +19,7 @@ class ObstacleManager(BaseManager):
 
         logger.debug("Obstacle Manager initialized")
 
-    def prepare_for_sim(self, global_tensor_dict):
+    def prepare_for_sim(self, global_tensor_dict) -> None:
         if self.num_assets <= 1:
             return
         self.global_tensor_dict = global_tensor_dict
@@ -31,15 +31,15 @@ class ObstacleManager(BaseManager):
         # self.obstacle_force_tensors = global_tensor_dict["obstacle_force_tensor"]
         # self.obstacle_torque_tensors = global_tensor_dict["obstacle_torque_tensor"]
 
-    def reset(self):
+    def reset(self) -> None:
         # self.controller.reset()
         return
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         # self.controller.reset_idx(env_ids)
         return
 
-    def pre_physics_step(self, actions=None):
+    def pre_physics_step(self, actions=None) -> None:
         if self.num_assets <= 1 or actions is None:
             return
         self.obstacle_linvel[:] = actions[:, :, 0:3]
@@ -49,7 +49,7 @@ class ObstacleManager(BaseManager):
         # self.obstacle_force_tensors[:] = self.obstacle_wrench[:, :, 0:3]
         # self.obstacle_torque_tensors[:] = self.obstacle_wrench[:, :, 3:6]
 
-    def step(self):
+    def step(self) -> None:
         pass
 
     # def update_states(self):

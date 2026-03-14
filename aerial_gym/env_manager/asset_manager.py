@@ -12,7 +12,7 @@ class AssetManager:
     def __init__(self, global_tensor_dict, num_keep_in_env):
         self.init_tensors(global_tensor_dict, num_keep_in_env)
 
-    def init_tensors(self, global_tensor_dict, num_keep_in_env):
+    def init_tensors(self, global_tensor_dict, num_keep_in_env) -> None:
         self.env_asset_state_tensor = global_tensor_dict["env_asset_state_tensor"]
         self.asset_min_state_ratio = global_tensor_dict["asset_min_state_ratio"]
         self.asset_max_state_ratio = global_tensor_dict["asset_max_state_ratio"]
@@ -28,17 +28,17 @@ class AssetManager:
         )
         self.num_keep_in_env = num_keep_in_env
 
-    def prepare_for_sim(self):
+    def prepare_for_sim(self) -> None:
         self.reset(self.num_keep_in_env)
         logger.warning(f"Number of obstacles to be kept in the environment: {self.num_keep_in_env}")
 
-    def pre_physics_step(self, actions):
+    def pre_physics_step(self, actions) -> None:
         pass
 
-    def post_physics_step(self):
+    def post_physics_step(self) -> None:
         pass
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         pass
         # Implement this function if needed.
         # this functionality can do speciic things with the environment assets on stepping.
@@ -46,10 +46,10 @@ class AssetManager:
         # if force needs to be applied, it should be done in the other classes and it's
         # better to leave this class to manipulate the state tensors.
 
-    def reset(self, num_obstacles_per_env):
+    def reset(self, num_obstacles_per_env) -> None:
         self.reset_idx(torch.arange(self.env_asset_state_tensor.shape[0]), num_obstacles_per_env)
 
-    def reset_idx(self, env_ids, num_obstacles_per_env=0):
+    def reset_idx(self, env_ids, num_obstacles_per_env=0) -> None:
         # logger.warning(f"[OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids={env_ids.tolist() if hasattr(env_ids, 'tolist') else env_ids}, num_obstacles_per_env={num_obstacles_per_env}")
         # logger.warning(f"[OBSTACLE_DEBUG] num_keep_in_env={self.num_keep_in_env}, total_asset_tensor_shape={self.env_asset_state_tensor.shape}")
         

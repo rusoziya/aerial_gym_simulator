@@ -14,7 +14,7 @@ import os
 import importlib
 from pathlib import Path
 
-def validate_imports():
+def validate_imports() -> None:
     """Validate that all imports work correctly."""
     print("🔍 Validating imports...")
     
@@ -41,7 +41,7 @@ def validate_imports():
         print(f"❌ Import validation FAILED: {e}")
         return False
 
-def validate_configuration():
+def validate_configuration() -> None:
     """Validate the training configuration parameters."""
     print("\n🔧 Validating configuration...")
     
@@ -101,7 +101,7 @@ def validate_configuration():
         print(f"❌ Configuration validation FAILED: {e}")
         return False
 
-def validate_action_compatibility():
+def validate_action_compatibility() -> None:
     """Validate action space compatibility between training and inference."""
     print("\n🎯 Validating action space compatibility...")
     
@@ -135,7 +135,7 @@ def validate_action_compatibility():
         print(f"❌ Action space validation FAILED: {e}")
         return False
 
-def validate_shell_script():
+def validate_shell_script() -> None:
     """Validate the shell script configuration."""
     print("\n🐚 Validating shell script...")
     
@@ -162,7 +162,7 @@ def validate_shell_script():
         print(f"❌ Shell script validation FAILED: {e}")
         return False
 
-def validate_training_script():
+def validate_training_script() -> None:
     """Validate the training script configuration."""
     print("\n🔧 Validating training script configuration...")
     
@@ -203,7 +203,7 @@ def validate_training_script():
         print(f"❌ Training script validation FAILED: {e}")
         return False
 
-def main():
+def main() -> None:
     """Run all validations."""
     print("🚀 DCE Navigation Configuration Validation")
     print("=" * 50)

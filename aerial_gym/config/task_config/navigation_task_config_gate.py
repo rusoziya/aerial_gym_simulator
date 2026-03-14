@@ -340,7 +340,7 @@ class task_config:
         # CAMERA BEHAVIOR LOGGING
         log_camera_following = False    # Log dynamic camera following behavior (can be verbose)
 
-        def update_curriculim_level(self, success_rate, current_level):
+        def update_curriculim_level(self, success_rate, current_level) -> None:
             """
             ENHANCED CURRICULUM UPDATE WITH NO-DECREASE POLICY
             
@@ -357,7 +357,7 @@ class task_config:
                 return current_level
         
         @staticmethod
-        def get_obstacle_count_behind_gate(level):
+        def get_obstacle_count_behind_gate(level) -> None:
             """
             Number of obstacles behind gate based on curriculum level (3→23).
             - Level 3: 3 obstacles
@@ -400,7 +400,7 @@ class task_config:
             return requested_obstacles
         
         @staticmethod
-        def get_camera_noise(level):
+        def get_camera_noise(level) -> None:
             """
             Calculate camera noise parameters based on curriculum level.
             
@@ -450,7 +450,7 @@ class task_config:
             return gaussian_std, dropout_rate
 
         @staticmethod
-        def get_camera_frame_dropout(level):
+        def get_camera_frame_dropout(level) -> None:
             """
             Linear schedules for entire-frame dropouts with split freeze/blank probabilities.
             
@@ -512,7 +512,7 @@ class task_config:
             }
 
         @staticmethod
-        def get_state_noise(level):
+        def get_state_noise(level) -> None:
             """
             Linear schedules for state/pose noise (drone & static), per-axis Gaussian stds.
             
@@ -570,7 +570,7 @@ class task_config:
                 }
 
         @staticmethod
-        def get_spawn_ranges(level):
+        def get_spawn_ranges(level) -> None:
             """
             Linear spawn-range schedule from level 3 to 23.
             Returns dict with:
@@ -602,7 +602,7 @@ class task_config:
                     }
                 # Evaluation stretch: extrapolate beyond hard values using training slope
                 span_train = float(max(1, e_train - s))
-                def lerp(a, b):
+                def lerp(a, b) -> None:
                     return a + (e_train - s) / span_train * (b - a)
                 slopes = {
                     "x_half_span_m": (task_config.curriculum.spawn_hard_x_half_span_m - task_config.curriculum.spawn_easy_x_half_span_m) / span_train,
@@ -624,7 +624,7 @@ class task_config:
                     "yaw_abs_rad": task_config.curriculum.spawn_hard_yaw_abs_rad + slopes["yaw_abs_rad"] * extra,
                 }
             p = (level - s) / float(e_train - s)
-            def lerp(a, b):
+            def lerp(a, b) -> None:
                 return a + p * (b - a)
             return {
                 "x_half_span_m": lerp(task_config.curriculum.spawn_easy_x_half_span_m, task_config.curriculum.spawn_hard_x_half_span_m),
@@ -636,7 +636,7 @@ class task_config:
             }
 
         @staticmethod
-        def get_static_camera_difficulty(level):
+        def get_static_camera_difficulty(level) -> None:
             """
             Calculate static camera positioning difficulty based on curriculum level.
             
@@ -671,7 +671,7 @@ class task_config:
             return max_camera_angle, height_offset, distance_offset
         
         @staticmethod
-        def get_dynamic_camera_follow_offset():
+        def get_dynamic_camera_follow_offset() -> None:
             """
             Get the offset vector for dynamic camera following.
             
@@ -688,7 +688,7 @@ class task_config:
     class static_camera_curriculum:
         """Progressive static camera positioning to increase difficulty"""
         @staticmethod
-        def get_camera_position_and_orientation(level, gate_position, env_bounds):
+        def get_camera_position_and_orientation(level, gate_position, env_bounds) -> None:
             """
             Get static camera position and orientation based on curriculum level.
             

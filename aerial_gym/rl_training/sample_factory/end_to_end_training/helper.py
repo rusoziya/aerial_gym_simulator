@@ -43,7 +43,7 @@ class AerialGymVecEnv(gym.Env):
         obs, rew, terminated, truncated, infos = self.env.step(action)
         return obs, rew, terminated, truncated, infos
 
-    def render(self):
+    def render(self) -> None:
         pass
 
 def make_aerialgym_env(
@@ -56,7 +56,7 @@ def make_aerialgym_env(
 
     return AerialGymVecEnv(task_registry.make_task(task_name=full_task_name), "obs")
 
-def add_extra_params_func(parser):
+def add_extra_params_func(parser) -> None:
     """
     Specify any additional command line arguments for this family of custom environments.
     """
@@ -97,7 +97,7 @@ def add_extra_params_func(parser):
     )
 
 
-def override_default_params_func(env, parser, env_configs):
+def override_default_params_func(env, parser, env_configs) -> None:
     """Most of these parameters are taken from IsaacGymEnvs default config files."""
 
     parser.set_defaults(
@@ -177,16 +177,16 @@ env_configs = dict(
         ),
     )
 
-def create_new_task():
+def create_new_task() -> None:
     register_aerialgym_custom_components(env_configs)
     cfg = parse_aerialgym_cfg(env_configs)
     return cfg
 
-def register_aerialgym_custom_components(env_learning_configs):
+def register_aerialgym_custom_components(env_learning_configs) -> None:
     for env_name in env_learning_configs:
         register_env(env_name, make_aerialgym_env)
 
-def parse_aerialgym_cfg(evaluation=False):
+def parse_aerialgym_cfg(evaluation=False) -> None:
     parser, partial_cfg = parse_sf_args(evaluation=evaluation)
     add_extra_params_func(parser)
     override_default_params_func(partial_cfg.env, parser, env_configs)

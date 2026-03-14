@@ -32,7 +32,7 @@ env_configs = dict(
 )
 
 
-def override_default_params_func(env, parser):
+def override_default_params_func(env, parser) -> None:
     """Most of these parameters are taken from IsaacGymEnvs default config files."""
 
     parser.set_defaults(
@@ -81,14 +81,14 @@ def override_default_params_func(env, parser):
         parser.set_defaults(**env_configs[env])
 
 
-def parse_aerialgym_cfg(evaluation=True):
+def parse_aerialgym_cfg(evaluation=True) -> None:
     parser, partial_cfg = parse_sf_args(evaluation=evaluation)
     override_default_params_func(partial_cfg.env, parser)
     final_cfg = parse_full_cfg(parser)
     return final_cfg
 
 
-def get_network(num_envs):
+def get_network(num_envs) -> None:
     """Script entry point."""
     # register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg(evaluation=True)
@@ -103,11 +103,11 @@ class RL_Nav_Interface:
         self.device = device
         self.RL_net_interface = get_network(num_envs)
 
-    def step(self, obs):
+    def step(self, obs) -> None:
         # Get action from RL network
         return self.RL_net_interface.get_action(obs)
 
-    def reset(self, env_ids=[0]):
+    def reset(self, env_ids=[0]) -> None:
         self.RL_net_interface.reset(env_ids)
 
 

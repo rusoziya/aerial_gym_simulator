@@ -54,7 +54,7 @@ class DCE_RL_Navigation_Task(NavigationTask):
     # just changing how the observations are returned for the code to work
     # This was the original code.
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         vec_to_target = quat_rotate_inverse(
             self.obs_dict["robot_vehicle_orientation"],
             (self.target_position - self.obs_dict["robot_position"]),

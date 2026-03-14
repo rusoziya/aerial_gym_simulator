@@ -88,7 +88,7 @@ class RobotPositionControlNode:
         rospy.Subscriber(ODOMETRY_TOPIC, Odometry, self.odom_callback, queue_size=1)
         rospy.Subscriber(GOAL_TOPIC, PoseStamped, self.goal_callback, queue_size=1)
 
-    def odom_callback(self, msg):
+    def odom_callback(self, msg) -> None:
         msgpose = msg.pose.pose
         msgtwist = msg.twist.twist
         # Update current position and velocity
@@ -122,7 +122,7 @@ class RobotPositionControlNode:
             ]
         )
 
-    def goal_callback(self, msg):
+    def goal_callback(self, msg) -> None:
         # Update target position
         self.target_position = torch.tensor(
             [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z],
@@ -132,7 +132,7 @@ class RobotPositionControlNode:
 
     def send_position_target_command(
         self, x_command, y_command, z_command, yaw_rate_command, mode="velocity"
-    ):
+    ) -> None:
         msg = PositionTarget()
         msg.header.stamp = rospy.Time.now()
         msg.coordinate_frame = PositionTarget.FRAME_BODY_NED
@@ -177,7 +177,7 @@ class RobotPositionControlNode:
         viz_msg.twist.angular.z = yaw_rate_command
         self.cmd_pub_viz.publish(viz_msg)
 
-    def get_observations_tensor(self, current_state, previous_actions, target_position):
+    def get_observations_tensor(self, current_state, previous_actions, target_position) -> None:
         self.obs_tensor[0, 0:3] = (target_position - current_state[:3]).to(NN_INFERENCE_DEVICE)
         self.obs_tensor[0, 3:7] = current_state[3:7].to(NN_INFERENCE_DEVICE)
         self.obs_tensor[0, 7:10] = current_state[7:10].to(NN_INFERENCE_DEVICE)
@@ -185,7 +185,7 @@ class RobotPositionControlNode:
         self.obs_tensor[0, 13:17] = previous_actions.to(NN_INFERENCE_DEVICE)
         return self.obs_tensor
 
-    def compute_command(self):
+    def compute_command(self) -> None:
         if self.target_position is None:
             return None
         obs_tensor = self.get_observations_tensor(
@@ -194,7 +194,7 @@ class RobotPositionControlNode:
         actions = self.controller(obs_tensor)
         return actions
 
-    def filter_actions(self, actions):
+    def filter_actions(self, actions) -> None:
         clipped_actions = torch.clip(actions, -CLIP_VALUE, CLIP_VALUE)
         clipped_actions[0] *= VELOCITY_ACTION_MAGNITUDE
         clipped_actions[1] *= VELOCITY_ACTION_MAGNITUDE
@@ -202,7 +202,7 @@ class RobotPositionControlNode:
         clipped_actions[3] *= YAW_RATE_ACTION_MAGNITUDE
         return clipped_actions
 
-    def run(self):
+    def run(self) -> None:
         rate = rospy.Rate(self.update_rate)
 
         while not rospy.is_shutdown():

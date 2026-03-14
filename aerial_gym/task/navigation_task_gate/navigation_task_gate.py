@@ -39,7 +39,7 @@ logger = CustomLogger("navigation_task_gate")
 # VERSION: 2025.01.09_v2 - Fixed AttributeError curriculum_log_file in subprocesses
 # Added robust curriculum logging with proper hasattr() checks
 
-def dict_to_class(dict):
+def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
 
 
@@ -1462,9 +1462,9 @@ class NavigationTaskGate(BaseTask):
         # DEBUG: Compare per-env drone camera images to ensure diversity
         if (not self._drone_cam_debug_last) or (self.num_task_steps % 200 == 0):
             ne = int(image_obs.shape[0])
-            def _mean_env(idx):
+            def _mean_env(idx) -> None:
                 return float(image_obs[idx].mean().item()) if idx < ne else float('nan')
-            def _same(idx):
+            def _same(idx) -> None:
                 return (idx < ne) and bool(torch.allclose(image_obs[0], image_obs[idx]))
             envs_to_check = [5]  # reduced debug output: only env5
             means = {i: _mean_env(i) for i in envs_to_check}
@@ -1570,9 +1570,9 @@ class NavigationTaskGate(BaseTask):
             if (not self._drone_vae_debug_last) or (self.num_task_steps % 200 == 0):
                 z = self.image_latents
                 ne = int(z.shape[0])
-                def _absmean_env(idx):
+                def _absmean_env(idx) -> None:
                     return float(torch.mean(torch.abs(z[idx])).item()) if idx < ne else float('nan')
-                def _same(idx):
+                def _same(idx) -> None:
                     return (idx < ne) and bool(torch.allclose(z[0], z[idx]))
                 envs_to_check = [5]  # reduced debug output: only env5
                 means = {i: _absmean_env(i) for i in envs_to_check}
@@ -1597,9 +1597,9 @@ class NavigationTaskGate(BaseTask):
                 if hasattr(static_depth, 'shape') and getattr(static_depth, 'ndim', 0) == 3:
                     x = static_depth  # (N,H,W)
                     ne = int(x.shape[0])
-                    def _mean_env(idx):
+                    def _mean_env(idx) -> None:
                         return float(x[idx].mean().item()) if idx < ne else float('nan')
-                    def _same(idx):
+                    def _same(idx) -> None:
                         return (idx < ne) and bool(np.allclose(x[0], x[idx])) if isinstance(x, np.ndarray) else bool(torch.allclose(x[0], x[idx]))
                     envs_to_check = [5]  # reduced debug output: only env5
                     means = {i: _mean_env(i) for i in envs_to_check}
@@ -1709,9 +1709,9 @@ class NavigationTaskGate(BaseTask):
                         self._static_cam_depth_logged = True
                         depth = static_depth_tensor
                         ne = int(depth.shape[0])
-                        def _mean_env(idx):
+                        def _mean_env(idx) -> None:
                             return float(torch.mean(depth[idx]).item()) if idx < ne else float('nan')
-                        def _same(idx):
+                        def _same(idx) -> None:
                             return (idx < ne) and bool(torch.allclose(depth[0], depth[idx]))
                         envs_to_check = [0, 1, 5, 8, 12]
                         means = {i: _mean_env(i) for i in envs_to_check}
@@ -1730,9 +1730,9 @@ class NavigationTaskGate(BaseTask):
                         self._vae_output_logged = True
                         z = encoded_latents
                         ne = int(z.shape[0])
-                        def _absmean_env(idx):
+                        def _absmean_env(idx) -> None:
                             return float(torch.mean(torch.abs(z[idx])).item()) if idx < ne else float('nan')
-                        def _same(idx):
+                        def _same(idx) -> None:
                             return (idx < ne) and bool(torch.allclose(z[0], z[idx]))
                         envs_to_check = [5]  # reduced debug output: only env5
                         means = {i: _absmean_env(i) for i in envs_to_check}

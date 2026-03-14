@@ -142,7 +142,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
         # This handles both standard DCE navigation (81D) and gate navigation (147D)
         if obs_key == "obs":
             # Get the actual observation space dimension from the task configuration
-            task_obs_dim = getattr(self.env.task_config, 'observation_space_dim', 150)  # Default to 150D for gate navigation
+            task_obs_dim = self.env.task_config.observation_space_dim  # Default to 150D for gate navigation
             if VERBOSE:
                 print(f"[AerialGymVecEnv] Detected observation space: {task_obs_dim}D")
             
@@ -218,7 +218,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     self.static_proj = nn.Sequential(nn.LayerNorm(D), nn.Linear(D, D), nn.ELU(), nn.LayerNorm(D))
                     gate_out = D if gate_per_feature else 1
                     self.gate = nn.Sequential(nn.Linear(2*D, D), nn.ELU(), nn.Linear(D, gate_out))
-                def forward(self, ego_latent, static_latent):
+                def forward(self, ego_latent, static_latent) -> None:
                     e = self.ego_proj(ego_latent)
                     s = self.static_proj(static_latent)
                     g = torch.sigmoid(self.gate(torch.cat([e, s], dim=-1)))
@@ -228,7 +228,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     return z, g
             self._gated_fuser = DualGatedLateFusion(latent_dim=64, gate_per_feature=self.gate_per_feature).to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
 
-    def _process_camera_image(self, image_data, camera_type="depth"):
+    def _process_camera_image(self, image_data, camera_type="depth") -> None:
         """Process camera image for GIF saving."""
         if camera_type == "depth":
             # Process depth image (similar to dce_nn_navigation.py)
@@ -351,7 +351,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 self._ablate_debug_count += 1
         return obs_tensor
 
-    def _collect_frames(self, obs_dict):
+    def _collect_frames(self, obs_dict) -> None:
         """Collect frames from both drone and static cameras for GIF generation (clean + noised versions)."""
         if not self.save_gifs:
             return
@@ -362,27 +362,27 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             
             # === CLEAN DRONE CAMERA IMAGES ===
             # Get drone camera depth image from task's obs_dict (original clean version)
-            if hasattr(task, 'obs_dict') and "depth_range_pixels" in task.obs_dict:
+            if "depth_range_pixels" in task.obs_dict:
                 drone_depth = task.obs_dict["depth_range_pixels"][0, 0]  # First env, first camera
                 drone_depth_img = self._process_camera_image(drone_depth, "depth")
                 self.drone_depth_frames[0].append(drone_depth_img)
             
             # Get drone camera segmentation image from task's obs_dict
-            if hasattr(task, 'obs_dict') and "segmentation_pixels" in task.obs_dict:
+            if "segmentation_pixels" in task.obs_dict:
                 drone_seg = task.obs_dict["segmentation_pixels"][0, 0]  # First env, first camera  
                 drone_seg_img = self._process_camera_image(drone_seg, "segmentation")
                 self.drone_seg_frames[0].append(drone_seg_img)
             
             # === D455 NOISED DRONE CAMERA IMAGES ===
             # Get noised drone camera depth image (with D455 noise applied)
-            if hasattr(task, 'obs_dict') and "depth_range_pixels_noised" in task.obs_dict:
+            if "depth_range_pixels_noised" in task.obs_dict:
                 drone_depth_noised = task.obs_dict["depth_range_pixels_noised"][0, 0]  # First env, first camera
                 drone_depth_noised_img = self._process_camera_image(drone_depth_noised, "depth")
                 self.drone_depth_noised_frames[0].append(drone_depth_noised_img)
             
             # === CLEAN STATIC CAMERA IMAGES ===
             # Get static camera images from stored clean versions
-            if hasattr(task, 'obs_dict') and "static_depth_clean" in task.obs_dict:
+            if "static_depth_clean" in task.obs_dict:
                 static_depth = task.obs_dict["static_depth_clean"]
                 
                 # Process static depth
@@ -401,7 +401,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     self.static_depth_frames[0].append(static_depth_img)
                 
                 # Process static segmentation
-            if hasattr(task, 'obs_dict') and "static_seg" in task.obs_dict:
+            if "static_seg" in task.obs_dict:
                 static_seg = task.obs_dict["static_seg"]
                 if static_seg is not None:
                     # Convert to tensor if numpy array
@@ -419,7 +419,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 
             # === D455 NOISED STATIC CAMERA IMAGES ===
             # Get noised static camera depth image (with D455 noise applied)
-            if hasattr(task, 'obs_dict') and "static_depth_noised" in task.obs_dict:
+            if "static_depth_noised" in task.obs_dict:
                 static_depth_noised = task.obs_dict["static_depth_noised"]
                 
                 # Process static depth
@@ -485,7 +485,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 import traceback
                 print(f"[GIF] Traceback: {traceback.format_exc()}")
 
-    def _save_episode_gifs(self, env_id=0):
+    def _save_episode_gifs(self, env_id=0) -> None:
         """Save collected frames as GIFs for the specified environment."""
         if not self.save_gifs or env_id >= self.num_agents:
             return
@@ -652,7 +652,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
         # except Exception as e:
         #     print(f"[GIF] Warning: Failed to save recon grids: {e}")
 
-    def _clear_frames(self, env_id=0):
+    def _clear_frames(self, env_id=0) -> None:
         """Clear collected frames for the specified environment (clean + noised versions)."""
         if self.save_gifs and env_id < self.num_agents:
             # Clear clean frames
@@ -779,13 +779,13 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     self.episode_count += 1
                     return transformed_obs, rew, terminated, truncated, infos
                 # End training latent logging when env0 resets once
-                if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_log_state', 2) == 1:
+                if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true' and self._train_env0_log_state == 1:
                     reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
                     if len(reset_ids) > 0 and 0 in reset_ids.tolist():
                         self._train_env0_log_state = 2
                         if VERBOSE:
                             print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
-                if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_obs_state', 2) == 1:
+                if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and self._train_env0_obs_state == 1:
                     reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
                     if len(reset_ids) > 0 and 0 in reset_ids.tolist():
                         self._train_env0_obs_state = 2
@@ -813,10 +813,10 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 ids = (terminated + truncated).nonzero(as_tuple=True)[0]
                 if ids.numel() > 0:
                     # Access underlying task to read curriculum level
-                    task = getattr(self, 'env', None)
+                    task = self.env
                     curr_level = None
                     if task is not None:
-                        curr_level = getattr(task, 'curriculum_level', None)
+                        curr_level = task.curriculum_level
                         # Also pull step-averaged traj metrics directly if the task stashed them
                         traj_avg = getattr(task, '_last_traj_metrics_avg', None)
                         # NEW: Update running aggregates using per-env episode metrics when resets happen
@@ -825,7 +825,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                             # Limit to environments that actually reset this step
                             reset_ids = ids.detach().cpu().tolist()
                             crossed_mask = per_env.get('crossed', None)
-                            def _to_list(t):
+                            def _to_list(t) -> None:
                                 return t.detach().cpu().tolist() if torch.is_tensor(t) else t
                             if reset_ids is not None:
                                 for eid in reset_ids:
@@ -885,7 +885,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                             extra[k] = float(extra[k])
                     # Add running-mean episode-level metrics
                     # For success-conditioned metrics (time_to_gate/offsets), return None when count==0
-                    def _safe_mean(sum_key, count_key, none_if_zero=False):
+                    def _safe_mean(sum_key, count_key, none_if_zero=False) -> None:
                         s = self._traj_running.get(sum_key, 0.0)
                         c = self._traj_running.get(count_key, 0)
                         if c <= 0:
@@ -935,14 +935,14 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                                 del infos['curriculum/current_level']
                         else:
                             if task is not None and hasattr(task, 'curriculum_level'):
-                                extra['episode_extra_stats/curriculum/current_level'] = float(getattr(task, 'curriculum_level'))
+                                extra['episode_extra_stats/curriculum/current_level'] = float(task.curriculum_level)
                         if cur_prog_tensor is not None:
                             extra['episode_extra_stats/curriculum/current_progress'] = float(cur_prog_tensor.mean().item()) if hasattr(cur_prog_tensor, 'mean') else float(cur_prog_tensor)
                             if 'curriculum/current_progress' in infos:
                                 del infos['curriculum/current_progress']
                         else:
                             if task is not None and hasattr(task, 'curriculum_progress_fraction'):
-                                extra['episode_extra_stats/curriculum/current_progress'] = float(getattr(task, 'curriculum_progress_fraction'))
+                                extra['episode_extra_stats/curriculum/current_progress'] = float(task.curriculum_progress_fraction)
                     except (ValueError, TypeError):
                         pass
 
@@ -982,13 +982,13 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                         if task is not None:
                             # Current level/progress
                             if 'curriculum/level' not in mirrored:
-                                extra['curriculum/level'] = float(getattr(task, 'curriculum_level', curr_level if curr_level is not None else -1))
+                                extra['curriculum/level'] = float(task.curriculum_level)
                             if 'curriculum/progress' not in mirrored:
-                                extra['curriculum/progress'] = float(getattr(task, 'curriculum_progress_fraction', 0.0))
+                                extra['curriculum/progress'] = float(task.curriculum_progress_fraction)
                             # Environment totals
                             try:
-                                cur_lvl_val = int(getattr(task, 'curriculum_level', curr_level if curr_level is not None else 0))
-                                curri = getattr(task.task_config, 'curriculum', None)
+                                cur_lvl_val = int(task.curriculum_level)
+                                curri = task.task_config.curriculum
                                 if curri is not None and hasattr(curri, 'get_obstacle_count_behind_gate'):
                                     obg = int(curri.get_obstacle_count_behind_gate(cur_lvl_val))
                                 else:
@@ -1024,7 +1024,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                                     fd = {'drone_total':0.0,'static_total':0.0,'drone_freeze':0.0,'drone_blank':0.0,'static_freeze':0.0,'static_blank':0.0}
                             except Exception:
                                 fd = {'drone_total':0.0,'static_total':0.0,'drone_freeze':0.0,'drone_blank':0.0,'static_freeze':0.0,'static_blank':0.0}
-                            def _put_if_missing(k):
+                            def _put_if_missing(k) -> None:
                                 if k not in mirrored:
                                     extra[k] = float(fd.get(k.split('/')[-1], 0.0)) if 'curriculum/' in k else float(fd.get(k, 0.0))
                             _put_if_missing('curriculum/camera_frame_dropout_drone_total')
@@ -1135,7 +1135,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
         
         return transformed_obs, rew, terminated, truncated, infos
 
-    def render(self):
+    def render(self) -> None:
         pass
 
 
@@ -1165,20 +1165,20 @@ def make_aerialgym_env(
                     gate_config = task_config()
                     # Apply ablation flags from CLI cfg so the task can propagate to EnvManager
                     try:
-                        gate_config.disable_gate_size_randomization = bool(getattr(cfg, 'disable_gate_size_randomization', False))
+                        gate_config.disable_gate_size_randomization = bool(cfg.disable_gate_size_randomization)
                     except Exception:
                         gate_config.disable_gate_size_randomization = False
                     try:
-                        gate_config.fixed_gate_scale_percent = int(getattr(cfg, 'fixed_gate_scale_percent', 100))
+                        gate_config.fixed_gate_scale_percent = int(cfg.fixed_gate_scale_percent)
                     except (ValueError, TypeError):
                         gate_config.fixed_gate_scale_percent = 100
                     # Obstacle ablation flags
                     try:
-                        gate_config.disable_obstacle_randomization = bool(getattr(cfg, 'disable_obstacle_randomization', False))
+                        gate_config.disable_obstacle_randomization = bool(cfg.disable_obstacle_randomization)
                     except Exception:
                         gate_config.disable_obstacle_randomization = False
                     try:
-                        gate_config.fixed_obstacles_behind_gate = int(getattr(cfg, 'fixed_obstacles_behind_gate', 0))
+                        gate_config.fixed_obstacles_behind_gate = int(cfg.fixed_obstacles_behind_gate)
                     except (ValueError, TypeError):
                         gate_config.fixed_obstacles_behind_gate = 0
                     # Handle headless and environment settings for gate task
@@ -1208,7 +1208,7 @@ def make_aerialgym_env(
                 print(f"[SUBPROCESS] This prevents Isaac Gym viewer conflicts across all processes")
                 # Propagate optional max curriculum cap from CLI
                 try:
-                    cap = getattr(cfg, 'max_curriculum_level', None)
+                    cap = cfg.max_curriculum_level
                 except Exception:
                     cap = None
                 if cap is not None:
@@ -1234,7 +1234,7 @@ def make_aerialgym_env(
                     os.environ['SF_ENV_AGENTS'] = str(cfg.env_agents)
                     print(f"[SUBPROCESS] Setting num_envs to {cfg.env_agents} based on env_agents={cfg.env_agents}")
                     print(f"[SUBPROCESS] Set SF_ENV_AGENTS={cfg.env_agents} environment variable")
-                    print(f"[SUBPROCESS] Config batch_size: {getattr(cfg, 'batch_size', 'not set')}")
+                    print(f"[SUBPROCESS] Config batch_size: {cfg.batch_size}")
                     if cfg.env_agents == 128:
                         print(f"[SUBPROCESS] Using MAXIMUM PARALLELIZATION CONFIG (128 environments)")
                     elif cfg.env_agents == 32:
@@ -1250,7 +1250,7 @@ def make_aerialgym_env(
                     else:
                         print(f"[SUBPROCESS] Using CUSTOM CONFIG ({cfg.env_agents} environments)")
                 else:
-                    print(f"[SUBPROCESS] env_agents={getattr(cfg, 'env_agents', 'not set')}, using default num_envs")
+                    print(f"[SUBPROCESS] env_agents={cfg.env_agents}, using default num_envs")
                 
                 task_registry.register_task(register_name, TaskClass, config)
                 # Also register backup name for backward compatibility
@@ -1260,11 +1260,11 @@ def make_aerialgym_env(
                 print(f"Failed to register quad_with_obstacles in subprocess: {e}")
 
     # Get save_gifs parameter from config
-    save_gifs = getattr(cfg, 'save_gifs', False)
+    save_gifs = cfg.save_gifs
 
     # Create the environment and force correct action space for inference compatibility
     # Forward seed from cfg if provided, else None
-    seed_val = getattr(cfg, 'seed', None)
+    seed_val = cfg.seed
     env = AerialGymVecEnvGate(
         task_registry.make_task(task_name=full_task_name, seed=seed_val),
         "obs",
@@ -1302,7 +1302,7 @@ def make_aerialgym_env(
     return env
 
 
-def add_extra_params_func(parser):
+def add_extra_params_func(parser) -> None:
     """
     Specify extra arguments for this family of environments.
     """
@@ -1334,7 +1334,7 @@ def add_extra_params_func(parser):
     # Static camera base position overrides (Y back distance, Z height)
     parser.add_argument("--static_camera_base_y", type=float, default=None, help="Override static camera base Y (meters; negative is behind gate). Default -3.0 if not set")
     # Accept float or the literal string 'adaptive'
-    def parse_base_z(val):
+    def parse_base_z(val) -> None:
         v = str(val).strip().lower()
         if v == 'adaptive':
             return 'adaptive'
@@ -1419,7 +1419,7 @@ def add_extra_params_func(parser):
     )
 
 
-def override_default_params_func(env, parser):
+def override_default_params_func(env, parser) -> None:
     """Most of these parameters are taken from IsaacGymEnvs default config files."""
 
     # Default parameters for medium configuration (4 environments)
@@ -1848,9 +1848,9 @@ class DualFusionEncoder(Encoder):
         super().__init__(cfg)
         self.obs_space = obs_space
         # Read fusion config from cfg/env
-        fusion_mode = getattr(cfg, 'fusion', 'concat')
+        fusion_mode = cfg.fusion
         self.fusion_mode = fusion_mode
-        self.gate_per_feature = bool(int(getattr(cfg, 'gate_per_feature', 1)))
+        self.gate_per_feature = bool(int(cfg.gate_per_feature))
         # Indices for 150D obs layout
         self.slice_drone_vae = (22, 86)
         self.slice_static_vae = (86, 150)
@@ -1891,7 +1891,7 @@ class DualFusionEncoder(Encoder):
         total_obs_dim = obs_space['obs'].shape[0]
         # Remove original two 64D latents (128) and add fused_latent_dim
         base_dim = total_obs_dim - 128 + fused_latent_dim
-        mlp_layers = getattr(cfg, 'encoder_mlp_layers', [512, 256, 128])
+        mlp_layers = cfg.encoder_mlp_layers
         self.mlp = create_mlp(mlp_layers, base_dim, nonlinearity(cfg))
         if len(mlp_layers) > 0:
             self.mlp = torch.jit.script(self.mlp)
@@ -1906,12 +1906,12 @@ class DualFusionEncoder(Encoder):
         # One-time info (print only in evaluation/inference)
         print(f"[FUSION] Using fusion mode: {self.fusion_mode} (gate_per_feature={int(self.gate_per_feature)})")
 
-    def _slice_latents(self, x: torch.Tensor):
+    def _slice_latents(self, x: torch.Tensor) -> None:
         z_e = x[..., self.slice_drone_vae[0]:self.slice_drone_vae[1]]
         z_s = x[..., self.slice_static_vae[0]:self.slice_static_vae[1]]
         return z_e, z_s
 
-    def _remove_latents(self, x: torch.Tensor):
+    def _remove_latents(self, x: torch.Tensor) -> None:
         a, b = self.slice_drone_vae, self.slice_static_vae
         # Keep prefix, skip [a0:a1] and [b0:b1], keep suffix
         prefix = x[..., :a[0]]
@@ -1919,7 +1919,7 @@ class DualFusionEncoder(Encoder):
         suffix = x[..., b[1]:]
         return torch.cat([prefix, middle, suffix], dim=-1)
 
-    def forward(self, obs_dict):
+    def forward(self, obs_dict) -> None:
         x = obs_dict['obs']
         # One-shot diagnostics for non-finite inputs (before any sanitization)
         try:
@@ -1928,7 +1928,7 @@ class DualFusionEncoder(Encoder):
             if (not hasattr(self, '_nan_diag_printed')):
                 self._nan_diag_printed = False
             if (not self._nan_diag_printed) and (not torch.isfinite(x).all() or _want_diag):
-                def _slice_stats(name, t, a, b):
+                def _slice_stats(name, t, a, b) -> None:
                     s = t[..., a:b]
                     finite = torch.isfinite(s)
                     n = s.numel()
@@ -1965,7 +1965,7 @@ class DualFusionEncoder(Encoder):
                 try:
                     is_eval = False
                     try:
-                        is_eval = bool(getattr(self, 'cfg', None) is None or getattr(self.cfg, 'evaluation', True))
+                        is_eval = bool(self.cfg is None or getattr(self.cfg, 'evaluation', True))
                     except Exception:
                         is_eval = True
                     if is_eval:
@@ -2029,7 +2029,7 @@ class DualFusionEncoder(Encoder):
                         )
                         # Log to W&B even when static is disabled (treat gate as 0 towards static)
                         import wandb  # noqa: F401
-                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        frames = int(self._last_step_logged) if hasattr(self, '_last_step_logged') else None
                         payload = {
                             'episode_extra_stats/fusion/gate_mean_pct': 0.0,  # g≈0 → drone-only
                             'episode_extra_stats/fusion/gate_std_pct': 0.0,
@@ -2062,7 +2062,7 @@ class DualFusionEncoder(Encoder):
                         )
                         # Log to W&B even when drone is disabled (treat gate as 1 towards static)
                         import wandb  # noqa: F401
-                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        frames = int(self._last_step_logged) if hasattr(self, '_last_step_logged') else None
                         payload = {
                             'episode_extra_stats/fusion/gate_mean_pct': 100.0,  # g≈1 → static-only
                             'episode_extra_stats/fusion/gate_std_pct': 0.0,
@@ -2091,7 +2091,7 @@ class DualFusionEncoder(Encoder):
                         )
                         # Log a minimal payload when both branches are disabled
                         import wandb  # noqa: F401
-                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        frames = int(self._last_step_logged) if hasattr(self, '_last_step_logged') else None
                         payload = {
                             'episode_extra_stats/fusion/gate_mean_pct': 50.0,  # undefined, show neutral
                             'episode_extra_stats/fusion/gate_std_pct': 0.0,
@@ -2152,7 +2152,7 @@ class DualFusionEncoder(Encoder):
                         )
                         # Mirror to W&B payload under episode_extra_stats/fusion/* (only for gated and both cameras enabled)
                         import wandb  # ensure wandb available
-                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        frames = int(self._last_step_logged) if hasattr(self, '_last_step_logged') else None
                         payload = {
                             'episode_extra_stats/fusion/gate_mean_pct': float(gate_mean * 100.0),
                             'episode_extra_stats/fusion/gate_std_pct': float(gate_std * 100.0),
@@ -2197,7 +2197,7 @@ def make_dual_fusion_encoder(cfg: Config, obs_space: ObsSpace) -> Encoder:
     return DualFusionEncoder(cfg, obs_space)
 
 
-def register_aerialgym_custom_components():
+def register_aerialgym_custom_components() -> None:
     # Clear cached environment info for single agent mode to prevent mismatch
     import os
     import glob
@@ -2309,7 +2309,7 @@ def register_aerialgym_custom_components():
         print(f"Warning: Could not register DualFusionEncoder: {e}")
 
 
-def parse_aerialgym_cfg(evaluation=False):
+def parse_aerialgym_cfg(evaluation=False) -> None:
     parser, partial_cfg = parse_sf_args(evaluation=evaluation)
     add_extra_params_func(parser)
     override_default_params_func(partial_cfg.env, parser)
@@ -2317,87 +2317,87 @@ def parse_aerialgym_cfg(evaluation=False):
     # Bridge CLI flag to environment variable so worker processes can read it reliably
     try:
         # Fusion flags to env for workers
-        if hasattr(final_cfg, 'fusion'):
+        if True:
             os.environ['SF_FUSION_MODE'] = str(final_cfg.fusion)
             print(f"[CFG] fusion mode: {final_cfg.fusion}")
-        if hasattr(final_cfg, 'gate_per_feature'):
+        if True:
             os.environ['SF_GATE_PER_FEATURE'] = '1' if int(final_cfg.gate_per_feature) != 0 else '0'
             print(f"[CFG] gate_per_feature: {final_cfg.gate_per_feature}")
-        if hasattr(final_cfg, 'disable_static_camera_orientation_randomization'):
+        if True:
             os.environ['SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION'] = 'true' if final_cfg.disable_static_camera_orientation_randomization else 'false'
             print(f"[CFG] static camera orientation randomization disabled: {final_cfg.disable_static_camera_orientation_randomization}")
-        if hasattr(final_cfg, 'disable_camera_noise_randomization'):
+        if True:
             os.environ['SF_DISABLE_CAMERA_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_camera_noise_randomization else 'false'
             print(f"[CFG] camera noise randomization disabled: {final_cfg.disable_camera_noise_randomization}")
         # Per-camera noise/dropout overrides
-        if hasattr(final_cfg, 'disable_drone_camera_noise_randomization') and final_cfg.disable_drone_camera_noise_randomization is not None:
+        if final_cfg.disable_drone_camera_noise_randomization is not None:
             os.environ['SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_drone_camera_noise_randomization else 'false'
             print(f"[CFG] DRONE camera noise disabled override: {final_cfg.disable_drone_camera_noise_randomization}")
-        if hasattr(final_cfg, 'disable_static_camera_noise_randomization') and final_cfg.disable_static_camera_noise_randomization is not None:
+        if final_cfg.disable_static_camera_noise_randomization is not None:
             os.environ['SF_DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_static_camera_noise_randomization else 'false'
             print(f"[CFG] STATIC camera noise disabled override: {final_cfg.disable_static_camera_noise_randomization}")
-        if hasattr(final_cfg, 'disable_drone_camera_frame_dropout') and final_cfg.disable_drone_camera_frame_dropout is not None:
+        if final_cfg.disable_drone_camera_frame_dropout is not None:
             os.environ['SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT'] = 'true' if final_cfg.disable_drone_camera_frame_dropout else 'false'
             print(f"[CFG] DRONE camera frame-drop disabled override: {final_cfg.disable_drone_camera_frame_dropout}")
-        if hasattr(final_cfg, 'disable_static_camera_frame_dropout') and final_cfg.disable_static_camera_frame_dropout is not None:
+        if final_cfg.disable_static_camera_frame_dropout is not None:
             os.environ['SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT'] = 'true' if final_cfg.disable_static_camera_frame_dropout else 'false'
             print(f"[CFG] STATIC camera frame-drop disabled override: {final_cfg.disable_static_camera_frame_dropout}")
         # Static camera yaw sweep (const ±30°, curriculum-independent for now)
-        if hasattr(final_cfg, 'enable_static_camera_yaw_sweep'):
+        if True:
             os.environ['SF_ENABLE_STATIC_CAMERA_YAW_SWEEP'] = 'true' if final_cfg.enable_static_camera_yaw_sweep else 'false'
             print(f"[CFG] Static camera yaw sweep enabled: {final_cfg.enable_static_camera_yaw_sweep}")
-        if hasattr(final_cfg, 'static_camera_yaw_sweep_speed_deg'):
+        if True:
             os.environ['SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG'] = str(float(final_cfg.static_camera_yaw_sweep_speed_deg))
-        if hasattr(final_cfg, 'enable_static_camera_locked'):
+        if True:
             os.environ['SF_STATIC_CAMERA_LOCKED_FOLLOW'] = 'true' if final_cfg.enable_static_camera_locked else 'false'
             print(f"[CFG] Static camera locked-follow enabled: {final_cfg.enable_static_camera_locked}")
             print(f"[CFG] Static camera yaw sweep speed: {final_cfg.static_camera_yaw_sweep_speed_deg} deg/s")
         # Static camera base position overrides to env for workers
-        if hasattr(final_cfg, 'static_camera_base_y') and final_cfg.static_camera_base_y is not None:
+        if final_cfg.static_camera_base_y is not None:
             os.environ['SF_STATIC_CAMERA_BASE_Y'] = str(float(final_cfg.static_camera_base_y))
             print(f"[CFG] Static camera base Y: {final_cfg.static_camera_base_y}")
-        if hasattr(final_cfg, 'static_camera_base_z') and final_cfg.static_camera_base_z is not None:
+        if final_cfg.static_camera_base_z is not None:
             if isinstance(final_cfg.static_camera_base_z, str) and str(final_cfg.static_camera_base_z).lower() == 'adaptive':
                 os.environ['SF_STATIC_CAMERA_BASE_Z'] = 'adaptive'
                 print(f"[CFG] Static camera base Z: adaptive")
             else:
                 os.environ['SF_STATIC_CAMERA_BASE_Z'] = str(float(final_cfg.static_camera_base_z))
                 print(f"[CFG] Static camera base Z: {final_cfg.static_camera_base_z}")
-        if hasattr(final_cfg, 'disable_camera_frame_dropout_randomization'):
+        if True:
             os.environ['SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION'] = 'true' if final_cfg.disable_camera_frame_dropout_randomization else 'false'
             print(f"[CFG] camera frame dropout randomization disabled: {final_cfg.disable_camera_frame_dropout_randomization}")
-        if hasattr(final_cfg, 'disable_state_noise_randomization'):
+        if True:
             os.environ['SF_DISABLE_STATE_NOISE_RANDOMIZATION'] = 'true' if final_cfg.disable_state_noise_randomization else 'false'
             print(f"[CFG] state noise randomization disabled: {final_cfg.disable_state_noise_randomization}")
-        if hasattr(final_cfg, 'disable_dynamic_camera_following'):
+        if True:
             os.environ['disable_dynamic_camera_following'] = 'true' if final_cfg.disable_dynamic_camera_following else 'false'
             print(f"[CFG] dynamic camera following disabled: {final_cfg.disable_dynamic_camera_following}")
-        if hasattr(final_cfg, 'enable_dynamic_camera_following') and final_cfg.enable_dynamic_camera_following is not None:
+        if final_cfg.enable_dynamic_camera_following is not None:
             os.environ['enable_dynamic_camera_following'] = 'true' if final_cfg.enable_dynamic_camera_following else 'false'
             print(f"[CFG] dynamic camera following enabled (override): {final_cfg.enable_dynamic_camera_following}")
         # Arc-follow flags → env
-        if hasattr(final_cfg, 'enable_static_camera_arc_follow'):
+        if True:
             os.environ['SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW'] = 'true' if final_cfg.enable_static_camera_arc_follow else 'false'
             print(f"[CFG] static camera arc-follow enabled: {final_cfg.enable_static_camera_arc_follow}")
-        if hasattr(final_cfg, 'static_camera_arc_radius_m') and final_cfg.static_camera_arc_radius_m is not None:
+        if final_cfg.static_camera_arc_radius_m is not None:
             os.environ['SF_STATIC_CAMERA_ARC_RADIUS_M'] = str(float(final_cfg.static_camera_arc_radius_m))
             print(f"[CFG] static camera arc radius: {final_cfg.static_camera_arc_radius_m} m")
-        if hasattr(final_cfg, 'dynamic_camera_follow_y_offset_m') and final_cfg.dynamic_camera_follow_y_offset_m is not None:
+        if final_cfg.dynamic_camera_follow_y_offset_m is not None:
             os.environ['SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y'] = str(float(final_cfg.dynamic_camera_follow_y_offset_m))
             print(f"[CFG] dynamic camera follow Y-offset: {final_cfg.dynamic_camera_follow_y_offset_m} m")
-        if hasattr(final_cfg, 'disable_dynamic_follow_gate_blending'):
+        if True:
             os.environ['SF_DISABLE_DYNAMIC_FOLLOW_GATE_BLENDING'] = 'true' if final_cfg.disable_dynamic_follow_gate_blending else 'false'
             print(f"[CFG] dynamic follow gate blending disabled: {final_cfg.disable_dynamic_follow_gate_blending}")
-        if hasattr(final_cfg, 'disable_spawn_position_randomization'):
+        if True:
             os.environ['SF_DISABLE_SPAWN_POSITION_RANDOMIZATION'] = 'true' if final_cfg.disable_spawn_position_randomization else 'false'
             print(f"[CFG] spawn position randomization disabled: {final_cfg.disable_spawn_position_randomization}")
-        if hasattr(final_cfg, 'disable_spawn_orientation_randomization'):
+        if True:
             os.environ['SF_DISABLE_SPAWN_ORIENTATION_RANDOMIZATION'] = 'true' if final_cfg.disable_spawn_orientation_randomization else 'false'
             print(f"[CFG] spawn orientation randomization disabled: {final_cfg.disable_spawn_orientation_randomization}")
-        if hasattr(final_cfg, 'disable_curriculum_multiplier'):
+        if True:
             os.environ['SF_DISABLE_CURRICULUM_MULTIPLIER'] = 'true' if final_cfg.disable_curriculum_multiplier else 'false'
             print(f"[CFG] curriculum multiplier disabled: {final_cfg.disable_curriculum_multiplier}")
-        if hasattr(final_cfg, 'force_curriculum_level') and (final_cfg.force_curriculum_level is not None):
+        if (final_cfg.force_curriculum_level is not None):
             lvl_str = str(final_cfg.force_curriculum_level).strip().lower()
             if lvl_str and lvl_str != 'none':
                 os.environ['SF_FORCE_CURRICULUM_LEVEL'] = str(int(lvl_str))
@@ -2408,12 +2408,12 @@ def parse_aerialgym_cfg(evaluation=False):
                 print("[CFG] force curriculum level: none (disabled)")
         # Apply min_curriculum_level ONLY during training; do not affect evaluation/inference
         try:
-            if not getattr(final_cfg, 'evaluation', False):
-                min_lvl_override = getattr(final_cfg, 'min_curriculum_level', None)
+            if not final_cfg.evaluation:
+                min_lvl_override = final_cfg.min_curriculum_level
                 if min_lvl_override is not None:
                     min_lvl = int(min_lvl_override)
                     # Respect any explicit max cap if provided
-                    max_cap = getattr(final_cfg, 'max_curriculum_level', None)
+                    max_cap = final_cfg.max_curriculum_level
                     if max_cap is not None:
                         os.environ['SF_MAX_CURRICULUM_LEVEL'] = str(int(max_cap))
                     os.environ['SF_MIN_CURRICULUM_LEVEL'] = str(min_lvl)
@@ -2425,7 +2425,7 @@ def parse_aerialgym_cfg(evaluation=False):
     return final_cfg
 
 
-def main():
+def main() -> None:
     """Script entry point."""
     register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg()
@@ -2435,7 +2435,7 @@ def main():
     return run_with_influence_tracking(cfg)
 
 
-def run_with_influence_tracking(cfg: Config):
+def run_with_influence_tracking(cfg: Config) -> None:
     """Enhanced training with complete observation influence tracking."""
     
     # Import the complete observation influence tracker and gradient attribution
@@ -2452,8 +2452,8 @@ def run_with_influence_tracking(cfg: Config):
         return run_rl(cfg)
 
     print("🔬 Complete observation influence tracking ENABLED - analyzing ALL 150D observation components")
-    print("   📊 Log interval: {} steps".format(getattr(cfg, 'gradient_log_interval', 100)))
-    print("   📋 Print interval: {} steps".format(getattr(cfg, 'gradient_print_interval', 100)))
+    print("   📊 Log interval: {} steps".format(cfg.gradient_log_interval))
+    print("   📋 Print interval: {} steps".format(cfg.gradient_print_interval))
     print("✅ Complete observation influence tracker ready")
     print("🔍 Will analyze ALL 150D observation components for neural network influence")
     
@@ -2503,7 +2503,7 @@ def run_with_influence_tracking(cfg: Config):
     ]
     _last_curriculum = {k: 0.0 for k in CURRICULUM_KEYS}
 
-    def enhanced_wandb_log(metrics, **kwargs):
+    def enhanced_wandb_log(metrics, **kwargs) -> None:
         """Enhanced wandb logging that includes influence monitoring metrics"""
         nonlocal influence_tracker
         nonlocal _last_obsgrad_from_influence
@@ -2528,10 +2528,10 @@ def run_with_influence_tracking(cfg: Config):
         
         # Fallback: attach frames/env_steps from cfg if available
         frames = None
-        if hasattr(cfg, 'train_step') and isinstance(getattr(cfg, 'train_step'), (int, float)):
-            frames = int(getattr(cfg, 'train_step'))
-        elif hasattr(cfg, 'env_steps') and isinstance(getattr(cfg, 'env_steps'), (int, float)):
-            frames = int(getattr(cfg, 'env_steps'))
+        if hasattr(cfg, 'train_step') and isinstance(cfg.train_step, (int, float)):
+            frames = int(cfg.train_step)
+        elif hasattr(cfg, 'env_steps') and isinstance(cfg.env_steps, (int, float)):
+            frames = int(cfg.env_steps)
         if frames is not None:
             metrics.setdefault('frames', frames)
             kwargs.setdefault('step', frames)
@@ -2731,7 +2731,7 @@ def run_with_influence_tracking(cfg: Config):
             if influence_tracker.should_log():
                 influence_tracker.step()
                 if hasattr(influence_tracker, 'step_count'):
-                    if influence_tracker.step_count % getattr(cfg, 'gradient_print_interval', 100) == 0:
+                    if influence_tracker.step_count % cfg.gradient_print_interval == 0:
                         influence_tracker.print_analysis_summary()
         else:
             pass
@@ -2806,15 +2806,15 @@ def run_with_influence_tracking(cfg: Config):
 
     # Tracker configuration
     tracker_config = {
-        'log_interval': getattr(cfg, 'gradient_log_interval', 100),
-        'print_interval': getattr(cfg, 'gradient_print_interval', 100),
+        'log_interval': cfg.gradient_log_interval,
+        'print_interval': cfg.gradient_print_interval,
     }
     grad_config = {
-        'log_interval': getattr(cfg, 'gradient_log_interval', 100),
-        'print_interval': getattr(cfg, 'gradient_print_interval', 100),
+        'log_interval': cfg.gradient_log_interval,
+        'print_interval': cfg.gradient_print_interval,
     }
 
-    def enhanced_learner_init(self):
+    def enhanced_learner_init(self) -> None:
         """Enhanced learner init that attaches influence tracker to the model"""
         nonlocal influence_tracker
         nonlocal grad_tracker
@@ -2832,7 +2832,7 @@ def run_with_influence_tracking(cfg: Config):
                 # Respect both CLI flag and environment override for enabling influence tracker
                 import os as _os
                 _env_inf = _os.getenv('SF_ENABLE_INFLUENCE_TRACKER')
-                _enable_influence = bool(getattr(cfg, 'enable_gradient_monitoring', False))
+                _enable_influence = bool(cfg.enable_gradient_monitoring)
                 if _env_inf is not None:
                     _enable_influence = (str(_env_inf).lower() == 'true')
                 if _enable_influence:
@@ -2863,7 +2863,7 @@ def run_with_influence_tracking(cfg: Config):
             try:
                 import os as _os
                 _env_grad = _os.getenv('SF_ENABLE_GRAD_ATTR')
-                _enable_grad = bool(getattr(cfg, 'enable_grad_attribution', True))
+                _enable_grad = bool(cfg.enable_grad_attribution)
                 if _env_grad is not None:
                     _enable_grad = (str(_env_grad).lower() == 'true')
                 if _enable_grad:
@@ -2883,7 +2883,7 @@ def run_with_influence_tracking(cfg: Config):
             try:
                 tracker_ref = grad_tracker
                 if tracker_ref and tracker_ref.enabled:
-                    def _ac_forward_hook(mod, inp):
+                    def _ac_forward_hook(mod, inp) -> None:
                         # Try to locate the 150D obs inside Sample Factory's normalized_obs_dict
                         try:
                             arg = inp[0] if isinstance(inp, tuple) and len(inp) > 0 else inp
@@ -2931,7 +2931,7 @@ def run_with_influence_tracking(cfg: Config):
                         target = self.actor_critic
                     self._grad_attr_forward_handle = target.register_forward_pre_hook(_ac_forward_hook)
 
-                    def _ac_backward_hook(mod, grad_in, grad_out):
+                    def _ac_backward_hook(mod, grad_in, grad_out) -> None:
                         x = getattr(mod, '_obs_proxy', None)
                         if x is not None and x.grad is not None and hasattr(self, '_grad_tracker') and self._grad_tracker:
                             self._grad_tracker.consume_grad(x.grad)
@@ -2951,7 +2951,7 @@ def run_with_influence_tracking(cfg: Config):
 
         # One-time: emit initial curriculum keys only under episode_extra_stats/* to avoid top-level curriculum/*
         import wandb
-        frames0 = int(getattr(self, 'train_step', 0))
+        frames0 = int(self.train_step)
         curriculum_keys = [
             'curriculum/level','curriculum/progress','curriculum/success_rate','curriculum/crash_rate','curriculum/timeout_rate',
             'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached',
@@ -2970,15 +2970,15 @@ def run_with_influence_tracking(cfg: Config):
         wandb.log(boot, step=frames0)
         return result
 
-    def enhanced_train(self, *args, **kwargs):
+    def enhanced_train(self, *args, **kwargs) -> None:
         """Enhanced train method that updates influence tracker"""
         # Log when training method is called
-        current_step_before = getattr(self, 'train_step', 0)
+        current_step_before = self.train_step
         print(f"🔧 enhanced_train() called - current step BEFORE: {current_step_before}")
         
         result = original_learner_train(self, *args, **kwargs)
         
-        current_step_after = getattr(self, 'train_step', 0)
+        current_step_after = self.train_step
         print(f"🔧 enhanced_train() finished - current step AFTER: {current_step_after}")
         
         # Learner-side W&B logging of curriculum level if present in episode stats
@@ -2988,7 +2988,7 @@ def run_with_influence_tracking(cfg: Config):
             if hasattr(self, 'all_episodic_stats'):
                 # Sample Factory aggregates episode stats; we can pull our injected keys if present
                 # latest_stats is a dict of lists; take last value for curriculum/level if available
-                latest = getattr(self, 'last_episodic_stats', None)
+                latest = self.last_episodic_stats
                 curr_level = None
                 curr_level_minus_1 = None
                 path_efficiency = None
@@ -3016,7 +3016,7 @@ def run_with_influence_tracking(cfg: Config):
                                 curr_level_minus_1 = float(v)
                             break
                     # Fetch episode_extra_stats trajectory metrics if available
-                    def _get_last(key_name):
+                    def _get_last(key_name) -> None:
                         try:
                             if key_name in latest:
                                 v = latest[key_name]
@@ -3038,7 +3038,7 @@ def run_with_influence_tracking(cfg: Config):
                 # --- Explicit curriculum mirror block: ensure ~25+ curriculum keys are present each step ---
                 try:
                     # Helper that tries multiple namespaces to find the latest value
-                    def _get_last_with_prefixes(key_name: str):
+                    def _get_last_with_prefixes(key_name: str) -> None:
                         v0 = _get_last(key_name)
                         if v0 is not None:
                             return v0
@@ -3060,7 +3060,7 @@ def run_with_influence_tracking(cfg: Config):
                                 # Log only under episode namespace
                                 cur_payload[f'episode_extra_stats/{k}'] = v
                         # Derive total_resets if components available
-                        def _pl_get(name: str):
+                        def _pl_get(name: str) -> None:
                             if name in cur_payload:
                                 return cur_payload[name]
                             if f'episode_extra_stats/{name}' in cur_payload:
@@ -3098,7 +3098,7 @@ def run_with_influence_tracking(cfg: Config):
                 # Log trajectory metrics if present (NaN will be ignored by W&B)
                 traj_payload = {}
                 # Prefer running means if available; fall back to base keys
-                def _pref(keys):
+                def _pref(keys) -> None:
                     for k in keys:
                         val = _get_last(k)
                         if val is not None:
@@ -3130,7 +3130,7 @@ def run_with_influence_tracking(cfg: Config):
                 if ep_cross is not None:
                     traj_payload['episode_extra_stats/episodes_crossed'] = ep_cross
                 # Also forward VAE latent diagnostics if present in latest infos
-                def _get_last_any(names):
+                def _get_last_any(names) -> None:
                     for nm in names:
                         v = _get_last(nm)
                         if v is not None:

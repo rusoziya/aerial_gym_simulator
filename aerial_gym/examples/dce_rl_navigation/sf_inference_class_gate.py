@@ -146,7 +146,7 @@ class NN_Inference_Class_Gate(nn.Module):
         # Notice flag for ABLATE_ZERO_RNN to avoid spamming
         self._abl_zero_rnn_notice_shown = False
 
-    def init_env_info(self):
+    def init_env_info(self) -> None:
         self.env_info = EnvInfo(
             obs_space=self.observation_space,
             action_space=self.action_space,
@@ -158,7 +158,7 @@ class NN_Inference_Class_Gate(nn.Module):
             frameskip=self.cfg.env_frameskip,
         )
 
-    def reset(self, env_ids):
+    def reset(self, env_ids) -> None:
         if env_ids is None:
             self.rnn_states.zero_()
             return
@@ -166,7 +166,7 @@ class NN_Inference_Class_Gate(nn.Module):
         # Robustly zero only the requested environments along the first dim
         self.rnn_states.index_fill_(0, idx, 0.0)
 
-    def get_action(self, obs: Dict, get_np: bool = False, get_robot_zero: bool = False):
+    def get_action(self, obs: Dict, get_np: bool = False, get_robot_zero: bool = False) -> None:
         with torch.no_grad():
             # Optional pre/post-normalization latent taps for debugging
             norm_tap = os.environ.get("NORM_TAP_DEBUG", "false").lower() == "true"

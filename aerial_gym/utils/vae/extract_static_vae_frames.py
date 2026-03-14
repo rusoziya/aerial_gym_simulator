@@ -17,7 +17,7 @@ DEFAULT_SRC_GLOBS = [
 ]
 
 
-def find_gifs(src_globs, include_docs=False):
+def find_gifs(src_globs, include_docs=False) -> None:
     candidates = []
     for pattern in src_globs:
         if ("docs/" in pattern) and not include_docs:
@@ -49,7 +49,7 @@ def find_gifs(src_globs, include_docs=False):
 
 
 def extract_frames_from_gif(gif_path: Path, out_dir: Path, resize_wh=(480, 270),
-                            every_k=1, prefix=None, max_frames=None):
+                            every_k=1, prefix=None, max_frames=None) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     prefix = prefix or gif_path.stem
     saved = []
@@ -73,7 +73,7 @@ def extract_frames_from_gif(gif_path: Path, out_dir: Path, resize_wh=(480, 270),
     return saved
 
 
-def split_by_gif(gif_paths, ratios=(0.8, 0.1, 0.1), seed=17):
+def split_by_gif(gif_paths, ratios=(0.8, 0.1, 0.1), seed=17) -> None:
     assert abs(sum(ratios) - 1.0) < 1e-6
     rng = random.Random(seed)
     gifs = list(gif_paths)
@@ -87,7 +87,7 @@ def split_by_gif(gif_paths, ratios=(0.8, 0.1, 0.1), seed=17):
     return {"train": train, "val": val, "test": test}
 
 
-def write_index(index_rows, out_csv):
+def write_index(index_rows, out_csv) -> None:
     out_csv.parent.mkdir(parents=True, exist_ok=True)
     with out_csv.open("w", newline="") as f:
         w = csv.writer(f)
@@ -96,7 +96,7 @@ def write_index(index_rows, out_csv):
             w.writerow(r)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Extract static-camera depth frames from GIFs for VAE training.")
     parser.add_argument("--out_dir", type=str, default="aerial_gym/utils/vae/datasets/static_frames",
                         help="Output directory for extracted PNG frames (train/val/test subdirs will be created)")

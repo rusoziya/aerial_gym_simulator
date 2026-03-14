@@ -22,7 +22,7 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_cu
 )
 
 
-def main():
+def main() -> None:
     # Add optional flags to override W&B settings for inference runs
     args = get_args(additional_parameters=[
         {
@@ -412,7 +412,7 @@ def main():
         _env0_norm_log_state = 0 if _print_env0_norm_once else 2
         _env0_norm_step_in_ep = 0
 
-        def _to_pil_gray(image_data):
+        def _to_pil_gray(image_data) -> None:
             try:
                 import numpy as _np
                 from PIL import Image as _PILImage
@@ -427,7 +427,7 @@ def main():
             except ImportError:
                 return None
 
-        def _save_gif(frames, filename):
+        def _save_gif(frames, filename) -> None:
             if not frames or len(frames) < 1:
                 return
             frames[0].save(
@@ -446,7 +446,7 @@ def main():
         _reset_hist = {'success': 0, 'crash': 0, 'timeout': 0}
         _per_level = {}  # level -> {'succ': int, 'tot': int, 'ttg_sum': float}
 
-        def _wilson_ci(s, n, z=1.96):
+        def _wilson_ci(s, n, z=1.96) -> None:
             if n <= 0:
                 return 0.0, 0.0
             p = s / n
@@ -486,7 +486,7 @@ def main():
             # Effective toggles from global tensor dict (authoritative during runtime)
             gtd = getattr(rl_task, 'sim_env', None)
             g = gtd.global_tensor_dict if (gtd is not None and hasattr(gtd, 'global_tensor_dict')) else {}
-            def _p(key, label=None):
+            def _p(key, label=None) -> None:
                 if key in g:
                     print(f"  {(label or key)}: {g[key]}")
             _p('gate_randomization/disabled', 'Gate size randomization disabled')
@@ -873,7 +873,7 @@ def main():
                                         if isinstance(v, __t.Tensor):
                                             payload[k] = float(v.item()) if v.numel() == 1 else None
                                 # Update running aggregates from episode_extra_stats
-                                def _get_float(name):
+                                def _get_float(name) -> None:
                                     val = extra.get(name, None)
                                     try:
                                         return float(val)
@@ -1032,7 +1032,7 @@ def main():
                         except RuntimeError:
                             pass
                         # Running means (mirroring training names)
-                        def _safe_mean(sum_key, count_key, none_if_zero=False):
+                        def _safe_mean(sum_key, count_key, none_if_zero=False) -> None:
                             s = _traj_running.get(sum_key, 0.0)
                             c = _traj_running.get(count_key, 0)
                             if c <= 0:
@@ -1110,7 +1110,7 @@ def main():
                         # Compute per-episode means for visibility/FOV for envs that reset now
                         if ids.numel() > 0:
                             ids_cpu = ids.cpu()
-                            def _update_running(sum_key_env, count_key_env, sum_key_run, count_key_run):
+                            def _update_running(sum_key_env, count_key_env, sum_key_run, count_key_run) -> None:
                                 s = _vis_ep[sum_key_env][ids_cpu]
                                 c = _vis_ep[count_key_env][ids_cpu].float().clamp_min(1.0)
                                 means = (s / c).numpy()
@@ -1133,7 +1133,7 @@ def main():
                                     'global_step': _frames,
                                     'episodes': float(total_resets),
                                 }
-                                def _safe_run_mean(s_key, c_key):
+                                def _safe_run_mean(s_key, c_key) -> None:
                                     c = max(1, _vis_running[c_key])
                                     return float(_vis_running[s_key] / c)
                                 vis_payload['visibility/abs_running_mean'] = _safe_run_mean('abs_sum','abs_count')

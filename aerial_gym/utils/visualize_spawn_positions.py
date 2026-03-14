@@ -30,7 +30,7 @@ def set_eval_env_overrides(args: argparse.Namespace) -> None:
         os.environ["EVAL_STRETCH_END_LEVEL"] = str(int(args.eval_stretch_end_level))
 
 
-def get_spawn_cfg(level: int):
+def get_spawn_cfg(level: int) -> None:
     """Lightweight import of task_config without importing the full aerial_gym package.
     This avoids initializing Isaac Gym / heavy deps when running visualization.
     """
@@ -91,7 +91,7 @@ def spawn_box_vertices(level: int) -> Tuple[np.ndarray, np.ndarray]:
     return corners, edges
 
 
-def plot_environment(ax):
+def plot_environment(ax) -> None:
     # Environment bounds: [-4,4] x [-4,4] x [0,4]
     xmin, xmax = -4.0, 4.0
     ymin, ymax = -4.0, 4.0
@@ -114,7 +114,7 @@ def plot_environment(ax):
     ax.set_zlabel("Z [m]")
 
 
-def plot_gate(ax, scale_percent: int = 100):
+def plot_gate(ax, scale_percent: int = 100) -> None:
     # Gate plane at y=0, opening rectangle in X-Z plane
     # Base opening (100%): width in X ≈ 2.5 m (±1.25), height in Z ≈ 2.3 m (0.1..2.4)
     width_x = 2.5 * (scale_percent / 100.0)
@@ -144,7 +144,7 @@ def parse_spans(span_str: str) -> List[Tuple[int, int]]:
     return spans
 
 
-def main():
+def main() -> None:
     args = parse_args()
     set_eval_env_overrides(args)
 

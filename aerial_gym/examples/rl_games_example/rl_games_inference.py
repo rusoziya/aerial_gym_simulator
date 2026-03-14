@@ -29,7 +29,7 @@ class MLP(nn.Module):
         )
         self.load_network(path)
 
-    def load_network(self, path):
+    def load_network(self, path) -> None:
         sd = torch.load(path)["model"]
 
         # clean the state dict and load it
@@ -46,5 +46,5 @@ class MLP(nn.Module):
         self.network.load_state_dict(od2, strict=True)
         print("Loaded MLP network from {}".format(path))
 
-    def forward(self, x):
+    def forward(self, x) -> None:
         return self.network(x)

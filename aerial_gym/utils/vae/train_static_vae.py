@@ -24,7 +24,7 @@ _spec.loader.exec_module(_mod)
 VAE = _mod.VAE
 
 
-def load_index(index_csv, split):
+def load_index(index_csv, split) -> None:
     rows = []
     with open(index_csv, "r") as f:
         reader = csv.DictReader(f)
@@ -44,13 +44,13 @@ class StaticDepthDataset(Dataset):
     def __len__(self):
         return len(self.rows)
 
-    def _read_gray(self, path):
+    def _read_gray(self, path) -> None:
         img = Image.open(path).convert("L").resize((self.W, self.H), Image.BILINEAR)
         arr = np.asarray(img, dtype=np.float32) / 255.0
         t = torch.from_numpy(arr)[None, ...]  # [1,H,W]
         return t
 
-    def _augment(self, t):
+    def _augment(self, t) -> None:
         # t: [1,H,W] in [0,1]
         if self.rng.rand() < 0.15:
             # Pixel dropout (Bernoulli masking)
@@ -82,12 +82,12 @@ class StaticDepthDataset(Dataset):
         return t
 
 
-def kld(mu, logvar):
+def kld(mu, logvar) -> None:
     # 0.5 * sum( exp(logvar) + mu^2 - 1 - logvar ) per sample
     return 0.5 * torch.sum(torch.exp(logvar) + mu * mu - 1.0 - logvar, dim=1)
 
 
-def main():
+def main() -> None:
     p = argparse.ArgumentParser(description="Train VAE on static-camera depth frames.")
     p.add_argument("--index_csv", type=str, required=True)
     p.add_argument("--weights_out", type=str, default="aerial_gym/utils/vae/weights")
@@ -151,13 +151,13 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # --- Collision image helpers ---
-    def to_meters(t_norm):
+    def to_meters(t_norm) -> None:
         return args.near + t_norm * (args.far - args.near)
 
-    def to_norm(meters):
+    def to_norm(meters) -> None:
         return torch.clamp((meters - args.near) / (args.far - args.near), 0.0, 1.0)
 
-    def compute_inflation_kernel():
+    def compute_inflation_kernel() -> None:
         # approximate kernel sizes at reference distance using FOV and robot size
         hfov = math.radians(args.hfov_deg)
         vfov = math.radians(args.vfov_deg)
@@ -174,7 +174,7 @@ def main():
 
     kh_const, kw_const = compute_inflation_kernel()
 
-    def collision_image(depth_norm):
+    def collision_image(depth_norm) -> None:
         # Convert to meters and apply min-pooling inflation. Supports depth-dependent multi-bin pooling
         # depth_norm: [B,1,H,W] in [0,1]
         d = to_meters(depth_norm)
@@ -256,7 +256,7 @@ def main():
         return to_norm(pooled_all)
 
     # --- Loss helpers: local SSIM and Sobel edge ---
-    def ssim_local(x, y, window=7, C1=0.01 ** 2, C2=0.03 ** 2):
+    def ssim_local(x, y, window=7, C1=0.01 ** 2, C2=0.03 ** 2) -> None:
         # x,y: [B,1,H,W] in [0,1]
         pad = window // 2
         mu_x = F.avg_pool2d(x, kernel_size=window, stride=1, padding=pad)
@@ -272,7 +272,7 @@ def main():
         ssim_map = num / (den + 1e-12)
         return ssim_map.mean(dim=[1, 2, 3])  # per-sample
 
-    def sobel_edges(t):
+    def sobel_edges(t) -> None:
         # t: [B,1,H,W]
         gx = torch.tensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=t.dtype, device=t.device).view(1, 1, 3, 3)
         gy = torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=t.dtype, device=t.device).view(1, 1, 3, 3)
@@ -280,7 +280,7 @@ def main():
         ey = F.conv2d(t, gy, padding=1)
         return ex, ey
 
-    def run_epoch(loader, train: bool, epoch_idx: int):
+    def run_epoch(loader, train: bool, epoch_idx: int) -> None:
         vae.train(train)
         total = 0.0
         count = 0

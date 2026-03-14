@@ -56,7 +56,7 @@ class BaseROV(BaseRobot):
 
         logger.debug("[DONE] Initializing BaseROV")
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict) -> None:
         """
         Initialize the tensors for the robot state, force, torque, and action.
         The tensors used in this function call are sent as slices from the main tensors in the environment.
@@ -167,10 +167,10 @@ class BaseROV(BaseRobot):
             global_tensor_dict["robot_torque_tensor"], device=self.device, requires_grad=False
         )
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(torch.arange(self.num_envs))
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         if len(env_ids) == 0:
             return
         # robot_state is defined as a tensor of shape (num_envs, 13)
@@ -199,13 +199,13 @@ class BaseROV(BaseRobot):
         # update the states after resetting because the RL agent gets the first state after reset
         self.update_states()
 
-    def clip_actions(self):
+    def clip_actions(self) -> None:
         """
         Clip the action tensor to the range of the controller inputs.
         """
         self.action_tensor[:] = torch.clamp(self.action_tensor, -10.0, 10.0)
 
-    def apply_disturbance(self):
+    def apply_disturbance(self) -> None:
         if not self.cfg.disturbance.enable_disturbance:
             return
         disturbance_occurence = torch.bernoulli(
@@ -228,7 +228,7 @@ class BaseROV(BaseRobot):
             self.max_force_and_torque_disturbance[:, 3:6],
         ) * disturbance_occurence.unsqueeze(1)
 
-    def control_allocation(self, command_wrench, output_mode):
+    def control_allocation(self, command_wrench, output_mode) -> None:
         """
         Allocate the thrust and torque commands to the motors. The motor model is also used to update the motor thrusts.
         """
@@ -238,7 +238,7 @@ class BaseROV(BaseRobot):
         self.output_forces[:, self.application_mask, :] = forces
         self.output_torques[:, self.application_mask, :] = torques
 
-    def call_controller(self):
+    def call_controller(self) -> None:
         """
         Convert the action tensor to the controller inputs. The action tensor is the input and can be parametrized as desired by the user.
         This function serves the purpose of converting the action tensor to the controller inputs.
@@ -250,7 +250,7 @@ class BaseROV(BaseRobot):
         self.robot_force_tensors[:] = self.output_forces
         self.robot_torque_tensors[:] = self.output_torques
 
-    def update_states(self):
+    def update_states(self) -> None:
         self.robot_euler_angles[:] = get_euler_xyz_tensor(self.robot_orientation)
         self.robot_vehicle_orientation[:] = vehicle_frame_quat_from_quat(self.robot_orientation)
         self.robot_vehicle_linvel[:] = quat_rotate_inverse(
@@ -259,7 +259,7 @@ class BaseROV(BaseRobot):
         self.robot_body_linvel[:] = quat_rotate_inverse(self.robot_orientation, self.robot_linvel)
         self.robot_body_angvel[:] = quat_rotate_inverse(self.robot_orientation, self.robot_angvel)
 
-    def simulate_drag(self):
+    def simulate_drag(self) -> None:
         self.robot_body_vel_drag_linear = (
             -self.body_vel_linear_damping_coefficient * self.robot_body_linvel
         )
@@ -286,7 +286,7 @@ class BaseROV(BaseRobot):
         )
         self.robot_torque_tensors[:, 0, 0:3] += self.robot_body_angvel_drag
 
-    def step(self, action_tensor):
+    def step(self, action_tensor) -> None:
         """
         Update the state of the quadrotor. This function is called every simulation step.
         """

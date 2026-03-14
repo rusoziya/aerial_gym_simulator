@@ -166,7 +166,7 @@ def calculate_desired_orientation_from_forces_and_yaw(forces_command, yaw_setpoi
 # @torch.jit.script
 def calculate_desired_orientation_for_position_velocity_control(
     forces_command, yaw_setpoint, rotation_matrix_desired
-):
+) -> None:
     b3_c = torch.div(forces_command, torch.norm(forces_command, dim=1).unsqueeze(1))
     temp_dir = torch.zeros_like(forces_command)
     temp_dir[:, 0] = torch.cos(yaw_setpoint)

@@ -8,7 +8,7 @@ import numpy as np
 from sensor_msgs.msg import Imu
 
 
-def csv_to_imu_msgs(csv_file):
+def csv_to_imu_msgs(csv_file) -> None:
     imu_msgs = []
     timestamp = 0.0
 
@@ -46,7 +46,7 @@ def csv_to_imu_msgs(csv_file):
     return imu_msgs
 
 
-def write_to_rosbag(imu_msgs, bag_file):
+def write_to_rosbag(imu_msgs, bag_file) -> None:
     with rosbag.Bag(bag_file, "w") as bag:
         for timestamp, msg in imu_msgs:
             bag.write("imu/data", msg, msg.header.stamp)

@@ -49,7 +49,7 @@ class task_config:
     action_limit_max = [2.0] * num_motors
     action_limit_min = [0.0] * num_motors
 
-    def process_actions_for_task(actions, min_limit, max_limit):
+    def process_actions_for_task(actions, min_limit, max_limit) -> None:
         actions_clipped = torch.clamp(actions, 0, 1)
         scaled_actions = torch_interpolate_ratio(
             min=min_limit, max=max_limit, ratio=actions_clipped

@@ -17,7 +17,7 @@ class PositionTargetCommandNode:
 
     def send_position_target_command(
         self, x_command, y_command, z_command, yaw_rate_command, mode="velocity"
-    ):
+    ) -> None:
         msg = PositionTarget()
         msg.header.stamp = rospy.Time.now()
         msg.coordinate_frame = PositionTarget.FRAME_BODY_NED
@@ -53,7 +53,7 @@ class PositionTargetCommandNode:
         msg.yaw_rate = yaw_rate_command
         self.pos_target_pub.publish(msg)
 
-    def run(self):
+    def run(self) -> None:
         rate = rospy.Rate(10)  # 10 Hz
 
         while not rospy.is_shutdown():

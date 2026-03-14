@@ -6,7 +6,7 @@ class EnvManager:
         self.num_robots_per_env = env_config.get("num_robots_per_env", 1)
         self.robot_managers = []  # List of robot managers for multi-robot support
         
-    def create_sim(self):
+    def create_sim(self) -> None:
         # ... existing code ...
         
         # Create multiple robot managers if needed
@@ -20,14 +20,14 @@ class EnvManager:
             )
             self.robot_managers.append(robot_manager)
             
-    def populate_env(self):
+    def populate_env(self) -> None:
         # ... existing code ...
         
         for env_idx in range(self.num_envs):
             for robot_idx, robot_manager in enumerate(self.robot_managers):
                 robot_manager.add_robot_to_env(env_idx, robot_idx)
                 
-    def step(self, actions):
+    def step(self, actions) -> None:
         """
         Handle multi-agent actions
         actions: tensor of shape (num_envs, num_robots_per_env, action_dim)
@@ -37,7 +37,7 @@ class EnvManager:
             robot_actions = actions[:, robot_idx, :]
             robot_manager.step(robot_actions)
             
-    def get_observations(self):
+    def get_observations(self) -> None:
         """
         Collect observations from all robots
         Returns: dict with observations for each robot

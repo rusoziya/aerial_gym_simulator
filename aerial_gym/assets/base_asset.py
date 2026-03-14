@@ -10,5 +10,5 @@ class BaseAsset(ABC):
         # save loading options as a class instance
         self.options = type("LoadingOptions", (object,), loading_options)
 
-    def load_from_file(self, asset_file):
+    def load_from_file(self, asset_file) -> None:
         raise NotImplementedError("load_from_file not implemented")

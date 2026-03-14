@@ -15,32 +15,32 @@ class RobotRegistry:
         self.robot_classes = {}
         self.robot_configs = {}
 
-    def register(self, robot_name, robot_class, robot_config):
+    def register(self, robot_name, robot_class, robot_config) -> None:
         """
         Add a robot to the robot dictionary.
         """
         self.robot_classes[robot_name] = robot_class
         self.robot_configs[robot_name] = robot_config
 
-    def get_robot_class(self, robot_name):
+    def get_robot_class(self, robot_name) -> None:
         """
         Get a robot from the robot dictionary.
         """
         return self.robot_classes[robot_name]
 
-    def get_robot_config(self, robot_name):
+    def get_robot_config(self, robot_name) -> None:
         """
         Get a robot config from the robot dictionary.
         """
         return self.robot_configs[robot_name]
 
-    def get_robot_names(self):
+    def get_robot_names(self) -> None:
         """
         Get the robot names from the robot dictionary.
         """
         return self.robot_classes.keys()
 
-    def make_robot(self, robot_name, controller_name, env_config, device):
+    def make_robot(self, robot_name, controller_name, env_config, device) -> None:
         """
         Make a robot from the robot dictionary.
         """

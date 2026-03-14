@@ -43,7 +43,7 @@ DETERMINISTIC_GATE_OBJECTS = [
 ]
 
 
-def asset_class_to_AssetOptions(asset_class):
+def asset_class_to_AssetOptions(asset_class) -> None:
     asset_options = gymapi.AssetOptions()
     asset_options.collapse_fixed_joints = asset_class.collapse_fixed_joints
     asset_options.replace_cylinder_with_capsule = asset_class.replace_cylinder_with_capsule
@@ -73,7 +73,7 @@ class AssetLoader:
 
         self.max_loaded_semantic_id = 0
 
-    def randomly_pick_assets_from_folder(self, folder, num_assets=0):
+    def randomly_pick_assets_from_folder(self, folder, num_assets=0) -> None:
         # Pick files that are URDF files from the folder
         try:
             folder_files = os.listdir(folder)
@@ -115,7 +115,7 @@ class AssetLoader:
 
     def load_selected_file_from_config(
         self, asset_type, asset_class_config, selected_file, is_robot=False
-    ):
+    ) -> None:
 
         asset_options_for_class = asset_class_to_AssetOptions(asset_class_config)
         filepath = os.path.join(asset_class_config.asset_folder, selected_file)
@@ -208,7 +208,7 @@ class AssetLoader:
         self.asset_buffer[filepath] = asset_class_dict
         return asset_class_dict
 
-    def select_and_order_assets(self):
+    def select_and_order_assets(self) -> None:
         ordered_asset_list = deque()
         keep_in_env_num = 0
         for (
@@ -252,7 +252,7 @@ class AssetLoader:
         final_list = prefix_fixed + obstacle_assets + other_assets
         return final_list, keep_in_env_num
 
-    def select_assets_for_sim(self):
+    def select_assets_for_sim(self) -> None:
         self.global_env_asset_dicts = []
         for i in range(self.num_envs):
             logger.debug(f"Loading assets for env: {i}")

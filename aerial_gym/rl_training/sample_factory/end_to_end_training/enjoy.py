@@ -22,7 +22,7 @@ import torch
 
 from tqdm import tqdm as tqdm
     
-def test_policy_script_export():
+def test_policy_script_export() -> None:
     
     EXPORT_POLICY = True
     RECORD_FRAMES = False
@@ -106,7 +106,7 @@ def test_policy_script_export():
     
     
 def plot_results(pos_list, pos_err_list, vel_list, ori_list, 
-                 ang_vel_list, action_motor_command_list, goals, dt):
+                 ang_vel_list, action_motor_command_list, goals, dt) -> None:
     
     n_steps = len(pos_list)
     # Plot the data

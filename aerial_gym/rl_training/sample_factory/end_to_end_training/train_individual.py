@@ -20,7 +20,7 @@ print(torch.cuda.is_available())
 print(torch.__version__)
 
 
-def train_individual():
+def train_individual() -> None:
     
     cfg = create_new_task()
         

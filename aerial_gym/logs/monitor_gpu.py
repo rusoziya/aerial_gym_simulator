@@ -20,7 +20,7 @@ import signal
 import sys
 from pathlib import Path
 
-def get_gpu_info():
+def get_gpu_info() -> None:
     """Get GPU information using nvidia-smi."""
     try:
         # Run nvidia-smi and get output in JSON format
@@ -54,14 +54,14 @@ def get_gpu_info():
         print(f"Error getting GPU info: {e}")
         return []
 
-def format_memory(mb):
+def format_memory(mb) -> None:
     """Format memory in MB to human readable format."""
     if mb >= 1024:
         return f"{mb/1024:.1f}GB"
     else:
         return f"{mb}MB"
 
-def print_gpu_status(gpu_data):
+def print_gpu_status(gpu_data) -> None:
     """Print current GPU status to console."""
     current_time = datetime.datetime.now().strftime("%H:%M:%S")
     print(f"\n[{current_time}] GPU Status:")
@@ -85,7 +85,7 @@ def print_gpu_status(gpu_data):
         bar = '█' * filled + '░' * (bar_length - filled)
         print(f"  VRAM: [{bar}] {memory_percent:.1f}%")
 
-def save_to_csv(gpu_data, csv_file, write_header=False):
+def save_to_csv(gpu_data, csv_file, write_header=False) -> None:
     """Save GPU data to CSV file."""
     if not gpu_data:
         return
@@ -121,12 +121,12 @@ def save_to_csv(gpu_data, csv_file, write_header=False):
             }
             writer.writerow(row)
 
-def signal_handler(signum, frame):
+def signal_handler(signum, frame) -> None:
     """Handle Ctrl+C gracefully."""
     print("\n\nMonitoring stopped by user.")
     sys.exit(0)
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Monitor GPU usage during training')
     parser.add_argument('--interval', '-i', type=int, default=5, 
                        help='Monitoring interval in seconds (default: 5)')

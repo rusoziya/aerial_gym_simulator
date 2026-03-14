@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from PIL import Image, ImageDraw, ImageFont
 
 
-def load_index(index_csv, split):
+def load_index(index_csv, split) -> None:
     rows = []
     with open(index_csv, "r") as f:
         reader = csv.DictReader(f)
@@ -22,14 +22,14 @@ def load_index(index_csv, split):
     return rows
 
 
-def read_image_gray(path, resize_wh):
+def read_image_gray(path, resize_wh) -> None:
     img = Image.open(path).convert("L").resize(resize_wh, Image.BILINEAR)
     arr = np.asarray(img, dtype=np.float32) / 255.0
     t = torch.from_numpy(arr)[None, ...]  # [1,H,W]
     return t
 
 
-def save_strip(panels, titles, out_path):
+def save_strip(panels, titles, out_path) -> None:
     # panels: list of [1,H,W] tensors in [0,1]
     H, W = panels[0].shape[-2:]
     n = len(panels)
@@ -60,7 +60,7 @@ def save_strip(panels, titles, out_path):
     canvas.save(out_path)
 
 
-def sobel_edges(t):
+def sobel_edges(t) -> None:
     gx = torch.tensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=t.dtype, device=t.device).view(1, 1, 3, 3)
     gy = torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=t.dtype, device=t.device).view(1, 1, 3, 3)
     ex = F.conv2d(t, gx, padding=1)
@@ -72,7 +72,7 @@ def sobel_edges(t):
     return m / denom
 
 
-def compute_inflation_kernel(image_w, image_h, hfov_deg, vfov_deg, robot_w_m, robot_h_m, ref_dist_m):
+def compute_inflation_kernel(image_w, image_h, hfov_deg, vfov_deg, robot_w_m, robot_h_m, ref_dist_m) -> None:
     hfov = math.radians(hfov_deg)
     vfov = math.radians(vfov_deg)
     px_per_rad_w = image_w / hfov
@@ -86,22 +86,22 @@ def compute_inflation_kernel(image_w, image_h, hfov_deg, vfov_deg, robot_w_m, ro
     return kh, kw
 
 
-def to_meters(depth_norm, near, far):
+def to_meters(depth_norm, near, far) -> None:
     return near + depth_norm * (far - near)
 
 
-def to_norm(meters, near, far):
+def to_norm(meters, near, far) -> None:
     return torch.clamp((meters - near) / (far - near), 0.0, 1.0)
 
 
-def collision_image_from_depth(depth_norm, near, far, kh, kw):
+def collision_image_from_depth(depth_norm, near, far, kh, kw) -> None:
     d = to_meters(depth_norm, near, far)
     d_neg = -d
     pooled = -F.max_pool2d(d_neg, kernel_size=(kh, kw), stride=1, padding=(kh // 2, kw // 2))
     return to_norm(pooled, near, far)
 
 
-def main():
+def main() -> None:
     p = argparse.ArgumentParser(description="Visualize collision-image pipeline (depth → noise/dropout → edges → inflated depth → collision image)")
     src = p.add_mutually_exclusive_group(required=True)
     src.add_argument("--index_csv", type=str, help="Index CSV from extractor")

@@ -24,7 +24,7 @@ import csv
 angle_list = []
 
 
-def read_csv(filename):
+def read_csv(filename) -> None:
     with open(filename, "r") as file:
         reader = csv.reader(file)
         for t, theta in reader:
@@ -42,7 +42,7 @@ time_stamp = np.array([x[0] for x in angle_list])
 angle_rad = np.array([x[1] * torch.pi / 180.0 for x in angle_list])
 
 
-def mass_spring_damper(y, t, k_p, k_v):
+def mass_spring_damper(y, t, k_p, k_v) -> None:
     theta, omega = y
     dydt = [omega, -k_v * omega - k_p * torch.sign(theta) * theta**2]
     return dydt

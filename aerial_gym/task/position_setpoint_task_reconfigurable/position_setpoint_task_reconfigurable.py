@@ -15,7 +15,7 @@ from gym.spaces import Dict, Box
 logger = CustomLogger("position_setpoint_task")
 
 
-def dict_to_class(dict):
+def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
 
 
@@ -39,7 +39,7 @@ class PositionSetpointTaskReconfigurable(PositionSetpointTask):
             task_config.action_limit_max, device=self.device, dtype=torch.float32
         ).expand(self.num_envs, -1)
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         self.counter += 1
         self.prev_actions[:] = self.actions
         self.actions = self.task_config.process_actions_for_task(
@@ -78,7 +78,7 @@ class PositionSetpointTaskReconfigurable(PositionSetpointTask):
 
         return return_tuple
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         self.task_obs["observations"][:, 0:3] = (
             self.target_position - self.obs_dict["robot_position"]
         )
@@ -108,7 +108,7 @@ class PositionSetpointTaskReconfigurable(PositionSetpointTask):
         self.task_obs["terminations"] = self.terminations
         self.task_obs["truncations"] = self.truncations
 
-    def compute_rewards_and_crashes(self, obs_dict):
+    def compute_rewards_and_crashes(self, obs_dict) -> None:
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
         robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]

@@ -26,7 +26,7 @@ from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import DCE_RL_Navigation_Task_Gate
 from aerial_gym.config.task_config.navigation_task_config_gate import task_config
 
-def save_camera_images(rl_task, step_num):
+def save_camera_images(rl_task, step_num) -> None:
     """Save images from both drone and static cameras for visualization."""
     try:
         # Create output directory
@@ -82,7 +82,7 @@ def save_camera_images(rl_task, step_num):
     except Exception as e:
         print(f"⚠ Camera image saving failed at step {step_num}: {e}")
 
-def test_gate_navigation_dual_camera():
+def test_gate_navigation_dual_camera() -> None:
     """Test gate navigation with dual camera setup."""
     
     print("=== Gate Navigation Dual Camera Test (Memory-Optimized) ===")

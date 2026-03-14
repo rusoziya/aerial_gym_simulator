@@ -17,7 +17,7 @@ class IsaacGymAsset(BaseAsset):
         self.sim = sim
         self.load_from_file(self.file)
 
-    def load_from_file(self, asset_file):
+    def load_from_file(self, asset_file) -> None:
         file = asset_file.split("/")[-1]
         self.asset = self.gym.load_asset(
             self.sim, self.options.asset_folder, file, self.options.asset_options

@@ -15,7 +15,7 @@ from gym.spaces import Dict, Box
 logger = CustomLogger("position_setpoint_task")
 
 
-def dict_to_class(dict):
+def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
 
 
@@ -132,16 +132,16 @@ class PositionSetpointTaskSim2Real(BaseTask):
             ),
         }
 
-    def close(self):
+    def close(self) -> None:
         self.sim_env.delete_env()
 
-    def reset(self):
+    def reset(self) -> None:
         self.target_position[:, 0:3] = 0.0  # torch.rand_like(self.target_position) * 10.0
         self.infos = {}
         self.sim_env.reset()
         return self.get_return_tuple()
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         self.target_position[:, 0:3] = (
             0.0  # (torch.rand_like(self.target_position[env_ids]) * 10.0)
         )
@@ -149,10 +149,10 @@ class PositionSetpointTaskSim2Real(BaseTask):
         self.sim_env.reset_idx(env_ids)
         return
 
-    def render(self):
+    def render(self) -> None:
         return None
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         self.counter += 1
         self.prev_actions[:] = self.actions
         self.prev_dist[:] = torch.norm(
@@ -187,7 +187,7 @@ class PositionSetpointTaskSim2Real(BaseTask):
 
         return return_tuple
 
-    def get_return_tuple(self):
+    def get_return_tuple(self) -> None:
         self.process_obs_for_task()
         return (
             self.task_obs,
@@ -197,7 +197,7 @@ class PositionSetpointTaskSim2Real(BaseTask):
             self.infos,
         )
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         position_error = self.target_position - self.obs_dict["robot_position"]
         self.obs_dict["robot_orientation"][:] = (
             torch.sign(self.obs_dict["robot_orientation"][:, 3]).unsqueeze(1)
@@ -225,7 +225,7 @@ class PositionSetpointTaskSim2Real(BaseTask):
         self.task_obs["terminations"] = self.terminations
         self.task_obs["truncations"] = self.truncations
 
-    def compute_rewards_and_crashes(self, obs_dict):
+    def compute_rewards_and_crashes(self, obs_dict) -> None:
         robot_position = obs_dict["robot_position"]
         robot_body_linvel = obs_dict["robot_body_linvel"]
         target_position = self.target_position

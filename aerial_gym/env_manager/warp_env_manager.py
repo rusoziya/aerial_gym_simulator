@@ -39,7 +39,7 @@ class WarpEnv(BaseManager):
         self.VERTEX_MAPS_PER_ENV_ORIGINAL = None
         logger.debug("[DONE] Initializing WarpEnv")
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         if self.global_vertex_counter == 0:
             return
         # logger.debug("Updating vertex maps per env")
@@ -55,25 +55,25 @@ class WarpEnv(BaseManager):
             self.warp_mesh_per_env[i].refit()
         # logger.debug("[DONE] Refitting warp meshes")
 
-    def pre_physics_step(self, action):
+    def pre_physics_step(self, action) -> None:
         pass
 
-    def post_physics_step(self):
+    def post_physics_step(self) -> None:
         pass
 
-    def step(self, action):
+    def step(self, action) -> None:
         pass
 
-    def reset(self):
+    def reset(self) -> None:
         return self.reset_idx(torch.arange(self.num_envs, device=self.device))
 
-    def create_env(self, env_id):
+    def create_env(self, env_id) -> None:
         if len(self.env_meshes) <= env_id:
             self.env_meshes.append([])
         else:
             raise ValueError("Environment already exists")
 
-    def add_asset_to_env(self, asset_info_dict, env_id, global_asset_counter, segmentation_counter):
+    def add_asset_to_env(self, asset_info_dict, env_id, global_asset_counter, segmentation_counter) -> None:
         warp_asset = asset_info_dict["warp_asset"]
         # use the variable segmentation mask to set the segmentation id for each vertex
         updated_vertex_segmentation = (
@@ -96,7 +96,7 @@ class WarpEnv(BaseManager):
             )
         )
 
-    def prepare_for_simulation(self, global_tensor_dict):
+    def prepare_for_simulation(self, global_tensor_dict) -> None:
         logger.debug("Preparing for simulation")
         self.global_tensor_dict = global_tensor_dict
         if self.global_vertex_counter == 0:

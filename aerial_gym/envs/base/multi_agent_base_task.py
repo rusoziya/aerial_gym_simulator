@@ -37,7 +37,7 @@ class MultiAgentBaseTask(BaseTask):
             self.num_envs, self.num_robots_per_env, 3, device=self.device
         )
         
-    def _setup_multi_agent_spaces(self):
+    def _setup_multi_agent_spaces(self) -> None:
         """Setup observation and action spaces for multi-agent scenario"""
         # Check if single-agent spaces are already defined
         if hasattr(self, 'observation_space') and self.observation_space is not None:
@@ -88,7 +88,7 @@ class MultiAgentBaseTask(BaseTask):
                 dtype=np.float32
             )
         
-    def get_multi_agent_observations(self):
+    def get_multi_agent_observations(self) -> None:
         """
         Get observations for all robots in all environments
         Returns: tensor of shape (num_envs, num_robots_per_env, obs_dim)
@@ -117,7 +117,7 @@ class MultiAgentBaseTask(BaseTask):
             obs_dim = getattr(self, 'observation_space', gym.spaces.Box(low=-1, high=1, shape=(13,))).shape[0]
             return torch.zeros(self.num_envs, self.num_robots_per_env, obs_dim, device=self.device)
         
-    def _get_inter_agent_observations(self, robot_idx):
+    def _get_inter_agent_observations(self, robot_idx) -> None:
         """
         Get relative positions and velocities of other robots within communication range
         """
@@ -159,7 +159,7 @@ class MultiAgentBaseTask(BaseTask):
                 device=self.device
             )
             
-    def check_inter_robot_collisions(self):
+    def check_inter_robot_collisions(self) -> None:
         """
         Check for collisions between robots in the same environment
         Returns: boolean tensor indicating collision status
@@ -176,7 +176,7 @@ class MultiAgentBaseTask(BaseTask):
                 
         return collision_mask
         
-    def compute_formation_rewards(self, desired_formation, formation_scale=1.0):
+    def compute_formation_rewards(self, desired_formation, formation_scale=1.0) -> None:
         """
         Compute rewards based on maintaining a desired formation
         
@@ -207,7 +207,7 @@ class MultiAgentBaseTask(BaseTask):
         
         return formation_rewards
         
-    def compute_multi_agent_rewards(self, actions):
+    def compute_multi_agent_rewards(self, actions) -> None:
         """
         Compute rewards for multi-agent scenario
         Returns: dict with individual and optionally shared rewards
@@ -231,24 +231,24 @@ class MultiAgentBaseTask(BaseTask):
             
         return rewards
         
-    def _compute_individual_reward(self, robot_idx, actions):
+    def _compute_individual_reward(self, robot_idx, actions) -> None:
         """Override in specific tasks"""
         return torch.zeros(self.num_envs, device=self.device)
         
-    def _compute_shared_reward(self, actions):
+    def _compute_shared_reward(self, actions) -> None:
         """Override in specific tasks"""
         return torch.zeros(self.num_envs, device=self.device)
         
-    def _process_robot_observations(self, robot_obs, robot_idx):
+    def _process_robot_observations(self, robot_obs, robot_idx) -> None:
         """Process observations for a specific robot - override in specific tasks"""
         return robot_obs["robot_state"]  # Default implementation
         
-    def reset(self):
+    def reset(self) -> None:
         """Reset multi-agent environment"""
         super().reset()
         return self.get_multi_agent_observations()
         
-    def step(self, actions):
+    def step(self, actions) -> None:
         """
         Step function for multi-agent environment
         actions: tensor of shape (num_envs, num_robots_per_env, action_dim)
@@ -270,7 +270,7 @@ class MultiAgentBaseTask(BaseTask):
         
         return observations, rewards, dones, info
         
-    def _check_multi_agent_termination(self):
+    def _check_multi_agent_termination(self) -> None:
         """Check termination conditions for multi-agent scenario"""
         # Default: environment terminates if any robot violates termination conditions
         dones = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
@@ -281,10 +281,10 @@ class MultiAgentBaseTask(BaseTask):
             
         return dones
         
-    def _check_individual_termination(self, robot_idx):
+    def _check_individual_termination(self, robot_idx) -> None:
         """Check termination for individual robot - override in specific tasks"""
         return torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         
-    def _get_multi_agent_info(self):
+    def _get_multi_agent_info(self) -> None:
         """Get info dict for multi-agent scenario"""
         return {} 

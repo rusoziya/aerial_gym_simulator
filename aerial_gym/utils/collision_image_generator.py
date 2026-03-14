@@ -103,7 +103,7 @@ def draw(mesh: wp.uint64,
     pixels[tid] = color
 
 
-def create_meshgrid(height, width, cx, cy, fx, fy):
+def create_meshgrid(height, width, cx, cy, fx, fy) -> None:
     """Creates a meshgrid.
     Parameters
     ----------
@@ -134,7 +134,7 @@ def create_meshgrid(height, width, cx, cy, fx, fy):
     return np.stack([x, y, z], axis=0)
 
 
-def depth_to_pointcloud(depth_img, meshgrid, scale=1.0, offset_dist=5.0):
+def depth_to_pointcloud(depth_img, meshgrid, scale=1.0, offset_dist=5.0) -> None:
     """Converts a depth image to a point cloud.
     Parameters
     ----------
@@ -161,7 +161,7 @@ def depth_to_pointcloud(depth_img, meshgrid, scale=1.0, offset_dist=5.0):
     point_cloud = np.stack([x, y, z_pcl], axis=0)
     return point_cloud, z_offset
 
-def create_sphere_mesh(edges, point_cloud, radius=0.1):
+def create_sphere_mesh(edges, point_cloud, radius=0.1) -> None:
     """Creates a sphere mesh at the centres of edges.
     Parameters
     ----------
@@ -190,7 +190,7 @@ def create_sphere_mesh(edges, point_cloud, radius=0.1):
         sphere_mesh_list[-1].apply_translation(point_origin)
     return sphere_mesh_list
 
-def create_cube_mesh(edges, point_cloud, edge_length=0.2):
+def create_cube_mesh(edges, point_cloud, edge_length=0.2) -> None:
     """
     Creates a cube mesh at the centres of edges.
     Parameters
@@ -231,7 +231,7 @@ class ImageProcessor:
         self.pixel_value_max_depth = pixel_value_max_depth
         self.scaling_factor = scaling_factor
 
-    def process_image(self, image):
+    def process_image(self, image) -> None:
         image[image < self.min_depth] = self.pixel_value_min_depth
         image[image > self.max_depth] = self.pixel_value_max_depth
         image = image * self.scaling_factor
@@ -244,7 +244,7 @@ class EdgeDetector:
         self.threshold1 = threshold1
         self.threshold2 = threshold2
 
-    def process_image(self, image):
+    def process_image(self, image) -> None:
         edge_image = cv2.Canny(image, self.threshold1, self.threshold2)
         edges = np.where(edge_image > 0)
         # zip edges
@@ -286,7 +286,7 @@ class CollisionImageProcessor:
         self.image_processor = image_processor
         self.meshgrid = create_meshgrid(270, 480, cam_params.cx, cam_params.cy, cam_params.fx, cam_params.fy)
     
-    def process_image(self, depth_img):
+    def process_image(self, depth_img) -> None:
         if depth_img.shape != (270, 480):
             print("Error: Depth image shape is not (270, 480). The shape is: ", depth_img.shape)
             exit(1)
@@ -332,7 +332,7 @@ MIN_DEPTH = 0.2
 
 PICKLE_SAVE_FOLDER = "ENTER_YOUR_SAVE_FOLDER_HERE"
         
-def main():
+def main() -> None:
     cam_params = CamParams(CX, CY, FX, FY)
     image_processor = ImageProcessor(0.2, 10.0, 0.1, -1.0, 10.0)
     edge_detector = EdgeDetector(30, 50)

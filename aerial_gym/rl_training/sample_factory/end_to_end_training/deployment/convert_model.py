@@ -28,20 +28,20 @@ class ModelDeploy(nn.Module):
                     nn.Linear(input_size, output_size).to(torch.float)).cpu()
                 self.control_stack.append(nn.Tanh())
     
-    def rescale_actions(self, scaled_command_actions):
+    def rescale_actions(self, scaled_command_actions) -> None:
         command_actions = scaled_command_actions.clone()
         command_actions = scaled_command_actions * (self.max_u - self.min_u)/2 + (self.max_u + self.min_u)/2
     
         return command_actions
 
 
-    def forward(self, x):
+    def forward(self, x) -> None:
         for l_or_a in self.control_stack:
             x = l_or_a(x)
         
         return x
 
-def convert_model_to_script_model(nn_model_full, max_u, min_u, n_motors):
+def convert_model_to_script_model(nn_model_full, max_u, min_u, n_motors) -> None:
     
     max_u = torch.tensor(max_u).to(torch.float).cpu()
     min_u = torch.tensor(min_u).to(torch.float).cpu()

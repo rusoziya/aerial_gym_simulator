@@ -53,7 +53,7 @@ class GradientAttributionTracker:
     # ---------------------------------------------------------------------
     # Hooking
     # ---------------------------------------------------------------------
-    def _attach_hooks(self):
+    def _attach_hooks(self) -> None:
         """Attach forward+backward hooks to capture grads wrt observation tensor."""
         hook_targets = [
             ('encoder.encoders.obs', 'Obs Encoder (non-compiled)'),
@@ -99,11 +99,11 @@ class GradientAttributionTracker:
     # ---------------------------------------------------------------------
     # Hooks
     # ---------------------------------------------------------------------
-    def _forward_hook(self, module, input, output):
+    def _forward_hook(self, module, input, output) -> None:
         """Enable grad on observation tensor and register a tensor-level grad hook.
         Robust to dict/tuple/list inputs; extracts 'obs'/'observations' if present.
         """
-        def _extract_obs_tensor(obj):
+        def _extract_obs_tensor(obj) -> None:
             try:
                 if torch.is_tensor(obj):
                     return obj
@@ -133,7 +133,7 @@ class GradientAttributionTracker:
                 x.requires_grad_(True)
             # Register a one-time hook to capture its gradient on backward
             # Note: this hook runs every backward for this forward pass
-            def _tensor_grad_hook(grad: torch.Tensor):
+            def _tensor_grad_hook(grad: torch.Tensor) -> None:
                 if grad is None or grad.dim() != 2 or grad.shape[1] != 150:
                     return
                 self.backward_pass_count += 1
@@ -148,13 +148,13 @@ class GradientAttributionTracker:
             if self.backward_pass_count < 2:
                 logger.warning(f"🔧 Forward hook setup failed: {e}")
 
-    def _forward_pre_hook_model(self, module, input):
+    def _forward_pre_hook_model(self, module, input) -> None:
         """Model-level pre-hook to wrap obs with requires_grad when encoder is scripted."""
         try:
             if not input:
                 return None
             arg = input[0] if isinstance(input, tuple) and len(input) > 0 else input
-            def _wrap(obj):
+            def _wrap(obj) -> None:
                 if torch.is_tensor(obj) and obj.dim() == 2 and obj.shape[1] >= 81:
                     if not obj.requires_grad:
                         obj = obj.detach().requires_grad_(True)
@@ -188,7 +188,7 @@ class GradientAttributionTracker:
         except Exception:
             return None
 
-    def _backward_hook(self, module, grad_input, grad_output):
+    def _backward_hook(self, module, grad_input, grad_output) -> None:
         """Fallback: capture grad_input if available (requires inputs with requires_grad=True)."""
         try:
             grads = None
@@ -210,7 +210,7 @@ class GradientAttributionTracker:
     # ---------------------------------------------------------------------
     # API
     # ---------------------------------------------------------------------
-    def step(self):
+    def step(self) -> None:
         # External step sync (optional)
         pass
 
@@ -231,7 +231,7 @@ class GradientAttributionTracker:
         metrics['obs_grad/backward_passes'] = float(self.backward_pass_count)
         return metrics
 
-    def print_gradient_summary(self):
+    def print_gradient_summary(self) -> None:
         comp_avgs = {k: (float(np.mean(v)) if v else 0.0) for k, v in self.grad_history.items()}
         if not any(v > 0 for v in comp_avgs.values()):
             logger.warning("📉 No gradient attribution data collected yet")
@@ -268,7 +268,7 @@ class GradientAttributionTracker:
             logger.warning(f"   🧭 Spatial:  {100.0*spatial/total:5.1f}%")
         logger.warning("================================================================================")
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         if self.module_hook_handle is not None:
             self.module_hook_handle.remove()
             self.module_hook_handle = None

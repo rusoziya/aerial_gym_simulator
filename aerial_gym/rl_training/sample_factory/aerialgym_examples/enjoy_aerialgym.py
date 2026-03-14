@@ -16,7 +16,7 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym im
 )
 
 
-def main():
+def main() -> None:
     """Script entry point."""
     register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg(evaluation=True)

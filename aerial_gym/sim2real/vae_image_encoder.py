@@ -5,7 +5,7 @@ import os
 from vae import VAE
 
 
-def clean_state_dict(state_dict):
+def clean_state_dict(state_dict) -> None:
     clean_dict = {}
     for key, value in state_dict.items():
         if "module." in key:
@@ -32,7 +32,7 @@ class VAEImageEncoder:
         self.vae_model.load_state_dict(state_dict)
         self.vae_model.eval()
 
-    def encode(self, image_tensors):
+    def encode(self, image_tensors) -> None:
         """
         Class to encode the set of images to a latent space. We can return both the means and sampled latent space variables.
         """
@@ -76,7 +76,7 @@ class VAEImageEncoder:
             returned_val = means
         return returned_val
 
-    def decode(self, latent_spaces):
+    def decode(self, latent_spaces) -> None:
         """
         Decode a latent space to reconstruct full images
         """
@@ -88,7 +88,7 @@ class VAEImageEncoder:
             decoded_image = self.vae_model.decode(latent_spaces)
         return decoded_image
 
-    def get_latent_dims_size(self):
+    def get_latent_dims_size(self) -> None:
         """
         Function to get latent space dims
         """

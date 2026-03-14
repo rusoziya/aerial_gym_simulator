@@ -5,26 +5,26 @@ class TaskRegistry:
         self.task_class_registry = {}
         self.task_config_registry = {}
 
-    def register_task(self, task_name, task_class, task_config):
+    def register_task(self, task_name, task_class, task_config) -> None:
         self.task_class_registry[task_name] = task_class
         self.task_config_registry[task_name] = task_config
 
-    def get_task_class(self, task_name):
+    def get_task_class(self, task_name) -> None:
         return self.task_class_registry[task_name]
 
-    def get_task_config(self, task_name):
+    def get_task_config(self, task_name) -> None:
         return self.task_config_registry[task_name]
 
-    def get_task_names(self):
+    def get_task_names(self) -> None:
         return list(self.task_class_registry.keys())
 
-    def get_task_classes(self):
+    def get_task_classes(self) -> None:
         return list(self.task_class_registry.values())
 
-    def get_task_configs(self):
+    def get_task_configs(self) -> None:
         return list(self.task_config_registry.values())
 
-    def make_task(self, task_name, seed=None, num_envs=None, headless=None, use_warp=None):
+    def make_task(self, task_name, seed=None, num_envs=None, headless=None, use_warp=None) -> None:
         task_class = self.get_task_class(task_name)
         task_config = self.get_task_config(task_name)
         return task_class(

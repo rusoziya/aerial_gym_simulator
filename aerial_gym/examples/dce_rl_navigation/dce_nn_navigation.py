@@ -20,7 +20,7 @@ import numpy as np
 from PIL import Image
 
 
-def sample_command(args):
+def sample_command(args) -> None:
     use_warp = True
     # Enable viewing by default for inference - user can override with --headless
     headless = getattr(args, 'headless', False)  # Default to False (viewing enabled)
@@ -118,7 +118,7 @@ def sample_command(args):
     #     merged_image_frames = []
 
 
-def get_network(num_envs):
+def get_network(num_envs) -> None:
     """Script entry point."""
     # register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg(evaluation=True)

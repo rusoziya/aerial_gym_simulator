@@ -9,25 +9,25 @@ class EnvConfigRegistry:
     def __init__(self) -> None:
         self.env_configs = {}
 
-    def register(self, env_name, env_config):
+    def register(self, env_name, env_config) -> None:
         """
         Add a env to the env dictionary.
         """
         self.env_configs[env_name] = env_config
 
-    def get_env_config(self, env_name):
+    def get_env_config(self, env_name) -> None:
         """
         Get a env from the env dictionary.
         """
         return self.env_configs[env_name]
 
-    def get_env_names(self):
+    def get_env_names(self) -> None:
         """
         Get the env names from the env dictionary.
         """
         return self.env_configs.keys()
 
-    def make_env(self, env_name):
+    def make_env(self, env_name) -> None:
         """
         Make a env from the env dictionary.
         """

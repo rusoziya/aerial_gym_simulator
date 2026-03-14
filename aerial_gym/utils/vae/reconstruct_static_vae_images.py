@@ -23,7 +23,7 @@ _spec.loader.exec_module(_mod)
 VAE = _mod.VAE
 
 
-def load_index(index_csv, split):
+def load_index(index_csv, split) -> None:
     rows = []
     with open(index_csv, "r") as f:
         reader = csv.DictReader(f)
@@ -33,14 +33,14 @@ def load_index(index_csv, split):
     return rows
 
 
-def read_image_gray(path, resize_wh, pil_interp=Image.BILINEAR):
+def read_image_gray(path, resize_wh, pil_interp=Image.BILINEAR) -> None:
     img = Image.open(path).convert("L").resize(resize_wh, pil_interp)
     arr = np.asarray(img, dtype=np.float32) / 255.0
     t = torch.from_numpy(arr)[None, ...]  # [1,H,W]
     return t
 
 
-def clean_state_dict(state_dict):
+def clean_state_dict(state_dict) -> None:
     clean = {}
     for k, v in state_dict.items():
         if k.startswith("module."):
@@ -51,7 +51,7 @@ def clean_state_dict(state_dict):
     return clean
 
 
-def save_pair(orig_t, recon_t, out_path):
+def save_pair(orig_t, recon_t, out_path) -> None:
     # orig_t, recon_t: [1,H,W] in [0,1]
     H, W = orig_t.shape[-2:]
     canvas = Image.new("L", (W * 2, H))
@@ -63,7 +63,7 @@ def save_pair(orig_t, recon_t, out_path):
     canvas.save(out_path)
 
 
-def save_dual_pair(orig_bi, recon_bi, orig_ne, recon_ne, out_path):
+def save_dual_pair(orig_bi, recon_bi, orig_ne, recon_ne, out_path) -> None:
     # All tensors are [1,H,W] in [0,1]
     H, W = orig_bi.shape[-2:]
     canvas = Image.new("L", (W * 4, H))
@@ -81,13 +81,13 @@ def save_dual_pair(orig_bi, recon_bi, orig_ne, recon_ne, out_path):
     canvas.save(out_path)
 
 
-def save_single(t, out_path):
+def save_single(t, out_path) -> None:
     img = Image.fromarray((t.squeeze().cpu().numpy() * 255).astype(np.uint8))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path)
 
 
-def save_grid(pairs, out_path, ncols=8):
+def save_grid(pairs, out_path, ncols=8) -> None:
     if not pairs:
         return
     H, W = pairs[0][0].shape[-2:]
@@ -109,7 +109,7 @@ def save_grid(pairs, out_path, ncols=8):
     grid.save(out_path)
 
 
-def main():
+def main() -> None:
     p = argparse.ArgumentParser(description="Reconstruct static-camera depth images with VAE and save side-by-side pairs.")
     src = p.add_mutually_exclusive_group(required=True)
     src.add_argument("--images_glob", type=str, nargs="+", help="One or more glob patterns for input images (PNG/JPG)")

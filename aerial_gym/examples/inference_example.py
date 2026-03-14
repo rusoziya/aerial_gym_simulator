@@ -15,7 +15,7 @@ class EMA:
         self.beta = beta
         self.average = None
 
-    def update(self, value):
+    def update(self, value) -> None:
         if self.average is None:
             self.average = value
         else:

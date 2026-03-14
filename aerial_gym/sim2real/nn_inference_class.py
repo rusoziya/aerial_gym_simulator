@@ -64,7 +64,7 @@ class Sim2RealInferenceClass(nn.Module):
             device=self.device,
         )
 
-    def init_env_info(self):
+    def init_env_info(self) -> None:
         self.env_info = EnvInfo(
             obs_space=self.observation_space,
             action_space=self.action_space,
@@ -76,10 +76,10 @@ class Sim2RealInferenceClass(nn.Module):
             frameskip=self.cfg.env_frameskip,
         )
 
-    def reset(self, env_ids):
+    def reset(self, env_ids) -> None:
         self.rnn_states[env_ids] = 0.0
 
-    def get_action(self, obs, get_np=False, get_robot_zero=False):
+    def get_action(self, obs, get_np=False, get_robot_zero=False) -> None:
         with torch.no_grad():
             # put obs to device
             import os

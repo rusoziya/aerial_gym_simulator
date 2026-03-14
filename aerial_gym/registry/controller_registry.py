@@ -10,32 +10,32 @@ class ControllerRegistry:
         self.controller_classes = {}
         self.controller_configs = {}
 
-    def register_controller(self, controller_name, controller_class, controller_config):
+    def register_controller(self, controller_name, controller_class, controller_config) -> None:
         """
         Add a controller to the controller dictionary.
         """
         self.controller_classes[controller_name] = controller_class
         self.controller_configs[controller_name] = controller_config
 
-    def get_controller_class(self, controller_name):
+    def get_controller_class(self, controller_name) -> None:
         """
         Get a controller from the controller dictionary.
         """
         return self.controller_classes[controller_name]
 
-    def get_controller_names(self):
+    def get_controller_names(self) -> None:
         """
         Get the controller names from the controller dictionary.
         """
         return self.controller_classes.keys()
 
-    def get_controller_config(self, controller_name):
+    def get_controller_config(self, controller_name) -> None:
         """
         Get the controller config from the controller dictionary.
         """
         return self.controller_configs[controller_name]
 
-    def make_controller(self, controller_name, num_envs, device, mode="robot"):
+    def make_controller(self, controller_name, num_envs, device, mode="robot") -> None:
         """
         Make a controller from the controller dictionary.
         """

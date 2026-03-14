@@ -13,7 +13,7 @@ class SimBuilder:
         self.env = None
         pass
 
-    def delete_env(self):
+    def delete_env(self) -> None:
         # garbage cleanup for the environment
         del self.env
         # make sure all cuda memory is freed
@@ -32,7 +32,7 @@ class SimBuilder:
         num_envs=None,
         use_warp=None,
         headless=None,
-    ):
+    ) -> None:
         self.sim_name = sim_name
         self.env_name = env_name
         self.robot_name = robot_name

@@ -8,20 +8,20 @@ class BaseManager(ABC):
         self.cfg = config
         self.device = device
 
-    def reset(self):
+    def reset(self) -> None:
         raise NotImplementedError("reset not implemented")
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         raise NotImplementedError("reset_idx not implemented")
 
-    def pre_physics_step(self, actions):
+    def pre_physics_step(self, actions) -> None:
         pass
 
-    def step(self):
+    def step(self) -> None:
         raise NotImplementedError("step not implemented")
 
-    def post_physics_step(self):
+    def post_physics_step(self) -> None:
         pass
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict) -> None:
         pass

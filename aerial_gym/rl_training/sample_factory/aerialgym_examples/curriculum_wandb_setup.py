@@ -31,7 +31,7 @@ class CurriculumWandBSetup:
         self.project_name = project_name
         self.entity = entity
         
-    def create_curriculum_dashboard(self):
+    def create_curriculum_dashboard(self) -> None:
         """Create a custom WandB dashboard for curriculum learning monitoring"""
         
         # Dashboard configuration
@@ -117,7 +117,7 @@ class CurriculumWandBSetup:
         print("Dashboard configuration created. Apply this manually in WandB UI for now.")
         print(f"Dashboard config: {dashboard_config}")
         
-    def setup_curriculum_alerts(self):
+    def setup_curriculum_alerts(self) -> None:
         """Set up automated alerts for curriculum learning monitoring"""
         
         alert_configs = [
@@ -169,7 +169,7 @@ class CurriculumWandBSetup:
         
         return queries
         
-    def print_setup_instructions(self):
+    def print_setup_instructions(self) -> None:
         """Print comprehensive setup instructions for curriculum tracking"""
         
         instructions = """
@@ -211,7 +211,7 @@ Happy curriculum learning! 🎯
         print(instructions)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Set up WandB curriculum learning tracking")
     parser.add_argument("--project", required=True, help="WandB project name")
     parser.add_argument("--entity", required=True, help="WandB entity name")

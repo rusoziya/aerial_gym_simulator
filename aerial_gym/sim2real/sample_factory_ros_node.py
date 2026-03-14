@@ -45,10 +45,10 @@ class EMA:
         self.beta = beta
         self.value = None
 
-    def reset(self):
+    def reset(self) -> None:
         self.value = None
 
-    def update(self, new_value):
+    def update(self, new_value) -> None:
         if self.value is None:
             self.value = new_value
         else:
@@ -156,10 +156,10 @@ class RlNavClass:
 
         self.odom_timer = rospy.timer.Timer(rospy.Duration(0.5), self.timer_cb)
 
-    def timer_cb(self, event):
+    def timer_cb(self, event) -> None:
         print("No odom received")
 
-    def target_callback(self, target):
+    def target_callback(self, target) -> None:
         self.target[0] = target.pose.position.x
         self.target[1] = target.pose.position.y
         self.target[2] = target.pose.position.z
@@ -167,14 +167,14 @@ class RlNavClass:
         self.RL_net_interface.reset()
         self.prev_action = np.array([0.0, 0.0, 0.0, 0.0])
 
-    def reset_callback(self, msg):
+    def reset_callback(self, msg) -> None:
         self.RL_net_interface.reset()
         self.prev_action = np.array([0.0, 0.0, 0.0, 0.0])
         self.action = np.zeros(ACTION_DIMS)
         self.prev_action = self.action
         self.action_filter.reset()
 
-    def odom_callback(self, odom):
+    def odom_callback(self, odom) -> None:
         self.odom = odom
         self.position[0] = self.odom.pose.pose.position.x
         self.position[1] = self.odom.pose.pose.position.y
@@ -206,7 +206,7 @@ class RlNavClass:
         self.odom_timer.shutdown()
         self.odom_timer = rospy.timer.Timer(rospy.Duration(0.5), self.timer_cb)
 
-    def process_image(self, image, to_torch=True, device="cpu"):
+    def process_image(self, image, to_torch=True, device="cpu") -> None:
         image[image > IMAGE_MAX_DEPTH] = IMAGE_MAX_DEPTH
         image[image < IMAGE_MIN_DEPTH] = -1
 
@@ -225,7 +225,7 @@ class RlNavClass:
             filtered_image = image.clone()
         return filtered_image, image
 
-    def publish_action(self, action=None):
+    def publish_action(self, action=None) -> None:
         if action is None:
             action = self.action
 
@@ -318,7 +318,7 @@ class RlNavClass:
 
         self.goal_dir_publisher.publish(goal_dir_marker)
 
-    def mavros_state_callback(self, data):
+    def mavros_state_callback(self, data) -> None:
         # check if mavros state is "OFFBOARD" or "GUIDED".
         # if it is either of them, set enable to True, otherwise set it to False
         if self.use_mavros_state:
@@ -333,7 +333,7 @@ class RlNavClass:
         else:
             self.enable = True
 
-    def prepare_state_input_tensor(self):
+    def prepare_state_input_tensor(self) -> None:
         nn_input = np.zeros(TOTAL_IP_DIMS)
         self.goal_dir = self.target - self.position
         self.goal_dir = self.vehicle_frame_matrix.inv().apply(self.goal_dir)
@@ -369,7 +369,7 @@ class RlNavClass:
         self.nn_input_tensor[17 : 17 + LATENT_SPACE] = self.img_latent
         self.nn_input_tensor = self.nn_input_tensor.unsqueeze(0).to(self.device)
 
-    def image_callback(self, data):
+    def image_callback(self, data) -> None:
         image_cb_start = time.time()
         # # convert from ROS image to torch image
         if IS_SIM:

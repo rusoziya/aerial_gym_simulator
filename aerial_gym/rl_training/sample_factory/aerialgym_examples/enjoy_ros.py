@@ -64,7 +64,7 @@ class NN_Inference_ROS(nn.Module):
             device=device,
         )
 
-    def init_env_info(self):
+    def init_env_info(self) -> None:
         self.env_info = EnvInfo(
             obs_space=self.observation_space,
             action_space=self.action_space,
@@ -76,10 +76,10 @@ class NN_Inference_ROS(nn.Module):
             frameskip=self.cfg.env_frameskip,
         )
 
-    def reset(self):
+    def reset(self) -> None:
         self.rnn_states[:] = 0.0
 
-    def get_action(self, obs):
+    def get_action(self, obs) -> None:
         start_time = time.time()
         with torch.no_grad():
             # put obs to device

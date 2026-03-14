@@ -61,7 +61,7 @@ class CompleteObservationInfluenceTracker:
         # Try to attach hooks in order of preference
         self._attach_hooks()
         
-    def _attach_hooks(self):
+    def _attach_hooks(self) -> None:
         """Attach forward hooks to capture activations at the encoder output."""
         hook_targets = [
             ('encoder.encoders.obs', 'Obs Encoder (non-compiled)'),
@@ -117,14 +117,14 @@ class CompleteObservationInfluenceTracker:
         logger.warning("💡 ScriptModules don't support hooks - this is a PyTorch limitation")
         self.enabled = False
         
-    def _activation_hook(self, module, input, output):
+    def _activation_hook(self, module, input, output) -> None:
         """Hook that captures activations and analyzes complete observation influence.
         Robust to modules that accept/return dicts or tuples (SF encoders, custom fusion encoders).
         """
         if not self.enabled:
             return
 
-        def _extract_obs_tensor(obj):
+        def _extract_obs_tensor(obj) -> None:
             # Try common wrapper types: tuple(list(dict(...)))
             try:
                 import torch as _torch
@@ -148,7 +148,7 @@ class CompleteObservationInfluenceTracker:
             except Exception:
                 return None
 
-        def _extract_feat_tensor(obj):
+        def _extract_feat_tensor(obj) -> None:
             try:
                 import torch as _torch
                 if isinstance(obj, _torch.Tensor):
@@ -186,7 +186,7 @@ class CompleteObservationInfluenceTracker:
             if self.step_count < 5:  # Only log errors for first few steps
                 logger.warning(f"🔧 Hook analysis error: {e}")
                 
-    def _analyze_complete_observation_influence(self, observations: torch.Tensor, encoded_features: torch.Tensor):
+    def _analyze_complete_observation_influence(self, observations: torch.Tensor, encoded_features: torch.Tensor) -> None:
         """Analyze the influence of all observation components on encoded features."""
         batch_size = observations.shape[0]
         
@@ -260,7 +260,7 @@ class CompleteObservationInfluenceTracker:
                     
         return np.mean(correlations) if correlations else 0.0
         
-    def _log_step_debug(self, step_data: Dict):
+    def _log_step_debug(self, step_data: Dict) -> None:
         """Log debug information for current step."""
         
         # Determine training phase
@@ -284,7 +284,7 @@ class CompleteObservationInfluenceTracker:
         
         # logger.warning("")  # Add spacing (suppressed)
         
-    def step(self):
+    def step(self) -> None:
         """Update step counter - now synced externally with Sample Factory."""
         # Note: step_count is now set directly by the training script
         # to match Sample Factory's actual training step count
@@ -318,7 +318,7 @@ class CompleteObservationInfluenceTracker:
                 
         return metrics
         
-    def print_analysis_summary(self):
+    def print_analysis_summary(self) -> None:
         """Print comprehensive analysis summary."""
         if not any(self.activation_history[comp]['correlations'] for comp in self.obs_components.keys()):
             logger.warning("📊 No analysis data available yet")
@@ -471,7 +471,7 @@ class CompleteObservationInfluenceTracker:
             
         logger.warning("================================================================================")
         
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Remove hooks and cleanup resources."""
         for handle in self.hook_handles:
             handle.remove()

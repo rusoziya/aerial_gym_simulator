@@ -29,11 +29,11 @@ class ExtractObsWrapper(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
 
-    def reset(self, **kwargs):
+    def reset(self, **kwargs) -> None:
         observations, *_ = super().reset(**kwargs)
         return observations["observations"]
 
-    def step(self, action):
+    def step(self, action) -> None:
         observations, rewards, terminated, truncated, infos = super().step(action)
 
         dones = torch.where(
@@ -55,19 +55,19 @@ class AERIALRLGPUEnv(vecenv.IVecEnv):
         self.env = env_configurations.configurations[config_name]["env_creator"](**kwargs)
         self.env = ExtractObsWrapper(self.env)
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         return self.env.step(actions)
 
-    def reset(self):
+    def reset(self) -> None:
         return self.env.reset()
 
-    def reset_done(self):
+    def reset_done(self) -> None:
         return self.env.reset_done()
 
-    def get_number_of_agents(self):
+    def get_number_of_agents(self) -> None:
         return self.env.get_number_of_agents()
 
-    def get_env_info(self):
+    def get_env_info(self) -> None:
         info = {}
         info["action_space"] = spaces.Box(
             -np.ones(self.env.task_config.action_space_dim),
@@ -153,7 +153,7 @@ vecenv.register(
 )
 
 
-def get_args():
+def get_args() -> None:
     from isaacgym import gymutil
 
     custom_parameters = [
@@ -272,7 +272,7 @@ def get_args():
     return args
 
 
-def update_config(config, args):
+def update_config(config, args) -> None:
 
     if args["task"] is not None:
         config["params"]["config"]["env_name"] = args["task"]

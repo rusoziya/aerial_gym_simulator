@@ -48,7 +48,7 @@ from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.utils.helpers import parse_arguments
 
 
-def get_args():
+def get_args() -> None:
     custom_parameters = [
         {
             "name": "--task",
@@ -246,7 +246,7 @@ class RecordEpisodeStatisticsTorch(gym.Wrapper):
         self.episode_returns = None
         self.episode_lengths = None
 
-    def reset(self, **kwargs):
+    def reset(self, **kwargs) -> None:
         observations = super().reset(**kwargs)
         self.episode_returns = torch.zeros(self.num_envs, dtype=torch.float32, device=self.device)
         self.episode_lengths = torch.zeros(self.num_envs, dtype=torch.int32, device=self.device)
@@ -258,7 +258,7 @@ class RecordEpisodeStatisticsTorch(gym.Wrapper):
         )
         return observations
 
-    def step(self, action):
+    def step(self, action) -> None:
         observations, rewards, terminations, truncations, infos = super().step(action)
 
         self.episode_returns += rewards
@@ -278,7 +278,7 @@ class RecordEpisodeStatisticsTorch(gym.Wrapper):
         )
 
 
-def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
+def layer_init(layer, std=np.sqrt(2), bias_const=0.0) -> None:
     torch.nn.init.orthogonal_(layer.weight, std)
     torch.nn.init.constant_(layer.bias, bias_const)
     return layer
@@ -303,10 +303,10 @@ class Agent(nn.Module):
         )
         self.actor_logstd = nn.Parameter(torch.zeros(1, np.prod(envs.task_config.action_space_dim)))
 
-    def get_value(self, x):
+    def get_value(self, x) -> None:
         return self.critic(x)
 
-    def get_action_and_value(self, x, action=None):
+    def get_action_and_value(self, x, action=None) -> None:
         action_mean = self.actor_mean(x)
         action_logstd = self.actor_logstd.expand_as(action_mean)
         action_std = torch.exp(action_logstd)
