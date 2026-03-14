@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import isaacgym
 from aerial_gym.config.env_config.env_with_obstacles import EnvWithObstaclesCfg
 from aerial_gym.config.env_config.empty_env import EmptyEnvCfg

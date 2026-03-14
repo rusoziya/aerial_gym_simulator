@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # import classes for controllers
 from aerial_gym.control.controllers.acceleration_control import (
     LeeAccelerationController,

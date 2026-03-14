@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # import configs here
 from aerial_gym.config.robot_config.base_quad_config import BaseQuadCfg
 from aerial_gym.config.robot_config.base_octarotor_config import BaseOctarotorCfg
