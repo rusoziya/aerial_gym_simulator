@@ -1,168 +1,28 @@
-from aerial_gym.task.base_task import BaseTask
-from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_navigation_task import BaseNavigationTask
 import torch
-import numpy as np
+import os
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.utils.math import *  # noqa: F401,F403
 from aerial_gym.utils.logging import CustomLogger
-
-from aerial_gym.utils.vae.vae_image_encoder import VAEImageEncoder
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
-from typing import Tuple
 
 logger = CustomLogger("navigation_task")
 
 
-def dict_to_class(dict):
-    return type("ClassFromDict", (object,), dict)
-
-
-class NavigationTask(BaseTask):
+class NavigationTask(BaseNavigationTask):
     def __init__(
         self, task_config, seed=None, num_envs=None, headless=None, device=None, use_warp=None
     ):
-        # overwrite the params if user has provided them
-        if seed is not None:
-            task_config.seed = seed
-        if num_envs is not None:
-            task_config.num_envs = num_envs
-        if headless is not None:
-            task_config.headless = headless
-        if device is not None:
-            task_config.device = device
-        if use_warp is not None:
-            task_config.use_warp = use_warp
-        super().__init__(task_config)
-        self.device = self.task_config.device
-        # set the each of the elements of reward parameter to a torch tensor
-        for key in self.task_config.reward_parameters.keys():
-            self.task_config.reward_parameters[key] = torch.tensor(
-                self.task_config.reward_parameters[key], device=self.device
-            )
-        logger.info("Building environment for navigation task.")
-        logger.info(
-            "Sim Name: {}, Env Name: {}, Robot Name: {}, Controller Name: {}".format(
-                self.task_config.sim_name,
-                self.task_config.env_name,
-                self.task_config.robot_name,
-                self.task_config.controller_name,
-            )
-        )
+        super().__init__(task_config, seed, num_envs, headless, device, use_warp)
 
-        self.sim_env = SimBuilder().build_env(
-            sim_name=self.task_config.sim_name,
-            env_name=self.task_config.env_name,
-            robot_name=self.task_config.robot_name,
-            controller_name=self.task_config.controller_name,
-            args=self.task_config.args,
-            device=self.device,
-            num_envs=self.task_config.num_envs,
-            use_warp=self.task_config.use_warp,
-            headless=self.task_config.headless,
-        )
-
-        self.target_position = torch.zeros(
-            (self.sim_env.num_envs, 3), device=self.device, requires_grad=False
-        )
-
+        # Position-setpoint navigation uses random target ratios within env bounds
         self.target_min_ratio = torch.tensor(
             self.task_config.target_min_ratio, device=self.device, requires_grad=False
-        ).expand(self.sim_env.num_envs, -1)
+        ).expand(self.num_envs, -1)
         self.target_max_ratio = torch.tensor(
             self.task_config.target_max_ratio, device=self.device, requires_grad=False
-        ).expand(self.sim_env.num_envs, -1)
+        ).expand(self.num_envs, -1)
 
-        self.success_aggregate = 0
-        self.crashes_aggregate = 0
-        self.timeouts_aggregate = 0
-
-        self.pos_error_vehicle_frame_prev = torch.zeros_like(self.target_position)
-        self.pos_error_vehicle_frame = torch.zeros_like(self.target_position)
-
-        if self.task_config.vae_config.use_vae:
-            self.vae_model = VAEImageEncoder(config=self.task_config.vae_config, device=self.device)
-            self.image_latents = torch.zeros(
-                (self.sim_env.num_envs, self.task_config.vae_config.latent_dims),
-                device=self.device,
-                requires_grad=False,
-            )
-        else:
-            self.vae_model = lambda x: x
-
-        # Get the dictionary once from the environment and use it to get the observations later.
-        # This is to avoid constant retuning of data back anf forth across functions as the tensors update and can be read in-place.
-        self.obs_dict = self.sim_env.get_obs()
-        if "curriculum_level" not in self.obs_dict.keys():
-            self.curriculum_level = self.task_config.curriculum.min_level
-            self.obs_dict["curriculum_level"] = self.curriculum_level
-        else:
-            self.curriculum_level = self.obs_dict["curriculum_level"]
         self.obs_dict["num_obstacles_in_env"] = self.curriculum_level
-        self.curriculum_progress_fraction = (
-            self.curriculum_level - self.task_config.curriculum.min_level
-        ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
-
-        self.terminations = self.obs_dict["crashes"]
-        self.truncations = self.obs_dict["truncations"]
-        self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
-
-        self.observation_space = Dict(
-            {
-                "observations": Box(
-                    low=-1.0,
-                    high=1.0,
-                    shape=(self.task_config.observation_space_dim,),
-                    dtype=np.float32,
-                ),
-                "image_obs": Box(
-                    low=-1.0,
-                    high=1.0,
-                    shape=(1, 270, 480),
-                    dtype=np.float32,
-                ),
-            }
-        )
-        self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
-        self.action_transformation_function = self.task_config.action_transformation_function
-
-        self.num_envs = self.sim_env.num_envs
-
-        # Currently only the "observations" are sent to the actor and critic.
-        # The "priviliged_obs" are not handled so far in sample-factory
-
-        self.task_obs = {
-            "observations": torch.zeros(
-                (self.sim_env.num_envs, self.task_config.observation_space_dim),
-                device=self.device,
-                requires_grad=False,
-            ),
-            "priviliged_obs": torch.zeros(
-                (
-                    self.sim_env.num_envs,
-                    self.task_config.privileged_observation_space_dim,
-                ),
-                device=self.device,
-                requires_grad=False,
-            ),
-            "collisions": torch.zeros(
-                (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
-            ),
-            "rewards": torch.zeros(
-                (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
-            ),
-        }
-
-        self.num_task_steps = 0
-
-    def close(self):
-        self.sim_env.delete_env()
-
-    def reset(self):
-        self.reset_idx(torch.arange(self.sim_env.num_envs))
-        return self.get_return_tuple()
 
     def reset_idx(self, env_ids):
         target_ratio = torch_rand_float_tensor(self.target_min_ratio, self.target_max_ratio)
@@ -171,66 +31,116 @@ class NavigationTask(BaseTask):
             max=self.obs_dict["env_bounds_max"][env_ids],
             ratio=target_ratio[env_ids],
         )
-        # logger.warning(f"reset envs: {env_ids}")
         self.infos = {}
-        return
 
-    def render(self):
-        return self.sim_env.render()
+    def step(self, actions):
+        transformed_action = self.action_transformation_function(actions)
+        self.sim_env.step(actions=transformed_action)
 
-    def logging_sanity_check(self, infos):
-        successes = infos["successes"]
-        crashes = infos["crashes"]
-        timeouts = infos["timeouts"]
-        time_at_crash = torch.where(
-            crashes > 0,
-            self.sim_env.sim_steps,
-            self.task_config.episode_len_steps * torch.ones_like(self.sim_env.sim_steps),
+        self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
+
+        if self.task_config.return_state_before_reset:
+            return_tuple = self.get_return_tuple()
+
+        self.truncations[:] = torch.where(
+            self.sim_env.sim_steps > self.task_config.episode_len_steps,
+            torch.ones_like(self.truncations),
+            torch.zeros_like(self.truncations),
         )
-        env_list_for_toc = (time_at_crash < 5).nonzero(as_tuple=False).squeeze(-1)
-        crash_envs = crashes.nonzero(as_tuple=False).squeeze(-1)
-        success_envs = successes.nonzero(as_tuple=False).squeeze(-1)
-        timeout_envs = timeouts.nonzero(as_tuple=False).squeeze(-1)
 
-        if len(env_list_for_toc) > 0:
-            logger.critical("Crash is happening too soon.")
-            logger.critical(f"Envs crashing too soon: {env_list_for_toc}")
-            logger.critical(f"Time at crash: {time_at_crash[env_list_for_toc]}")
+        successes = self.truncations * (
+            torch.norm(self.target_position - self.obs_dict["robot_position"], dim=1) < 1.0
+        )
+        successes = torch.where(self.terminations > 0, torch.zeros_like(successes), successes)
+        timeouts = torch.where(
+            self.truncations > 0, torch.logical_not(successes), torch.zeros_like(successes)
+        )
+        timeouts = torch.where(self.terminations > 0, torch.zeros_like(timeouts), timeouts)
 
-        if torch.sum(torch.logical_and(successes, crashes)) > 0:
-            logger.critical("Success and crash are occuring at the same time")
-            logger.critical(
-                f"Number of crashes: {torch.count_nonzero(crashes)}, Crashed envs: {crash_envs}"
-            )
-            logger.critical(
-                f"Number of successes: {torch.count_nonzero(successes)}, Success envs: {success_envs}"
-            )
-            logger.critical(
-                f"Number of common instances: {torch.count_nonzero(torch.logical_and(crashes, successes))}"
-            )
-        if torch.sum(torch.logical_and(successes, timeouts)) > 0:
-            logger.critical("Success and timeout are occuring at the same time")
-            logger.critical(
-                f"Number of successes: {torch.count_nonzero(successes)}, Success envs: {success_envs}"
-            )
-            logger.critical(
-                f"Number of timeouts: {torch.count_nonzero(timeouts)}, Timeout envs: {timeout_envs}"
-            )
-            logger.critical(
-                f"Number of common instances: {torch.count_nonzero(torch.logical_and(successes, timeouts))}"
-            )
-        if torch.sum(torch.logical_and(crashes, timeouts)) > 0:
-            logger.critical("Crash and timeout are occuring at the same time")
-            logger.critical(
-                f"Number of crashes: {torch.count_nonzero(crashes)}, Crashed envs: {crash_envs}"
-            )
-            logger.critical(
-                f"Number of timeouts: {torch.count_nonzero(timeouts)}, Timeout envs: {timeout_envs}"
-            )
-            logger.critical(
-                f"Number of common instances: {torch.count_nonzero(torch.logical_and(crashes, timeouts))}"
-            )
-        return
+        self.infos["successes"] = successes
+        self.infos["timeouts"] = timeouts
+        self.infos["crashes"] = self.terminations
+
+        self.infos.setdefault("episode_extra_stats", {})
+        self.infos["episode_extra_stats"]["curriculum/current_level"] = float(
+            self.curriculum_level
+        )
+        self.infos["episode_extra_stats"]["curriculum/current_progress"] = float(
+            self.curriculum_progress_fraction
+        )
+
+        self.logging_sanity_check(self.infos)
+        self.check_and_update_curriculum_level(
+            self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
+        )
+
+        reset_envs = self.sim_env.post_reward_calculation_step()
+        if len(reset_envs) > 0:
+            self.reset_idx(reset_envs)
+        self.num_task_steps += 1
+
+        self.process_image_observation()
+        self.post_image_reward_addition()
+
+        if not self.task_config.return_state_before_reset:
+            return_tuple = self.get_return_tuple()
+        return return_tuple
+
+    def post_image_reward_addition(self):
+        image_obs = 10.0 * self.obs_dict["depth_range_pixels"].squeeze(1)
+        image_obs[image_obs < 0] = 10.0
+        self.min_pixel_dist = torch.amin(image_obs, dim=(1, 2))
+        self.rewards[~self.terminations] += -exponential_reward_function(
+            4.0, 1.0, self.min_pixel_dist[~self.terminations]
+        )
+
+    def process_obs_for_task(self):
+        vec_to_tgt = quat_rotate_inverse(
+            self.obs_dict["robot_vehicle_orientation"],
+            (self.target_position - self.obs_dict["robot_position"]),
+        )
+        perturbed_vec_to_tgt = vec_to_tgt + 0.1 * 2 * (torch.rand_like(vec_to_tgt - 0.5))
+        dist_to_tgt = torch.norm(vec_to_tgt, dim=-1)
+        perturbed_unit_vec_to_tgt = perturbed_vec_to_tgt / dist_to_tgt.unsqueeze(1)
+        self.task_obs["observations"][:, 0:3] = perturbed_unit_vec_to_tgt
+        self.task_obs["observations"][:, 3] = dist_to_tgt
+        euler_angles = ssa(self.obs_dict["robot_euler_angles"])
+        perturbed_euler_angles = euler_angles + 0.1 * (torch.rand_like(euler_angles) - 0.5)
+        self.task_obs["observations"][:, 4] = perturbed_euler_angles[:, 0]
+        self.task_obs["observations"][:, 5] = perturbed_euler_angles[:, 1]
+        self.task_obs["observations"][:, 6] = 0.0
+        self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
+        self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
+        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]
+        if self.task_config.vae_config.use_vae:
+            self.task_obs["observations"][:, 17:] = self.image_latents
+        self.task_obs["rewards"] = self.rewards
+        self.task_obs["terminations"] = self.terminations
+        self.task_obs["truncations"] = self.truncations
+        self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]
+
+    def compute_rewards_and_crashes(self, obs_dict):
+        robot_position = obs_dict["robot_position"]
+        target_position = self.target_position
+        robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
+        self.pos_error_vehicle_frame_prev[:] = self.pos_error_vehicle_frame
+        self.pos_error_vehicle_frame[:] = quat_rotate_inverse(
+            robot_vehicle_orientation, (target_position - robot_position)
+        )
+        disable_cm = (
+            str(os.environ.get("SF_DISABLE_CURRICULUM_MULTIPLIER", "false")).lower() == "true"
+        )
+        frac_eff = 0.0 if disable_cm else float(self.curriculum_progress_fraction)
+
+        return compute_reward(
+            self.pos_error_vehicle_frame,
+            self.pos_error_vehicle_frame_prev,
+            obs_dict["crashes"],
+            obs_dict["robot_actions"],
+            obs_dict["robot_prev_actions"],
+            frac_eff,
+            self.task_config.reward_parameters,
+        )
 
     def check_and_update_curriculum_level(self, successes, crashes, timeouts):
         self.success_aggregate += torch.sum(successes)
@@ -249,7 +159,6 @@ class NavigationTask(BaseTask):
             elif success_rate < self.task_config.curriculum.success_rate_for_decrease:
                 self.curriculum_level -= self.task_config.curriculum.decrease_step
 
-            # clamp curriculum_level
             self.curriculum_level = min(
                 max(self.curriculum_level, self.task_config.curriculum.min_level),
                 self.task_config.curriculum.max_level,
@@ -261,188 +170,32 @@ class NavigationTask(BaseTask):
             ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
 
             logger.warning(
-                f"Curriculum Level: {self.curriculum_level}, Curriculum progress fraction: {self.curriculum_progress_fraction}"
+                f"Curriculum Level: {self.curriculum_level}, "
+                f"Progress: {self.curriculum_progress_fraction}"
             )
             logger.warning(
-                f"\nSuccess Rate: {success_rate}\nCrash Rate: {crash_rate}\nTimeout Rate: {timeout_rate}"
+                f"SR: {success_rate}, CR: {crash_rate}, TR: {timeout_rate}"
             )
-            logger.warning(
-                f"\nSuccesses: {self.success_aggregate}\nCrashes : {self.crashes_aggregate}\nTimeouts: {self.timeouts_aggregate}"
+
+            self.infos["curriculum/level"] = torch.tensor(
+                self.curriculum_level, dtype=torch.float32
             )
-            
-            # Add curriculum metrics to infos for wandb logging
-            self.infos["curriculum/level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
-            self.infos["curriculum/progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
-            self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
-            self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
-            self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
-            self.infos["curriculum/total_successes"] = torch.tensor(self.success_aggregate, dtype=torch.float32)
-            self.infos["curriculum/total_crashes"] = torch.tensor(self.crashes_aggregate, dtype=torch.float32)
-            self.infos["curriculum/total_timeouts"] = torch.tensor(self.timeouts_aggregate, dtype=torch.float32)
-            
+            self.infos["curriculum/progress"] = torch.tensor(
+                self.curriculum_progress_fraction, dtype=torch.float32
+            )
+            self.infos["curriculum/success_rate"] = torch.tensor(
+                success_rate, dtype=torch.float32
+            )
+            self.infos["curriculum/crash_rate"] = torch.tensor(
+                crash_rate, dtype=torch.float32
+            )
+            self.infos["curriculum/timeout_rate"] = torch.tensor(
+                timeout_rate, dtype=torch.float32
+            )
+
             self.success_aggregate = 0
             self.crashes_aggregate = 0
             self.timeouts_aggregate = 0
-
-    def process_image_observation(self):
-        image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)
-        if self.task_config.vae_config.use_vae:
-            self.image_latents[:] = self.vae_model.encode(image_obs)
-        # # comments to make sure the VAE does as expected
-        # decoded_image = self.vae_model.decode(self.image_latents[0].unsqueeze(0))
-        # image0 = image_obs[0].cpu().numpy()
-        # decoded_image0 = decoded_image[0].squeeze(0).cpu().numpy()
-        # # save as .png with timestep
-        # if not hasattr(self, "img_ctr"):
-        #     self.img_ctr = 0
-        # self.img_ctr += 1
-        # import matplotlib.pyplot as plt
-        # plt.imsave(f"image0{self.img_ctr}.png", image0, vmin=0, vmax=1)
-        # plt.imsave(f"decoded_image0{self.img_ctr}.png", decoded_image0, vmin=0, vmax=1)
-
-    def step(self, actions):
-        # this uses the action, gets observations
-        # calculates rewards, returns tuples
-        # In this case, the episodes that are terminated need to be
-        # first reset, and the first obseration of the new episode
-        # needs to be returned.
-
-        transformed_action = self.action_transformation_function(actions)
-        logger.debug(f"raw_action: {actions[0]}, transformed action: {transformed_action[0]}")
-        self.sim_env.step(actions=transformed_action)
-
-        # This step must be done since the reset is done after the reward is calculated.
-        # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
-        # This is important for the RL agent to get the correct state after the reset.
-        self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
-
-        # logger.info(f"Curricluum Level: {self.curriculum_level}")
-
-        if self.task_config.return_state_before_reset == True:
-            return_tuple = self.get_return_tuple()
-
-        self.truncations[:] = torch.where(
-            self.sim_env.sim_steps > self.task_config.episode_len_steps,
-            torch.ones_like(self.truncations),
-            torch.zeros_like(self.truncations),
-        )
-
-        # successes are are the sum of the environments which are to be truncated and have reached the target within a distance threshold
-        successes = self.truncations * (
-            torch.norm(self.target_position - self.obs_dict["robot_position"], dim=1) < 1.0
-        )
-        successes = torch.where(self.terminations > 0, torch.zeros_like(successes), successes)
-        timeouts = torch.where(
-            self.truncations > 0, torch.logical_not(successes), torch.zeros_like(successes)
-        )
-        timeouts = torch.where(
-            self.terminations > 0, torch.zeros_like(timeouts), timeouts
-        )  # timeouts are not counted if there is a crash
-
-        self.infos["successes"] = successes
-        self.infos["timeouts"] = timeouts
-        self.infos["crashes"] = self.terminations
-        
-        # Add continuous curriculum tracking under episode_extra_stats to avoid top-level curriculum/*
-        self.infos.setdefault('episode_extra_stats', {})
-        self.infos['episode_extra_stats']["curriculum/current_level"] = float(self.curriculum_level)
-        self.infos['episode_extra_stats']["curriculum/current_progress"] = float(self.curriculum_progress_fraction)
-
-        self.logging_sanity_check(self.infos)
-        self.check_and_update_curriculum_level(
-            self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
-        )
-        # rendering happens at the post-reward calculation step since the newer measurement is required to be
-        # sent to the RL algorithm as an observation and it helps if the camera image is updated then
-        reset_envs = self.sim_env.post_reward_calculation_step()
-        if len(reset_envs) > 0:
-            self.reset_idx(reset_envs)
-        self.num_task_steps += 1
-        # do stuff with the image observations here
-        self.process_image_observation()
-        self.post_image_reward_addition()
-        if self.task_config.return_state_before_reset == False:
-            return_tuple = self.get_return_tuple()
-        return return_tuple
-
-    def post_image_reward_addition(self):
-        image_obs = 10.0 * self.obs_dict["depth_range_pixels"].squeeze(1)
-        image_obs[image_obs < 0] = 10.0
-        self.min_pixel_dist = torch.amin(image_obs, dim=(1, 2))
-        self.rewards[~self.terminations] += -exponential_reward_function(
-            4.0, 1.0, self.min_pixel_dist[~self.terminations]
-        )
-
-    def get_return_tuple(self):
-        self.process_obs_for_task()
-        return (
-            self.task_obs,
-            self.rewards,
-            self.terminations,
-            self.truncations,
-            self.infos,
-        )
-
-    def process_obs_for_task(self):
-        vec_to_tgt = quat_rotate_inverse(
-            self.obs_dict["robot_vehicle_orientation"],
-            (self.target_position - self.obs_dict["robot_position"]),
-        )
-        perturbed_vec_to_tgt = vec_to_tgt + 0.1 * 2 * (torch.rand_like(vec_to_tgt - 0.5))
-        dist_to_tgt = torch.norm(vec_to_tgt, dim=-1)
-        perturbed_unit_vec_to_tgt = perturbed_vec_to_tgt / dist_to_tgt.unsqueeze(1)
-        self.task_obs["observations"][:, 0:3] = perturbed_unit_vec_to_tgt
-        self.task_obs["observations"][:, 3] = dist_to_tgt
-        # self.task_obs["observation"][:, 3] = self.infos["successes"]
-        # self.task_obs["observations"][:, 3:7] = self.obs_dict["robot_vehicle_orientation"]
-        euler_angles = ssa(self.obs_dict["robot_euler_angles"])
-        perturbed_euler_angles = euler_angles + 0.1 * (torch.rand_like(euler_angles) - 0.5)
-        self.task_obs["observations"][:, 4] = perturbed_euler_angles[:, 0]
-        self.task_obs["observations"][:, 5] = perturbed_euler_angles[:, 1]
-        self.task_obs["observations"][:, 6] = 0.0
-        self.task_obs["observations"][:, 7:10] = self.obs_dict["robot_body_linvel"]
-        self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
-        self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]
-        if self.task_config.vae_config.use_vae:
-            self.task_obs["observations"][:, 17:] = self.image_latents
-        self.task_obs["rewards"] = self.rewards
-        self.task_obs["terminations"] = self.terminations
-        self.task_obs["truncations"] = self.truncations
-
-        self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]
-
-    def compute_rewards_and_crashes(self, obs_dict):
-        robot_position = obs_dict["robot_position"]
-        target_position = self.target_position
-        robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
-        robot_orientation = obs_dict["robot_orientation"]
-        target_orientation = torch.zeros_like(robot_orientation, device=self.device)
-        target_orientation[:, 3] = 1.0
-        self.pos_error_vehicle_frame_prev[:] = self.pos_error_vehicle_frame
-        self.pos_error_vehicle_frame[:] = quat_rotate_inverse(
-            robot_vehicle_orientation, (target_position - robot_position)
-        )
-        # Apply curriculum multiplier ablation by passing an effective fraction
-        try:
-            disable_cm = str(os.environ.get('SF_DISABLE_CURRICULUM_MULTIPLIER', 'false')).lower() == 'true'
-        except Exception:
-            disable_cm = False
-        if not disable_cm:
-            try:
-                disable_cm = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
-            except Exception:
-                disable_cm = False
-        frac_eff = 0.0 if disable_cm else float(self.curriculum_progress_fraction)
-
-        return compute_reward(
-            self.pos_error_vehicle_frame,
-            self.pos_error_vehicle_frame_prev,
-            obs_dict["crashes"],
-            obs_dict["robot_actions"],
-            obs_dict["robot_prev_actions"],
-            frac_eff,
-            self.task_config.reward_parameters,
-        )
 
 
 @torch.jit.script
@@ -495,32 +248,16 @@ def compute_reward(
         action_diff[:, 3],
     )
     action_diff_penalty = x_diff_penalty + z_diff_penalty + yawrate_diff_penalty
-    # absolute action penalty
-    # x_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
-    #     parameter_dict["x_absolute_action_penalty_magnitude"],
-    #     parameter_dict["x_absolute_action_penalty_exponent"],
-    #     action[:, 0],
-    # )
     x_absolute_penalty = exponential_penalty_function(
         parameter_dict["x_absolute_action_penalty_magnitude"],
         parameter_dict["x_absolute_action_penalty_exponent"],
         action[:, 0],
     )
-    # z_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
-    #     parameter_dict["z_absolute_action_penalty_magnitude"],
-    #     parameter_dict["z_absolute_action_penalty_exponent"],
-    #     action[:, 2],
-    # )
     z_absolute_penalty = exponential_penalty_function(
         parameter_dict["z_absolute_action_penalty_magnitude"],
         parameter_dict["z_absolute_action_penalty_exponent"],
         action[:, 2],
     )
-    # yawrate_absolute_penalty = curriculum_progress_fraction * exponential_penalty_function(
-    #     parameter_dict["yawrate_absolute_action_penalty_magnitude"],
-    #     parameter_dict["yawrate_absolute_action_penalty_exponent"],
-    #     action[:, 3],
-    # )
     yawrate_absolute_penalty = exponential_penalty_function(
         parameter_dict["yawrate_absolute_action_penalty_magnitude"],
         parameter_dict["yawrate_absolute_action_penalty_exponent"],
@@ -529,7 +266,6 @@ def compute_reward(
     absolute_action_penalty = x_absolute_penalty + z_absolute_penalty + yawrate_absolute_penalty
     total_action_penalty = action_diff_penalty + absolute_action_penalty
 
-    # combined reward
     reward = (
         MULTIPLICATION_FACTOR_REWARD
         * (
