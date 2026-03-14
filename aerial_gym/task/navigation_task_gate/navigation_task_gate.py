@@ -1880,7 +1880,7 @@ class NavigationTaskGate(BaseTask):
         self.rewards[~self.terminations] += image_rewards
         
         # COMPREHENSIVE IMAGE REWARD DEBUGGING: Print values every 200 steps  
-        ifself.num_task_steps % 200 == 0:
+        if self.num_task_steps % 200 == 0:
             avg_min_dist = torch.mean(self.min_pixel_dist).item()
             avg_image_reward = torch.mean(image_rewards).item() if len(image_rewards) > 0 else 0.0
             min_pixel_dist = torch.min(self.min_pixel_dist).item()
@@ -2134,7 +2134,7 @@ class NavigationTaskGate(BaseTask):
     def get_return_tuple(self) -> StepReturn:
         self.process_obs_for_task()
         # If we have stashed infos from the previous step (pre-reset), use them once
-        ifself._infos_to_return is not None:
+        if self._infos_to_return is not None:
             infos_to_return = self._infos_to_return
             self._infos_to_return = None
         else:
@@ -2264,7 +2264,7 @@ class NavigationTaskGate(BaseTask):
 
         # Base Y from task_config first, then env var, else default
         try:
-            base_y = float(self.task_config.static_camera_base_y)))
+            base_y = float(self.task_config.static_camera_base_y)
         except Exception:
             base_y = -3.0
 
@@ -2305,7 +2305,7 @@ class NavigationTaskGate(BaseTask):
         # Determine if dynamic camera following is effective (enabled and not disabled)
         dynamic_enabled = bool(self.task_config.curriculum.enable_dynamic_camera_following)
         try:
-            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False)) ifhasattr(self.sim_env, 'global_tensor_dict') else False
+            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
         except Exception:
             dyn_dis = False
         # Arc-follow takes precedence if enabled
@@ -2510,7 +2510,7 @@ class NavigationTaskGate(BaseTask):
         # ===== CAMERA LATENTS (DRONE AND STATIC, 64D EACH) =====
         # [22:86] = Drone camera VAE latents (64D)
         try:
-            ifisinstance(self.image_latents, torch.Tensor):
+            if isinstance(self.image_latents, torch.Tensor):
                 if self.image_latents.shape[1] >= 64:
                     self.task_obs["observations"][:, 22:86] = self.image_latents[:, :64]
         except Exception:
@@ -2518,7 +2518,7 @@ class NavigationTaskGate(BaseTask):
 
         # [86:150] = Static camera VAE latents (64D)
         try:
-            ifisinstance(self.static_image_latents, torch.Tensor):
+            if isinstance(self.static_image_latents, torch.Tensor):
                 if self.static_image_latents.shape[1] >= 64:
                     self.task_obs["observations"][:, 86:150] = self.static_image_latents[:, :64]
         except Exception:
@@ -3100,7 +3100,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"  📊 TOTAL REWARD:           {avg_total_reward:.3f}")
             # Print VAE latent statistics alongside reward breakdown for clear visibility
             try:
-                ifisinstance(self.task_obs, dict) and 'observations' in self.task_obs:
+                if isinstance(self.task_obs, dict) and 'observations' in self.task_obs:
                     obs_all = self.task_obs['observations']
                     if obs_all.shape[1] >= 150:
                         d_lat = obs_all[:, 22:86]
@@ -3687,7 +3687,7 @@ class NavigationTaskGate(BaseTask):
                     max(self.curriculum_level, self.task_config.curriculum.min_level),
                     effective_max,
                 )
-                ifhasattr(self.sim_env, 'global_tensor_dict'):
+                if hasattr(self.sim_env, 'global_tensor_dict'):
                     self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
                 try:
                     self.obs_dict["curriculum_level"] = self.curriculum_level
@@ -3815,7 +3815,7 @@ class NavigationTaskGate(BaseTask):
             self.obs_dict["curriculum_level"] = self.curriculum_level
             
             # Propagate curriculum level to env manager for gate unlocking
-            ifhasattr(self.sim_env, 'global_tensor_dict'):
+            if hasattr(self.sim_env, 'global_tensor_dict'):
                 # Only update the value; gate selection will occur on reset_idx
                 self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
             
