@@ -1146,8 +1146,7 @@ class NavigationTaskGate(BaseTask):
         self._ep_target_success_flag[end_success_mask] = True
         
         # Training success remains gate passage only; target success is for logging metrics only
-        # successes = torch.logical_or(successes, target_successes)
-        
+
 
         # ===== END SIMPLE GATE PASSAGE SUCCESS =====
         timeouts = torch.where(
@@ -1314,7 +1313,6 @@ class NavigationTaskGate(BaseTask):
                 except (ValueError, TypeError):
                     overall_success_rate = torch.tensor(float('nan'), device=self.device)
                     target_success_rate = torch.tensor(float('nan'), device=self.device)
-                # num = len(env_ids)
                 # Stash per-env episode metrics for worker-side running aggregation
                 try:
                     self._last_traj_metrics_per_env = {
@@ -1784,19 +1782,6 @@ class NavigationTaskGate(BaseTask):
             close_count = torch.sum((self.min_pixel_dist >= 2.0) & (self.min_pixel_dist < 4.0)).item()  # 2-4m
             safe_count = torch.sum(self.min_pixel_dist >= 4.0).item()  # > 4m
             
-            # COMMENTED OUT: Verbose image reward analysis (clutters training output)
-            # 
-            # # Safety warnings
-            # if avg_min_dist < 1.5:
-            #     logger.warning("  ⚠️  WARNING: Drones flying very close to obstacles!")
-            # elif avg_image_reward < -2.0:
-            #     logger.warning("  ⚠️  WARNING: High image penalties - collision avoidance active!")
-            # elif very_close_count > 8:
-            #     logger.warning("  ⚠️  WARNING: Many drones in danger zone (<2m from obstacles)!")
-            # else:
-            #     logger.warning("  ✅ Image rewards normal - good collision avoidance")
-            # 
-        
         # Apply the image rewards
         self.rewards[~self.terminations] += image_rewards
 
@@ -2746,10 +2731,6 @@ class NavigationTaskGate(BaseTask):
                 action_std = torch.std(action, dim=0)
                 prev_action_std = torch.std(prev_action, dim=0)
                 
-                # COMMENTED OUT: Verbose action debug logs (clutters training output)
-                # 
-                # # Check first environment for exact values
-            
             x_diff_penalty = exponential_penalty_function(
                 self.task_config.reward_parameters["x_action_diff_penalty_magnitude"],
                 self.task_config.reward_parameters["x_action_diff_penalty_exponent"],
@@ -2798,16 +2779,8 @@ class NavigationTaskGate(BaseTask):
             absolute_action_penalty = x_absolute_penalty + y_absolute_penalty + z_absolute_penalty + yawrate_absolute_penalty
             total_action_penalty = action_diff_penalty + absolute_action_penalty
             
-            # COMMENTED OUT: Verbose penalty breakdown logs (clutters training output)
-            # # ABSOLUTE PENALTY DEBUG: Check individual components
-            # if self.num_task_steps % 200 == 0:
-            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Diff penalties (avg): X={torch.mean(x_diff_penalty).item():.6f}, Y={torch.mean(y_diff_penalty).item():.6f}, Z={torch.mean(z_diff_penalty).item():.6f}, Yaw={torch.mean(yawrate_diff_penalty).item():.6f}")
-            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Abs penalties (avg): X={torch.mean(x_absolute_penalty).item():.6f}, Y={torch.mean(y_absolute_penalty).item():.6f}, Z={torch.mean(z_absolute_penalty).item():.6f}, Yaw={torch.mean(yawrate_absolute_penalty).item():.6f}")
-            #     logger.warning(f"🔧 PENALTY BREAKDOWN - Total diff: {torch.mean(action_diff_penalty).item():.6f}, Total abs: {torch.mean(absolute_action_penalty).item():.6f}, Grand total: {torch.mean(total_action_penalty).item():.6f}")
-            
             # Calculate averages for debugging
             mult_factor = 1.0 + (0.5) * self.curriculum_progress_fraction
-            # mult_factor = 1.0  # Disabled version (keep for quick ablation)
             avg_total_reward = torch.mean(rewards).item()
             # Use the effective multiplier factor computed earlier in this step
             try:
@@ -3684,8 +3657,7 @@ class NavigationTaskGate(BaseTask):
         prev_action = obs_dict["robot_prev_actions"].clone()
         
         mult_factor = 1.0 + (0.5) * self.curriculum_progress_fraction
-        # mult_factor = 1.0  # Disabled version (keep for quick ablation)
-        
+
         # Position reward
         pos_reward = exponential_reward_function(
             self.task_config.reward_parameters["pos_reward_magnitude"],
@@ -4022,9 +3994,7 @@ def compute_gate_reward(
         2.0 * parameter_dict["getting_closer_reward_multiplier"] * getting_closer,
     )
 
-    # FIXED: Remove the problematic free distance reward that was giving ~1 point per step
-    # distance_from_goal_reward = (20.0 - dist) / 20.0  # This was causing rapid learning!
-    distance_from_goal_reward = torch.zeros_like(dist)  # Replace with zero reward
+    distance_from_goal_reward = torch.zeros_like(dist)
     
     # Action penalties - FIXED: Added missing Y-action penalties for 4D action space
     action_diff = action - prev_action
