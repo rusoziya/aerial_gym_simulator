@@ -833,14 +833,7 @@ class NavigationTaskGate(BaseTask):
         logger.debug(f"[TARGET_UPDATE] Set target positions for {len(env_ids)} envs to adaptive gate centers")
         
         # Reset per-env episode trajectory state for these environments
-        self._episode_fresh[env_ids] = True
-        self._ep_path_len[env_ids] = 0.0
-        self._ep_steps[env_ids] = 0
-        self._ep_min_gate_dist[env_ids] = float('inf')
-        self._ep_gate_crossed[env_ids] = False
-        self._ep_time_to_gate[env_ids] = float('nan')
-        self._ep_center_offset_cross[env_ids] = float('nan')
-        self._ep_height_offset_cross[env_ids] = float('nan')
+        self.trajectory.reset_envs(env_ids)
         
         self.infos = {}
         return
@@ -3982,20 +3975,7 @@ class NavigationTaskGate(BaseTask):
                     self.completed_episodes.pop(0)
         
         # Reset trackers for completed episodes
-        self.episode_pos_reward[env_ids] = 0
-        self.episode_very_close_reward[env_ids] = 0
-        self.episode_getting_closer_reward[env_ids] = 0
-        self.episode_gate_approach_reward[env_ids] = 0
-        self.episode_gate_alignment_reward[env_ids] = 0
-        self.episode_camera_facing_reward[env_ids] = 0
-        self.episode_action_penalty[env_ids] = 0
-        self.episode_gate_passage_reward[env_ids] = 0
-        self.episode_collision_penalty[env_ids] = 0
-        self.episode_image_reward[env_ids] = 0
-        self.episode_boundary_violation_penalty[env_ids] = 0
-        self.episode_time_penalty[env_ids] = 0
-        self.episode_timeout_penalty[env_ids] = 0
-        self.episode_lengths[env_ids] = 0
+        self.episode_rewards.reset_envs(env_ids)
 
 
 
