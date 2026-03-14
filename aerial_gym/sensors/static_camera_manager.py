@@ -3,8 +3,9 @@ from __future__ import annotations
 import math
 import numpy as np
 import torch
-from typing import Any
 
+from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.env_manager.env_manager import EnvManager
 from isaacgym import gymapi
 
 from aerial_gym.utils.logging import CustomLogger
@@ -15,7 +16,7 @@ logger = CustomLogger("static_camera_manager")
 class StaticCameraManager:
     """Manages static camera for gate navigation using Isaac Gym native API."""
     
-    def __init__(self, env_manager: Any, task_config: Any) -> None:
+    def __init__(self, env_manager: EnvManager, task_config: TaskConfig) -> None:
         self.env_manager = env_manager
         self.task_config = task_config
         self.gym = env_manager.IGE_env.gym
@@ -601,7 +602,9 @@ class StaticCameraManager:
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         try:
-            from isaacgym import gymapi
+            from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.env_manager.env_manager import EnvManager
+from isaacgym import gymapi
             import math
             # Fixed offsets in world frame (Y offset can be overridden via global tensor dict)
             try:
@@ -680,7 +683,9 @@ class StaticCameraManager:
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         try:
-            from isaacgym import gymapi
+            from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.env_manager.env_manager import EnvManager
+from isaacgym import gymapi
             import math
             # Read global sim steps for a smooth arc oscillation per env
             try:
@@ -741,7 +746,9 @@ class StaticCameraManager:
             return
         try:
             # Base camera position for all envs
-            from isaacgym import gymapi
+            from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.env_manager.env_manager import EnvManager
+from isaacgym import gymapi
             base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))
             base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', '1.5')
             if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':

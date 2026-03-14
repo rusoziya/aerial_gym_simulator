@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any
 
 from aerial_gym.task.base_navigation_task import BaseNavigationTask
+from aerial_gym.task.base_task import StepReturn
+from aerial_gym.task.task_config_protocol import TaskConfig
 import torch
 import os
 
@@ -15,7 +16,7 @@ logger = CustomLogger("navigation_task")
 class NavigationTask(BaseNavigationTask):
     def __init__(
         self,
-        task_config: Any,
+        task_config: TaskConfig,
         seed: int | None = None,
         num_envs: int | None = None,
         headless: bool | None = None,
@@ -43,7 +44,7 @@ class NavigationTask(BaseNavigationTask):
         )
         self.infos = {}
 
-    def step(self, actions: torch.Tensor) -> tuple[dict[str, torch.Tensor], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    def step(self, actions: torch.Tensor) -> StepReturn:
         transformed_action = self.action_transformation_function(actions)
         self.sim_env.step(actions=transformed_action)
 
@@ -129,7 +130,7 @@ class NavigationTask(BaseNavigationTask):
         self.task_obs["truncations"] = self.truncations
         self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]
 
-    def compute_rewards_and_crashes(self, obs_dict: dict[str, Any]) -> tuple[torch.Tensor, torch.Tensor]:
+    def compute_rewards_and_crashes(self, obs_dict: dict[str, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
         robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]

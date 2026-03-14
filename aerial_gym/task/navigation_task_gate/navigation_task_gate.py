@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from aerial_gym.task.base_task import BaseTask
+from aerial_gym.task.base_task import BaseTask, StepReturn
+from aerial_gym.task.task_config_protocol import TaskConfig
 from aerial_gym.sim.sim_builder import SimBuilder
 import torch
 import numpy as np
@@ -40,7 +41,7 @@ def dict_to_class(dict):
 class NavigationTaskGate(BaseTask):
     def __init__(
         self,
-        task_config: Any,
+        task_config: TaskConfig,
         seed: int | None = None,
         num_envs: int | None = None,
         headless: bool | None = None,
@@ -662,7 +663,7 @@ class NavigationTaskGate(BaseTask):
         self._last_traj_metrics_per_env = {}
         self._last_traj_metrics_avg = {}
 
-    def logging_sanity_check(self, infos: dict[str, Any]) -> None:
+    def logging_sanity_check(self, infos: dict[str, torch.Tensor]) -> None:
         """Sanity check for logging to detect issues with success/crash/timeout logic."""
         successes = infos["successes"]
         crashes = infos["crashes"]
@@ -770,7 +771,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"Curriculum update: {message}")
             logger.debug(f"Curriculum logging error: {e}")
 
-    def reset(self) -> tuple[dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    def reset(self) -> StepReturn:
         self.reset_idx(torch.arange(self.sim_env.num_envs))
         return self.get_return_tuple()
 
@@ -1048,7 +1049,7 @@ class NavigationTaskGate(BaseTask):
 
     def render(self) -> None:
         return self.sim_env.render()
-    def step(self, actions: torch.Tensor) -> tuple[dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    def step(self, actions: torch.Tensor) -> StepReturn:
         # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
         # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
         # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
@@ -1906,7 +1907,7 @@ class NavigationTaskGate(BaseTask):
         # Apply the image rewards
         self.rewards[~self.terminations] += image_rewards
 
-    def _compute_visibility_metrics(self, infos_to_return: dict[str, Any]) -> None:
+    def _compute_visibility_metrics(self, infos_to_return: dict[str, torch.Tensor]) -> None:
         """Compute geometric gate visibility and static FOV metrics (non-reward, for logging)."""
         # Geometric gate visibility metric (pose-only, no pixels)
         # Disabled by default; enable with SF_ENABLE_GEOM_VISIBILITY, static_visibility/enable, or VISIBILITY_DEBUG
@@ -2130,7 +2131,7 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-    def get_return_tuple(self) -> tuple[dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    def get_return_tuple(self) -> StepReturn:
         self.process_obs_for_task()
         # If we have stashed infos from the previous step (pre-reset), use them once
         ifself._infos_to_return is not None:
@@ -2537,7 +2538,7 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-    def compute_rewards_and_crashes(self, obs_dict: dict[str, Any]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def compute_rewards_and_crashes(self, obs_dict: dict[str, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Compute rewards with gate-specific components."""
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
@@ -2806,7 +2807,7 @@ class NavigationTaskGate(BaseTask):
 
     def _log_comprehensive_reward_debug(
         self,
-        obs_dict: dict[str, Any],
+        obs_dict: dict[str, torch.Tensor],
         rewards: torch.Tensor,
         crashes: torch.Tensor,
         boundary_violation_one_shot_mask: torch.Tensor,
@@ -3896,7 +3897,7 @@ class NavigationTaskGate(BaseTask):
             self.success_aggregate = 0
             self.crashes_aggregate = 0
             self.timeouts_aggregate = 0
-    def update_episode_reward_tracking(self, obs_dict: dict[str, Any], rewards: torch.Tensor, crashes: torch.Tensor) -> None:
+    def update_episode_reward_tracking(self, obs_dict: dict[str, torch.Tensor], rewards: torch.Tensor, crashes: torch.Tensor) -> None:
         """Update cumulative episode reward tracking for comprehensive debugging."""
         robot_position = obs_dict["robot_position"]
         

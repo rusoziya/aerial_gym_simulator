@@ -11,10 +11,12 @@ These helpers collapse that try-except boilerplate into single-line calls.
 from __future__ import annotations
 
 import os
-from typing import Any, Optional
+
+from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.utils.logging import CustomLogger
 
 
-def read_env_bool(env_var: str, config_value: Optional[Any] = None, default: bool = False) -> bool:
+def read_env_bool(env_var: str, config_value: bool | int | float | None = None, default: bool = False) -> bool:
     """Read a boolean flag from an environment variable with config fallback.
 
     Args:
@@ -32,7 +34,7 @@ def read_env_bool(env_var: str, config_value: Optional[Any] = None, default: boo
     return default
 
 
-def read_env_int(env_var: str, config_value: Optional[Any] = None, default: int = 0) -> int:
+def read_env_int(env_var: str, config_value: bool | int | float | None = None, default: int = 0) -> int:
     """Read an integer from an environment variable with config fallback."""
     val = os.getenv(env_var)
     if val is not None:
@@ -45,7 +47,7 @@ def read_env_int(env_var: str, config_value: Optional[Any] = None, default: int 
     return default
 
 
-def read_env_float(env_var: str, config_value: Optional[Any] = None, default: float = 0.0) -> float:
+def read_env_float(env_var: str, config_value: bool | int | float | None = None, default: float = 0.0) -> float:
     """Read a float from an environment variable with config fallback."""
     val = os.getenv(env_var)
     if val is not None:
@@ -58,7 +60,7 @@ def read_env_float(env_var: str, config_value: Optional[Any] = None, default: fl
     return default
 
 
-def parse_ablation_flags(task_config: Any) -> dict[str, Any]:
+def parse_ablation_flags(task_config: TaskConfig) -> dict[str, bool | int | float | str | None]:
     """Parse all ablation environment variables and return a flat dict.
 
     This centralises the ~25 SF_DISABLE_*/SF_ENABLE_*/SF_FIXED_* env vars
@@ -162,10 +164,10 @@ def parse_ablation_flags(task_config: Any) -> dict[str, Any]:
 
 
 def apply_ablation_flags_to_tensor_dict(
-    gtd: dict[str, Any],
-    flags: dict[str, Any],
-    task_config: Optional[Any] = None,
-    logger: Any = None,
+    gtd: dict[str, object],
+    flags: dict[str, bool | int | float | str | None],
+    task_config: TaskConfig | None = None,
+    logger: CustomLogger | None = None,
 ) -> None:
     """Store parsed ablation flags into the global_tensor_dict.
 

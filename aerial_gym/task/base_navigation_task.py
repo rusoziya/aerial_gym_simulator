@@ -9,9 +9,10 @@ Subclasses must implement: reset_idx, step, compute_rewards_and_crashes, process
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Callable
 
-from aerial_gym.task.base_task import BaseTask
+from aerial_gym.task.base_task import BaseTask, StepReturn
+from aerial_gym.task.task_config_protocol import TaskConfig
 from aerial_gym.sim.sim_builder import SimBuilder
 from aerial_gym.env_manager.env_manager import EnvManager
 import torch
@@ -32,13 +33,13 @@ class BaseNavigationTask(BaseTask):
     sim_env: EnvManager
     vae_model: Callable[[torch.Tensor], torch.Tensor]
     task_obs: dict[str, torch.Tensor]
-    obs_dict: dict[str, Any]
-    infos: dict[str, Any]
+    obs_dict: dict[str, torch.Tensor]
+    infos: dict[str, torch.Tensor]
     action_transformation_function: Callable[[torch.Tensor], torch.Tensor]
 
     def __init__(
         self,
-        task_config: Any,
+        task_config: TaskConfig,
         seed: int | None = None,
         num_envs: int | None = None,
         headless: bool | None = None,
@@ -219,11 +220,11 @@ class BaseNavigationTask(BaseTask):
     def render(self) -> bool:
         return self.sim_env.render()
 
-    def reset(self) -> tuple[dict[str, torch.Tensor], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    def reset(self) -> StepReturn:
         self.reset_idx(torch.arange(self.num_envs))
         return self.get_return_tuple()
 
-    def get_return_tuple(self) -> tuple[dict[str, torch.Tensor], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
+    def get_return_tuple(self) -> StepReturn:
         self.process_obs_for_task()
         return (
             self.task_obs,
