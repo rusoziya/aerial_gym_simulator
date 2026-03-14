@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.robots.base_robot import BaseRobot
 
 from aerial_gym.control.control_allocation import ControlAllocator

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.robots.base_reconfigurable import BaseReconfigurable
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import pd_control

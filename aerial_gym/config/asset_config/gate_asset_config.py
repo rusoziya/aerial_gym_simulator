@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.asset_config.base_asset import BaseAssetParams
 from aerial_gym import AERIAL_GYM_DIRECTORY
 import numpy as np

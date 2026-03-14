@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from aerial_gym.registry.task_registry import task_registry
 from sample_factory.utils.utils import str2bool

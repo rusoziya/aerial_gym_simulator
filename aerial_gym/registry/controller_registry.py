@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class ControllerRegistry:
     """
     This class is used to register and get controllers for the environment.

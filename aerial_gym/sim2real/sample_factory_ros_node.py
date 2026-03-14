@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import rospy
 
 # import Image, Twist, Odometry, Velocity message from ROS

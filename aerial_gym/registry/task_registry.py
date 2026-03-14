@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class TaskRegistry:
     def __init__(self):
         self.task_class_registry = {}

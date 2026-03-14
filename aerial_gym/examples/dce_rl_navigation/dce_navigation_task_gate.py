@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.task.navigation_task_gate.navigation_task_gate import NavigationTaskGate
 from aerial_gym.utils.logging import CustomLogger
 

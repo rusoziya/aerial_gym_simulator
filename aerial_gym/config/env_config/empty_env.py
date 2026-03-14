@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # nothing to import here as the no other modules are needed to define base class
 
 

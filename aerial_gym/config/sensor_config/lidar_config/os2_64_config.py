@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.sensor_config.lidar_config.os0_128_config import OS_0_128_Config
 
 

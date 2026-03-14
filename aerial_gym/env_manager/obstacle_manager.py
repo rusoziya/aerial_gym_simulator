@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.env_manager.base_env_manager import BaseManager
 
 # from aerial_gym.registry.controller_registry import controller_registry

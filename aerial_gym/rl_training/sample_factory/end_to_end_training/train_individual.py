@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # this is here just to guarantee that isaacgym is imported before PyTorch
 # isort: off
 # noinspection PyUnresolvedReferences

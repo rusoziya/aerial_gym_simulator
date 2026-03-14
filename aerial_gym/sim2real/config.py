@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 
 IMAGE_WIDTH = 480

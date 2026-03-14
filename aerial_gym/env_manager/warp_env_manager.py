@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.env_manager.base_env_manager import BaseManager
 
 import warp as wp

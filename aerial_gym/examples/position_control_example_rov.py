@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)

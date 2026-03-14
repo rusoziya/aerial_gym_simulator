@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class EnvManager:
     def __init__(self, env_config, sim_config, device):
         # ... existing code ...

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import matplotlib.image
 import numpy as np
 import random

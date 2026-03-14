@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.asset_config.env_object_config import (
     panel_asset_params,
     thin_asset_params,

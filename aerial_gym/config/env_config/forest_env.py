@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.asset_config.env_object_config import (
     tree_asset_params,
     object_asset_params,

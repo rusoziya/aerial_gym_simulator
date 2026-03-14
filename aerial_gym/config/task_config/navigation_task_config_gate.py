@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import torch
 import os
 from aerial_gym import AERIAL_GYM_DIRECTORY

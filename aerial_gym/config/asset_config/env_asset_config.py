@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.asset_config.base_asset import *
 
 import numpy as np

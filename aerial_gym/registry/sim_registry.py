@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class SimConfigRegistry:
     """
     This class is used to keep track of the sim config classes that are registered.

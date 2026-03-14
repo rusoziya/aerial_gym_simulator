@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.asset_config.gate_asset_config import gate_asset_params, small_gate_asset_params
 from aerial_gym.config.asset_config.env_asset_config import (
     object_asset_params, 

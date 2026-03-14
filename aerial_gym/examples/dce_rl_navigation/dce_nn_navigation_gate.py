@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import isaacgym  # noqa: F401 (ensures gym is loaded)
 
 import torch

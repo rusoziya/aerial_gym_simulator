@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from tqdm import tqdm as tqdm
 from aerial_gym import AERIAL_GYM_DIRECTORY
 import numpy as np

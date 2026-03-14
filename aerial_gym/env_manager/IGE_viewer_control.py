@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from isaacgym import gymapi
 import numpy as np
 

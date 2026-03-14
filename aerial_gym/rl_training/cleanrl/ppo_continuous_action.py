@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Copyright (c) 2018-2022, NVIDIA Corporation
 # All rights reserved.
 #

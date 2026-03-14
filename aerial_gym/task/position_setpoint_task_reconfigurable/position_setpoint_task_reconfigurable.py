@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.task.position_setpoint_task.position_setpoint_task import PositionSetpointTask
 from aerial_gym.sim.sim_builder import SimBuilder
 import torch

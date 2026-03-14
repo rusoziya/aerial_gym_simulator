@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 
 """
 Test script for Gate Navigation Task with Dual Camera Setup.

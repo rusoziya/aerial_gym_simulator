@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from urdfpy import URDF
 import numpy as np
 

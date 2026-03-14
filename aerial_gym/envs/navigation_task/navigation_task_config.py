@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.task_config.navigation_task_config import task_config as base_task_config
 
 class NavigationTaskConfig:

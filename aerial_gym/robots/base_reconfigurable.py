@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.robots.base_multirotor import BaseMultirotor
 import torch
 

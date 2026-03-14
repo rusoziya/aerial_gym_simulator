@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 """
 GPU monitoring script for tracking VRAM usage during training.
 Run this in a separate terminal while training is running.

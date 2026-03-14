@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Static Camera Influence Tracker for RL Training
 Activation-based monitoring to verify if neural network uses static camera data.

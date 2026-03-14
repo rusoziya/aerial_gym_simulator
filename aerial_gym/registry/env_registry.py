@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class EnvConfigRegistry:
     """
     This class is used to keep track of the environment classes that are registered.

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Training script for DCE navigation task - FIXED for inference compatibility
 # This script has been fixed to use 4D action space matching existing inference scripts
 # 

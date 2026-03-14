@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import warp as wp
 
 INVALID_PIXEL_VAL = wp.constant(-1.0)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.task.position_setpoint_task_reconfigurable.position_setpoint_task_reconfigurable import (
     PositionSetpointTaskReconfigurable,
 )

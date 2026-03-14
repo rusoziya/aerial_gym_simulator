@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 from aerial_gym.utils.logging import CustomLogger
 

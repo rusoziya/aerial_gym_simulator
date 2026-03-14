@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.sensor_config.lidar_config.base_lidar_config import BaseLidarConfig
 import numpy as np
 

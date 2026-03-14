@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class SimCfg4Ms:
     # viewer camera:
     class viewer:
