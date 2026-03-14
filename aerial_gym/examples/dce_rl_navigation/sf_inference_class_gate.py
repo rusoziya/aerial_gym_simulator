@@ -36,7 +36,7 @@ class NN_Inference_Class_Gate(nn.Module):
         # Load config from train_dir/experiment when available (ensures 1:1 arch/hparams with training),
         # even if we load weights from DCE_MODEL. Fallback to provided cfg if not available.
         try:
-            has_exp = bool(getattr(cfg, 'train_dir', None)) and bool(getattr(cfg, 'experiment', None))
+            has_exp = bool(cfg.train_dir) and bool(cfg.experiment)
         except Exception:
             has_exp = False
         if has_exp:
@@ -47,26 +47,17 @@ class NN_Inference_Class_Gate(nn.Module):
         else:
             self.cfg = cfg if self._load_from_file else load_from_checkpoint(cfg)
         # Unify observation key expected by the model/normalizer
-        try:
-            self.cfg.obs_key = "obs"
-        except Exception:
-            pass
+        self.cfg.obs_key = "obs"
         # Ensure evaluation toggles from CLI are honored after loading checkpoint config
-        try:
-            if hasattr(cfg, 'eval_deterministic'):
-                self.cfg.eval_deterministic = bool(getattr(cfg, 'eval_deterministic'))
-            if hasattr(cfg, 'fusion') and getattr(cfg, 'fusion') is not None:
-                self.cfg.fusion = getattr(cfg, 'fusion')
-            if hasattr(cfg, 'gate_per_feature') and getattr(cfg, 'gate_per_feature') is not None:
-                self.cfg.gate_per_feature = getattr(cfg, 'gate_per_feature')
-        except Exception:
-            pass
+        if True:
+            self.cfg.eval_deterministic = bool(cfg.eval_deterministic)
+        if True and cfg.fusion is not None:
+            self.cfg.fusion = cfg.fusion
+        if True and cfg.gate_per_feature is not None:
+            self.cfg.gate_per_feature = cfg.gate_per_feature
         # One-time report of evaluation mode for clarity
-        try:
-            print(f"[EVAL_MODE] eval_deterministic={bool(getattr(self.cfg, 'eval_deterministic', False))}"
-                  f" | deterministic=greedy argmax (no sampling), stochastic=samples from policy distribution")
-        except Exception:
-            pass
+        print(f"[EVAL_MODE] eval_deterministic={bool(self.cfg.eval_deterministic)}"
+              f" | deterministic=greedy argmax (no sampling), stochastic=samples from policy distribution")
         self.cfg.num_envs = num_envs
         self.num_actions = num_actions
         self.num_obs = num_obs
@@ -85,25 +76,19 @@ class NN_Inference_Class_Gate(nn.Module):
         )
 
         # Ensure the gate encoder architecture is registered to match checkpoint keys
-        try:
-            global_model_factory().register_encoder_factory(make_dual_fusion_encoder)
-        except Exception:
-            pass
+        global_model_factory().register_encoder_factory(make_dual_fusion_encoder)
 
         # Observation/action spaces
         self.init_env_info()
         self.actor_critic = create_actor_critic(self.cfg, self.observation_space, self.action_space)
         self.actor_critic.eval()
-        self.device = torch.device("cpu" if str(getattr(self.cfg, 'device', 'gpu')).lower() == "cpu" else "cuda")
+        self.device = torch.device("cpu" if str(self.cfg.device).lower() == "cpu" else "cuda")
         self.actor_critic.model_to_device(self.device)
 
         # Load policy weights
         if self._load_from_file:
             # Ensure obs key matches our constructed space
-            try:
-                self.cfg.obs_key = "obs"
-            except Exception:
-                pass
+            self.cfg.obs_key = "obs"
             checkpoint_dict = torch.load(self._dce_model_path, map_location=self.device)
             # Strict key/shape check before loading
             try:
@@ -187,14 +172,11 @@ class NN_Inference_Class_Gate(nn.Module):
             norm_tap = os.environ.get("NORM_TAP_DEBUG", "false").lower() == "true"
             disable_norm = os.environ.get("DISABLE_NORM", "false").lower() == "true"
             if norm_tap:
-                try:
-                    vec = obs.get(getattr(self.cfg, 'obs_key', 'obs'), None)
-                    if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
-                        z_e = vec[:, 22:86]
-                        z_s = vec[:, 86:150]
-                        print(f"[NORM_TAP] pre abs_mean: drone(22:86)={float(z_e.abs().mean().item()):.6e} static(86:150)={float(z_s.abs().mean().item()):.6e}")
-                except Exception:
-                    pass
+                vec = obs.get(self.cfg.obs_key, None)
+                if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
+                    z_e = vec[:, 22:86]
+                    z_s = vec[:, 86:150]
+                    print(f"[NORM_TAP] pre abs_mean: drone(22:86)={float(z_e.abs().mean().item()):.6e} static(86:150)={float(z_s.abs().mean().item()):.6e}")
 
             if disable_norm:
                 processed_obs = obs
@@ -203,14 +185,11 @@ class NN_Inference_Class_Gate(nn.Module):
             else:
                 processed_obs = prepare_and_normalize_obs(self.actor_critic, obs)
                 if norm_tap:
-                    try:
-                        pvec = processed_obs.get(getattr(self.cfg, 'obs_key', 'obs'), None)
-                        if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[1] >= 150:
-                            z_e2 = pvec[:, 22:86]
-                            z_s2 = pvec[:, 86:150]
-                            print(f"[NORM_TAP] post abs_mean: drone(22:86)={float(z_e2.abs().mean().item()):.6e} static(86:150)={float(z_s2.abs().mean().item()):.6e}")
-                    except Exception:
-                        pass
+                    pvec = processed_obs.get(self.cfg.obs_key, None)
+                    if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[1] >= 150:
+                        z_e2 = pvec[:, 22:86]
+                        z_s2 = pvec[:, 86:150]
+                        print(f"[NORM_TAP] post abs_mean: drone(22:86)={float(z_e2.abs().mean().item()):.6e} static(86:150)={float(z_s2.abs().mean().item()):.6e}")
             policy_outputs = self.actor_critic(processed_obs, self.rnn_states)
             actions = policy_outputs["actions"]
             if self.cfg.eval_deterministic:
