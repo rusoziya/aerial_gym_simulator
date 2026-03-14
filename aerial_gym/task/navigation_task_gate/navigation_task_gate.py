@@ -213,7 +213,7 @@ class NavigationTaskGate(BaseTask):
         logger.warning("🧪 TESTING OBSERVATION PROCESSING AT INITIALIZATION:")
         try:
             # Initialize task_obs first to avoid AttributeError
-            if not hasattr(self, 'task_obs'):
+            if not True:
                 self.task_obs = {
                     "observations": torch.zeros(
                         (self.sim_env.num_envs, self.task_config.observation_space_dim),
@@ -226,7 +226,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning("✅ process_obs_for_task() executed successfully")
             
             # Check if task_obs was populated
-            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+            if'observations' in self.task_obs:
                 obs_shape = self.task_obs['observations'].shape
                 logger.warning(f"📊 task_obs shape: {obs_shape}")
                 
@@ -271,7 +271,7 @@ class NavigationTaskGate(BaseTask):
         try:
             forced = os.environ.get('SF_FORCE_CURRICULUM_LEVEL', None)
             if forced is None:
-                forced = getattr(self.task_config, 'force_curriculum_level', None)
+                forced = self.task_config.force_curriculum_level
             if forced is not None:
                 self.curriculum_level = int(forced)
         except Exception:
@@ -324,7 +324,7 @@ class NavigationTaskGate(BaseTask):
         logger.info(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
         try:
             # Determine baseline level and ablation flags
-            baseline_level = int(getattr(self.task_config.curriculum, 'min_level', 3))
+            baseline_level = int(self.task_config.curriculum.min_level)
             pos_dis = False; yaw_dis = False
             try:
                 gtd = self.sim_env.global_tensor_dict
@@ -369,7 +369,7 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             cam_orient_disabled = False
         try:
-            dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+            dyn_cfg = self.task_config.curriculum.enable_dynamic_camera_following
             dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
             dynamic_effective = bool(dyn_cfg and not dyn_dis)
         except Exception:
@@ -414,8 +414,8 @@ class NavigationTaskGate(BaseTask):
         try:
             state_noise_disabled = bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False))
         except Exception:
-            state_noise_disabled = bool(getattr(self, 'disable_state_noise_randomization', False))
-        if getattr(self.task_config.curriculum, "enable_state_noise", False) and not state_noise_disabled:
+            state_noise_disabled = bool(self.disable_state_noise_randomization)
+        if self.task_config.curriculum.enable_state_noise and not state_noise_disabled:
             sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             logger.info(
                 f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad']*57.2958:.3f} deg, "
@@ -429,7 +429,7 @@ class NavigationTaskGate(BaseTask):
         cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
         if not cm_disabled:
             try:
-                cm_disabled = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
+                cm_disabled = bool(self.task_config.disable_curriculum_multiplier)
             except Exception:
                 cm_disabled = False
         try:
@@ -482,11 +482,12 @@ class NavigationTaskGate(BaseTask):
         
         self._init_episode_reward_tracking()
         self._init_episode_trajectory_state()
-        
+        self._init_debug_flags()
+
         # Initialize gate dimensions for all environments after full initialization
         logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
         self.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
-        
+
         # Ensure infos survive resets for logging back to the learner
         self._infos_to_return = None
 
@@ -627,6 +628,32 @@ class NavigationTaskGate(BaseTask):
             self.num_envs, dtype=torch.bool, device=self.device
         )
 
+    def _init_debug_flags(self):
+        """Initialize one-shot debug/logging flags so hasattr checks are never needed."""
+        self._drone_cam_debug_last = False
+        self._drone_vae_debug_last = False
+        self._static_cam_debug_last = False
+        self._static_cam_depth_logged = False
+        self._static_debug_logged = False
+        self._vae_output_logged = False
+        self._vae_debug_logged = False
+        self._no_static_logged = False
+        self._return_tuple_debug_printed = False
+        self._final_verification_printed = False
+        self._prev_drone_depth = None
+        self._prev_static_depth = None
+        self._success_window_history = []
+        self._curriculum_cooldown = 0
+        self.min_pixel_dist = None
+        self.curriculum_log_file = None
+        self._curriculum_multiplier_factor = 1.0
+        self._debug_cam_world = None
+        self._debug_drone_eul = None
+        self._debug_cam_eul = None
+        self.max_curriculum_level_reached = self.curriculum_level
+        self._last_traj_metrics_per_env = {}
+        self._last_traj_metrics_avg = {}
+
     def logging_sanity_check(self, infos):
         """Sanity check for logging to detect issues with success/crash/timeout logic."""
         successes = infos["successes"]
@@ -671,7 +698,7 @@ class NavigationTaskGate(BaseTask):
             print(f"[DEBUG] Error during close: {e}")
         
         # Close curriculum log file
-        if hasattr(self, 'curriculum_log_file') and self.curriculum_log_file:
+        if self.curriculum_log_file:
             try:
                 import datetime
                 self.curriculum_log_file.write(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Training session ended.\n")
@@ -721,7 +748,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning(message)
             
             # Try to log to file if available
-            if hasattr(self, 'curriculum_log_file') and self.curriculum_log_file:
+            if self.curriculum_log_file:
                 try:
                     import datetime
                     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -789,8 +816,8 @@ class NavigationTaskGate(BaseTask):
         self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
         # Propagate eval-stretch flags from task_config if present (for gate size unlocking etc.)
         try:
-            stretch_enabled = bool(getattr(self.task_config.curriculum, 'eval_stretch_enabled', False))
-            stretch_end = int(getattr(self.task_config.curriculum, 'eval_stretch_end_level', 23))
+            stretch_enabled = bool(self.task_config.curriculum.eval_stretch_enabled)
+            stretch_end = int(self.task_config.curriculum.eval_stretch_end_level)
             self.sim_env.global_tensor_dict['eval_stretch_enabled'] = stretch_enabled
             self.sim_env.global_tensor_dict['eval_stretch_end_level'] = stretch_end
         except Exception:
@@ -929,7 +956,7 @@ class NavigationTaskGate(BaseTask):
             return
             
         # Safety check: ensure gate dimension attributes exist
-        if not hasattr(self, 'gate_width') or not hasattr(self, 'gate_height'):
+        if not True or not True:
             logger.warning("[GATE_ADAPTIVE] Gate dimension attributes not initialized yet, skipping update")
             return
             
@@ -1029,7 +1056,7 @@ class NavigationTaskGate(BaseTask):
                 nan_trunc_mask = invalid_action_mask.clone()
                 # Guard debug: log offending envs for invalid actions
                 try:
-                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                    if self.task_config.guard_debug_enabled:
                         _ids = torch.nonzero(invalid_action_mask, as_tuple=False).squeeze(-1).tolist()
                         logger.warning(f"[NaNGuard] Invalid ACTION in envs {_ids}; zeroed and will truncate")
                 except Exception:
@@ -1050,7 +1077,7 @@ class NavigationTaskGate(BaseTask):
                 if isinstance(v, torch.Tensor) and v.shape[0] == self.num_envs:
                     bad = torch.any(torch.isnan(v) | torch.isinf(v), dim=tuple(range(1, v.ndim)))
                     # Guard debug: log offending obs keys and envs
-                    if getattr(self.task_config, 'guard_debug_enabled', True) and torch.any(bad):
+                    if self.task_config.guard_debug_enabled and torch.any(bad):
                         try:
                             _ids = torch.nonzero(bad, as_tuple=False).squeeze(-1).tolist()
                             logger.warning(f"[NaNGuard] Invalid OBS '{k}' in envs {_ids}")
@@ -1067,7 +1094,7 @@ class NavigationTaskGate(BaseTask):
                     pass
                 # Guard debug: log envs that will be truncated due to invalid observations
                 try:
-                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                    if self.task_config.guard_debug_enabled:
                         _ids = torch.nonzero(invalid_obs_mask, as_tuple=False).squeeze(-1).tolist()
                         logger.warning(f"[NaNGuard] Invalid OBS detected; envs {_ids} will truncate")
                 except Exception:
@@ -1085,7 +1112,7 @@ class NavigationTaskGate(BaseTask):
             invalid_reward_mask = torch.isnan(self.rewards) | torch.isinf(self.rewards)
             if torch.any(invalid_reward_mask):
                 try:
-                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                    if self.task_config.guard_debug_enabled:
                         _ids = torch.nonzero(invalid_reward_mask, as_tuple=False).squeeze(-1).tolist()
                         logger.warning(f"[NaNGuard] Invalid REWARD in envs {_ids}; zeroed and truncating.")
                 except Exception:
@@ -1110,7 +1137,7 @@ class NavigationTaskGate(BaseTask):
             self.truncations[nan_trunc_mask] = 1
             # Guard debug: final truncation set due to NaN/Inf
             try:
-                if getattr(self.task_config, 'guard_debug_enabled', True):
+                if self.task_config.guard_debug_enabled:
                     _ids = torch.nonzero(nan_trunc_mask, as_tuple=False).squeeze(-1).tolist()
                     logger.warning(f"[NaNGuard] Truncating envs due to NaN/Inf: {_ids}")
             except Exception:
@@ -1260,23 +1287,19 @@ class NavigationTaskGate(BaseTask):
         # ===== Per-env episode trajectory state update =====
         # Initialize newly reset envs on their first step
         try:
-            if hasattr(self, '_episode_fresh'):
-                fresh_mask = self._episode_fresh
-                if torch.any(fresh_mask):
-                    self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
-                    # Store gate CENTER at spawn (z corrected by current center height)
-                    try:
-                        _gcenter = self.gate_position.clone()
-                        _gcenter[:, 2] = _gcenter[:, 2] + self.gate_center_height
-                        self._ep_gate_center_at_spawn[fresh_mask] = _gcenter[fresh_mask]
-                    except Exception:
-                        self._ep_gate_center_at_spawn[fresh_mask] = self.gate_position[fresh_mask]
-                    self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
-                    # counters and accumulators already zeroed in reset_idx
-                    self._episode_fresh[fresh_mask] = False
-            else:
-                # Safety init if missing (should not happen)
-                self._episode_fresh = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+            fresh_mask = self._episode_fresh
+            if torch.any(fresh_mask):
+                self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
+                # Store gate CENTER at spawn (z corrected by current center height)
+                try:
+                    _gcenter = self.gate_position.clone()
+                    _gcenter[:, 2] = _gcenter[:, 2] + self.gate_center_height
+                    self._ep_gate_center_at_spawn[fresh_mask] = _gcenter[fresh_mask]
+                except Exception:
+                    self._ep_gate_center_at_spawn[fresh_mask] = self.gate_position[fresh_mask]
+                self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
+                # counters and accumulators already zeroed in reset_idx
+                self._episode_fresh[fresh_mask] = False
         except Exception:
             pass
         
@@ -1472,14 +1495,14 @@ class NavigationTaskGate(BaseTask):
         self.post_image_reward_addition()
         
         # FINAL VERIFICATION: After all processing is complete
-        if not hasattr(self, '_final_verification_printed'):
+        if not self._final_verification_printed:
             self._final_verification_printed = True
             logger.warning("🎯 FINAL STATIC CAMERA VERIFICATION (AFTER PROCESSING):")
             
             # Process observations to get final state
             self.process_obs_for_task()
             
-            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+            if'observations' in self.task_obs:
                 obs_sample = self.task_obs["observations"][0]
                 
                 static_pos = obs_sample[3:6]
@@ -1523,7 +1546,7 @@ class NavigationTaskGate(BaseTask):
         image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)  # shape: (num_envs, H, W)
         # DEBUG: Compare per-env drone camera images to ensure diversity
         try:
-            if (not hasattr(self, '_drone_cam_debug_last')) or (self.num_task_steps % 200 == 0):
+            if (not self._drone_cam_debug_last) or (self.num_task_steps % 200 == 0):
                 ne = int(image_obs.shape[0])
                 def _mean_env(idx):
                     return float(image_obs[idx].mean().item()) if idx < ne else float('nan')
@@ -1542,10 +1565,10 @@ class NavigationTaskGate(BaseTask):
         try:
             camera_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False))
         except Exception:
-            camera_noise_disabled = bool(getattr(self, 'disable_camera_noise_randomization', False))
+            camera_noise_disabled = bool(self.disable_camera_noise_randomization)
         # Per-camera override: if set, apply to drone camera processing
         drone_noise_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/drone_noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
-        if getattr(self.task_config.curriculum, "enable_camera_noise", False):
+        if self.task_config.curriculum.enable_camera_noise:
             # Use current level when enabled; otherwise force minimum schedule (level 3)
             if not camera_noise_disabled and not drone_noise_override:
                 gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
@@ -1570,9 +1593,9 @@ class NavigationTaskGate(BaseTask):
         try:
             frame_dropout_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False))
         except Exception:
-            frame_dropout_disabled = bool(getattr(self, 'disable_camera_frame_dropout_randomization', False))
+            frame_dropout_disabled = bool(self.disable_camera_frame_dropout_randomization)
         drone_fd_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/drone_frame_dropout_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
-        if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
+        if self.task_config.curriculum.enable_camera_frame_dropout:
             # Use current level unless frame-dropout is disabled; noise flag should not affect frame dropout
             if not frame_dropout_disabled and not drone_fd_override:
                 fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level)
@@ -1582,7 +1605,7 @@ class NavigationTaskGate(BaseTask):
             p_freeze = fd.get("drone_freeze", 0.0)
             
             # Ensure buffer exists
-            if not hasattr(self, "_prev_drone_depth"):
+            if not self._prev_drone_depth is not None:
                 self._prev_drone_depth = noised_image_obs.clone()
             
             # Apply frame dropout effects
@@ -1598,7 +1621,7 @@ class NavigationTaskGate(BaseTask):
             self._prev_drone_depth = noised_image_obs.clone()
         else:
             # Maintain previous buffer if feature disabled
-            if not hasattr(self, "_prev_drone_depth"):
+            if not self._prev_drone_depth is not None:
                 self._prev_drone_depth = noised_image_obs.clone()
             else:
                 self._prev_drone_depth = noised_image_obs.clone()
@@ -1633,7 +1656,7 @@ class NavigationTaskGate(BaseTask):
                 self.image_latents.zero_()
             # DEBUG: Compare per-env drone VAE latents
             try:
-                if (not hasattr(self, '_drone_vae_debug_last')) or (self.num_task_steps % 200 == 0):
+                if (not self._drone_vae_debug_last) or (self.num_task_steps % 200 == 0):
                     z = self.image_latents
                     ne = int(z.shape[0])
                     def _absmean_env(idx):
@@ -1654,7 +1677,7 @@ class NavigationTaskGate(BaseTask):
             static_depth, static_seg = self.static_camera_manager.capture_images(batched=True)
             
             # CRITICAL DEBUG: Log static camera capture success/failure
-            if not hasattr(self, '_static_debug_logged'):
+            if not self._static_debug_logged:
                 self._static_debug_logged = True
                 if static_depth is not None:
                     logger.warning(f"✅ Static camera capture successful: shape={static_depth.shape if hasattr(static_depth, 'shape') else 'N/A'}, type={type(static_depth)}")
@@ -1662,7 +1685,7 @@ class NavigationTaskGate(BaseTask):
                     logger.warning("❌ Static camera capture failed: static_depth is None")
             # Periodic per-env capture stats to confirm diversity
             try:
-                if (not hasattr(self, '_static_cam_debug_last')) or (self.num_task_steps % 200 == 0):
+                if (not self._static_cam_debug_last) or (self.num_task_steps % 200 == 0):
                     if hasattr(static_depth, 'shape') and getattr(static_depth, 'ndim', 0) == 3:
                         x = static_depth  # (N,H,W)
                         ne = int(x.shape[0])
@@ -1690,7 +1713,7 @@ class NavigationTaskGate(BaseTask):
                 static_depth_noised = static_depth_clean_batched.copy() if isinstance(static_depth_clean_batched, np.ndarray) else static_depth_clean_batched.clone()
                 static_noise_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/static_noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
                 global_noise_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
-                if getattr(self.task_config.curriculum, "enable_camera_noise", False):
+                if self.task_config.curriculum.enable_camera_noise:
                     # Current level unless disabled -> then use level 3 minimum
                     if not global_noise_disabled and not static_noise_override:
                         gaussian_std, dropout_rate = self.task_config.curriculum.get_camera_noise(self.curriculum_level)
@@ -1718,13 +1741,13 @@ class NavigationTaskGate(BaseTask):
                 # Entire-frame dropout (curriculum-driven)
                 static_fd_override = bool(self.sim_env.global_tensor_dict.get('camera_randomization/static_frame_dropout_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
                 global_fd_disabled = bool(self.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False)) if hasattr(self.sim_env, 'global_tensor_dict') else False
-                if getattr(self.task_config.curriculum, "enable_camera_frame_dropout", False):
+                if self.task_config.curriculum.enable_camera_frame_dropout:
                     # Decouple from noise flag: only frame-dropout flags control this schedule
                     fd = self.task_config.curriculum.get_camera_frame_dropout(self.curriculum_level) if (not global_fd_disabled and not static_fd_override) else self.task_config.curriculum.get_camera_frame_dropout(3)
                     p_blank = fd.get("static_blank", 0.0)
                     p_freeze = fd.get("static_freeze", 0.0)
                     # Initialize previous static buffer
-                    if not hasattr(self, "_prev_static_depth"):
+                    if not self._prev_static_depth is not None:
                         if isinstance(static_depth_noised, np.ndarray):
                             self._prev_static_depth = static_depth_noised.copy()
                         else:
@@ -1777,7 +1800,7 @@ class NavigationTaskGate(BaseTask):
 
                     # Periodic static camera depth summary (match DroneCam style)
                     try:
-                        if (not hasattr(self, '_static_cam_depth_logged')) or (self.num_task_steps % 200 == 0):
+                        if (not self._static_cam_depth_logged) or (self.num_task_steps % 200 == 0):
                             self._static_cam_depth_logged = True
                             depth = static_depth_tensor
                             ne = int(depth.shape[0])
@@ -1792,7 +1815,7 @@ class NavigationTaskGate(BaseTask):
                         pass
 
                     # CRITICAL DEBUG: Log VAE encoding attempt (once)
-                    if not hasattr(self, '_vae_debug_logged'):
+                    if not self._vae_debug_logged:
                         self._vae_debug_logged = True
                         logger.warning(f"🔧 VAE encoding static camera: input_shape={static_depth_tensor.shape}, device={static_depth_tensor.device}")
 
@@ -1801,7 +1824,7 @@ class NavigationTaskGate(BaseTask):
 
                     # CRITICAL DEBUG: Verify VAE output periodically and compare across envs
                     try:
-                        if (not hasattr(self, '_vae_output_logged')) or (self.num_task_steps % 200 == 0):
+                        if (not self._vae_output_logged) or (self.num_task_steps % 200 == 0):
                             self._vae_output_logged = True
                             z = encoded_latents
                             ne = int(z.shape[0])
@@ -1817,7 +1840,7 @@ class NavigationTaskGate(BaseTask):
                     logger.warning(f"VAE encoding of static camera failed: {e}")
             else:
                 # No static camera data or VAE disabled
-                if not hasattr(self, '_no_static_logged'):
+                if not self._no_static_logged:
                     self._no_static_logged = True
                     if static_depth is None:
                         logger.warning("❌ Static camera data is None - camera capture failed")
@@ -1848,7 +1871,7 @@ class NavigationTaskGate(BaseTask):
         self.rewards[~self.terminations] += image_rewards
         
         # COMPREHENSIVE IMAGE REWARD DEBUGGING: Print values every 200 steps  
-        if hasattr(self, 'num_task_steps') and self.num_task_steps % 200 == 0:
+        ifself.num_task_steps % 200 == 0:
             avg_min_dist = torch.mean(self.min_pixel_dist).item()
             avg_image_reward = torch.mean(image_rewards).item() if len(image_rewards) > 0 else 0.0
             min_pixel_dist = torch.min(self.min_pixel_dist).item()
@@ -1883,7 +1906,7 @@ class NavigationTaskGate(BaseTask):
             import os as _os
             gtd = self.sim_env.global_tensor_dict
             _flag_env = _os.environ.get('SF_ENABLE_GEOM_VISIBILITY', '').strip().lower() in ('1', 'true', 'yes', 'y')
-            _flag_gtd = bool(gtd.get('static_visibility/enable', False)) if hasattr(self, 'sim_env') else False
+            _flag_gtd = bool(gtd.get('static_visibility/enable', False))
             _flag_dbg = _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y')
             if _flag_env or _flag_gtd or _flag_dbg:
                 # Grid resolution (defaults 30x30)
@@ -1898,7 +1921,7 @@ class NavigationTaskGate(BaseTask):
                 N = max(4, int(N)); M = max(4, int(M))
 
                 # Camera pose per env from StaticCameraManager debug caches
-                scm = getattr(self, 'static_camera_manager', None)
+                scm = self.static_camera_manager
                 have_cam = (scm is not None and hasattr(scm, 'last_camera_pos') and hasattr(scm, 'last_camera_target')
                             and len(scm.last_camera_pos) >= self.num_envs and len(scm.last_camera_target) >= self.num_envs)
                 if have_cam:
@@ -2003,7 +2026,7 @@ class NavigationTaskGate(BaseTask):
                             _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') or
                             _os.environ.get('ABLATE_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y')
                         )
-                        step_i = int(getattr(self, 'num_task_steps', 0))
+                        step_i = int(self.num_task_steps)
                         # Use env0's current episode-relative step for display; clamp to be non-decreasing within episode
                         try:
                             step_ep0 = int(self.episode_lengths[0].item())
@@ -2041,7 +2064,7 @@ class NavigationTaskGate(BaseTask):
         # Static FOV metric (non-reward): carry over the reward formula strictly as a metric
         # Does NOT modify rewards; only logs per-env metrics to infos, and optional env0 debug under VISIBILITY_DEBUG
         try:
-            scm = getattr(self, 'static_camera_manager', None)
+            scm = self.static_camera_manager
             have_cam = (scm is not None and hasattr(scm, 'last_camera_pos') and hasattr(scm, 'last_camera_target')
                         and len(scm.last_camera_pos) >= self.num_envs and len(scm.last_camera_target) >= self.num_envs)
             if have_cam:
@@ -2093,7 +2116,7 @@ class NavigationTaskGate(BaseTask):
                     import os as _os
                     if _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') and self.num_envs > 0:
                         e0 = 0
-                        step_ep0 = int(self.episode_lengths[0].item()) if hasattr(self, 'episode_lengths') else int(getattr(self, 'num_task_steps', 0))
+                        step_ep0 = int(self.episode_lengths[0].item())
                 except Exception:
                     pass
         except Exception:
@@ -2102,18 +2125,18 @@ class NavigationTaskGate(BaseTask):
     def get_return_tuple(self):
         self.process_obs_for_task()
         # If we have stashed infos from the previous step (pre-reset), use them once
-        if hasattr(self, '_infos_to_return') and self._infos_to_return is not None:
+        ifself._infos_to_return is not None:
             infos_to_return = self._infos_to_return
             self._infos_to_return = None
         else:
             infos_to_return = self.infos
         
         # ADDITIONAL DEBUG: Verify observations in get_return_tuple (called every step)
-        if not hasattr(self, '_return_tuple_debug_printed'):
+        if not self._return_tuple_debug_printed:
             self._return_tuple_debug_printed = True
             logger.warning("🎯 OBSERVATION VERIFICATION IN get_return_tuple():")
             
-            if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+            if'observations' in self.task_obs:
                 obs_shape = self.task_obs['observations'].shape
                 logger.warning(f"📊 Final task_obs shape: {obs_shape}")
                 
@@ -2147,8 +2170,8 @@ class NavigationTaskGate(BaseTask):
                 logger.error("❌ task_obs not available in get_return_tuple")
         # Periodic static camera obs debug (env 0): print every 120 steps
         try:
-            if hasattr(self, 'num_task_steps') and (int(self.num_task_steps) % 120 == 0):
-                if hasattr(self, 'task_obs') and 'observations' in self.task_obs:
+            if(int(self.num_task_steps) % 120 == 0):
+                if'observations' in self.task_obs:
                     obs_all = self.task_obs['observations']
                     if obs_all.shape[0] > 0 and obs_all.shape[1] >= 9:
                         sp = obs_all[0, 3:6]
@@ -2156,18 +2179,18 @@ class NavigationTaskGate(BaseTask):
                         # Drone and camera world positions
                         rp = self.obs_dict.get('robot_position', None)
                         rp0 = rp[0] if isinstance(rp, torch.Tensor) and rp.shape[0] > 0 else torch.zeros(3, device=self.device)
-                        cw = getattr(self, '_debug_cam_world', None)
+                        cw = self._debug_cam_world if self._debug_cam_world is not None else None
                         cw0 = cw[0] if isinstance(cw, torch.Tensor) and cw.shape[0] > 0 else torch.zeros(3, device=self.device)
                         # Drone & camera world orientations (Euler)
-                        de = getattr(self, '_debug_drone_eul', None)
-                        ce = getattr(self, '_debug_cam_eul', None)
+                        de = self._debug_drone_eul if self._debug_drone_eul is not None else None
+                        ce = self._debug_cam_eul if self._debug_cam_eul is not None else None
                         de0 = de[0] if isinstance(de, torch.Tensor) and de.shape[0] > 0 else torch.zeros(3, device=self.device)
                         ce0 = ce[0] if isinstance(ce, torch.Tensor) and ce.shape[0] > 0 else torch.zeros(3, device=self.device)
         except Exception:
             pass
         
         # Update camera modes in priority order: arc-follow (new mode) > dynamic-follow > yaw-sweep/locked-follow
-        dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+        dynamic_enabled = self.task_config.curriculum.enable_dynamic_camera_following
         dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
         arc_follow_enabled = bool(self.sim_env.global_tensor_dict.get('static_camera/arc_follow_enabled', False))
         
@@ -2228,11 +2251,11 @@ class NavigationTaskGate(BaseTask):
         or dynamic following when enabled.
         """
         device = self.device
-        num_envs = getattr(self, "num_envs", 1)
+        num_envs = self.num_envs
 
         # Base Y from task_config first, then env var, else default
         try:
-            base_y = float(getattr(self.task_config, 'static_camera_base_y', float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))))
+            base_y = float(self.task_config.static_camera_base_y)))
         except Exception:
             base_y = -3.0
 
@@ -2240,7 +2263,7 @@ class NavigationTaskGate(BaseTask):
         adaptive_z = False
         base_z_value = 1.5
         try:
-            cfg_base_z = getattr(self.task_config, 'static_camera_base_z', None)
+            cfg_base_z = self.task_config.static_camera_base_z
             if cfg_base_z is not None:
                 if isinstance(cfg_base_z, str) and cfg_base_z.strip().lower() == 'adaptive':
                     adaptive_z = True
@@ -2258,7 +2281,7 @@ class NavigationTaskGate(BaseTask):
         # Resolve per-env Z when adaptive
         if adaptive_z:
             try:
-                gate_center_z = getattr(self, 'gate_center_height', None)
+                gate_center_z = self.gate_center_height
                 if gate_center_z is None:
                     gate_center_z = torch.full((num_envs,), 1.5, device=device, dtype=torch.float32)
                 elif not torch.is_tensor(gate_center_z):
@@ -2271,9 +2294,9 @@ class NavigationTaskGate(BaseTask):
             gate_center_z = torch.full((num_envs,), float(base_z_value), device=device, dtype=torch.float32)
 
         # Determine if dynamic camera following is effective (enabled and not disabled)
-        dynamic_enabled = bool(getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False))
+        dynamic_enabled = bool(self.task_config.curriculum.enable_dynamic_camera_following)
         try:
-            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False)) if hasattr(self, 'sim_env') and hasattr(self.sim_env, 'global_tensor_dict') else False
+            dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False)) ifhasattr(self.sim_env, 'global_tensor_dict') else False
         except Exception:
             dyn_dis = False
         # Arc-follow takes precedence if enabled
@@ -2347,7 +2370,7 @@ class NavigationTaskGate(BaseTask):
         # When static base+ yaw sweep/randomization is active, adjust target X/Y using current yaw offset if available
         if not dynamic_effective:
             try:
-                scm = getattr(self, 'static_camera_manager', None)
+                scm = self.static_camera_manager
                 have_angles = (scm is not None) and hasattr(scm, 'current_camera_angles') and (len(scm.current_camera_angles) >= num_envs)
             except Exception:
                 have_angles = False
@@ -2412,7 +2435,7 @@ class NavigationTaskGate(BaseTask):
         # [0:3] = Drone absolute position in world coordinates (x, y, z)
         drone_pos_clean = self.obs_dict["robot_position"]
         # Apply curriculum-driven state noise (drone position)
-        if getattr(self.task_config.curriculum, "enable_state_noise", False) and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
+        if self.task_config.curriculum.enable_state_noise and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
             noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             dp_std = float(noise_cfg.get("drone_pos_std_m", 0.0))
             if dp_std > 0.0:
@@ -2427,7 +2450,7 @@ class NavigationTaskGate(BaseTask):
         # Get static camera pose information relative to drone
         static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
         # Apply curriculum-driven noise to static camera pose copies (not altering sim)
-        if getattr(self.task_config.curriculum, "enable_state_noise", False) and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
+        if self.task_config.curriculum.enable_state_noise and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
             noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             sp_std = float(noise_cfg.get("static_pos_std_m", 0.0))
             so_std = float(noise_cfg.get("static_orient_std_rad", 0.0))
@@ -2448,7 +2471,7 @@ class NavigationTaskGate(BaseTask):
         # [9:12] = Full drone orientation including yaw (roll, pitch, yaw)
         euler_angles = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))
         # Apply curriculum-driven noise to drone orientation copy
-        if getattr(self.task_config.curriculum, "enable_state_noise", False) and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
+        if self.task_config.curriculum.enable_state_noise and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
             noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             do_std = float(noise_cfg.get("drone_orient_std_rad", 0.0))
             if do_std > 0.0:
@@ -2478,7 +2501,7 @@ class NavigationTaskGate(BaseTask):
         # ===== CAMERA LATENTS (DRONE AND STATIC, 64D EACH) =====
         # [22:86] = Drone camera VAE latents (64D)
         try:
-            if hasattr(self, "image_latents") and isinstance(self.image_latents, torch.Tensor):
+            ifisinstance(self.image_latents, torch.Tensor):
                 if self.image_latents.shape[1] >= 64:
                     self.task_obs["observations"][:, 22:86] = self.image_latents[:, :64]
         except Exception:
@@ -2486,7 +2509,7 @@ class NavigationTaskGate(BaseTask):
 
         # [86:150] = Static camera VAE latents (64D)
         try:
-            if hasattr(self, "static_image_latents") and isinstance(self.static_image_latents, torch.Tensor):
+            ifisinstance(self.static_image_latents, torch.Tensor):
                 if self.static_image_latents.shape[1] >= 64:
                     self.task_obs["observations"][:, 86:150] = self.static_image_latents[:, :64]
         except Exception:
@@ -2500,7 +2523,7 @@ class NavigationTaskGate(BaseTask):
             if isinstance(obs_tensor, torch.Tensor):
                 bad = torch.isnan(obs_tensor) | torch.isinf(obs_tensor)
                 if torch.any(bad):
-                    if getattr(self.task_config, 'guard_debug_enabled', True):
+                    if self.task_config.guard_debug_enabled:
                         logger.warning(f"[NaNGuard] Sanitizing {int(torch.sum(bad).item())} invalid obs entries before return.")
                     obs_tensor[bad] = 0.0
         except Exception:
@@ -2525,7 +2548,7 @@ class NavigationTaskGate(BaseTask):
         # First-step stabilization: align previous error/actions with current for fresh episodes
         prev_actions_for_reward = previous_actions
         try:
-            fresh_mask = getattr(self, '_episode_fresh', None)
+            fresh_mask = self._episode_fresh
         except Exception:
             fresh_mask = None
         if isinstance(fresh_mask, torch.Tensor) and fresh_mask.shape[0] == self.num_envs:
@@ -2540,7 +2563,7 @@ class NavigationTaskGate(BaseTask):
         cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
         if not cm_disabled:
             try:
-                cm_disabled = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
+                cm_disabled = bool(self.task_config.disable_curriculum_multiplier)
             except Exception:
                 cm_disabled = False
         try:
@@ -2578,11 +2601,11 @@ class NavigationTaskGate(BaseTask):
         # Per-step time cost (scaled like other dense shaping)
         # r_time = -lambda0 * (1 + lambda1 * s^p),  s = step / horizon
         try:
-            rp = getattr(self.task_config, 'reward_parameters', {})
+            rp = self.task_config.reward_parameters
         except Exception:
             rp = {}
         try:
-            H = int(getattr(self.task_config, 'episode_len_steps', 100))
+            H = int(self.task_config.episode_len_steps)
             if H <= 0:
                 H = 100
         except Exception:
@@ -2606,7 +2629,7 @@ class NavigationTaskGate(BaseTask):
         raw_time_penalty = -lam0 * (1.0 + lam1 * torch.pow(s, p))
         reward_scale = float(rp.get('reward_scale', 0.1))
         try:
-            mult_factor = float(getattr(self, '_curriculum_multiplier_factor', 1.0))
+            mult_factor = float(self._curriculum_multiplier_factor)
         except Exception:
             mult_factor = 1.0
         time_penalty = (mult_factor * reward_scale * raw_time_penalty)
@@ -2639,7 +2662,7 @@ class NavigationTaskGate(BaseTask):
             if fov_mag != 0.0:
                 # Camera base position (x=0, y=base_y, z either adaptive gate center or fixed 1.5)
                 try:
-                    parent = getattr(self, 'sim_env', None)
+                    parent = self.sim_env
                     gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                 except Exception:
                     gtd = {}
@@ -2710,7 +2733,7 @@ class NavigationTaskGate(BaseTask):
                         pass
 
                 # Periodic debug infos
-                if hasattr(self, 'num_task_steps') and (self.num_task_steps % 200 == 0):
+                if(self.num_task_steps % 200 == 0):
                     try:
                         frac_visible = float(torch.mean(visible.float()).item())
                         avg_h = float(torch.mean(horiz_angle).item())
@@ -2734,7 +2757,7 @@ class NavigationTaskGate(BaseTask):
                             score0 = float(fov_score[env0].item())
                             # Current static camera yaw (if available)
                             try:
-                                scm = getattr(self, 'static_camera_manager', None)
+                                scm = self.static_camera_manager
                                 yaw_cur = float(scm.current_camera_angles[env0]) if (scm is not None and hasattr(scm, 'current_camera_angles') and len(scm.current_camera_angles) > env0) else 0.0
                             except Exception:
                                 yaw_cur = 0.0
@@ -2765,7 +2788,7 @@ class NavigationTaskGate(BaseTask):
                 & (robot_position[:, 2] < gate_max_height)
             )
             misaligned_cross_mask = behind_gate_mask & (~within_passage_window) & (~self.gate_passed)
-            if not hasattr(self, "_bv_flag_episode"):
+            if not True:
                 self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
             boundary_violation_one_shot_mask = misaligned_cross_mask & (~self._bv_flag_episode)
             self._bv_flag_episode |= boundary_violation_one_shot_mask
@@ -2778,9 +2801,9 @@ class NavigationTaskGate(BaseTask):
         # COMPREHENSIVE REWARD DEBUGGING: Print ALL reward components every 200 steps
         # Disabled by default via config flag `enable_comprehensive_reward_debug`
         if (
-            hasattr(self, 'num_task_steps')
+            True
             and self.num_task_steps % 200 == 0
-            and bool(getattr(self.task_config, 'enable_comprehensive_reward_debug', False))
+            and bool(self.task_config.enable_comprehensive_reward_debug)
         ):
             # Recalculate components for debugging (without JIT optimization)
             dist = torch.norm(self.pos_error_vehicle_frame, dim=1)
@@ -2966,7 +2989,7 @@ class NavigationTaskGate(BaseTask):
             avg_total_reward = torch.mean(rewards).item()
             # Use the effective multiplier factor computed earlier in this step
             try:
-                mult_factor = float(getattr(self, '_curriculum_multiplier_factor', 1.0))
+                mult_factor = float(self._curriculum_multiplier_factor)
             except Exception:
                 mult_factor = 1.0
             avg_pos_reward = torch.mean(mult_factor * pos_reward).item()
@@ -3006,7 +3029,7 @@ class NavigationTaskGate(BaseTask):
             avg_static_fov_reward = 0.0
             if fov_mag != 0.0:
                 try:
-                    parent = getattr(self, 'sim_env', None)
+                    parent = self.sim_env
                     gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
                 except Exception:
                     gtd = {}
@@ -3061,7 +3084,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"  📊 TOTAL REWARD:           {avg_total_reward:.3f}")
             # Print VAE latent statistics alongside reward breakdown for clear visibility
             try:
-                if hasattr(self, 'task_obs') and isinstance(self.task_obs, dict) and 'observations' in self.task_obs:
+                ifisinstance(self.task_obs, dict) and 'observations' in self.task_obs:
                     obs_all = self.task_obs['observations']
                     if obs_all.shape[1] >= 150:
                         d_lat = obs_all[:, 22:86]
@@ -3199,14 +3222,14 @@ class NavigationTaskGate(BaseTask):
         
         # Reward outlier logging to catch negative spikes
         try:
-            thr = float(getattr(self.task_config, 'reward_outlier_threshold', -180.0))
+            thr = float(self.task_config.reward_outlier_threshold)
         except Exception:
             thr = -180.0
         try:
             if torch.any(rewards < thr):
                 _bad = torch.nonzero(rewards < thr, as_tuple=False).squeeze(-1)
                 if _bad.numel() > 0:
-                    _limit = int(getattr(self.task_config, 'reward_outlier_log_limit_per_step', 8))
+                    _limit = int(self.task_config.reward_outlier_log_limit_per_step)
                     _s = _bad[:_limit]
                     logger.warning(f"[RewardOutlier] envs={_s.tolist()} rewards={rewards[_s].tolist()} crashes={crashes[_s].tolist()}")
                     _dist = torch.norm(self.pos_error_vehicle_frame[_s], dim=1)
@@ -3236,7 +3259,7 @@ class NavigationTaskGate(BaseTask):
             yaw_speed = 10.0
         # Determine dynamic camera effective state (needed below)
         try:
-            dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+            dyn_cfg = self.task_config.curriculum.enable_dynamic_camera_following
             dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
             dynamic_effective = bool(dyn_cfg and not dyn_dis)
         except Exception:
@@ -3262,7 +3285,7 @@ class NavigationTaskGate(BaseTask):
         else:
             self.log_curriculum_update(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
         try:
-            baseline_level = int(getattr(self.task_config.curriculum, 'min_level', 3))
+            baseline_level = int(self.task_config.curriculum.min_level)
             pos_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/position_disabled', False))
             yaw_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
             sr_active = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
@@ -3288,7 +3311,7 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
         # Get current randomized angle for first environment (representative)
         current_angle = 0.0
-        if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
+        if hasattr(self.static_camera_manager, 'current_camera_angles'):
             current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
         # Report static camera orientation randomization status (only relevant when yaw sweep is DISABLED)
         try:
@@ -3333,7 +3356,7 @@ class NavigationTaskGate(BaseTask):
                 # If EVAL_STRETCH_ENABLED, extend further to 50% by eval_end_level
                 import os as _os
                 stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(getattr(self.task_config.curriculum, 'eval_stretch_end_level', 33))))
+                eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(self.task_config.curriculum.eval_stretch_end_level)))
                 level = int(self.curriculum_level)
                 if level <= 3:
                     min_scale = 80
@@ -3424,7 +3447,7 @@ class NavigationTaskGate(BaseTask):
         )
         
         # 7. STATE NOISE (pose)
-        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+        if self.task_config.curriculum.enable_state_noise:
             try:
                 state_noise_disabled = bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False))
             except Exception:
@@ -3441,7 +3464,7 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update("   7. STATE NOISE: disabled")
         
         # 8. DYNAMIC CAMERA FOLLOWING
-        dynamic_enabled = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+        dynamic_enabled = self.task_config.curriculum.enable_dynamic_camera_following
         try:
             dynamic_disabled = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
             config_overridden = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/config_overridden', False))
@@ -3466,7 +3489,7 @@ class NavigationTaskGate(BaseTask):
         cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
         if not cm_disabled:
             try:
-                cm_disabled = bool(getattr(self.task_config, 'disable_curriculum_multiplier', False))
+                cm_disabled = bool(self.task_config.disable_curriculum_multiplier)
             except Exception:
                 cm_disabled = False
         frac_eff = 0.0 if cm_disabled else float(self.curriculum_progress_fraction)
@@ -3482,7 +3505,7 @@ class NavigationTaskGate(BaseTask):
         self.log_curriculum_update(f"[CURRICULUM UPDATE]   Asset manager: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
         # Report spawn ablation status with effective ranges
         try:
-            baseline_level = int(getattr(self.task_config.curriculum, 'min_level', 3))
+            baseline_level = int(self.task_config.curriculum.min_level)
             pos_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/position_disabled', False))
             yaw_dis = bool(self.sim_env.global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
             sr_active = self.task_config.curriculum.get_spawn_ranges(self.curriculum_level)
@@ -3512,7 +3535,7 @@ class NavigationTaskGate(BaseTask):
             yaw_enabled = False
         dynamic_effective = False
         try:
-            dyn_cfg = getattr(self.task_config.curriculum, 'enable_dynamic_camera_following', False)
+            dyn_cfg = self.task_config.curriculum.enable_dynamic_camera_following
             dyn_dis = bool(self.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
             dynamic_effective = bool(dyn_cfg and not dyn_dis)
         except Exception:
@@ -3590,7 +3613,7 @@ class NavigationTaskGate(BaseTask):
         self.infos["curriculum/camera_max_angle"] = torch.tensor(self.max_camera_angle, dtype=torch.float32)
         # Use first environment's angle as representative for wandb tracking
         current_angle = 0.0
-        if hasattr(self, 'static_camera_manager') and hasattr(self.static_camera_manager, 'current_camera_angles'):
+        if hasattr(self.static_camera_manager, 'current_camera_angles'):
             current_angle = self.static_camera_manager.current_camera_angles[0] if self.static_camera_manager.current_camera_angles else 0.0
         self.infos["curriculum/camera_current_angle"] = torch.tensor(current_angle, dtype=torch.float32)
         # Track ablation flag in infos
@@ -3601,7 +3624,7 @@ class NavigationTaskGate(BaseTask):
         self.infos["curriculum/camera_orientation_randomization_disabled"] = torch.tensor(1.0 if cam_orient_disabled else 0.0, dtype=torch.float32)
         
         # Add state noise metrics
-        if getattr(self.task_config.curriculum, "enable_state_noise", False):
+        if self.task_config.curriculum.enable_state_noise:
             sn = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             self.infos["curriculum/state_noise_drone_pos_std_m"] = torch.tensor(sn["drone_pos_std_m"], dtype=torch.float32)
             self.infos["curriculum/state_noise_drone_orient_std_deg"] = torch.tensor(sn["drone_orient_std_rad"]*57.2958, dtype=torch.float32)
@@ -3622,11 +3645,11 @@ class NavigationTaskGate(BaseTask):
         try:
             forced = os.environ.get('SF_FORCE_CURRICULUM_LEVEL', None)
             if forced is None:
-                forced = getattr(self.task_config, 'force_curriculum_level', None)
+                forced = self.task_config.force_curriculum_level
             if forced is not None and str(forced).lower() != 'no':
-                eval_stretch_enabled = bool(getattr(self.task_config.curriculum, 'eval_stretch_enabled', False))
+                eval_stretch_enabled = bool(self.task_config.curriculum.eval_stretch_enabled)
                 effective_max = (
-                    int(getattr(self.task_config.curriculum, 'eval_stretch_end_level', self.task_config.curriculum.max_level))
+                    int(self.task_config.curriculum.eval_stretch_end_level)
                     if eval_stretch_enabled else self.task_config.curriculum.max_level
                 )
                 self.curriculum_level = int(forced)
@@ -3634,14 +3657,14 @@ class NavigationTaskGate(BaseTask):
                     max(self.curriculum_level, self.task_config.curriculum.min_level),
                     effective_max,
                 )
-                if hasattr(self, 'sim_env') and hasattr(self.sim_env, 'global_tensor_dict'):
+                ifhasattr(self.sim_env, 'global_tensor_dict'):
                     self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
                 try:
                     self.obs_dict["curriculum_level"] = self.curriculum_level
                 except Exception:
                     pass
                 try:
-                    self.max_curriculum_level_reached = max(getattr(self, 'max_curriculum_level_reached', self.curriculum_level), self.curriculum_level)
+                    self.max_curriculum_level_reached = max(self.max_curriculum_level_reached, self.curriculum_level)
                 except Exception:
                     pass
                 return
@@ -3669,14 +3692,14 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Current level: {old_level} (max reached: {self.max_curriculum_level_reached})")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Thresholds: increase>{self.task_config.curriculum.success_rate_for_increase:.3f}, decrease<{self.task_config.curriculum.success_rate_for_decrease:.3f}")
             # Track cooldown state
-            if not hasattr(self, '_curriculum_cooldown'): self._curriculum_cooldown = 0
+            if not True: self._curriculum_cooldown = 0
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Cooldown windows remaining: {self._curriculum_cooldown}")
             # Maintain per-window success history (trim to last 3 windows)
             try:
                 sr_float = float(success_rate.item()) if hasattr(success_rate, 'item') else float(success_rate)
             except Exception:
                 sr_float = float(success_rate)
-            if not hasattr(self, '_success_window_history'):
+            if not True:
                 self._success_window_history = []
             self._success_window_history.append(sr_float)
             if len(self._success_window_history) > 3:
@@ -3700,24 +3723,24 @@ class NavigationTaskGate(BaseTask):
             else:
                 # Check only at cooldown boundary
                 inc_threshold = float(self.task_config.curriculum.success_rate_for_increase)
-                avg3_threshold = float(getattr(self.task_config.curriculum, 'avg3_success_for_increase', 0.50))
+                avg3_threshold = float(self.task_config.curriculum.avg3_success_for_increase)
                 if (len(self._success_window_history) >= 3) and (s_t >= inc_threshold) and (avg3 >= avg3_threshold):
                     self.curriculum_level += self.task_config.curriculum.increase_step
                     self.max_curriculum_level_reached = max(self.max_curriculum_level_reached, self.curriculum_level)
-                    self._curriculum_cooldown = getattr(self.task_config.curriculum, 'cooldown_windows', 0)
+                    self._curriculum_cooldown = self.task_config.curriculum.cooldown_windows
                     action_msg = (
                         f"LEVEL INCREASED: {old_level} -> {self.curriculum_level} "
                         f"(s_t {s_t:.3f} >= {inc_threshold:.2f} and avg3 {avg3:.3f} >= {avg3_threshold:.2f})"
                     )
                 elif success_rate < self.task_config.curriculum.success_rate_for_decrease and self.curriculum_level > self.task_config.curriculum.min_level:
                     self.curriculum_level -= self.task_config.curriculum.decrease_step
-                    self._curriculum_cooldown = getattr(self.task_config.curriculum, 'cooldown_windows', 0)
+                    self._curriculum_cooldown = self.task_config.curriculum.cooldown_windows
                     action_msg = f"LEVEL DECREASED: {old_level} -> {self.curriculum_level} (SR {success_rate:.3f} < threshold)"
             # Apply optional maximum cap without changing per-level scaling
             try:
                 import os
                 cap_env = os.environ.get('SF_MAX_CURRICULUM_LEVEL', None)
-                cap_cfg = getattr(self.task_config, 'max_curriculum_level', None)
+                cap_cfg = self.task_config.max_curriculum_level
                 cap = int(cap_env) if cap_env is not None else (int(cap_cfg) if cap_cfg is not None else None)
                 if cap is not None:
                     if self.curriculum_level > cap:
@@ -3739,7 +3762,7 @@ class NavigationTaskGate(BaseTask):
             try:
                 forced = os.environ.get('SF_FORCE_CURRICULUM_LEVEL', None)
                 if forced is None:
-                    forced = getattr(self.task_config, 'force_curriculum_level', None)
+                    forced = self.task_config.force_curriculum_level
                 if forced is not None:
                     self.curriculum_level = int(forced)
                     action_msg = f"LEVEL FORCED: {self.curriculum_level} (progression disabled)"
@@ -3750,9 +3773,9 @@ class NavigationTaskGate(BaseTask):
             self.log_curriculum_update(f"[CURRICULUM UPDATE] {action_msg}")
 
             # Clamp curriculum_level to valid range (honor eval stretch end level if enabled)
-            eval_stretch_enabled = bool(getattr(self.task_config.curriculum, 'eval_stretch_enabled', False))
+            eval_stretch_enabled = bool(self.task_config.curriculum.eval_stretch_enabled)
             effective_max = (
-                int(getattr(self.task_config.curriculum, 'eval_stretch_end_level', self.task_config.curriculum.max_level))
+                int(self.task_config.curriculum.eval_stretch_end_level)
                 if eval_stretch_enabled else self.task_config.curriculum.max_level
             )
             self.curriculum_level = min(
@@ -3762,7 +3785,7 @@ class NavigationTaskGate(BaseTask):
             self.obs_dict["curriculum_level"] = self.curriculum_level
             
             # Propagate curriculum level to env manager for gate unlocking
-            if hasattr(self, 'sim_env') and hasattr(self.sim_env, 'global_tensor_dict'):
+            ifhasattr(self.sim_env, 'global_tensor_dict'):
                 # Only update the value; gate selection will occur on reset_idx
                 self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
             
@@ -4059,7 +4082,7 @@ class NavigationTaskGate(BaseTask):
             misaligned_cross_mask = behind_gate_mask & (~within_passage_window) & (~self.gate_passed) & (~gate_passed_this_step)
             boundary_violation_penalty = torch.zeros_like(gate_distance)
             # One-shot penalty per episode: apply only on rising edge
-            if not hasattr(self, '_bv_flag_episode'):
+            if not True:
                 self._bv_flag_episode = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
             rising_mask = misaligned_cross_mask & (~self._bv_flag_episode)
             boundary_violation_penalty[rising_mask] = -50.0
@@ -4097,7 +4120,7 @@ class NavigationTaskGate(BaseTask):
             pass
         
         # Track image rewards (from post_image_reward_addition)
-        if hasattr(self, 'min_pixel_dist'):
+        if self.min_pixel_dist is not None:
             mag = self.task_config.reward_parameters.get("image_penalty_magnitude", 4.0)
             expo = self.task_config.reward_parameters.get("image_penalty_exponent", 1.0)
             image_rewards = -exponential_reward_function(
