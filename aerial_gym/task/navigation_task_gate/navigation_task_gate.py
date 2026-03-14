@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from aerial_gym.task.base_task import BaseTask, StepReturn
 from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.task.schemas import (
+    GATE_OBS_LAYOUT,
+    EpisodeRewardAccumulators,
+    EpisodeTrajectoryState,
+)
 from aerial_gym.sim.sim_builder import SimBuilder
 import torch
 import numpy as np
@@ -575,55 +580,43 @@ class NavigationTaskGate(BaseTask):
 
     def _init_episode_reward_tracking(self) -> None:
         """Allocate per-component episode reward accumulators and statistics tensors."""
-        self.episode_pos_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_very_close_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_getting_closer_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_gate_approach_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_gate_alignment_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_camera_facing_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_action_penalty = torch.zeros(self.num_envs, device=self.device)
-        self.episode_gate_passage_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_collision_penalty = torch.zeros(self.num_envs, device=self.device)
-        self.episode_image_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_static_fov_visibility_reward = torch.zeros(self.num_envs, device=self.device)
-        self.episode_boundary_violation_penalty = torch.zeros(self.num_envs, device=self.device)
-        self.episode_lengths = torch.zeros(self.num_envs, device=self.device)
-        self.episode_time_penalty = torch.zeros(self.num_envs, device=self.device)
-        self.episode_timeout_penalty = torch.zeros(self.num_envs, device=self.device)
-        self.completed_episodes = []
+        self.episode_rewards = EpisodeRewardAccumulators.create(self.num_envs, self.device)
+        # Backward-compatible aliases (used by update_episode_reward_tracking, reset, logging)
+        self.episode_pos_reward = self.episode_rewards.pos_reward
+        self.episode_very_close_reward = self.episode_rewards.very_close_reward
+        self.episode_getting_closer_reward = self.episode_rewards.getting_closer_reward
+        self.episode_gate_approach_reward = self.episode_rewards.gate_approach_reward
+        self.episode_gate_alignment_reward = self.episode_rewards.gate_alignment_reward
+        self.episode_camera_facing_reward = self.episode_rewards.camera_facing_reward
+        self.episode_action_penalty = self.episode_rewards.action_penalty
+        self.episode_gate_passage_reward = self.episode_rewards.gate_passage_reward
+        self.episode_collision_penalty = self.episode_rewards.collision_penalty
+        self.episode_image_reward = self.episode_rewards.image_reward
+        self.episode_static_fov_visibility_reward = self.episode_rewards.static_fov_visibility_reward
+        self.episode_boundary_violation_penalty = self.episode_rewards.boundary_violation_penalty
+        self.episode_lengths = self.episode_rewards.lengths
+        self.episode_time_penalty = self.episode_rewards.time_penalty
+        self.episode_timeout_penalty = self.episode_rewards.timeout_penalty
+        self.completed_episodes: list[dict[str, float]] = []
         self.max_stored_episodes = 10
 
     def _init_episode_trajectory_state(self) -> None:
         """Allocate per-environment episode trajectory tracking state."""
-        self._episode_fresh = torch.ones(
-            self.num_envs, dtype=torch.bool, device=self.device
-        )
-        self._ep_spawn_pos = torch.zeros((self.num_envs, 3), device=self.device)
-        self._ep_gate_center_at_spawn = torch.zeros((self.num_envs, 3), device=self.device)
-        self._ep_last_pos = torch.zeros((self.num_envs, 3), device=self.device)
-        self._ep_path_len = torch.zeros(self.num_envs, device=self.device)
-        self._ep_steps = torch.zeros(
-            self.num_envs, dtype=torch.long, device=self.device
-        )
-        self._ep_min_gate_dist = torch.full(
-            (self.num_envs,), float("inf"), device=self.device
-        )
-        self._ep_gate_crossed = torch.zeros(
-            self.num_envs, dtype=torch.bool, device=self.device
-        )
-        self._ep_time_to_gate = torch.full(
-            (self.num_envs,), float("nan"), device=self.device
-        )
-        self._ep_center_offset_cross = torch.full(
-            (self.num_envs,), float("nan"), device=self.device
-        )
-        self._ep_height_offset_cross = torch.full(
-            (self.num_envs,), float("nan"), device=self.device
-        )
+        self.trajectory = EpisodeTrajectoryState.create(self.num_envs, self.device)
+        # Backward-compatible aliases (used throughout step/reset/curriculum code)
+        self._episode_fresh = self.trajectory.fresh
+        self._ep_spawn_pos = self.trajectory.spawn_pos
+        self._ep_gate_center_at_spawn = self.trajectory.gate_center_at_spawn
+        self._ep_last_pos = self.trajectory.last_pos
+        self._ep_path_len = self.trajectory.path_len
+        self._ep_steps = self.trajectory.steps
+        self._ep_min_gate_dist = self.trajectory.min_gate_dist
+        self._ep_gate_crossed = self.trajectory.gate_crossed
+        self._ep_time_to_gate = self.trajectory.time_to_gate
+        self._ep_center_offset_cross = self.trajectory.center_offset_cross
+        self._ep_height_offset_cross = self.trajectory.height_offset_cross
+        self._bv_flag_episode = self.trajectory.bv_flag_episode
         self._bv_prev_env0 = False
-        self._bv_flag_episode = torch.zeros(
-            self.num_envs, dtype=torch.bool, device=self.device
-        )
 
     def _init_debug_flags(self) -> None:
         """Initialize one-shot debug/logging flags so hasattr checks are never needed."""
@@ -2330,12 +2323,13 @@ class NavigationTaskGate(BaseTask):
                 drone_pos_noised = drone_pos_clean
         else:
             drone_pos_noised = drone_pos_clean
-        self.task_obs["observations"][:, 0:3] = drone_pos_noised
-        
-        # ===== STATIC CAMERA POSE OBSERVATIONS (6D) =====
-        # Get static camera pose information relative to drone
+        obs = self.task_obs["observations"]
+        layout = GATE_OBS_LAYOUT
+
+        obs[:, layout.drone_position] = drone_pos_noised
+
+        # Static camera pose (relative to drone)
         static_camera_pos, static_camera_orientation = self._get_static_camera_pose_relative_to_drone()
-        # Apply curriculum-driven noise to static camera pose copies (not altering sim)
         if self.task_config.curriculum.enable_state_noise and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
             noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             sp_std = float(noise_cfg.get("static_pos_std_m", 0.0))
@@ -2344,47 +2338,31 @@ class NavigationTaskGate(BaseTask):
                 static_camera_pos = static_camera_pos + torch.randn_like(static_camera_pos) * sp_std
             if so_std > 0.0:
                 static_camera_orientation = static_camera_orientation + torch.randn_like(static_camera_orientation) * so_std
-                # Wrap yaw-ish components into [-pi, pi] if needed (approx, for stability)
                 static_camera_orientation = torch.atan2(torch.sin(static_camera_orientation), torch.cos(static_camera_orientation))
-        
-        # [3:6] = Static camera position relative to drone (x, y, z in drone's reference frame)
-        self.task_obs["observations"][:, 3:6] = static_camera_pos
-        
-        # [6:9] = Static camera orientation relative to drone (roll, pitch, yaw in drone's reference frame)
-        self.task_obs["observations"][:, 6:9] = static_camera_orientation
-        
-        # ===== DRONE FULL ORIENTATION OBSERVATIONS (3D) =====
-        # [9:12] = Full drone orientation including yaw (roll, pitch, yaw)
+
+        obs[:, layout.static_camera_position] = static_camera_pos
+        obs[:, layout.static_camera_orientation] = static_camera_orientation
+
+        # Drone orientation (roll, pitch, yaw)
         euler_angles = ssa(get_euler_xyz_tensor(self.obs_dict["robot_vehicle_orientation"]))
-        # Apply curriculum-driven noise to drone orientation copy
         if self.task_config.curriculum.enable_state_noise and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
             noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             do_std = float(noise_cfg.get("drone_orient_std_rad", 0.0))
             if do_std > 0.0:
                 euler_angles = euler_angles + torch.randn_like(euler_angles) * do_std
                 euler_angles = torch.atan2(torch.sin(euler_angles), torch.cos(euler_angles))
-        self.task_obs["observations"][:, 9:12] = euler_angles  # MODIFIED: Include full yaw instead of setting to 0.0
+        obs[:, layout.drone_orientation] = euler_angles
 
-        # ===== DRONE STATE (VELOCITIES) AND ACTIONS =====
-        # [12:15] = Robot body linear velocity (3D)
-        self.task_obs["observations"][:, 12:15] = self.obs_dict["robot_body_linvel"]
+        # Velocities and actions
+        obs[:, layout.body_linear_velocity] = self.obs_dict["robot_body_linvel"]
+        obs[:, layout.body_angular_velocity] = self.obs_dict["robot_body_angvel"]
+        obs[:, layout.actions] = self.obs_dict["robot_actions"]
 
-        # [15:18] = Robot body angular velocity (3D)
-        self.task_obs["observations"][:, 15:18] = self.obs_dict["robot_body_angvel"]
-
-        # [18:22] = Last applied robot actions (4D for gate navigation)
-        self.task_obs["observations"][:, 18:22] = self.obs_dict["robot_actions"]
-
-        # ===== CAMERA LATENTS (DRONE AND STATIC, 64D EACH) =====
-        # [22:86] = Drone camera VAE latents (64D)
-        if isinstance(self.image_latents, torch.Tensor):
-            if self.image_latents.shape[1] >= 64:
-                self.task_obs["observations"][:, 22:86] = self.image_latents[:, :64]
-
-        # [86:150] = Static camera VAE latents (64D)
-        if isinstance(self.static_image_latents, torch.Tensor):
-            if self.static_image_latents.shape[1] >= 64:
-                self.task_obs["observations"][:, 86:150] = self.static_image_latents[:, :64]
+        # VAE latents (drone and static camera)
+        if isinstance(self.image_latents, torch.Tensor) and self.image_latents.shape[1] >= 64:
+            obs[:, layout.drone_vae_latents] = self.image_latents[:, :64]
+        if isinstance(self.static_image_latents, torch.Tensor) and self.static_image_latents.shape[1] >= 64:
+            obs[:, layout.static_vae_latents] = self.static_image_latents[:, :64]
 
         # (Removed W&B latent stats logging per request)
 
