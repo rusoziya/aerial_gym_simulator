@@ -28,6 +28,9 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+from __future__ import annotations
+
+
 from isaacgym import gymapi
 from isaacgym import gymutil
 import argparse
@@ -35,7 +38,7 @@ import argparse
 import distutils
 
 
-def class_to_dict(obj) -> dict:
+def class_to_dict(obj: object) -> dict[str, object]:
     if not hasattr(obj, "__dict__"):
         return obj
     result = {}
@@ -53,7 +56,7 @@ def class_to_dict(obj) -> dict:
     return result
 
 
-def parse_sim_params(args, cfg):
+def parse_sim_params(args: argparse.Namespace, cfg: dict[str, object]) -> gymapi.SimParams:
     # code from Isaac Gym Preview 2
     # initialize sim params
     sim_params = gymapi.SimParams()
@@ -78,7 +81,7 @@ def parse_sim_params(args, cfg):
     return sim_params
 
 
-def update_cfg_from_args(cfg, args):
+def update_cfg_from_args(cfg: dict[str, object], args: argparse.Namespace) -> dict[str, object]:
     if cfg is None:
         raise ValueError("cfg is None")
     if args.headless is not None:
@@ -88,7 +91,12 @@ def update_cfg_from_args(cfg, args):
     return cfg
 
 
-def parse_arguments(description="Isaac Gym Example", headless=False, no_graphics=False, custom_parameters=[]):
+def parse_arguments(
+    description: str = "Isaac Gym Example",
+    headless: bool = False,
+    no_graphics: bool = False,
+    custom_parameters: list[dict[str, object]] = [],
+) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=description)
     if headless:
         parser.add_argument('--headless', action='store_true', help='Run headless without creating a viewer window')
@@ -162,7 +170,7 @@ def parse_arguments(description="Isaac Gym Example", headless=False, no_graphics
 
     return args
 
-def get_args(additional_parameters=[]):
+def get_args(additional_parameters: list[dict[str, object]] = []) -> argparse.Namespace:
     custom_parameters = [
         {
             "name": "--headless",
@@ -209,7 +217,7 @@ def get_args(additional_parameters=[]):
     return args
 
 
-def asset_class_to_AssetOptions(asset_class):
+def asset_class_to_AssetOptions(asset_class: object) -> gymapi.AssetOptions:
     asset_options = gymapi.AssetOptions()
     asset_options.collapse_fixed_joints = asset_class.collapse_fixed_joints
     asset_options.replace_cylinder_with_capsule = asset_class.replace_cylinder_with_capsule

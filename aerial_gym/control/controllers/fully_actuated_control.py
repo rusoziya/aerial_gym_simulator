@@ -1,17 +1,21 @@
+from __future__ import annotations
+
 import torch
 import pytorch3d.transforms as p3d_transforms
 from aerial_gym.utils.math import *
+
+
 from aerial_gym.control.controllers.base_lee_controller import *
 
 
 class FullyActuatedController(BaseLeeController):
-    def __init__(self, config, num_envs, device):
+    def __init__(self, config: object, num_envs: int, device: str) -> None:
         super().__init__(config, num_envs, device)
 
-    def init_tensors(self, global_tensor_dict=None):
+    def init_tensors(self, global_tensor_dict: dict[str, torch.Tensor] | None = None) -> None:
         super().init_tensors(global_tensor_dict)
 
-    def update(self, command_actions):
+    def update(self, command_actions: torch.Tensor) -> torch.Tensor:
         """
         Fully actuated controller. Input is in the form of desired position and orientation.
         command_actions = [p_x, p_y, p_z, qx, qy, qz, qw]

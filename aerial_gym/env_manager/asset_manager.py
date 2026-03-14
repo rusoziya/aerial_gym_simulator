@@ -1,4 +1,3 @@
-from typing import Any
 from aerial_gym.utils.math import *
 
 from aerial_gym.utils.logging import CustomLogger

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.robots.base_robot import BaseRobot
 
 from aerial_gym.control.control_allocation import ControlAllocator
@@ -21,7 +23,7 @@ class BaseMultirotor(BaseRobot):
     The controller config for the robot is used to initialize the controller for the robot.
     """
 
-    def __init__(self, robot_config, controller_name, env_config, device):
+    def __init__(self, robot_config: object, controller_name: str, env_config: object, device: str) -> None:
         logger.debug("Initializing BaseQuadrotor")
         super().__init__(
             robot_config=robot_config,
@@ -57,7 +59,7 @@ class BaseMultirotor(BaseRobot):
 
         logger.debug("[DONE] Initializing BaseQuadrotor")
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
         """
         Initialize the tensors for the robot state, force, torque, and action.
         The tensors used in this function call are sent as slices from the main tensors in the environment.
@@ -171,10 +173,10 @@ class BaseMultirotor(BaseRobot):
             global_tensor_dict["robot_torque_tensor"], device=self.device
         )
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(torch.arange(self.num_envs))
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         if len(env_ids) == 0:
             return
         # robot_state is defined as a tensor of shape (num_envs, 13)
@@ -331,13 +333,13 @@ class BaseMultirotor(BaseRobot):
         # update the states after resetting because the RL agent gets the first state after reset
         self.update_states()
 
-    def clip_actions(self):
+    def clip_actions(self) -> None:
         """
         Clip the action tensor to the range of the controller inputs.
         """
         self.action_tensor[:] = torch.clamp(self.action_tensor, -10.0, 10.0)
 
-    def apply_disturbance(self):
+    def apply_disturbance(self) -> None:
         if not self.cfg.disturbance.enable_disturbance:
             return
         disturbance_occurence = torch.bernoulli(
@@ -360,7 +362,7 @@ class BaseMultirotor(BaseRobot):
             self.max_force_and_torque_disturbance[:, 3:6],
         ) * disturbance_occurence.unsqueeze(1)
 
-    def control_allocation(self, command_wrench, output_mode):
+    def control_allocation(self, command_wrench: torch.Tensor, output_mode: str) -> None:
         """
         Allocate the thrust and torque commands to the motors. The motor model is also used to update the motor thrusts.
         """
@@ -370,7 +372,7 @@ class BaseMultirotor(BaseRobot):
         self.output_forces[:, self.application_mask, :] = forces
         self.output_torques[:, self.application_mask, :] = torques
 
-    def call_controller(self):
+    def call_controller(self) -> None:
         """
         Convert the action tensor to the controller inputs. The action tensor is the input and can be parametrized as desired by the user.
         This function serves the purpose of converting the action tensor to the controller inputs.
@@ -384,7 +386,7 @@ class BaseMultirotor(BaseRobot):
         self.robot_force_tensors[:] = self.output_forces
         self.robot_torque_tensors[:] = self.output_torques
 
-    def simulate_drag(self):
+    def simulate_drag(self) -> None:
         self.robot_body_vel_drag_linear = (
             -self.body_vel_linear_damping_coefficient * self.robot_body_linvel
         )
@@ -411,7 +413,7 @@ class BaseMultirotor(BaseRobot):
         )
         self.robot_torque_tensors[:, 0, 0:3] += self.robot_body_angvel_drag
 
-    def update_states(self):
+    def update_states(self) -> None:
         self.robot_euler_angles[:] = ssa(get_euler_xyz_tensor(self.robot_orientation))
         self.robot_vehicle_orientation[:] = vehicle_frame_quat_from_quat(self.robot_orientation)
         self.robot_vehicle_linvel[:] = quat_rotate_inverse(
@@ -420,7 +422,7 @@ class BaseMultirotor(BaseRobot):
         self.robot_body_linvel[:] = quat_rotate_inverse(self.robot_orientation, self.robot_linvel)
         self.robot_body_angvel[:] = quat_rotate_inverse(self.robot_orientation, self.robot_angvel)
 
-    def step(self, action_tensor):
+    def step(self, action_tensor: torch.Tensor) -> None:
         """
         Update the state of the quadrotor. This function is called every simulation step.
         """

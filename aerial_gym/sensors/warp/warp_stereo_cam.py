@@ -1,12 +1,18 @@
+from __future__ import annotations
+
+
 # import nvtx
 import warp as wp
 import math
+import torch
 
 from aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels import StereoCameraWarpKernels
 
 
 class WarpStereoCam:
-    def __init__(self, num_envs, config, mesh_ids_array, device="cuda:0"):
+    def __init__(
+        self, num_envs: int, config: object, mesh_ids_array: object, device: str = "cuda:0"
+    ) -> None:
         self.cfg = config
         self.num_envs = num_envs
         self.num_sensors = self.cfg.num_sensors
@@ -29,7 +35,7 @@ class WarpStereoCam:
 
         self.initialize_camera_matrices()
 
-    def initialize_camera_matrices(self):
+    def initialize_camera_matrices(self) -> None:
         # Calculate camera params
         W = self.width
         H = self.height
@@ -64,8 +70,8 @@ class WarpStereoCam:
         self.c_x = int(u_0)
         self.c_y = int(v_0)
 
-    
-    def create_render_graph_pointcloud(self, debug=False):
+
+    def create_render_graph_pointcloud(self, debug: bool = False) -> None:
         if not debug:
             print(f"creating render graph")
             wp.capture_begin(device=self.device)
@@ -111,7 +117,7 @@ class WarpStereoCam:
             print(f"finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
-    def create_render_graph_depth_range(self, debug=False):
+    def create_render_graph_depth_range(self, debug: bool = False) -> None:
         if not debug:
             print(f"creating render graph")
             wp.capture_begin(device=self.device)
@@ -157,7 +163,9 @@ class WarpStereoCam:
             print(f"finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
-    def set_image_tensors(self, pixels, segmentation_pixels=None):
+    def set_image_tensors(
+        self, pixels: torch.Tensor, segmentation_pixels: torch.Tensor | None = None
+    ) -> None:
         # init buffers. None when uninitialized
         if self.cfg.return_pointcloud:
             self.pixels = wp.from_torch(pixels, dtype=wp.vec3)
@@ -169,14 +177,14 @@ class WarpStereoCam:
             self.segmentation_pixels = wp.from_torch(segmentation_pixels, dtype=wp.int32)
         else:
             self.segmentation_pixels = segmentation_pixels
-        
-        
-    def set_pose_tensor(self, positions, orientations):
+
+
+    def set_pose_tensor(self, positions: torch.Tensor, orientations: torch.Tensor) -> None:
         self.camera_position_array = wp.from_torch(positions, dtype=wp.vec3)
         self.camera_orientation_array = wp.from_torch(orientations, dtype=wp.quat)
 
     # @nvtx.annotate()
-    def capture(self, debug=False):
+    def capture(self, debug: bool = False) -> torch.Tensor:
         if self.graph is None:
             if self.cfg.return_pointcloud:
                 self.create_render_graph_pointcloud(debug=debug)

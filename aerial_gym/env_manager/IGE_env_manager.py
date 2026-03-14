@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 from isaacgym import gymapi
 from isaacgym import gymtorch
 
@@ -26,7 +29,7 @@ logger = CustomLogger("IsaacGymEnvManager")
 
 
 class IsaacGymEnv(BaseManager):
-    def __init__(self, config, sim_config, has_IGE_cameras, device):
+    def __init__(self, config: object, sim_config: object, has_IGE_cameras: bool, device: str) -> None:
         super().__init__(config, device)
         self.sim_config = sim_config
         self.env_tensor_bounds_min = None
@@ -66,7 +69,7 @@ class IsaacGymEnv(BaseManager):
         self.viewer = None
         self.graphics_are_stepped = True
 
-    def create_sim(self):
+    def create_sim(self) -> tuple[object, object]:
         """
         Create a gym object and initialize with the appropriate simulation parameters
         """
@@ -150,13 +153,13 @@ class IsaacGymEnv(BaseManager):
         logger.info("Created Isaac Gym Simulation Object")
         return self.gym, self.sim
 
-    def create_ground_plane(self):
+    def create_ground_plane(self) -> None:
         plane_params = gymapi.PlaneParams()
         plane_params.normal = gymapi.Vec3(0.0, 0.0, 1.0)
         self.gym.add_ground(self.sim, plane_params)
         return
 
-    def create_env(self, env_id):
+    def create_env(self, env_id: int) -> object:
         """
         Create an environment with the given id
         """
@@ -183,17 +186,17 @@ class IsaacGymEnv(BaseManager):
             raise ValueError("Environment already exists")
         return env_handle
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(torch.arange(self.num_envs, device=self.device))
 
     def add_asset_to_env(
         self,
-        asset_info_dict,
-        env_handle,
-        env_id,
-        global_asset_counter,
-        segmentation_counter,
-    ):
+        asset_info_dict: dict[str, object],
+        env_handle: object,
+        env_id: int,
+        global_asset_counter: int,
+        segmentation_counter: int,
+    ) -> tuple[object, int]:
 
         local_segmentation_ctr_for_isaacgym_asset = segmentation_counter
         if asset_info_dict["semantic_id"] < 0:
@@ -273,7 +276,7 @@ class IsaacGymEnv(BaseManager):
             local_segmentation_ctr_for_isaacgym_asset - segmentation_counter,
         )
 
-    def prepare_for_simulation(self, env_manager, global_tensor_dict):
+    def prepare_for_simulation(self, env_manager: object, global_tensor_dict: dict[str, object]) -> bool:
         if not self.gym.prepare_sim(self.sim):
             raise RuntimeError("Failed to prepare Isaac Gym Environment")
 
@@ -435,7 +438,7 @@ class IsaacGymEnv(BaseManager):
             self.viewer.init_tensors(global_tensor_dict)
         return True
 
-    def create_viewer(self, env_manager):
+    def create_viewer(self, env_manager: object) -> None:
         self.robot_handles = [ah[0] for ah in self.asset_handles]
         logger.warning(f"Headless: {self.sim_config.viewer.headless}")
         if not self.sim_config.viewer.headless:
@@ -450,7 +453,7 @@ class IsaacGymEnv(BaseManager):
             logger.info("Headless mode. Viewer not created.")
         return
 
-    def pre_physics_step(self, actions):
+    def pre_physics_step(self, actions: torch.Tensor) -> None:
         """
         Perform any necessary operations before the physics step
         """
@@ -486,7 +489,7 @@ class IsaacGymEnv(BaseManager):
             self.dof_application_function(self.sim, self.dof_application_tensor)
         return
 
-    def physics_step(self):
+    def physics_step(self) -> None:
         """
         Perform the physics step
         """
@@ -494,7 +497,7 @@ class IsaacGymEnv(BaseManager):
         self.graphics_are_stepped = False
         return
 
-    def post_physics_step(self):
+    def post_physics_step(self) -> None:
         """
         Perform any necessary operations after the physics step
         """
@@ -503,19 +506,19 @@ class IsaacGymEnv(BaseManager):
         self.refresh_tensors()
         return
 
-    def refresh_tensors(self):
+    def refresh_tensors(self) -> None:
         self.gym.refresh_rigid_body_state_tensor(self.sim)
         self.gym.refresh_force_sensor_tensor(self.sim)
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
 
-    def step_graphics(self):
+    def step_graphics(self) -> None:
         if not self.graphics_are_stepped:
             self.gym.step_graphics(self.sim)
             self.graphics_are_stepped = True
 
-    def render_viewer(self):
+    def render_viewer(self) -> None:
         if self.viewer is not None:
             # do not waste time stepping graphics if the viewer is not going to update anyways
             if not self.graphics_are_stepped and self.viewer.enable_viewer_sync:
@@ -523,10 +526,10 @@ class IsaacGymEnv(BaseManager):
             self.viewer.render()
         return
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(torch.arange(self.num_envs, device=self.device))
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         self.env_lower_bound[env_ids, :] = torch_rand_float_tensor(
             self.env_lower_bound_min, self.env_lower_bound_max
         )[env_ids]
@@ -534,7 +537,7 @@ class IsaacGymEnv(BaseManager):
             self.env_upper_bound_min, self.env_upper_bound_max
         )[env_ids]
 
-    def write_to_sim(self):
+    def write_to_sim(self) -> None:
         """
         Write the tensors to the simulation
         """

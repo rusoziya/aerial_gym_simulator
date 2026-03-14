@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from logging import Logger
 
@@ -25,14 +27,14 @@ class CustomFormatter(logging.Formatter):
         logging.CRITICAL: bold_red + format + reset,
     }
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
 
 class CustomLogger(Logger):
-    def __init__(self, logger_name):
+    def __init__(self, logger_name: str) -> None:
         # call superclass
         super().__init__(logger_name)
         self.setLevel(logging.INFO)
@@ -41,11 +43,11 @@ class CustomLogger(Logger):
         self.ch.setFormatter(CustomFormatter())
         self.addHandler(self.ch)
 
-    def setLoggerLevel(self, level) -> None:
+    def setLoggerLevel(self, level: int) -> None:
         self.setLevel(level)
         self.ch.setLevel(level)
 
-    def print_example_message(self):
+    def print_example_message(self) -> None:
         self.debug("A Debug message will look like this")
         self.info("An Info message will look like this")
         self.warning("A Warning message will look like this")

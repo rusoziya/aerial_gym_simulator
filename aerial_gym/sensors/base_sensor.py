@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 import math
 
 
 class BaseSensor(ABC):
-    def __init__(self, sensor_config, num_envs, device):
+    def __init__(self, sensor_config: object, num_envs: int, device: str) -> None:
         self.cfg = sensor_config
         self.device = device
         self.num_envs = num_envs
@@ -13,7 +15,7 @@ class BaseSensor(ABC):
         self.robot_angvel = None
 
     @abstractmethod
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
         # for warp sensors
         self.robot_position = global_tensor_dict["robot_position"]
         self.robot_orientation = global_tensor_dict["robot_orientation"]
@@ -44,19 +46,19 @@ class BaseSensor(ABC):
             self.robot_euler_angles = global_tensor_dict["robot_euler_angles"]
 
     @abstractmethod
-    def update(self):
+    def update(self) -> None:
         raise NotImplementedError("update not implemented")
 
     @abstractmethod
-    def reset_idx(self):
+    def reset_idx(self) -> None:
         raise NotImplementedError("reset_idx not implemented")
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         raise NotImplementedError("reset not implemented")
 
     @staticmethod
-    def print_params(self):
+    def print_params(self: object) -> None:
         for name, value in vars(self).items():
             # if dtype is a valid field, print it as well
             if hasattr(value, "dtype"):

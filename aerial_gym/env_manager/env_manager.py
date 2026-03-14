@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 from aerial_gym.env_manager.IGE_env_manager import IsaacGymEnv
 
 from aerial_gym.env_manager.base_env_manager import BaseManager
@@ -36,16 +39,16 @@ class EnvManager(BaseManager):
 
     def __init__(
         self,
-        sim_name,
-        env_name,
-        robot_name,
-        controller_name,
-        device,
-        args=None,
-        num_envs=None,
-        use_warp=None,
-        headless=None,
-    ):
+        sim_name: str,
+        env_name: str,
+        robot_name: str,
+        controller_name: str,
+        device: str,
+        args: object = None,
+        num_envs: int | None = None,
+        use_warp: bool | None = None,
+        headless: bool | None = None,
+    ) -> None:
         self.robot_name = robot_name
         self.controller_name = controller_name
         self.sim_config = sim_config_registry.make_sim(sim_name)
@@ -79,7 +82,7 @@ class EnvManager(BaseManager):
             self.num_envs, dtype=torch.int32, requires_grad=False, device=self.device
         )
 
-    def create_sim(self, env_cfg, sim_cfg):
+    def create_sim(self, env_cfg: object, sim_cfg: object) -> None:
         """
         This function creates the environment and the robot manager. Does the necessary things to create the environment
         for an IsaacGym environment instance.
@@ -124,7 +127,7 @@ class EnvManager(BaseManager):
 
         logger.info("[DONE] Creating simulation instance.")
 
-    def populate_env(self, env_cfg, sim_cfg):
+    def populate_env(self, env_cfg: object, sim_cfg: object) -> None:
         """
         This function populates the environment with the necessary assets and robots.
         """
@@ -296,7 +299,7 @@ class EnvManager(BaseManager):
         # Initial activation: select a gate for each env
         self.apply_gate_variant_selection(env_ids=torch.arange(self.cfg.env.num_envs, device=self.device))
 
-    def prepare_sim(self):
+    def prepare_sim(self) -> None:
         """
         This function prepares the simulation for the environment.
         """
@@ -315,7 +318,7 @@ class EnvManager(BaseManager):
         self.obstacle_manager.prepare_for_sim(self.global_tensor_dict)
         self.num_robot_actions = self.global_tensor_dict["num_robot_actions"]
 
-    def reset_idx(self, env_ids=None):
+    def reset_idx(self, env_ids: torch.Tensor | None = None) -> None:
         """
         This function resets the environment for the given environment indices.
         """
@@ -378,7 +381,7 @@ class EnvManager(BaseManager):
         self.IGE_env.write_to_sim()
         self.sim_steps[env_ids] = 0
 
-    def apply_gate_variant_selection(self, env_ids):
+    def apply_gate_variant_selection(self, env_ids: torch.Tensor | None) -> None:
         """
         Select exactly one gate variant to be visible per environment, and hide the others by moving them far away.
         This must be called after AssetManager.reset_idx so that our visibility settings are not overwritten.
@@ -538,7 +541,7 @@ class EnvManager(BaseManager):
         self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
         # logger.warning("[GateVariant] Applied gate variant selection for env_ids: {}".format(ids))
 
-    def log_memory_use(self):
+    def log_memory_use(self) -> None:
         """
         This function logs the memory usage of the GPU.
         """
@@ -560,10 +563,10 @@ class EnvManager(BaseManager):
             f"Total memory used by the objects of this class: {total_memory/1024/1024}MB"
         )
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(env_ids=torch.arange(self.cfg.env.num_envs))
 
-    def pre_physics_step(self, actions, env_actions):
+    def pre_physics_step(self, actions: torch.Tensor, env_actions: torch.Tensor | None) -> None:
         # first let the robot compute the actions
         self.robot_manager.pre_physics_step(actions)
         # then the asset manager applies the actions here
@@ -577,30 +580,30 @@ class EnvManager(BaseManager):
         if self.use_warp:
             self.warp_env.pre_physics_step(actions)
 
-    def reset_tensors(self):
+    def reset_tensors(self) -> None:
         self.collision_tensor[:] = 0
         self.termination_tensor[:] = 0
         self.truncation_tensor[:] = 0
 
-    def simulate(self, actions, env_actions):
+    def simulate(self, actions: torch.Tensor, env_actions: torch.Tensor | None) -> None:
         self.pre_physics_step(actions, env_actions)
         self.IGE_env.physics_step()
         self.post_physics_step(actions, env_actions)
 
-    def post_physics_step(self, actions, env_actions):
+    def post_physics_step(self, actions: torch.Tensor, env_actions: torch.Tensor | None) -> None:
         self.IGE_env.post_physics_step()
         self.robot_manager.post_physics_step()
         if self.use_warp:
             self.warp_env.post_physics_step()
         self.asset_manager.post_physics_step()
 
-    def compute_observations(self):
+    def compute_observations(self) -> None:
         self.collision_tensor[:] += (
             torch.norm(self.global_tensor_dict["robot_contact_force_tensor"], dim=1)
             > self.cfg.env.collision_force_threshold
         )
 
-    def reset_terminated_and_truncated_envs(self):
+    def reset_terminated_and_truncated_envs(self) -> torch.Tensor:
         collision_envs = self.collision_tensor.nonzero(as_tuple=False).squeeze(-1)
         termination_envs = self.termination_tensor.nonzero(as_tuple=False).squeeze(-1)
         truncation_envs = self.truncation_tensor.nonzero(as_tuple=False).squeeze(-1)
@@ -616,29 +619,29 @@ class EnvManager(BaseManager):
             self.reset_idx(envs_to_reset)
         return envs_to_reset
 
-    def render(self, render_components="sensors"):
+    def render(self, render_components: str = "sensors") -> None:
         if render_components == "viewer":
             self.render_viewer()
         elif render_components == "sensors":
             self.render_sensors()
 
-    def render_sensors(self):
+    def render_sensors(self) -> None:
         # render sensors after the physics step
         if self.robot_manager.has_IGE_sensors:
             self.IGE_env.step_graphics()
         self.robot_manager.capture_sensors()
 
-    def render_viewer(self):
+    def render_viewer(self) -> None:
         # render viewer GUI
         self.IGE_env.render_viewer()
 
-    def post_reward_calculation_step(self):
+    def post_reward_calculation_step(self) -> torch.Tensor:
         envs_to_reset = self.reset_terminated_and_truncated_envs()
         # render is performed after reset to ensure that the sensors are updated from the new robot state.
         self.render(render_components="sensors")
         return envs_to_reset
 
-    def step(self, actions, env_actions=None):
+    def step(self, actions: torch.Tensor, env_actions: torch.Tensor | None = None) -> None:
         """
         This function steps the simulation for the environment.
         actions: The actions that are sent to the robot.
@@ -675,6 +678,6 @@ class EnvManager(BaseManager):
         if self.step_counter % self.cfg.env.render_viewer_every_n_steps == 0:
             self.render(render_components="viewer")
 
-    def get_obs(self):
+    def get_obs(self) -> dict[str, object]:
         # Just return the dict of all tensors. Whatever the task needs can be used to compute the rewards.
         return self.global_tensor_dict

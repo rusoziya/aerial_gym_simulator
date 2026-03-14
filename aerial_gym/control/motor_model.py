@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import torch
+
 
 from aerial_gym.utils.math import torch_rand_float_tensor, tensor_clamp
 
 
 class MotorModel:
-    def __init__(self, num_envs, motors_per_robot, dt, config, device="cuda:0"):
+    def __init__(self, num_envs: int, motors_per_robot: int, dt: float, config: object, device: str = "cuda:0") -> None:
         self.num_envs = num_envs
         self.dt = dt
         self.cfg = config
@@ -40,7 +43,7 @@ class MotorModel:
         )
         self.init_tensors()
 
-    def init_tensors(self, global_tensor_dict=None):
+    def init_tensors(self, global_tensor_dict: dict[str, torch.Tensor] | None = None) -> None:
         self.current_motor_thrust = torch_rand_float_tensor(
             torch.tensor(self.min_thrust, device=self.device, dtype=torch.float32).expand(
                 self.num_envs, self.num_motors_per_robot
@@ -85,7 +88,7 @@ class MotorModel:
         else:
             self.mixing_factor_function = continuous_mixing_factor
 
-    def update_motor_thrusts(self, ref_thrust):
+    def update_motor_thrusts(self, ref_thrust: torch.Tensor) -> torch.Tensor:
         # clamp ref thrust so that it is within the min and max thrust
         ref_thrust = torch.clamp(ref_thrust, self.min_thrust, self.max_thrust)
         thrust_error = ref_thrust - self.current_motor_thrust
@@ -137,7 +140,7 @@ class MotorModel:
                 raise ValueError("integration scheme unknown")
         return self.current_motor_thrust
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         self.motor_time_constants_increasing[env_ids] = torch_rand_float_tensor(
             self.motor_time_constant_increasing_min, self.motor_time_constant_increasing_max
         )[env_ids]
@@ -153,7 +156,7 @@ class MotorModel:
                 self.motor_thrust_constant_min, self.motor_thrust_constant_max
             )[env_ids]
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(torch.arange(self.num_envs, device=self.device))
 
 

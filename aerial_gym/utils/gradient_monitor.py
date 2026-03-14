@@ -5,7 +5,7 @@ Activation-based monitoring to verify if neural network uses static camera data.
 
 import torch
 import numpy as np
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Optional, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class CompleteObservationInfluenceTracker:
     Provides correlation, magnitude, and variance analysis for each component.
     """
     
-    def __init__(self, model, config: Dict[str, Any]):
+    def __init__(self, model, config: dict[str, object]):
         self.model = model
         self.config = config
         self.enabled = True
@@ -477,7 +477,7 @@ class CompleteObservationInfluenceTracker:
         logger.warning("🧹 Complete observation tracker cleaned up")
 
 
-def create_influence_tracker(model, config: Dict[str, Any]) -> Optional[CompleteObservationInfluenceTracker]:
+def create_influence_tracker(model, config: dict[str, object]) -> Optional[CompleteObservationInfluenceTracker]:
     """
     Factory function to create complete observation influence tracker.
     

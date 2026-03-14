@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from isaacgym import gymapi
 from isaacgym import gymtorch
 import os
@@ -19,7 +21,7 @@ logger = CustomLogger("robot_manager")
 
 
 class RobotManagerIGE(BaseManager):
-    def __init__(self, global_sim_dict, robot_name, controller_name, device, robot_id=0):
+    def __init__(self, global_sim_dict: dict[str, object], robot_name: str, controller_name: str, device: str, robot_id: int = 0) -> None:
         logger.debug("Initializing RobotManagerIGE")
         self.gym = global_sim_dict["gym"]
         self.sim = global_sim_dict["sim"]
@@ -97,7 +99,7 @@ class RobotManagerIGE(BaseManager):
 
         return
 
-    def create_robot(self, asset_loader_class):
+    def create_robot(self, asset_loader_class: object) -> None:
         # create the robot from the name registry and use the configs from this created robot.
         logger.debug("Creating robot asset for Isaac Gym")
         robot_asset_class = self.cfg.robot_asset
@@ -108,7 +110,7 @@ class RobotManagerIGE(BaseManager):
 
         return
 
-    def prepare_for_sim(self, global_tensor_dict):
+    def prepare_for_sim(self, global_tensor_dict: dict[str, object]) -> None:
 
         self.global_tensor_dict = global_tensor_dict
 
@@ -276,13 +278,13 @@ class RobotManagerIGE(BaseManager):
 
     def add_robot_to_env(
         self,
-        simulation_env_class,
-        env_handle,
-        global_asset_counter,
-        env_id,
-        segmentation_counter,
-        robot_idx_in_env=None,
-    ):
+        simulation_env_class: object,
+        env_handle: object,
+        global_asset_counter: int,
+        env_id: int,
+        segmentation_counter: int,
+        robot_idx_in_env: int | None = None,
+    ) -> int:
         if robot_idx_in_env is None:
             robot_idx_in_env = self.robot_id
             
@@ -487,10 +489,10 @@ class RobotManagerIGE(BaseManager):
         
         return segmentation_counter + 1
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(torch.arange(self.cfg.num_envs, device=self.device))
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         self.robot.reset_idx(env_ids)
         if self.warp_sensor is not None:
             self.warp_sensor.reset_idx(env_ids)
@@ -499,25 +501,25 @@ class RobotManagerIGE(BaseManager):
         if self.camera_sensor is not None:
             self.camera_sensor.reset_idx(env_ids)
 
-    def pre_physics_step(self, actions):
+    def pre_physics_step(self, actions: torch.Tensor) -> None:
         # FIXED: Action tracking now works correctly with tensor cloning in reward computation
         self.prev_actions[:] = self.actions[:]  # Save current actions as previous
         self.actions[:] = actions  # Set new actions  
         self.robot.step(self.actions)
 
-    def post_physics_step(self):
+    def post_physics_step(self) -> None:
         # have this sensor here rather than at capture_sensors
         # as this will still update the sensor without the user forgetting to call render()
         if self.imu_sensor is not None:
             self.imu_sensor.update()
 
-    def capture_sensors(self):
+    def capture_sensors(self) -> None:
         if self.warp_sensor is not None:
             self.warp_sensor.update()
         if self.camera_sensor is not None:
             self.camera_sensor.update()
 
-    def get_observations(self):
+    def get_observations(self) -> dict[str, object]:
         """
         Get observations with robot ID information
         """
@@ -530,19 +532,19 @@ class RobotManagerIGE(BaseManager):
         
         return observations
         
-    def get_robot_positions(self):
+    def get_robot_positions(self) -> torch.Tensor | None:
         """Get current robot positions across all environments"""
         # Implementation depends on existing robot state access
         # This should return tensor of shape (num_envs, 3)
         pass
         
-    def get_robot_velocities(self):
+    def get_robot_velocities(self) -> torch.Tensor | None:
         """Get current robot velocities across all environments"""
         # Implementation depends on existing robot state access
         # This should return tensor of shape (num_envs, 3)
         pass
         
-    def set_robot_positions(self, positions):
+    def set_robot_positions(self, positions: torch.Tensor) -> None:
         """Set robot positions for reset"""
         # Implementation depends on existing robot control interface
         # positions: tensor of shape (num_envs, 3)

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
+
 import torch
 import os
 from aerial_gym.utils.vae.VAE import VAE
 
 
-def clean_state_dict(state_dict):
+def clean_state_dict(state_dict: dict[str, object]) -> dict[str, object]:
     clean_dict = {}
     for key, value in state_dict.items():
         if "module." in key:
@@ -19,7 +22,7 @@ class VAEImageEncoder:
     Class that wraps around the VAE class for efficient inference for the aerial_gym class
     """
 
-    def __init__(self, config, device="cuda:0"):
+    def __init__(self, config: object, device: str = "cuda:0") -> None:
         self.config = config
         self.vae_model = VAE(input_dim=1, latent_dim=self.config.latent_dims).to(device)
         # combine module path with model file name
@@ -30,7 +33,7 @@ class VAEImageEncoder:
         self.vae_model.load_state_dict(state_dict)
         self.vae_model.eval()
 
-    def encode(self, image_tensors):
+    def encode(self, image_tensors: torch.Tensor) -> torch.Tensor:
         """
         Class to encode the set of images to a latent space. We can return both the means and sampled latent space variables.
         """
@@ -103,7 +106,7 @@ class VAEImageEncoder:
             returned_val = means
         return returned_val
 
-    def decode(self, latent_spaces):
+    def decode(self, latent_spaces: torch.Tensor) -> torch.Tensor:
         """
         Decode a latent space to reconstruct full images
         """
@@ -115,7 +118,7 @@ class VAEImageEncoder:
             decoded_image = self.vae_model.decode(latent_spaces)
         return decoded_image
 
-    def get_latent_dims_size(self):
+    def get_latent_dims_size(self) -> int:
         """
         Function to get latent space dims
         """

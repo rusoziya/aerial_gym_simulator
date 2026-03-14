@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 import warp as wp
 from aerial_gym.sensors.base_sensor import BaseSensor
 
@@ -24,7 +27,9 @@ logger.setLoggerLevel(logging.INFO)
 
 
 class WarpSensor(BaseSensor):
-    def __init__(self, sensor_config, num_envs, mesh_id_list, device):
+    def __init__(
+        self, sensor_config: object, num_envs: int, mesh_id_list: list[int], device: str
+    ) -> None:
         super().__init__(sensor_config=sensor_config, num_envs=num_envs, device=device)
         self.mesh_id_list = mesh_id_list
         self.device = device
@@ -49,7 +54,7 @@ class WarpSensor(BaseSensor):
             )
             logger.info("Camera sensor initialized")
             logger.debug(f"Sensor config: {self.cfg.__dict__}")
-        
+
         elif self.cfg.sensor_type == "stereo_camera":
             self.sensor = WarpStereoCam(
                 num_envs=self.num_envs,
@@ -80,7 +85,7 @@ class WarpSensor(BaseSensor):
         else:
             raise NotImplementedError
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
         super().init_tensors(global_tensor_dict)
         logger.debug(f"Initializing sensor tensors")
         # here a new view of robot position and orienentation is created since the robot has multiple sensors
@@ -146,11 +151,11 @@ class WarpSensor(BaseSensor):
 
         logger.debug(f"[DONE] Initializing sensor tensors")
 
-    def reset(self):
+    def reset(self) -> None:
         env_ids = torch.arange(self.num_envs, device=self.device)
         self.reset_idx(env_ids)
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         if self.cfg.randomize_placement == True:
             # sample local position from min and max translations
             self.sensor_local_position[env_ids] = torch_rand_float_tensor(
@@ -171,10 +176,10 @@ class WarpSensor(BaseSensor):
             pass
         return
 
-    def initialize_sensor(self):
+    def initialize_sensor(self) -> None:
         self.sensor.capture()
 
-    def update(self):
+    def update(self) -> None:
         # transform local position and orientation to world frame before performing ray_casting
         # tf_apply(self.root_quats, self.root_positions, self.sensor_local_pos)
         self.sensor_position[:] = tf_apply(
@@ -199,7 +204,7 @@ class WarpSensor(BaseSensor):
             self.apply_range_limits()
             self.normalize_observation()
 
-    def apply_range_limits(self):
+    def apply_range_limits(self) -> None:
         if self.cfg.return_pointcloud == True:
             # if pointcloud is in the world frame, the pointcloud range will not be normalized
             if self.cfg.pointcloud_in_world_frame == False:
@@ -219,14 +224,14 @@ class WarpSensor(BaseSensor):
             self.pixels[self.pixels < self.cfg.min_range] = self.cfg.near_out_of_range_value
             # logger.debug("[DONE] Clipping pointcloud values to sensor range")
 
-    def normalize_observation(self):
+    def normalize_observation(self) -> None:
         if self.cfg.normalize_range and self.cfg.pointcloud_in_world_frame == False:
             # logger.debug("Normalizing pointcloud values")
             self.pixels[:] = self.pixels / self.cfg.max_range
         # if self.cfg.pointcloud_in_world_frame == True:
         #     logger.debug("Pointcloud is in world frame. not normalizing")
 
-    def apply_noise(self):
+    def apply_noise(self) -> None:
         if self.cfg.sensor_noise.enable_sensor_noise == True:
             # logger.debug("Applying sensor noise")
             sensor_noise_params = self.cfg.sensor_noise
@@ -246,5 +251,5 @@ class WarpSensor(BaseSensor):
                 > 0
             ] = self.cfg.near_out_of_range_value
 
-    def get_observation(self):
+    def get_observation(self) -> tuple[torch.Tensor, torch.Tensor | None]:
         return self.pixels, self.segmentation_pixels

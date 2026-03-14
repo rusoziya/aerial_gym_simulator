@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import torch
+
 
 from aerial_gym.utils.math import *
 
@@ -20,13 +23,13 @@ class BaseLeeController(BaseController):
     It will be inherited by the specific controller classes.
     """
 
-    def __init__(self, control_config, num_envs, device, mode="robot"):
+    def __init__(self, control_config: object, num_envs: int, device: str, mode: str = "robot") -> None:
         super().__init__(control_config, num_envs, device, mode)
         self.cfg = control_config
         self.num_envs = num_envs
         self.device = device
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict: dict[str, torch.Tensor]) -> None:
         super().init_tensors(global_tensor_dict)
 
         # Read from config and set the values for controller parameters
@@ -75,21 +78,21 @@ class BaseLeeController(BaseController):
         # buffer tensor to be used by torch.jit functions for various purposes
         self.buffer_tensor = torch.zeros((self.num_envs, 3, 3), device=self.device)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: object, **kwargs: object) -> torch.Tensor:
         return self.update(*args, **kwargs)
 
-    def reset_commands(self):
+    def reset_commands(self) -> None:
         self.wrench_command[:] = 0.0
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(env_ids=None)
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor | None) -> None:
         if env_ids is None:
             env_ids = torch.arange(self.K_rot_tensor.shape[0])
         self.randomize_params(env_ids)
 
-    def randomize_params(self, env_ids):
+    def randomize_params(self, env_ids: torch.Tensor) -> None:
         if self.cfg.randomize_params == False:
             # logger.debug(
             #     "Randomization of controller parameters is disabled based on config setting."
@@ -108,7 +111,7 @@ class BaseLeeController(BaseController):
             self.K_angvel_tensor_min[env_ids], self.K_angvel_tensor_max[env_ids]
         )
 
-    def compute_acceleration(self, setpoint_position, setpoint_velocity):
+    def compute_acceleration(self, setpoint_position: torch.Tensor, setpoint_velocity: torch.Tensor) -> torch.Tensor:
         position_error_world_frame = setpoint_position - self.robot_position
         # logger.debug(
         #     f"position_error_world_frame: {position_error_world_frame}, setpoint_position: {setpoint_position}, robot_position: {self.robot_position}"
@@ -124,7 +127,7 @@ class BaseLeeController(BaseController):
         )
         return accel_command
 
-    def compute_body_torque(self, setpoint_orientation, setpoint_angvel):
+    def compute_body_torque(self, setpoint_orientation: torch.Tensor, setpoint_angvel: torch.Tensor) -> torch.Tensor:
         setpoint_angvel[:, 2] = torch.clamp(
             setpoint_angvel[:, 2], -self.cfg.max_yaw_rate, self.cfg.max_yaw_rate
         )

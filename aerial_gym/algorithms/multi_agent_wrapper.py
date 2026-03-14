@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import gymnasium as gym
-from typing import Dict, Any, List, Tuple
+from typing import Dict, List, Tuple
 
 class MultiAgentAerialGymWrapper:
     """

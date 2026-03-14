@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 import torch
@@ -19,7 +19,7 @@ class GradientAttributionTracker:
     - Aggregates mean gradient magnitude per observation slice over time.
     """
 
-    def __init__(self, model: torch.nn.Module, config: Dict[str, Any]):
+    def __init__(self, model: torch.nn.Module, config: dict[str, object]):
         self.model = model
         self.config = config or {}
         self.enabled = True
@@ -288,7 +288,7 @@ class GradientAttributionTracker:
             pass
 
 
-def create_gradient_tracker(model: torch.nn.Module, config: Dict[str, Any]) -> Optional[GradientAttributionTracker]:
+def create_gradient_tracker(model: torch.nn.Module, config: dict[str, object]) -> Optional[GradientAttributionTracker]:
     try:
         tracker = GradientAttributionTracker(model, config)
         if tracker.enabled:
