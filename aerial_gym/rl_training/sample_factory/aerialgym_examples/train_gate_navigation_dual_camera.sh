@@ -178,12 +178,24 @@ while [[ $# -gt 0 ]]; do
             STATIC_CAMERA_BASE_Z="${1#*=}"
             shift
             ;;
+        --dynamic_camera_follow_y_offset_m=*)
+            DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M="${1#*=}"
+            shift
+            ;;
         --enable_static_fov_reward=*)
             ENABLE_STATIC_FOV_REWARD="${1#*=}"
             shift
             ;;
         --enable_static_camera_locked=*)
             ENABLE_STATIC_CAMERA_LOCKED="${1#*=}"
+            shift
+            ;;
+        --enable_static_camera_arc_follow=*)
+            ENABLE_STATIC_CAMERA_ARC_FOLLOW="${1#*=}"
+            shift
+            ;;
+        --static_camera_arc_radius_m=*)
+            STATIC_CAMERA_ARC_RADIUS_M="${1#*=}"
             shift
             ;;
         --async_rl=*)
@@ -392,11 +404,7 @@ echo ""
 echo -e "${YELLOW}Using fresh experiment name: ${EXPERIMENT_NAME}${NC}"
 echo -e "${YELLOW}This ensures no configuration conflicts with previous runs${NC}"
 echo ""
-echo -e "${YELLOW}GPU Monitoring Interval: ${GPU_MONITOR_INTERVAL}s${NC}"
-echo -e "${YELLOW}GPU Log File: ${GPU_LOG_FILE}${NC}"
-
-# Create logs directory
-mkdir -p ../../../logs
+ 
 
 # Function to cleanup background processes
 cleanup() {
@@ -411,33 +419,42 @@ cleanup() {
 # Set trap to cleanup on script exit
 trap cleanup EXIT
 
-# Check if nvidia-smi is available
-if ! command -v nvidia-smi &> /dev/null; then
-    echo -e "${RED}Error: nvidia-smi not found. GPU monitoring will not work.${NC}"
-    exit 1
+if [ "${ENABLE_GPU_MONITORING:-false}" = true ]; then
+    echo -e "${YELLOW}GPU Monitoring Interval: ${GPU_MONITOR_INTERVAL}s${NC}"
+    echo -e "${YELLOW}GPU Log File: ${GPU_LOG_FILE}${NC}"
+
+    # Create logs directory
+    mkdir -p ../../../logs
+
+    # Check if nvidia-smi is available
+    if ! command -v nvidia-smi &> /dev/null; then
+        echo -e "${RED}Error: nvidia-smi not found. GPU monitoring will not work.${NC}"
+        exit 1
+    fi
+
+    # Start GPU monitoring in background
+    echo -e "${GREEN}Starting GPU monitoring...${NC}"
+    python ../../../logs/monitor_gpu.py --interval $GPU_MONITOR_INTERVAL --output "$GPU_LOG_FILE" &
+    GPU_MONITOR_PID=$!
+
+    # Give GPU monitor time to start
+    sleep 2
+
+    # Check if GPU monitor is running
+    if ! kill -0 $GPU_MONITOR_PID 2>/dev/null; then
+        echo -e "${RED}Error: Failed to start GPU monitoring${NC}"
+        exit 1
+    fi
+
+    echo -e "${GREEN}GPU monitoring started (PID: $GPU_MONITOR_PID)${NC}"
+    echo -e "${BLUE}Monitor GPU usage in real-time: ${NC}watch -n 1 nvidia-smi"
+    echo ""
+    echo "================================================================================"
+    echo ""
 fi
-
-# Start GPU monitoring in background
-echo -e "${GREEN}Starting GPU monitoring...${NC}"
-python ../../../logs/monitor_gpu.py --interval $GPU_MONITOR_INTERVAL --output "$GPU_LOG_FILE" &
-GPU_MONITOR_PID=$!
-
-# Give GPU monitor time to start
-sleep 2
-
-# Check if GPU monitor is running
-if ! kill -0 $GPU_MONITOR_PID 2>/dev/null; then
-    echo -e "${RED}Error: Failed to start GPU monitoring${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}GPU monitoring started (PID: $GPU_MONITOR_PID)${NC}"
-echo -e "${BLUE}Monitor GPU usage in real-time: ${NC}watch -n 1 nvidia-smi"
-echo ""
-echo "================================================================================"
-echo ""
 
 # Display current GPU status
+if [ "${ENABLE_GPU_MONITORING:-false}" = true ]; then
 python - <<'PY'
 import subprocess
 import time
@@ -456,7 +473,7 @@ def show_gpu_status():
             mem_used_mb = int(mem_used)
             mem_total_mb = int(mem_total)
             mem_used_gb = mem_used_mb / 1024
-            mem_total_gb = mem_total_mb / 1024
+            mem_total_gb = int(mem_total_mb / 1024)
             mem_percent = (mem_used_mb / mem_total_mb) * 100
 
             print(f'GPU {i} ({name}):')
@@ -475,6 +492,7 @@ def show_gpu_status():
 
 show_gpu_status()
 PY
+fi
 
 # Clear existing training directory for fresh start
 echo -e "${YELLOW}Skipping deletion of ./train_dir to preserve previous experiments${NC}"
@@ -542,11 +560,20 @@ fi
 if [ -n "$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG" ]; then
     export SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG=$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG
 fi
+if [ -n "$ENABLE_STATIC_CAMERA_ARC_FOLLOW" ]; then
+    export SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW=$ENABLE_STATIC_CAMERA_ARC_FOLLOW
+fi
+if [ -n "$STATIC_CAMERA_ARC_RADIUS_M" ]; then
+    export SF_STATIC_CAMERA_ARC_RADIUS_M=$STATIC_CAMERA_ARC_RADIUS_M
+fi
 if [ -n "$STATIC_CAMERA_BASE_Y" ]; then
     export SF_STATIC_CAMERA_BASE_Y=$STATIC_CAMERA_BASE_Y
 fi
 if [ -n "$STATIC_CAMERA_BASE_Z" ]; then
     export SF_STATIC_CAMERA_BASE_Z=$STATIC_CAMERA_BASE_Z
+fi
+if [ -n "$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M" ]; then
+    export SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y=$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M
 fi
 if [ -n "$ENABLE_STATIC_FOV_REWARD" ]; then
     export SF_ENABLE_STATIC_FOV_REWARD=$ENABLE_STATIC_FOV_REWARD
@@ -626,8 +653,10 @@ if [ "$ENABLE_GIFS" = true ]; then
     TRAIN_CMD="$TRAIN_CMD --save_gifs=true"
 fi
 
-# Add gradient monitoring for static camera analysis
-TRAIN_CMD="$TRAIN_CMD --enable_gradient_monitoring=true --gradient_log_interval=100 --gradient_print_interval=100"
+# Add gradient monitoring only when explicitly enabled
+if [ "${ENABLE_GRADIENT_MONITORING:-false}" = true ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_gradient_monitoring=true --gradient_log_interval=${GRADIENT_LOG_INTERVAL:-1000} --gradient_print_interval=${GRADIENT_PRINT_INTERVAL:-0}"
+fi
 
 # Add gate size ablation flags if provided
 if [ -n "$DISABLE_GATE_SIZE_RANDOMIZATION" ]; then
@@ -695,6 +724,15 @@ if [ -n "$STATIC_CAMERA_BASE_Y" ]; then
 fi
 if [ -n "$STATIC_CAMERA_BASE_Z" ]; then
     TRAIN_CMD="$TRAIN_CMD --static_camera_base_z=$STATIC_CAMERA_BASE_Z"
+fi
+if [ -n "$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M" ]; then
+    TRAIN_CMD="$TRAIN_CMD --dynamic_camera_follow_y_offset_m=$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M"
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_ARC_FOLLOW" ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_static_camera_arc_follow=$ENABLE_STATIC_CAMERA_ARC_FOLLOW"
+fi
+if [ -n "$STATIC_CAMERA_ARC_RADIUS_M" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_arc_radius_m=$STATIC_CAMERA_ARC_RADIUS_M"
 fi
 
 # Add fusion flags if provided

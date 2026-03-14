@@ -32,6 +32,10 @@ wandb/**
 
 # Generated media (large)
 aerial_gym/rl_training/sample_factory/aerialgym_examples/gif_episodes/**
+**/gif_episodes/**
+**/gifs/**
+**/wandb plotting/**
+scripts/aerialgym legacy/**
 
 # Logs and metrics (runtime)
 **/*.log

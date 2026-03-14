@@ -50,6 +50,8 @@ from PIL import Image
 import os
 import math
 
+VERBOSE = os.environ.get('TRAIN_VERBOSE', 'false').lower() == 'true'
+
 
 from torch import Tensor
 from sample_factory.algo.utils.gymnasium_utils import convert_space
@@ -93,7 +95,8 @@ class AerialGymVecEnv(gym.Env):
         # GIF saving functionality
         self.save_gifs = save_gifs
         if self.save_gifs:
-            print(f"[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)")
+            if VERBOSE:
+                print(f"[AerialGymVecEnv] GIF saving ENABLED for dual cameras (drone + static)")
             self.gif_episode_counter = 0
             self.gif_output_dir = "./gif_episodes"
             os.makedirs(self.gif_output_dir, exist_ok=True)
@@ -110,7 +113,8 @@ class AerialGymVecEnv(gym.Env):
             self.static_depth_noised_frames = [[] for _ in range(self.num_agents)]
             self.merged_noised_frames = [[] for _ in range(self.num_agents)]
         else:
-            print(f"[AerialGymVecEnv] GIF saving DISABLED")
+            if VERBOSE:
+                print(f"[AerialGymVecEnv] GIF saving DISABLED")
         
         self.step_count = 0
         # CRITICAL FIX: Force action space to exactly match inference expectations (4D for gate navigation)
@@ -120,8 +124,9 @@ class AerialGymVecEnv(gym.Env):
         self.action_space = convert_space(base_action_space)
 
         # Debug: Print action space info to verify it's 4D
-        print(f"[AerialGymVecEnv] Forced action space shape: {self.action_space.shape}")
-        print(f"[AerialGymVecEnv] is_multiagent: {self.is_multiagent}, num_agents: {self.num_agents}")
+        if VERBOSE:
+            print(f"[AerialGymVecEnv] Forced action space shape: {self.action_space.shape}")
+            print(f"[AerialGymVecEnv] is_multiagent: {self.is_multiagent}, num_agents: {self.num_agents}")
 
         # Fusion controls
         self.fusion_mode = os.environ.get('SF_FUSION_MODE', 'concat')
@@ -132,18 +137,20 @@ class AerialGymVecEnv(gym.Env):
         if obs_key == "obs":
             # Get the actual observation space dimension from the task configuration
             task_obs_dim = getattr(self.env.task_config, 'observation_space_dim', 150)  # Default to 150D for gate navigation
-            print(f"[AerialGymVecEnv] Detected observation space: {task_obs_dim}D")
+            if VERBOSE:
+                print(f"[AerialGymVecEnv] Detected observation space: {task_obs_dim}D")
             
-            if task_obs_dim == 150:
-                print(f"[AerialGymVecEnv] Using GATE NAVIGATION configuration (150D = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)")
-            elif task_obs_dim == 143:
-                print(f"[AerialGymVecEnv] Using ALTERNATIVE GATE NAVIGATION configuration (143D)")
-            elif task_obs_dim == 145:
-                print(f"[AerialGymVecEnv] Using OLDER GATE NAVIGATION configuration (145D)")
-            elif task_obs_dim == 81:
-                print(f"[AerialGymVecEnv] Using STANDARD DCE configuration (81D = 17D basic + 64D drone VAE)")
-            else:
-                print(f"[AerialGymVecEnv] Using CUSTOM configuration ({task_obs_dim}D observations)")
+            if VERBOSE:
+                if task_obs_dim == 150:
+                    print(f"[AerialGymVecEnv] Using GATE NAVIGATION configuration (150D = 3D drone position + 6D static camera pose + 3D full orientation + 9D state + 64D drone VAE + 64D static camera VAE)")
+                elif task_obs_dim == 143:
+                    print(f"[AerialGymVecEnv] Using ALTERNATIVE GATE NAVIGATION configuration (143D)")
+                elif task_obs_dim == 145:
+                    print(f"[AerialGymVecEnv] Using OLDER GATE NAVIGATION configuration (145D)")
+                elif task_obs_dim == 81:
+                    print(f"[AerialGymVecEnv] Using STANDARD DCE configuration (81D = 17D basic + 64D drone VAE)")
+                else:
+                    print(f"[AerialGymVecEnv] Using CUSTOM configuration ({task_obs_dim}D observations)")
             
             # Create dynamic observation space based on actual task requirements
             self.observation_space = gym.spaces.Dict({
@@ -467,9 +474,10 @@ class AerialGymVecEnv(gym.Env):
                 self.merged_noised_frames[0].append(merged_noised_img)
                 
         except Exception as e:
-            print(f"[GIF] Warning: Failed to collect frames: {e}")
-            import traceback
-            print(f"[GIF] Traceback: {traceback.format_exc()}")
+            if VERBOSE:
+                print(f"[GIF] Warning: Failed to collect frames: {e}")
+                import traceback
+                print(f"[GIF] Traceback: {traceback.format_exc()}")
 
     def _save_episode_gifs(self, env_id=0):
         """Save collected frames as GIFs for the specified environment."""
@@ -537,7 +545,8 @@ class AerialGymVecEnv(gym.Env):
                     duration=100,
                     loop=0
                 )
-                print(f"[GIF] Saved static segmentation: {gif_path}")
+                if VERBOSE:
+                    print(f"[GIF] Saved static segmentation: {gif_path}")
             
             # if len(self.merged_frames[env_id]) > 0:
             #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_CLEAN{level_suffix}.gif")
@@ -561,7 +570,8 @@ class AerialGymVecEnv(gym.Env):
                     duration=100,
                     loop=0
                 )
-                print(f"[GIF] Saved drone depth (D455 NOISED): {gif_path}")
+                if VERBOSE:
+                    print(f"[GIF] Saved drone depth (D455 NOISED): {gif_path}")
             
             # Save static camera noised GIFs
             if len(self.static_depth_noised_frames[env_id]) > 0:
@@ -573,7 +583,8 @@ class AerialGymVecEnv(gym.Env):
                     duration=100,
                     loop=0
                 )
-                print(f"[GIF] Saved static depth (D455 NOISED): {gif_path}")
+                if VERBOSE:
+                    print(f"[GIF] Saved static depth (D455 NOISED): {gif_path}")
             
             # # Save merged noised GIF (drone + static side by side - NOISED versions)
             # if len(self.merged_noised_frames[env_id]) > 0:
@@ -588,7 +599,8 @@ class AerialGymVecEnv(gym.Env):
             #     print(f"[GIF] Saved merged dual camera (D455 NOISED): {gif_path}")
         
         except Exception as e:
-            print(f"[GIF] Warning: Failed to save GIFs for episode {episode_num}: {e}")
+            if VERBOSE:
+                print(f"[GIF] Warning: Failed to save GIFs for episode {episode_num}: {e}")
 
         # === OPTIONAL: Save originals vs VAE reconstructions (depth) ===
         # try:
@@ -664,6 +676,21 @@ class AerialGymVecEnv(gym.Env):
         transformed_obs = {"obs": obs["observations"]}
         # Apply return-drop ablation if requested
         transformed_obs["obs"] = self._apply_obs_ablation(transformed_obs["obs"]) 
+        # Sanitize non-finite values BEFORE Sample Factory normalization
+        try:
+            vec = transformed_obs.get('obs', None)
+            if isinstance(vec, torch.Tensor):
+                if not torch.isfinite(vec).all():
+                    try:
+                        import os as _os
+                        if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
+                            n_bad = int((~torch.isfinite(vec)).sum().item())
+                            print(f"[SANITIZE][reset] replacing {n_bad} non-finite obs values with 0")
+                    except Exception:
+                        pass
+                transformed_obs['obs'] = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
+        except Exception:
+            pass
         # Optional: print the full obs vector for env0 each step for one episode
         try:
             if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true':
@@ -678,10 +705,12 @@ class AerialGymVecEnv(gym.Env):
                         if float(torch.norm(obs0).item()) > 0.0:
                             self._train_env0_obs_state = 1
                             self._train_env0_obs_step = 0
-                            print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
+                            if VERBOSE:
+                                print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
                             self._train_env0_obs_step += 1
                     elif self._train_env0_obs_state == 1:
-                        print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
+                        if VERBOSE:
+                            print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
                         self._train_env0_obs_step += 1
         except Exception:
             pass
@@ -699,10 +728,12 @@ class AerialGymVecEnv(gym.Env):
                         if (ze_abs > 1e-6) or (zs_abs > 1e-6):
                             self._train_env0_log_state = 1
                             self._train_env0_step = 0
-                            print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                            if VERBOSE:
+                                print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
                             self._train_env0_step += 1
                     elif self._train_env0_log_state == 1:
-                        print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                        if VERBOSE:
+                            print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
                         self._train_env0_step += 1
         except Exception:
             pass
@@ -717,6 +748,20 @@ class AerialGymVecEnv(gym.Env):
         # FIXED: Direct 4D action pass-through for DCE gate navigation task
         # Sample Factory now provides 4D actions directly matching DCE task expectations (x_vel, y_vel, z_vel, yaw_rate)
         dce_action = action
+        # Sanitize action to avoid NaN/Inf entering physics
+        try:
+            if isinstance(dce_action, torch.Tensor):
+                if not torch.isfinite(dce_action).all():
+                    try:
+                        import os as _os
+                        if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
+                            n_bad = int((~torch.isfinite(dce_action)).sum().item())
+                            print(f"[SANITIZE][action] replacing {n_bad} non-finite action values with 0 and clamping")
+                    except Exception:
+                        pass
+                dce_action = torch.nan_to_num(dce_action, nan=0.0, posinf=0.0, neginf=0.0).clamp_(-1.0, 1.0)
+        except Exception:
+            pass
             
         obs, rew, terminated, truncated, infos = self.env.step(dce_action)
         
@@ -745,20 +790,23 @@ class AerialGymVecEnv(gym.Env):
                         reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
                         if len(reset_ids) > 0 and 0 in reset_ids.tolist():
                             self._train_env0_log_state = 2
-                            print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
+                            if VERBOSE:
+                                print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
                     if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_obs_state', 2) == 1:
                         reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
                         if len(reset_ids) > 0 and 0 in reset_ids.tolist():
                             self._train_env0_obs_state = 2
-                            print(f"[TRAIN_ENV0_OBS] episode_end steps={self._train_env0_obs_step}")
+                            if VERBOSE:
+                                print(f"[TRAIN_ENV0_OBS] episode_end steps={self._train_env0_obs_step}")
                 except Exception:
                     pass
                 # Save every 5 episodes for env 0
                 if self.episode_count % 5 == 0:
-                    if terminated[0]:
-                        print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 5 episodes)")
-                    elif truncated[0]:
-                        print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 5 episodes)")
+                    if VERBOSE:
+                        if terminated[0]:
+                            print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 5 episodes)")
+                        elif truncated[0]:
+                            print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 5 episodes)")
                     self._save_episode_gifs(env_id=0)
                 self._clear_frames(env_id=0)
                 
@@ -859,17 +907,20 @@ class AerialGymVecEnv(gym.Env):
                                 extra[k] = float(extra[k])
                             except Exception:
                                 pass
-                    # Add running-mean episode-level metrics (finite by construction; NaNs avoided by counts)
-                    def _safe_mean(sum_key, count_key):
+                    # Add running-mean episode-level metrics
+                    # For success-conditioned metrics (time_to_gate/offsets), return None when count==0
+                    def _safe_mean(sum_key, count_key, none_if_zero=False):
                         s = self._traj_running.get(sum_key, 0.0)
-                        c = max(1, self._traj_running.get(count_key, 0))
+                        c = self._traj_running.get(count_key, 0)
+                        if c <= 0:
+                            return None if none_if_zero else float('nan')
                         return float(s / c)
                     extra['path_efficiency_running_mean'] = _safe_mean('path_efficiency_sum', 'path_efficiency_count')
                     extra['min_gate_distance_running_mean'] = _safe_mean('min_gate_distance_sum', 'min_gate_distance_count')
-                    # Means conditioned on success
-                    extra['time_to_gate_running_mean'] = _safe_mean('time_to_gate_sum', 'time_to_gate_count')
-                    extra['center_offset_running_mean'] = _safe_mean('center_offset_sum', 'center_offset_count')
-                    extra['height_offset_running_mean'] = _safe_mean('height_offset_sum', 'height_offset_count')
+                    # Means conditioned on success: drop when no successes
+                    extra['time_to_gate_running_mean'] = _safe_mean('time_to_gate_sum', 'time_to_gate_count', none_if_zero=True)
+                    extra['center_offset_running_mean'] = _safe_mean('center_offset_sum', 'center_offset_count', none_if_zero=True)
+                    extra['height_offset_running_mean'] = _safe_mean('height_offset_sum', 'height_offset_count', none_if_zero=True)
                     # Helpful counts
                     extra['gate_pass_rate'] = float(self._traj_running['episodes_crossed']) / float(max(1, self._traj_running['episodes_total']))
                     extra['episodes_total'] = float(self._traj_running['episodes_total'])
@@ -902,18 +953,29 @@ class AerialGymVecEnv(gym.Env):
                     # Mirror curriculum/current_* using task attributes (fallback) so they always show up
                     try:
                         # Prefer values emitted by env in infos; otherwise fall back to task attributes
+                        # Move any current_* tensors into episode_extra_stats namespace
                         cur_lvl_tensor = infos.get('curriculum/current_level', None)
                         cur_prog_tensor = infos.get('curriculum/current_progress', None)
                         if cur_lvl_tensor is not None:
-                            extra['curriculum/current_level'] = float(cur_lvl_tensor.mean().item()) if hasattr(cur_lvl_tensor, 'mean') else float(cur_lvl_tensor)
+                            extra['episode_extra_stats/curriculum/current_level'] = float(cur_lvl_tensor.mean().item()) if hasattr(cur_lvl_tensor, 'mean') else float(cur_lvl_tensor)
+                            if 'curriculum/current_level' in infos:
+                                try:
+                                    del infos['curriculum/current_level']
+                                except Exception:
+                                    pass
                         else:
                             if task is not None and hasattr(task, 'curriculum_level'):
-                                extra['curriculum/current_level'] = float(getattr(task, 'curriculum_level'))
+                                extra['episode_extra_stats/curriculum/current_level'] = float(getattr(task, 'curriculum_level'))
                         if cur_prog_tensor is not None:
-                            extra['curriculum/current_progress'] = float(cur_prog_tensor.mean().item()) if hasattr(cur_prog_tensor, 'mean') else float(cur_prog_tensor)
+                            extra['episode_extra_stats/curriculum/current_progress'] = float(cur_prog_tensor.mean().item()) if hasattr(cur_prog_tensor, 'mean') else float(cur_prog_tensor)
+                            if 'curriculum/current_progress' in infos:
+                                try:
+                                    del infos['curriculum/current_progress']
+                                except Exception:
+                                    pass
                         else:
                             if task is not None and hasattr(task, 'curriculum_progress_fraction'):
-                                extra['curriculum/current_progress'] = float(getattr(task, 'curriculum_progress_fraction'))
+                                extra['episode_extra_stats/curriculum/current_progress'] = float(getattr(task, 'curriculum_progress_fraction'))
                     except Exception:
                         pass
 
@@ -1104,6 +1166,21 @@ class AerialGymVecEnv(gym.Env):
         transformed_obs = {"obs": obs["observations"]}
         # Apply return-drop ablation if requested
         transformed_obs["obs"] = self._apply_obs_ablation(transformed_obs["obs"]) 
+        # Sanitize non-finite values BEFORE Sample Factory normalization
+        try:
+            vec = transformed_obs.get('obs', None)
+            if isinstance(vec, torch.Tensor):
+                if not torch.isfinite(vec).all():
+                    try:
+                        import os as _os
+                        if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
+                            n_bad = int((~torch.isfinite(vec)).sum().item())
+                            print(f"[SANITIZE][step] replacing {n_bad} non-finite obs values with 0")
+                    except Exception:
+                        pass
+                transformed_obs['obs'] = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
+        except Exception:
+            pass
         
         self.step_count += 1
         # Removed step-based GIF debugging - now using episode-based saving every 50 episodes
@@ -1324,6 +1401,13 @@ def add_extra_params_func(parser):
     parser.add_argument("--disable_dynamic_camera_following", type=lambda x: x.lower() == 'true', default=False, help="Disable dynamic camera following mode (forces static camera even if enabled in config)")
     # Dynamic camera following enable flag (override config setting)
     parser.add_argument("--enable_dynamic_camera_following", type=lambda x: x.lower() == 'true', default=None, help="Enable dynamic camera following mode (overrides config setting when specified)")
+    # Arc-follow (separate static-camera mode)
+    parser.add_argument("--enable_static_camera_arc_follow", type=lambda x: x.lower() == 'true', default=False, help="Enable arc-follow static camera mode (camera moves on a fixed-radius arc around the gate)")
+    parser.add_argument("--static_camera_arc_radius_m", type=float, default=2.0, help="Arc-follow radius in meters (default 2.0)")
+    # Dynamic follow distance override (Y offset in meters; negative is behind gate)
+    parser.add_argument("--dynamic_camera_follow_y_offset_m", type=float, default=None, help="Override dynamic camera follow Y-offset in meters (requires dynamic follow to be enabled)")
+    # Disable gate blending in dynamic follow (pure drone-follow look target)
+    parser.add_argument("--disable_dynamic_follow_gate_blending", type=lambda x: x.lower() == 'true', default=False, help="Disable blending toward gate in dynamic-follow; always look at drone")
     # Spawn randomization ablations (position vs orientation independently)
     parser.add_argument("--disable_spawn_position_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable robot spawn POSITION randomization (lock to baseline level)")
     parser.add_argument("--disable_spawn_orientation_randomization", type=lambda x: x.lower() == 'true', default=False, help="Disable robot spawn ORIENTATION randomization (lock yaw to baseline level)")
@@ -1345,10 +1429,16 @@ def add_extra_params_func(parser):
     parser.add_argument("--gate_per_feature", type=int, default=1, help="Use per-feature gate (1) or scalar gate (0)")
 
     # Complete observation influence tracking arguments
-    parser.add_argument("--enable_gradient_monitoring", type=lambda x: x.lower() == 'true', default=False, help="Enable complete observation influence tracking")
+    # Allow env var overrides: SF_ENABLE_INFLUENCE_TRACKER and SF_ENABLE_GRAD_ATTR
+    import os as _os
+    _inf_env = _os.getenv('SF_ENABLE_INFLUENCE_TRACKER')
+    _inf_default = (str(_inf_env).lower() == 'true') if _inf_env is not None else False
+    parser.add_argument("--enable_gradient_monitoring", type=lambda x: x.lower() == 'true', default=_inf_default, help="Enable complete observation influence tracking (overridable via SF_ENABLE_INFLUENCE_TRACKER)")
     parser.add_argument("--gradient_log_interval", default=100, type=int, help="Log influence metrics every N steps")
     parser.add_argument("--gradient_print_interval", default=100, type=int, help="Print analysis summary every N steps")
-    parser.add_argument("--enable_grad_attribution", type=lambda x: x.lower() == 'true', default=True, help="Enable gradient-based attribution alongside correlation analysis")
+    _grad_env = _os.getenv('SF_ENABLE_GRAD_ATTR')
+    _grad_default = (str(_grad_env).lower() == 'true') if _grad_env is not None else True
+    parser.add_argument("--enable_grad_attribution", type=lambda x: x.lower() == 'true', default=_grad_default, help="Enable gradient-based attribution alongside correlation analysis (overridable via SF_ENABLE_GRAD_ATTR)")
     
     p = parser
     p.add_argument(
@@ -1886,6 +1976,42 @@ class DualFusionEncoder(Encoder):
 
     def forward(self, obs_dict):
         x = obs_dict['obs']
+        # One-shot diagnostics for non-finite inputs (before any sanitization)
+        try:
+            import os as _os
+            _want_diag = _os.environ.get('NAN_DIAG', 'false').lower() == 'true'
+            if (not hasattr(self, '_nan_diag_printed')):
+                self._nan_diag_printed = False
+            if (not self._nan_diag_printed) and (not torch.isfinite(x).all() or _want_diag):
+                def _slice_stats(name, t, a, b):
+                    s = t[..., a:b]
+                    finite = torch.isfinite(s)
+                    n = s.numel()
+                    bad = int((~finite).sum().item())
+                    mn = float(torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0).min().item()) if n > 0 else 0.0
+                    mx = float(torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0).max().item()) if n > 0 else 0.0
+                    return f"{name}[{a}:{b}]: bad={bad}/{n} min={mn:.3e} max={mx:.3e}"
+                try:
+                    msg = ["[NAN_DIAG][encoder_in] non-finite detected or forced dump:" ]
+                    msg.append(_slice_stats('pos', x, 0, 3))
+                    msg.append(_slice_stats('static_pose', x, 3, 9))
+                    msg.append(_slice_stats('orient', x, 9, 12))
+                    msg.append(_slice_stats('vel', x, 12, 18))
+                    msg.append(_slice_stats('actions', x, 18, 22))
+                    msg.append(_slice_stats('ego_latent', x, 22, 86))
+                    msg.append(_slice_stats('static_latent', x, 86, 150))
+                    print(" | ".join(msg))
+                except Exception:
+                    pass
+                if not _want_diag:
+                    self._nan_diag_printed = True
+        except Exception:
+            pass
+        # Sanitize input to prevent NaN/Inf propagation into LayerNorm/gating
+        try:
+            x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+        except Exception:
+            pass
         z_e, z_s = self._slice_latents(x)
         rest = self._remove_latents(x)
         # Encoder tap: print what the encoder actually receives (before any LayerNorm/projections)
@@ -1906,7 +2032,7 @@ class DualFusionEncoder(Encoder):
                     if is_eval:
                         z_e_abs = float(z_e.abs().mean().item()) if hasattr(z_e, 'abs') else float('nan')
                         z_s_abs = float(z_s.abs().mean().item()) if hasattr(z_s, 'abs') else float('nan')
-                        print(f"[ENC_TAP] preLN abs_mean: drone(22:86)={z_e_abs:.6e} static(86:150)={z_s_abs:.6e}")
+                        # print(f"[ENC_TAP] preLN abs_mean: drone(22:86)={z_e_abs:.6e} static(86:150)={z_s_abs:.6e}")
                 except Exception:
                     pass
         # Optional: training-time normalized env0 latents per-frame (one episode)
@@ -2058,10 +2184,24 @@ class DualFusionEncoder(Encoder):
                 # Normal gated fusion
                 e = self.ego_proj(z_e)
                 s = self.static_proj(z_s)
+                # Sanitize branch activations before gating
+                try:
+                    e = torch.nan_to_num(e, nan=0.0, posinf=0.0, neginf=0.0)
+                    s = torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0)
+                except Exception:
+                    pass
                 g = torch.sigmoid(self.gate(torch.cat([e, s], dim=-1)))
+                try:
+                    g = torch.nan_to_num(g, nan=0.5, posinf=1.0, neginf=0.0)
+                except Exception:
+                    pass
                 if g.shape[-1] == 1:
                     g = g.expand_as(e)
                 z = g * s + (1 - g) * e
+                try:
+                    z = torch.nan_to_num(z, nan=0.0, posinf=0.0, neginf=0.0)
+                except Exception:
+                    pass
                 fused = torch.cat([rest, z], dim=-1)
 
             # Periodic debug print for gate stats
@@ -2116,6 +2256,10 @@ class DualFusionEncoder(Encoder):
         else:
             # Early concat baseline (kept for easy revert)
             fused = torch.cat([rest, z_e, z_s], dim=-1)
+            try:
+                fused = torch.nan_to_num(fused, nan=0.0, posinf=0.0, neginf=0.0)
+            except Exception:
+                pass
             # Periodic debug print for concat stats
             self._fwd_count += 1
             if (self._fwd_count % 200) == 0:
@@ -2322,6 +2466,19 @@ def parse_aerialgym_cfg(evaluation=False):
         if hasattr(final_cfg, 'enable_dynamic_camera_following') and final_cfg.enable_dynamic_camera_following is not None:
             os.environ['enable_dynamic_camera_following'] = 'true' if final_cfg.enable_dynamic_camera_following else 'false'
             print(f"[CFG] dynamic camera following enabled (override): {final_cfg.enable_dynamic_camera_following}")
+        # Arc-follow flags → env
+        if hasattr(final_cfg, 'enable_static_camera_arc_follow'):
+            os.environ['SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW'] = 'true' if final_cfg.enable_static_camera_arc_follow else 'false'
+            print(f"[CFG] static camera arc-follow enabled: {final_cfg.enable_static_camera_arc_follow}")
+        if hasattr(final_cfg, 'static_camera_arc_radius_m') and final_cfg.static_camera_arc_radius_m is not None:
+            os.environ['SF_STATIC_CAMERA_ARC_RADIUS_M'] = str(float(final_cfg.static_camera_arc_radius_m))
+            print(f"[CFG] static camera arc radius: {final_cfg.static_camera_arc_radius_m} m")
+        if hasattr(final_cfg, 'dynamic_camera_follow_y_offset_m') and final_cfg.dynamic_camera_follow_y_offset_m is not None:
+            os.environ['SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y'] = str(float(final_cfg.dynamic_camera_follow_y_offset_m))
+            print(f"[CFG] dynamic camera follow Y-offset: {final_cfg.dynamic_camera_follow_y_offset_m} m")
+        if hasattr(final_cfg, 'disable_dynamic_follow_gate_blending'):
+            os.environ['SF_DISABLE_DYNAMIC_FOLLOW_GATE_BLENDING'] = 'true' if final_cfg.disable_dynamic_follow_gate_blending else 'false'
+            print(f"[CFG] dynamic follow gate blending disabled: {final_cfg.disable_dynamic_follow_gate_blending}")
         if hasattr(final_cfg, 'disable_spawn_position_randomization'):
             os.environ['SF_DISABLE_SPAWN_POSITION_RANDOMIZATION'] = 'true' if final_cfg.disable_spawn_position_randomization else 'false'
             print(f"[CFG] spawn position randomization disabled: {final_cfg.disable_spawn_position_randomization}")
@@ -2731,45 +2888,22 @@ def run_with_influence_tracking(cfg: Config):
                 except Exception:
                     # Drop non-loggable values
                     del metrics[k]
-        
-        # Mirror episode_extra_stats/curriculum/* -> curriculum/* and derive totals/rates every log
+
+        # Drop non-finite episode_extra_stats/* entries to prevent NaN/Inf propagation in W&B
         try:
-            # Direct mirror from episode_extra_stats to curriculum namespace
-            for name, val in list(metrics.items()):
-                if isinstance(name, str) and name.startswith('episode_extra_stats/curriculum/'):
-                    suffix = name.split('episode_extra_stats/', 1)[1]  # 'curriculum/...'
-                    try:
-                        metrics[suffix] = float(val)
-                    except Exception:
-                        pass
-            # Alias current_* to canonical names
-            alias_map = {
-                'curriculum/current_level': 'curriculum/level',
-                'curriculum/current_progress': 'curriculum/progress',
-            }
-            for src, dst in alias_map.items():
-                if src in metrics and dst not in metrics:
-                    try:
-                        metrics[dst] = float(metrics[src])
-                    except Exception:
-                        pass
-            # Derive totals/rates when components are present
-            def _get_float(key: str):
-                v = metrics.get(key, None)
-                try:
-                    return float(v)
-                except Exception:
-                    return None
-            s = _get_float('curriculum/total_successes') or _get_float('episode_extra_stats/curriculum/total_successes')
-            c = _get_float('curriculum/total_crashes') or _get_float('episode_extra_stats/curriculum/total_crashes')
-            tmo = _get_float('curriculum/total_timeouts') or _get_float('episode_extra_stats/curriculum/total_timeouts')
-            if s is not None and c is not None and tmo is not None:
-                total_resets = s + c + tmo
-                metrics['curriculum/total_resets'] = float(total_resets)
-                if total_resets > 0.0:
-                    metrics.setdefault('curriculum/success_rate', float(s / total_resets))
-                    metrics.setdefault('curriculum/crash_rate', float(c / total_resets))
-                    metrics.setdefault('curriculum/timeout_rate', float(tmo / total_resets))
+            for k in list(metrics.keys()):
+                if isinstance(k, str) and k.startswith('episode_extra_stats/'):
+                    v = metrics[k]
+                    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+                        del metrics[k]
+        except Exception:
+            pass
+        
+        # Remove any top-level curriculum/* metrics to avoid logging them (keep episode_extra_stats/*)
+        try:
+            for k in list(metrics.keys()):
+                if isinstance(k, str) and k.startswith('curriculum/'):
+                    del metrics[k]
         except Exception:
             pass
         
@@ -2778,9 +2912,9 @@ def run_with_influence_tracking(cfg: Config):
             import wandb
             if hasattr(wandb, 'define_metric'):
                 wandb.define_metric('frames')
-                # Namespace common custom groups
+                # Namespace common custom groups (exclude top-level curriculum/*)
                 for name in list(metrics.keys()):
-                    if name.startswith(('obs_grad/', 'influence/', 'curriculum/', 'gpu/', 'reward_breakdown/', 'episode_extra_stats/obs_grad/', 'episode_extra_stats/curriculum/')):
+                    if name.startswith(('obs_grad/', 'influence/', 'gpu/', 'reward_breakdown/', 'episode_extra_stats/obs_grad/', 'episode_extra_stats/curriculum/')):
                         wandb.define_metric(name, step_metric='frames')
                 # Ensure episode_extra_stats trajectory keys are tracked against frames
                 for key in (
@@ -2827,35 +2961,52 @@ def run_with_influence_tracking(cfg: Config):
             print(f"🔧 Model structure: {self.actor_critic}")
             
             try:
-                influence_tracker = create_influence_tracker(self.actor_critic, tracker_config)
-                print(f"🔧 Created influence tracker: {type(influence_tracker)}")
-                print(f"🔧 Influence tracker enabled: {influence_tracker.enabled if influence_tracker else 'None'}")
-                
-                if influence_tracker and influence_tracker.enabled:
-                    print("✅ Influence tracker successfully attached to model")
-                    print(f"   🔍 Monitoring ALL observation components based on 150D observation structure:")
-                    print(f"      • [0:3] Drone position | [3:9] Static camera pose | [9:12] Drone orientation")
-                    print(f"      • [12:18] Velocities | [18:22] Actions | [22:86] Drone camera | [86:150] Static camera")
-                    print(f"   📊 Complete 150D observation breakdown:")
-                    print(f"      🎯 Spatial: 15D (position + pose + orientation)")
-                    print(f"      ⚡ Kinematic: 10D (velocities + actions)")
-                    print(f"      📹 Visual: 128D (dual camera VAE latents)")
-                    print(f"   📊 Logging every {cfg.gradient_log_interval} steps")
-                    print(f"   📺 Analysis summary every {cfg.gradient_print_interval} steps")
+                # Respect both CLI flag and environment override for enabling influence tracker
+                import os as _os
+                _env_inf = _os.getenv('SF_ENABLE_INFLUENCE_TRACKER')
+                _enable_influence = bool(getattr(cfg, 'enable_gradient_monitoring', False))
+                if _env_inf is not None:
+                    _enable_influence = (str(_env_inf).lower() == 'true')
+                if _enable_influence:
+                    influence_tracker = create_influence_tracker(self.actor_critic, tracker_config)
+                    print(f"🔧 Created influence tracker: {type(influence_tracker)}")
+                    print(f"🔧 Influence tracker enabled: {influence_tracker.enabled if influence_tracker else 'None'}")
+                    if influence_tracker and influence_tracker.enabled:
+                        print("✅ Influence tracker successfully attached to model")
+                        print(f"   🔍 Monitoring ALL observation components based on 150D observation structure:")
+                        print(f"      • [0:3] Drone position | [3:9] Static camera pose | [9:12] Drone orientation")
+                        print(f"      • [12:18] Velocities | [18:22] Actions | [22:86] Drone camera | [86:150] Static camera")
+                        print(f"   📊 Complete 150D observation breakdown:")
+                        print(f"      🎯 Spatial: 15D (position + pose + orientation)")
+                        print(f"      ⚡ Kinematic: 10D (velocities + actions)")
+                        print(f"      📹 Visual: 128D (dual camera VAE latents)")
+                        print(f"   📊 Logging every {cfg.gradient_log_interval} steps")
+                        print(f"   📺 Analysis summary every {cfg.gradient_print_interval} steps")
+                    else:
+                        print("❌ Failed to attach influence tracker")
                 else:
-                    print("❌ Failed to attach influence tracker")
+                    influence_tracker = None
+                    print("🚫 Influence tracker DISABLED (via flag/env)")
             except Exception as e:
                 print(f"❌ Error creating influence tracker: {e}")
                 influence_tracker = None
             
             # Optionally create gradient attribution tracker
             try:
-                if getattr(cfg, 'enable_grad_attribution', True):
+                import os as _os
+                _env_grad = _os.getenv('SF_ENABLE_GRAD_ATTR')
+                _enable_grad = bool(getattr(cfg, 'enable_grad_attribution', True))
+                if _env_grad is not None:
+                    _enable_grad = (str(_env_grad).lower() == 'true')
+                if _enable_grad:
                     grad_tracker = create_gradient_tracker(self.actor_critic, grad_config)
                     if grad_tracker and grad_tracker.enabled:
                         print("✅ Gradient attribution tracker successfully attached")
                     else:
                         print("❌ Failed to attach gradient attribution tracker")
+                else:
+                    grad_tracker = None
+                    print("🚫 Gradient attribution DISABLED (via flag/env)")
             except Exception as e:
                 print(f"❌ Error creating gradient attribution tracker: {e}")
                 grad_tracker = None
@@ -2872,6 +3023,12 @@ def run_with_influence_tracking(cfg: Config):
                             if isinstance(arg, dict):
                                 t = arg.get('obs', None)
                                 if torch.is_tensor(t) and t.dim() == 2 and t.shape[1] == 150:
+                                    # Sanitize normalized obs before encoder to kill any non-finite values
+                                    try:
+                                        t = torch.nan_to_num(t, nan=0.0, posinf=0.0, neginf=0.0)
+                                        t = t.clamp_(-1e6, 1e6)
+                                    except Exception:
+                                        pass
                                     x = t.detach().requires_grad_(True)
                                     try:
                                         if hasattr(self, '_grad_tracker') and self._grad_tracker:
@@ -2890,7 +3047,13 @@ def run_with_influence_tracking(cfg: Config):
                                 return None
                             # Case 2: raw tensor input
                             if torch.is_tensor(arg) and arg.dim() == 2 and arg.shape[1] == 150:
-                                x = arg.detach().requires_grad_(True)
+                                t = arg
+                                try:
+                                    t = torch.nan_to_num(t, nan=0.0, posinf=0.0, neginf=0.0)
+                                    t = t.clamp_(-1e6, 1e6)
+                                except Exception:
+                                    pass
+                                x = t.detach().requires_grad_(True)
                                 try:
                                     if hasattr(self, '_grad_tracker') and self._grad_tracker:
                                         x.register_hook(lambda g: self._grad_tracker.consume_grad(g))
@@ -2933,7 +3096,7 @@ def run_with_influence_tracking(cfg: Config):
         self._influence_tracker = influence_tracker
         self._grad_tracker = grad_tracker
 
-        # One-time: emit initial curriculum keys so W&B materializes all series early
+        # One-time: emit initial curriculum keys only under episode_extra_stats/* to avoid top-level curriculum/*
         try:
             import wandb
             frames0 = int(getattr(self, 'train_step', 0))
@@ -2949,11 +3112,9 @@ def run_with_influence_tracking(cfg: Config):
                 'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg',
                 'curriculum/total_successes','curriculum/total_crashes','curriculum/total_timeouts',
             ]
-            boot = {}
+            boot = {'frames': frames0}
             for k in curriculum_keys:
                 boot[f'episode_extra_stats/{k}'] = 0.0
-                boot[k] = 0.0
-            boot['frames'] = frames0
             wandb.log(boot, step=frames0)
         except Exception:
             pass
@@ -3027,19 +3188,9 @@ def run_with_influence_tracking(cfg: Config):
                     min_gate_distance = _get_last('episode_extra_stats/min_gate_distance') or _get_last('min_gate_distance')
                     center_offset_success = _get_last('episode_extra_stats/center_offset_success') or _get_last('center_offset_success')
                     height_offset_success = _get_last('episode_extra_stats/height_offset_success') or _get_last('height_offset_success')
-                if curr_level is not None:
-                    # Force integer logging for curriculum/level to match discrete levels
-                    wandb.log({'frames': frames, 'curriculum/level': int(curr_level)}, step=frames)
-                    try:
-                        print(f"[W&B_DEBUG][learner] logged curriculum/level={int(curr_level)} at frames={frames}")
-                    except Exception:
-                        pass
-                if curr_level_minus_1 is not None:
-                    wandb.log({'frames': frames, 'curriculum/level_minus_1': int(curr_level_minus_1)}, step=frames)
-                    try:
-                        print(f"[W&B_DEBUG][learner] logged curriculum/level_minus_1={int(curr_level_minus_1)} at frames={frames}")
-                    except Exception:
-                        pass
+                # Do not log continuous curriculum/current_* or derived level values anymore
+                curr_level = None
+                curr_level_minus_1 = None
                 # --- Explicit curriculum mirror block: ensure ~25+ curriculum keys are present each step ---
                 try:
                     # Helper that tries multiple namespaces to find the latest value
@@ -3062,9 +3213,8 @@ def run_with_influence_tracking(cfg: Config):
                         for k in curriculum_keys:
                             v = _get_last_with_prefixes(k)
                             if v is not None:
-                                # Log under both namespaces for dashboard compatibility
+                                # Log only under episode namespace
                                 cur_payload[f'episode_extra_stats/{k}'] = v
-                                cur_payload[k] = v
                         # Derive total_resets if components available
                         def _pl_get(name: str):
                             if name in cur_payload:
@@ -3076,11 +3226,15 @@ def run_with_influence_tracking(cfg: Config):
                         tc = _pl_get('curriculum/total_crashes')
                         tt = _pl_get('curriculum/total_timeouts')
                         if ts is not None and tc is not None and tt is not None:
-                            cur_payload['curriculum/total_resets'] = float(ts + tc + tt)
                             cur_payload['episode_extra_stats/curriculum/total_resets'] = float(ts + tc + tt)
                     if len(cur_payload) > 0:
-                        cur_payload['frames'] = frames
-                        wandb.log(cur_payload, step=frames)
+                        # Remove any continuous current_* keys before logging
+                        for k in list(cur_payload.keys()):
+                            if isinstance(k, str) and (k.endswith('curriculum/current_level') or k.endswith('curriculum/current_level_minus_1') or k.endswith('curriculum/current_progress')):
+                                del cur_payload[k]
+                        if len(cur_payload) > 0:
+                            cur_payload['frames'] = frames
+                            wandb.log(cur_payload, step=frames)
                         try:
                             first_keys = list(cur_payload.keys())[:6]
                             print(f"[W&B_DEBUG][learner] logged curriculum keys: {first_keys} ... (total {len(cur_payload)})")
@@ -3097,9 +3251,11 @@ def run_with_influence_tracking(cfg: Config):
                     try:
                         forward_payload = {'frames': frames}
                         for k in curriculum_keys:
-                            forward_payload[k] = float(_last_curriculum.get(k, 0.0))
+                            if k in ('curriculum/current_level','curriculum/current_level_minus_1','curriculum/current_progress'):
+                                continue
                             forward_payload[f'episode_extra_stats/{k}'] = float(_last_curriculum.get(k, 0.0))
-                        wandb.log(forward_payload, step=frames)
+                        if len(forward_payload) > 1:
+                            wandb.log(forward_payload, step=frames)
                     except Exception:
                         pass
                 except Exception:
@@ -3123,7 +3279,8 @@ def run_with_influence_tracking(cfg: Config):
                 ep_cross  = _get_last('episode_extra_stats/episodes_crossed')
                 if pe_out is not None:
                     traj_payload['episode_extra_stats/path_efficiency'] = pe_out
-                if ttg_out is not None:
+                # Only forward time_to_gate when it's defined (success-conditioned)
+                if ttg_out is not None and math.isfinite(ttg_out):
                     traj_payload['episode_extra_stats/time_to_gate_steps'] = ttg_out
                 if mgd_out is not None:
                     traj_payload['episode_extra_stats/min_gate_distance'] = mgd_out

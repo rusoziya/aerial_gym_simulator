@@ -343,9 +343,10 @@ class NavigationTask(BaseTask):
         self.infos["timeouts"] = timeouts
         self.infos["crashes"] = self.terminations
         
-        # Add continuous curriculum tracking for wandb
-        self.infos["curriculum/current_level"] = torch.tensor(self.curriculum_level, dtype=torch.float32)
-        self.infos["curriculum/current_progress"] = torch.tensor(self.curriculum_progress_fraction, dtype=torch.float32)
+        # Add continuous curriculum tracking under episode_extra_stats to avoid top-level curriculum/*
+        self.infos.setdefault('episode_extra_stats', {})
+        self.infos['episode_extra_stats']["curriculum/current_level"] = float(self.curriculum_level)
+        self.infos['episode_extra_stats']["curriculum/current_progress"] = float(self.curriculum_progress_fraction)
 
         self.logging_sanity_check(self.infos)
         self.check_and_update_curriculum_level(

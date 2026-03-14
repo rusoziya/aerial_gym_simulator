@@ -103,7 +103,29 @@ class NN_Inference_Class_Gate(nn.Module):
             except Exception:
                 pass
             checkpoint_dict = torch.load(self._dce_model_path, map_location=self.device)
-            self.actor_critic.load_state_dict(checkpoint_dict["model"])
+            # Strict key/shape check before loading
+            try:
+                model_state = self.actor_critic.state_dict()
+                ckpt_state = checkpoint_dict.get("model", {})
+                missing = [k for k in model_state.keys() if k not in ckpt_state]
+                unexpected = [k for k in ckpt_state.keys() if k not in model_state]
+                shape_mismatch = [
+                    (k, tuple(ckpt_state[k].shape), tuple(model_state[k].shape))
+                    for k in model_state.keys() if k in ckpt_state and ckpt_state[k].shape != model_state[k].shape
+                ]
+                if missing or unexpected or shape_mismatch:
+                    print("[STRICT_LOAD] State dict mismatch detected:")
+                    if missing:
+                        print(f"  Missing keys in checkpoint: {missing}")
+                    if unexpected:
+                        print(f"  Unexpected keys in checkpoint: {unexpected}")
+                    if shape_mismatch:
+                        print(f"  Shape mismatches: {shape_mismatch}")
+                    raise RuntimeError("Strict state_dict check failed for loaded checkpoint.")
+                self.actor_critic.load_state_dict(ckpt_state, strict=True)
+            except Exception:
+                # Re-raise after an attempt to load to provide default error
+                self.actor_critic.load_state_dict(checkpoint_dict["model"], strict=True)
         else:
             policy_id = self.cfg.policy_index
             name_prefix = dict(latest="checkpoint", best="best")[self.cfg.load_checkpoint_kind]
@@ -111,7 +133,25 @@ class NN_Inference_Class_Gate(nn.Module):
                 Learner.checkpoint_dir(self.cfg, policy_id), f"{name_prefix}_*"
             )
             checkpoint_dict = Learner.load_checkpoint(checkpoints, self.device)
-            self.actor_critic.load_state_dict(checkpoint_dict["model"])
+            # Strict key/shape check before loading
+            model_state = self.actor_critic.state_dict()
+            ckpt_state = checkpoint_dict.get("model", {})
+            missing = [k for k in model_state.keys() if k not in ckpt_state]
+            unexpected = [k for k in ckpt_state.keys() if k not in model_state]
+            shape_mismatch = [
+                (k, tuple(ckpt_state[k].shape), tuple(model_state[k].shape))
+                for k in model_state.keys() if k in ckpt_state and ckpt_state[k].shape != model_state[k].shape
+            ]
+            if missing or unexpected or shape_mismatch:
+                print("[STRICT_LOAD] State dict mismatch detected:")
+                if missing:
+                    print(f"  Missing keys in checkpoint: {missing}")
+                if unexpected:
+                    print(f"  Unexpected keys in checkpoint: {unexpected}")
+                if shape_mismatch:
+                    print(f"  Shape mismatches: {shape_mismatch}")
+                raise RuntimeError("Strict state_dict check failed for loaded checkpoint.")
+            self.actor_critic.load_state_dict(ckpt_state, strict=True)
 
         self.rnn_states = torch.zeros(
             [self.num_agents, get_rnn_size(self.cfg)], dtype=torch.float32, device=self.device

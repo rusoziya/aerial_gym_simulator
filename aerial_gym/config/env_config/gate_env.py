@@ -11,6 +11,7 @@ from aerial_gym.config.asset_config.env_asset_config import (
     top_wall
 )
 import numpy as np
+import os
 
 # CRITICAL FIX: Import BaseAssetParams directly to ensure proper inheritance
 from aerial_gym.config.asset_config.base_asset import BaseAssetParams
@@ -69,17 +70,19 @@ class GateEnvCfg:
         - gate: The main gate structure for flying through
         - objects: Random obstacles for visual richness and navigation challenge
         """
-        
+        # Allow temporarily disabling all boundary walls via env var (set DISABLE_WALLS=true or SF_DISABLE_WALLS=true)
+        _DISABLE_WALLS = (os.environ.get('DISABLE_WALLS', 'false').lower() == 'true') or (os.environ.get('SF_DISABLE_WALLS', 'false').lower() == 'true')
+
         # Asset inclusion configuration
         include_asset_type = {
             "gate": True,  # Include the gate asset
             "objects": True,  # Include random objects for obstacles
-            "left_wall": True,  # Left boundary wall
-            "right_wall": True,  # Right boundary wall
-            "front_wall": True,  # Front boundary wall
-            "back_wall": True,  # Back boundary wall
-            "bottom_wall": True,  # Ground plane
-            "top_wall": True,  # Top wall to close the environment
+            "left_wall": not _DISABLE_WALLS,  # Left boundary wall
+            "right_wall": not _DISABLE_WALLS,  # Right boundary wall
+            "front_wall": not _DISABLE_WALLS,  # Front boundary wall
+            "back_wall": not _DISABLE_WALLS,  # Back boundary wall
+            "bottom_wall": not _DISABLE_WALLS,  # Ground plane
+            "top_wall": not _DISABLE_WALLS,  # Top wall to close the environment
         }
         
         # Custom random object configuration for gate environment

@@ -107,13 +107,27 @@ class IsaacGymEnv(BaseManager):
                 self.sim_device_type, self.sim_device_id
             )
         )
-        if self.sim_config.viewer.headless and not self.has_IGE_cameras:
-            self.graphics_device_id = -1
-            logger.critical(
-                "\n Setting graphics device to -1."
-                + "\n This is done because the simulation is run in headless mode and no Isaac Gym cameras are used."
-                + "\n No need to worry. The simulation and warp rendering will work as expected."
-            )
+        # In headless runs we still need a graphics device for Isaac Gym camera sensors (EGL).
+        # Honor env override SF_HEADLESS_USE_GRAPHICS (default: true).
+        try:
+            import os as _os
+            _use_graphics_env = _os.getenv('SF_HEADLESS_USE_GRAPHICS')
+            _use_graphics = (
+                str(_use_graphics_env).lower() == 'true'
+            ) if _use_graphics_env is not None else True
+        except Exception:
+            _use_graphics = True
+        if self.sim_config.viewer.headless:
+            if _use_graphics or self.has_IGE_cameras:
+                self.graphics_device_id = self.sim_device_id
+                logger.info("Headless mode with graphics enabled (EGL) for camera sensors.")
+            else:
+                self.graphics_device_id = -1
+                logger.critical(
+                    "\n Setting graphics device to -1."
+                    + "\n This is done because the simulation is run in headless mode and no Isaac Gym cameras are used."
+                    + "\n No need to worry. The simulation and warp rendering will work as expected."
+                )
         else:
             self.graphics_device_id = self.sim_device_id
         logger.info("Graphics Device ID: {}".format(self.graphics_device_id))
