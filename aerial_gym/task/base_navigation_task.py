@@ -7,8 +7,13 @@ logging_sanity_check).
 Subclasses must implement: reset_idx, step, compute_rewards_and_crashes, process_obs_for_task.
 """
 
+from __future__ import annotations
+
+from typing import Any, Callable
+
 from aerial_gym.task.base_task import BaseTask
 from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.env_manager.env_manager import EnvManager
 import torch
 import numpy as np
 
@@ -24,15 +29,22 @@ logger = CustomLogger("base_navigation_task")
 class BaseNavigationTask(BaseTask):
     """Shared foundation for all navigation task variants."""
 
+    sim_env: EnvManager
+    vae_model: Callable[[torch.Tensor], torch.Tensor]
+    task_obs: dict[str, torch.Tensor]
+    obs_dict: dict[str, Any]
+    infos: dict[str, Any]
+    action_transformation_function: Callable[[torch.Tensor], torch.Tensor]
+
     def __init__(
         self,
-        task_config,
-        seed=None,
-        num_envs=None,
-        headless=None,
-        device=None,
-        use_warp=None,
-    ):
+        task_config: Any,
+        seed: int | None = None,
+        num_envs: int | None = None,
+        headless: bool | None = None,
+        device: str | None = None,
+        use_warp: bool | None = None,
+    ) -> None:
         # Apply caller overrides to config before passing to BaseTask
         if seed is not None:
             task_config.seed = seed
@@ -136,7 +148,7 @@ class BaseNavigationTask(BaseTask):
     # Private init helpers
     # ------------------------------------------------------------------
 
-    def _init_vae(self):
+    def _init_vae(self) -> None:
         """Set up VAE encoder (or identity fallback) and latent buffers."""
         if self.task_config.vae_config.use_vae:
             self.vae_model = VAEImageEncoder(
@@ -153,7 +165,7 @@ class BaseNavigationTask(BaseTask):
             requires_grad=False,
         )
 
-    def _init_spaces(self):
+    def _init_spaces(self) -> None:
         """Define Gymnasium observation and action spaces."""
         self.observation_space = Dict(
             {
@@ -176,7 +188,7 @@ class BaseNavigationTask(BaseTask):
             self.task_config.action_transformation_function
         )
 
-    def _init_task_obs(self):
+    def _init_task_obs(self) -> None:
         """Allocate task observation tensor buffers."""
         self.task_obs = {
             "observations": torch.zeros(
@@ -201,17 +213,17 @@ class BaseNavigationTask(BaseTask):
     # Common methods
     # ------------------------------------------------------------------
 
-    def close(self):
+    def close(self) -> None:
         self.sim_env.delete_env()
 
-    def render(self):
+    def render(self) -> bool:
         return self.sim_env.render()
 
-    def reset(self):
+    def reset(self) -> tuple[dict[str, torch.Tensor], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
         self.reset_idx(torch.arange(self.num_envs))
         return self.get_return_tuple()
 
-    def get_return_tuple(self):
+    def get_return_tuple(self) -> tuple[dict[str, torch.Tensor], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
         self.process_obs_for_task()
         return (
             self.task_obs,
@@ -221,7 +233,7 @@ class BaseNavigationTask(BaseTask):
             self.infos,
         )
 
-    def logging_sanity_check(self, infos):
+    def logging_sanity_check(self, infos: dict[str, torch.Tensor]) -> None:
         """Detect impossible episode outcome combinations."""
         successes = infos["successes"]
         crashes = infos["crashes"]
@@ -244,7 +256,7 @@ class BaseNavigationTask(BaseTask):
         if torch.sum(torch.logical_and(crashes, timeouts)) > 0:
             logger.critical("Crash and timeout are occurring at the same time")
 
-    def process_image_observation(self):
+    def process_image_observation(self) -> None:
         """Encode depth image through VAE (or pass through)."""
         image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)
         if self.task_config.vae_config.use_vae:

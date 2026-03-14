@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 from aerial_gym.task.base_navigation_task import BaseNavigationTask
 import torch
 import os
@@ -10,8 +14,14 @@ logger = CustomLogger("navigation_task")
 
 class NavigationTask(BaseNavigationTask):
     def __init__(
-        self, task_config, seed=None, num_envs=None, headless=None, device=None, use_warp=None
-    ):
+        self,
+        task_config: Any,
+        seed: int | None = None,
+        num_envs: int | None = None,
+        headless: bool | None = None,
+        device: str | None = None,
+        use_warp: bool | None = None,
+    ) -> None:
         super().__init__(task_config, seed, num_envs, headless, device, use_warp)
 
         # Position-setpoint navigation uses random target ratios within env bounds
@@ -24,7 +34,7 @@ class NavigationTask(BaseNavigationTask):
 
         self.obs_dict["num_obstacles_in_env"] = self.curriculum_level
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         target_ratio = torch_rand_float_tensor(self.target_min_ratio, self.target_max_ratio)
         self.target_position[env_ids] = torch_interpolate_ratio(
             min=self.obs_dict["env_bounds_min"][env_ids],
@@ -33,7 +43,7 @@ class NavigationTask(BaseNavigationTask):
         )
         self.infos = {}
 
-    def step(self, actions):
+    def step(self, actions: torch.Tensor) -> tuple[dict[str, torch.Tensor], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
         transformed_action = self.action_transformation_function(actions)
         self.sim_env.step(actions=transformed_action)
 
@@ -86,7 +96,7 @@ class NavigationTask(BaseNavigationTask):
             return_tuple = self.get_return_tuple()
         return return_tuple
 
-    def post_image_reward_addition(self):
+    def post_image_reward_addition(self) -> None:
         image_obs = 10.0 * self.obs_dict["depth_range_pixels"].squeeze(1)
         image_obs[image_obs < 0] = 10.0
         self.min_pixel_dist = torch.amin(image_obs, dim=(1, 2))
@@ -94,7 +104,7 @@ class NavigationTask(BaseNavigationTask):
             4.0, 1.0, self.min_pixel_dist[~self.terminations]
         )
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         vec_to_tgt = quat_rotate_inverse(
             self.obs_dict["robot_vehicle_orientation"],
             (self.target_position - self.obs_dict["robot_position"]),
@@ -119,7 +129,7 @@ class NavigationTask(BaseNavigationTask):
         self.task_obs["truncations"] = self.truncations
         self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]
 
-    def compute_rewards_and_crashes(self, obs_dict):
+    def compute_rewards_and_crashes(self, obs_dict: dict[str, Any]) -> tuple[torch.Tensor, torch.Tensor]:
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
         robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
@@ -142,7 +152,7 @@ class NavigationTask(BaseNavigationTask):
             self.task_config.reward_parameters,
         )
 
-    def check_and_update_curriculum_level(self, successes, crashes, timeouts):
+    def check_and_update_curriculum_level(self, successes: torch.Tensor, crashes: torch.Tensor, timeouts: torch.Tensor) -> None:
         self.success_aggregate += torch.sum(successes)
         self.crashes_aggregate += torch.sum(crashes)
         self.timeouts_aggregate += torch.sum(timeouts)

@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import Any
 
 import time, torch, os, numpy as np
 
 from aerial_gym.utils.logging import CustomLogger
 import random
+
 logger = CustomLogger("base_task")
 
 
 class BaseTask(ABC):
-    def __init__(self, task_config):
+    def __init__(self, task_config: Any) -> None:
         self.task_config = task_config
         self.action_space = None
         self.observation_space = None
@@ -22,10 +26,10 @@ class BaseTask(ABC):
         self.seed(seed)
 
     @abstractmethod
-    def render(self, mode="human"):
+    def render(self, mode: str = "human") -> Any:
         raise NotImplementedError
 
-    def seed(self, seed):
+    def seed(self, seed: int | None) -> None:
         if seed is None or seed < 0:
             logger.info(f"Seed is not valid. Will be sampled from system time.")
             seed = time.time_ns() % (2**32)
@@ -38,17 +42,17 @@ class BaseTask(ABC):
         logger.info("Setting seed: {}".format(seed))
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> Any:
         raise NotImplementedError
 
     @abstractmethod
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def step(self, action):
+    def step(self, action: torch.Tensor) -> Any:
         raise NotImplementedError
 
     @abstractmethod
-    def close(self):
+    def close(self) -> None:
         raise NotImplementedError

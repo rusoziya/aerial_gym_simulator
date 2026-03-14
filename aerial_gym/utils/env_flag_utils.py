@@ -8,10 +8,13 @@ The pattern throughout the codebase is:
 These helpers collapse that try-except boilerplate into single-line calls.
 """
 
+from __future__ import annotations
+
 import os
+from typing import Any, Optional
 
 
-def read_env_bool(env_var, config_value=None, default=False):
+def read_env_bool(env_var: str, config_value: Optional[Any] = None, default: bool = False) -> bool:
     """Read a boolean flag from an environment variable with config fallback.
 
     Args:
@@ -29,7 +32,7 @@ def read_env_bool(env_var, config_value=None, default=False):
     return default
 
 
-def read_env_int(env_var, config_value=None, default=0):
+def read_env_int(env_var: str, config_value: Optional[Any] = None, default: int = 0) -> int:
     """Read an integer from an environment variable with config fallback."""
     val = os.getenv(env_var)
     if val is not None:
@@ -42,7 +45,7 @@ def read_env_int(env_var, config_value=None, default=0):
     return default
 
 
-def read_env_float(env_var, config_value=None, default=0.0):
+def read_env_float(env_var: str, config_value: Optional[Any] = None, default: float = 0.0) -> float:
     """Read a float from an environment variable with config fallback."""
     val = os.getenv(env_var)
     if val is not None:
@@ -55,7 +58,7 @@ def read_env_float(env_var, config_value=None, default=0.0):
     return default
 
 
-def parse_ablation_flags(task_config):
+def parse_ablation_flags(task_config: Any) -> dict[str, Any]:
     """Parse all ablation environment variables and return a flat dict.
 
     This centralises the ~25 SF_DISABLE_*/SF_ENABLE_*/SF_FIXED_* env vars
@@ -158,7 +161,12 @@ def parse_ablation_flags(task_config):
     return flags
 
 
-def apply_ablation_flags_to_tensor_dict(gtd, flags, task_config=None, logger=None):
+def apply_ablation_flags_to_tensor_dict(
+    gtd: dict[str, Any],
+    flags: dict[str, Any],
+    task_config: Optional[Any] = None,
+    logger: Any = None,
+) -> None:
     """Store parsed ablation flags into the global_tensor_dict.
 
     Also applies side-effects (task_config overrides) where the original code did so.

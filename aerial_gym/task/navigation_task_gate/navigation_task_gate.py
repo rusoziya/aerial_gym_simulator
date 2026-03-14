@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.task.base_task import BaseTask
 from aerial_gym.sim.sim_builder import SimBuilder
 import torch
@@ -37,8 +39,14 @@ def dict_to_class(dict):
 
 class NavigationTaskGate(BaseTask):
     def __init__(
-        self, task_config, seed=None, num_envs=None, headless=None, device=None, use_warp=None
-    ):
+        self,
+        task_config: Any,
+        seed: int | None = None,
+        num_envs: int | None = None,
+        headless: bool | None = None,
+        device: str | None = None,
+        use_warp: bool | None = None,
+    ) -> None:
         # overwrite the params if user has provided them
         if seed is not None:
             task_config.seed = seed
@@ -495,7 +503,7 @@ class NavigationTaskGate(BaseTask):
     # Private init helpers (extracted from __init__ for readability)
     # ------------------------------------------------------------------
 
-    def _init_gate_tracking_tensors(self):
+    def _init_gate_tracking_tensors(self) -> None:
         """Initialise gate-specific tracking tensors and adaptive dimensions."""
         self.gate_position = torch.zeros((self.sim_env.num_envs, 3), device=self.device)
         self.gate_approach_distance = torch.zeros(self.sim_env.num_envs, device=self.device)
@@ -504,7 +512,7 @@ class NavigationTaskGate(BaseTask):
         self.gate_center_height = torch.zeros((self.sim_env.num_envs,), device=self.device)
         self.gate_scale_factors = torch.ones((self.sim_env.num_envs,), device=self.device)
 
-    def _init_vae_model(self):
+    def _init_vae_model(self) -> None:
         """Set up shared VAE encoder (or identity fallback) and latent buffers."""
         if self.task_config.vae_config.use_vae:
             self.shared_vae_model = VAEImageEncoder(
@@ -530,7 +538,7 @@ class NavigationTaskGate(BaseTask):
                 (self.sim_env.num_envs, 1), device=self.device, requires_grad=False
             )
 
-    def _init_observation_action_spaces(self):
+    def _init_observation_action_spaces(self) -> None:
         """Define Gymnasium observation and action spaces."""
         self.observation_space = Dict(
             {
@@ -552,7 +560,7 @@ class NavigationTaskGate(BaseTask):
         self.action_transformation_function = self.task_config.action_transformation_function
         self.num_envs = self.sim_env.num_envs
 
-    def _init_task_observations(self):
+    def _init_task_observations(self) -> None:
         """Allocate task observation tensors."""
         self.task_obs = {
             "observations": torch.zeros(
@@ -576,7 +584,7 @@ class NavigationTaskGate(BaseTask):
             ),
         }
 
-    def _init_episode_reward_tracking(self):
+    def _init_episode_reward_tracking(self) -> None:
         """Allocate per-component episode reward accumulators and statistics tensors."""
         self.episode_pos_reward = torch.zeros(self.num_envs, device=self.device)
         self.episode_very_close_reward = torch.zeros(self.num_envs, device=self.device)
@@ -596,7 +604,7 @@ class NavigationTaskGate(BaseTask):
         self.completed_episodes = []
         self.max_stored_episodes = 10
 
-    def _init_episode_trajectory_state(self):
+    def _init_episode_trajectory_state(self) -> None:
         """Allocate per-environment episode trajectory tracking state."""
         self._episode_fresh = torch.ones(
             self.num_envs, dtype=torch.bool, device=self.device
@@ -628,7 +636,7 @@ class NavigationTaskGate(BaseTask):
             self.num_envs, dtype=torch.bool, device=self.device
         )
 
-    def _init_debug_flags(self):
+    def _init_debug_flags(self) -> None:
         """Initialize one-shot debug/logging flags so hasattr checks are never needed."""
         self._drone_cam_debug_last = False
         self._drone_vae_debug_last = False
@@ -654,7 +662,7 @@ class NavigationTaskGate(BaseTask):
         self._last_traj_metrics_per_env = {}
         self._last_traj_metrics_avg = {}
 
-    def logging_sanity_check(self, infos):
+    def logging_sanity_check(self, infos: dict[str, Any]) -> None:
         """Sanity check for logging to detect issues with success/crash/timeout logic."""
         successes = infos["successes"]
         crashes = infos["crashes"]
@@ -686,7 +694,7 @@ class NavigationTaskGate(BaseTask):
                 f"Number of common instances: {torch.count_nonzero(torch.logical_and(crashes, successes))}"
             )
 
-    def close(self):
+    def close(self) -> None:
         try:
             if hasattr(self.sim_env, 'delete_env'):
                 self.sim_env.delete_env()
@@ -707,7 +715,7 @@ class NavigationTaskGate(BaseTask):
             except Exception as e:
                 print(f"[DEBUG] Error closing curriculum log: {e}")
 
-    def setup_curriculum_logging(self):
+    def setup_curriculum_logging(self) -> None:
         """Setup separate curriculum logging file in train_dir."""
         try:
             # Try to determine train_dir path from Sample Factory environment or working directory
@@ -741,7 +749,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning("Continuing without curriculum file logging (console logging still active)")
             self.curriculum_log_file = None
 
-    def log_curriculum_update(self, message):
+    def log_curriculum_update(self, message: str) -> None:
         """Log curriculum update messages to both console and curriculum log file."""
         try:
             # Always log to console
@@ -762,11 +770,11 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"Curriculum update: {message}")
             logger.debug(f"Curriculum logging error: {e}")
 
-    def reset(self):
+    def reset(self) -> tuple[dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
         self.reset_idx(torch.arange(self.sim_env.num_envs))
         return self.get_return_tuple()
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         """
         SIMPLIFIED RESET WITH FIXED SPAWNING PARAMETERS
         
@@ -864,7 +872,7 @@ class NavigationTaskGate(BaseTask):
         self.infos = {}
         return
     
-    def extract_gate_dimensions_from_urdf(self, urdf_path):
+    def extract_gate_dimensions_from_urdf(self, urdf_path: str) -> tuple[float, float]:
         """
         Extract gate dimensions from URDF file.
         Returns (width, height, center_height, scale_factor)
@@ -918,7 +926,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"[GATE_ADAPTIVE] Error parsing URDF {urdf_path}: {e}, using default dimensions")
             return 2.5, 2.4, 1.2, 1.0
     
-    def calculate_gate_dimensions_from_name(self, gate_name):
+    def calculate_gate_dimensions_from_name(self, gate_name: str) -> tuple[float, float, float]:
         """
         Calculate gate dimensions from the gate name (e.g., gate_scale_060 -> 60% scale).
         Returns (width, height, center_height, scale_factor)
@@ -948,7 +956,7 @@ class NavigationTaskGate(BaseTask):
             logger.warning(f"[GATE_ADAPTIVE] Error calculating dimensions from name '{gate_name}': {e}, using default")
             return 2.5, 2.4, 1.2, 1.0
     
-    def update_gate_dimensions_for_environments(self, env_ids):
+    def update_gate_dimensions_for_environments(self, env_ids: torch.Tensor) -> None:
         """
         Update gate dimensions for specified environments based on their selected gate variants.
         """
@@ -1038,9 +1046,9 @@ class NavigationTaskGate(BaseTask):
     # These methods have been removed as we now use fixed parameters from LMF2 config
     # The normal Isaac Gym reset mechanism handles spawning using min_init_state/max_init_state
 
-    def render(self):
+    def render(self) -> None:
         return self.sim_env.render()
-    def step(self, actions):
+    def step(self, actions: torch.Tensor) -> tuple[dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
         # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
         # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
         # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
@@ -1540,7 +1548,7 @@ class NavigationTaskGate(BaseTask):
             return_tuple = self.get_return_tuple()
         return return_tuple
 
-    def process_image_observation(self):
+    def process_image_observation(self) -> None:
         """Process drone camera observations with D455 curriculum-dependent noise."""
         # Get the drone's depth image (normalized 0.0–1.0)
         image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)  # shape: (num_envs, H, W)
@@ -1669,7 +1677,7 @@ class NavigationTaskGate(BaseTask):
                     self._drone_vae_debug_last = self.num_task_steps
             except Exception:
                 pass
-    def process_static_camera_observation(self):
+    def process_static_camera_observation(self) -> None:
         """Process static camera observations with D455 curriculum-dependent noise."""
         try:
             # Request batched capture so each env gets its own image for VAE, while
@@ -1855,7 +1863,7 @@ class NavigationTaskGate(BaseTask):
             # Fallback to zeros on any error
             self.static_image_latents.fill_(0.0)
 
-    def post_image_reward_addition(self):
+    def post_image_reward_addition(self) -> None:
         """Add image-based rewards from drone camera."""
         image_obs = self.obs_dict["depth_range_pixels"].squeeze(1)
         image_obs[image_obs < 0] = 10.0
@@ -1898,7 +1906,7 @@ class NavigationTaskGate(BaseTask):
         # Apply the image rewards
         self.rewards[~self.terminations] += image_rewards
 
-    def _compute_visibility_metrics(self, infos_to_return):
+    def _compute_visibility_metrics(self, infos_to_return: dict[str, Any]) -> None:
         """Compute geometric gate visibility and static FOV metrics (non-reward, for logging)."""
         # Geometric gate visibility metric (pose-only, no pixels)
         # Disabled by default; enable with SF_ENABLE_GEOM_VISIBILITY, static_visibility/enable, or VISIBILITY_DEBUG
@@ -2122,7 +2130,7 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-    def get_return_tuple(self):
+    def get_return_tuple(self) -> tuple[dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, dict[str, Any]]:
         self.process_obs_for_task()
         # If we have stashed infos from the previous step (pre-reset), use them once
         ifself._infos_to_return is not None:
@@ -2242,7 +2250,7 @@ class NavigationTaskGate(BaseTask):
             infos_to_return,
         )
 
-    def _get_static_camera_pose_relative_to_drone(self):
+    def _get_static_camera_pose_relative_to_drone(self) -> torch.Tensor:
         """Compute per-environment static camera pose and orientation relative to the drone.
 
         Position: camera_world - robot_world, rotated into drone/body frame (obs[3:6]).
@@ -2411,7 +2419,7 @@ class NavigationTaskGate(BaseTask):
             pass
         return rel_pos_body, rel_orient_euler
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         """
         Process observations for the gate navigation task.
         
@@ -2529,7 +2537,7 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-    def compute_rewards_and_crashes(self, obs_dict):
+    def compute_rewards_and_crashes(self, obs_dict: dict[str, Any]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Compute rewards with gate-specific components."""
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
@@ -2774,7 +2782,7 @@ class NavigationTaskGate(BaseTask):
         self.camera_alignment_debug = camera_gate_alignment
         
         return rewards, crashes, camera_gate_alignment
-    def _detect_boundary_violation(self, robot_position):
+    def _detect_boundary_violation(self, robot_position: torch.Tensor) -> torch.Tensor:
         """Detect one-shot boundary violations (crossing gate plane outside passage window)."""
         try:
             y_margin = 0.2
@@ -2796,7 +2804,14 @@ class NavigationTaskGate(BaseTask):
             boundary_violation_one_shot_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         return boundary_violation_one_shot_mask
 
-    def _log_comprehensive_reward_debug(self, obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment):
+    def _log_comprehensive_reward_debug(
+        self,
+        obs_dict: dict[str, Any],
+        rewards: torch.Tensor,
+        crashes: torch.Tensor,
+        boundary_violation_one_shot_mask: torch.Tensor,
+        camera_gate_alignment: torch.Tensor,
+    ) -> None:
         """Recalculate and log all reward components (every 200 steps, gated by config flag)."""
         # COMPREHENSIVE REWARD DEBUGGING: Print ALL reward components every 200 steps
         # Disabled by default via config flag `enable_comprehensive_reward_debug`
@@ -3243,7 +3258,14 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-    def _log_curriculum_details(self, success_rate, crash_rate, timeout_rate, obstacles_behind_gate, total_obstacles_in_env):
+    def _log_curriculum_details(
+        self,
+        success_rate: float,
+        crash_rate: float,
+        timeout_rate: float,
+        obstacles_behind_gate: int,
+        total_obstacles_in_env: int,
+    ) -> None:
         """Log comprehensive curriculum state after level update."""
         # ===== COMPREHENSIVE CURRICULUM LOGGING =====
         self.log_curriculum_update(f"Gate Navigation Curriculum Level: {self.curriculum_level}, Progress: {self.curriculum_progress_fraction:.3f}")
@@ -3548,7 +3570,14 @@ class NavigationTaskGate(BaseTask):
         
         # ===== END CURRICULUM DEBUGGING =====
 
-    def _populate_curriculum_infos(self, success_rate, crash_rate, timeout_rate, obstacles_behind_gate, total_obstacles_in_env):
+    def _populate_curriculum_infos(
+        self,
+        success_rate: float,
+        crash_rate: float,
+        timeout_rate: float,
+        obstacles_behind_gate: int,
+        total_obstacles_in_env: int,
+    ) -> None:
         """Populate self.infos with curriculum metrics for wandb logging."""
         # Add comprehensive curriculum metrics to infos for wandb logging
         self.infos["curriculum/level"] = torch.as_tensor(self.curriculum_level, dtype=torch.float32)
@@ -3631,7 +3660,7 @@ class NavigationTaskGate(BaseTask):
             self.infos["curriculum/state_noise_static_pos_std_m"] = torch.tensor(sn["static_pos_std_m"], dtype=torch.float32)
             self.infos["curriculum/state_noise_static_orient_std_deg"] = torch.tensor(sn["static_orient_std_rad"]*57.2958, dtype=torch.float32)
 
-    def check_and_update_curriculum_level(self, successes, crashes, timeouts):
+    def check_and_update_curriculum_level(self, successes: torch.Tensor, crashes: torch.Tensor, timeouts: torch.Tensor) -> None:
         """
         COMPREHENSIVE MULTI-ASPECT CURRICULUM LEARNING SYSTEM
         
@@ -3867,7 +3896,7 @@ class NavigationTaskGate(BaseTask):
             self.success_aggregate = 0
             self.crashes_aggregate = 0
             self.timeouts_aggregate = 0
-    def update_episode_reward_tracking(self, obs_dict, rewards, crashes):
+    def update_episode_reward_tracking(self, obs_dict: dict[str, Any], rewards: torch.Tensor, crashes: torch.Tensor) -> None:
         """Update cumulative episode reward tracking for comprehensive debugging."""
         robot_position = obs_dict["robot_position"]
         
@@ -4134,7 +4163,7 @@ class NavigationTaskGate(BaseTask):
         # Increment episode length tracking
         self.episode_lengths += 1
 
-    def reset_episode_reward_tracking(self, env_ids):
+    def reset_episode_reward_tracking(self, env_ids: torch.Tensor) -> None:
         """Reset episode reward tracking for specified environments when episodes end."""
         if len(env_ids) == 0:
             return

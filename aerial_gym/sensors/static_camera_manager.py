@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import math
 import numpy as np
 import torch
+from typing import Any
 
 from isaacgym import gymapi
 
@@ -12,7 +15,7 @@ logger = CustomLogger("static_camera_manager")
 class StaticCameraManager:
     """Manages static camera for gate navigation using Isaac Gym native API."""
     
-    def __init__(self, env_manager, task_config):
+    def __init__(self, env_manager: Any, task_config: Any) -> None:
         self.env_manager = env_manager
         self.task_config = task_config
         self.gym = env_manager.IGE_env.gym
@@ -53,13 +56,13 @@ class StaticCameraManager:
         
         self._setup_static_camera()
     
-    def get_average_camera_angle(self):
+    def get_average_camera_angle(self) -> float:
         """Get average camera angle across all environments for logging."""
         if not hasattr(self, 'current_camera_angles') or not self.current_camera_angles:
             return 0.0
         return sum(self.current_camera_angles) / len(self.current_camera_angles)
     
-    def _setup_static_camera(self):
+    def _setup_static_camera(self) -> None:
         """Setup static camera using Isaac Gym native camera API with D455 specifications."""
         logger.info("Setting up static camera for gate navigation...")
         
@@ -185,7 +188,7 @@ class StaticCameraManager:
             self.camera_setup_success = False
             self.use_synthetic_camera = False
     
-    def update_camera_positions(self, curriculum_level, env_ids):
+    def update_camera_positions(self, curriculum_level: int, env_ids: torch.Tensor) -> None:
         """Update static camera orientation ONLY for resetting environments."""
         if hasattr(self, 'use_synthetic_camera') and self.use_synthetic_camera:
             # In synthetic mode, update orientation per resetting env with spawn-aware logic
@@ -582,7 +585,7 @@ class StaticCameraManager:
             logger.debug(f"Static camera orientation update failed - using fixed positioning")
             return
     
-    def update_dynamic_camera_following(self, robot_positions, gate_positions, gate_center_heights):
+    def update_dynamic_camera_following(self, robot_positions: torch.Tensor, gate_positions: torch.Tensor, gate_center_heights: torch.Tensor) -> None:
         """Reimplemented dynamic follow: keep camera 1 m behind the drone (−Y),
         same height, and primarily look at the drone. If the gate is far outside
         the view, minimally steer the look target toward the gate while keeping
@@ -662,7 +665,7 @@ class StaticCameraManager:
             logger.warning(f"Failed to update dynamic camera following: {e}")
             return
 
-    def update_arc_follow(self, robot_positions, gate_positions, gate_center_heights, radius_m: float = 2.0):
+    def update_arc_follow(self, robot_positions: torch.Tensor, gate_positions: torch.Tensor, gate_center_heights: torch.Tensor, radius_m: float = 2.0) -> None:
         """Arc-follow: constrain camera to a circular arc of fixed radius around the gate center
         (in X–Y), oscillating along the arc but always looking at a blend of drone and gate.
 
@@ -726,7 +729,7 @@ class StaticCameraManager:
             logger.warning(f"Failed to update arc-follow camera: {e}")
             return
 
-    def update_locked_follow(self, robot_positions):
+    def update_locked_follow(self, robot_positions: torch.Tensor) -> None:
         """Keep camera position fixed; rotate to always center the drone.
 
         Args:
@@ -771,7 +774,7 @@ class StaticCameraManager:
             logger.warning(f"Failed to update locked-follow camera: {e}")
             return
     
-    def capture_images(self, batched=False):
+    def capture_images(self, batched: bool = False) -> tuple[np.ndarray | None, np.ndarray | None]:
         """Capture depth and segmentation images from static camera.
         Args:
             batched: when True, return stacked depth of shape (num_envs, H, W) and seg for env0;
@@ -879,7 +882,7 @@ class StaticCameraManager:
         except Exception as e:
             logger.error(f"Static camera capture error: {e}")
             return None, None
-    def _generate_synthetic_camera_data(self):
+    def _generate_synthetic_camera_data(self) -> tuple[np.ndarray, np.ndarray]:
         """Generate synthetic camera data for headless training."""
         try:
             # Create synthetic depth image (240x135) with reasonable gate-like features
