@@ -66,6 +66,15 @@ from sample_factory.utils.utils import str2bool
 
 from aerial_gym.registry.task_registry import task_registry
 
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import (
+    AerialGymVecEnv as AerialGymVecEnvBase,
+    BASE_ENV_CONFIGS,
+    override_default_params,
+    clear_sf_cache,
+    setup_env_agents,
+    parse_cfg,
+)
+
 import numpy as np
 
 # Enforce deterministic backends for reproducibility
@@ -80,7 +89,7 @@ except Exception:
     pass
 
 
-class AerialGymVecEnv(gym.Env):
+class AerialGymVecEnvGate(AerialGymVecEnvBase):
     """
     Wrapper for isaacgym environments to make them compatible with the sample factory.
     Modified to match old 1333 model architecture - single input processing.
@@ -88,9 +97,10 @@ class AerialGymVecEnv(gym.Env):
     """
 
     def __init__(self, aerialgym_env, obs_key, save_gifs=False):
-        self.env = aerialgym_env
-        self.num_agents = self.env.num_envs
-        self.is_multiagent = True
+        # Initialize base wrapper (sets self.env, action_space, observation_space, etc.)
+        obs_dim = 150
+        action_dim = 4
+        super().__init__(aerialgym_env, obs_key, action_dim=action_dim, obs_dim=obs_dim)
         
         # GIF saving functionality
         self.save_gifs = save_gifs
@@ -1200,7 +1210,7 @@ def make_aerialgym_env(
     
     # Import task_registry for this function
     from aerial_gym.registry.task_registry import task_registry
-    
+
     # Ensure DCE navigation task is registered in this subprocess
     if full_task_name == "quad_with_obstacles" or full_task_name == "quad_with_obstacles_gate":
         try:
@@ -1317,7 +1327,7 @@ def make_aerialgym_env(
     # Create the environment and force correct action space for inference compatibility
     # Forward seed from cfg if provided, else None
     seed_val = getattr(cfg, 'seed', None)
-    env = AerialGymVecEnv(
+    env = AerialGymVecEnvGate(
         task_registry.make_task(task_name=full_task_name, seed=seed_val),
         "obs",
         save_gifs=save_gifs,
@@ -2329,7 +2339,7 @@ def register_aerialgym_custom_components():
         from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
         from aerial_gym.config.task_config.navigation_task_config import task_config
         from aerial_gym.registry.task_registry import task_registry
-        
+
         # Use navigation task config as base for DCE navigation with DCE-specific overrides
         # Get config the same way as original DCE script
         base_config = task_registry.get_task_config("navigation_task")
