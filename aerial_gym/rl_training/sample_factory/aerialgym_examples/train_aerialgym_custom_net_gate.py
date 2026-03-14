@@ -78,15 +78,9 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common impor
 import numpy as np
 
 # Enforce deterministic backends for reproducibility
-try:
-    torch.use_deterministic_algorithms(True)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    # torch.backends.cuda.matmul.allow_tf32 = False
-    # torch.backends.cudnn.allow_tf32 = False
-    # Leave TF32 as default (enabled on Ampere) for performance unless overridden externally
-except Exception:
-    pass
+torch.use_deterministic_algorithms(True)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 
 class AerialGymVecEnvGate(AerialGymVecEnvBase):
@@ -298,7 +292,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             try:
                 start_s, end_s = lhs.split(":", 1)
                 start = int(start_s); end = int(end_s)
-            except Exception:
+            except (ValueError, TypeError):
                 continue
             op = rhs
             if op == "zero":
@@ -322,7 +316,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             elif op.startswith("noise:"):
                 try:
                     std = float(op.split(":", 1)[1])
-                except Exception:
+                except (ValueError, TypeError):
                     std = 0.0
                 if std > 0.0:
                     obs_tensor[:, start:end] = obs_tensor[:, start:end] + torch.randn_like(obs_tensor[:, start:end]) * std
@@ -483,7 +477,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 merged_noised_img = Image.fromarray(merged_noised_array)
                 self.merged_noised_frames[0].append(merged_noised_img)
                 
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             if VERBOSE:
                 print(f"[GIF] Warning: Failed to collect frames: {e}")
                 import traceback
@@ -508,7 +502,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     # fallback to min level if needed
                     level = int(getattr(self.env.task_config.curriculum, 'min_level', 0))
                     level_suffix = f"_L{level:02d}"
-            except Exception:
+            except (ValueError, TypeError):
                 level_suffix = ""
             
             # # Save drone camera GIFs (disabled to reduce output volume)
@@ -608,7 +602,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             #     )
             #     print(f"[GIF] Saved merged dual camera (D455 NOISED): {gif_path}")
         
-        except Exception as e:
+        except OSError as e:
             if VERBOSE:
                 print(f"[GIF] Warning: Failed to save GIFs for episode {episode_num}: {e}")
 
@@ -691,62 +685,53 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             vec = transformed_obs.get('obs', None)
             if isinstance(vec, torch.Tensor):
                 if not torch.isfinite(vec).all():
-                    try:
-                        import os as _os
-                        if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
-                            n_bad = int((~torch.isfinite(vec)).sum().item())
-                            print(f"[SANITIZE][reset] replacing {n_bad} non-finite obs values with 0")
-                    except Exception:
-                        pass
+                    import os as _os
+                    if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
+                        n_bad = int((~torch.isfinite(vec)).sum().item())
+                        print(f"[SANITIZE][reset] replacing {n_bad} non-finite obs values with 0")
                 transformed_obs['obs'] = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
-        except Exception:
+        except (ValueError, TypeError):
             pass
         # Optional: print the full obs vector for env0 each step for one episode
-        try:
-            if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true':
-                if not hasattr(self, '_train_env0_obs_state'):
-                    self._train_env0_obs_state = 0  # 0=armed, 1=active, 2=done
-                    self._train_env0_obs_step = 0
-                vec = transformed_obs.get('obs', None)
-                if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[0] > 0:
-                    obs0 = vec[0]
-                    # Activate on first nonzero norm
-                    if self._train_env0_obs_state == 0:
-                        if float(torch.norm(obs0).item()) > 0.0:
-                            self._train_env0_obs_state = 1
-                            self._train_env0_obs_step = 0
-                            if VERBOSE:
-                                print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
-                            self._train_env0_obs_step += 1
-                    elif self._train_env0_obs_state == 1:
+        if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true':
+            if not hasattr(self, '_train_env0_obs_state'):
+                self._train_env0_obs_state = 0  # 0=armed, 1=active, 2=done
+                self._train_env0_obs_step = 0
+            vec = transformed_obs.get('obs', None)
+            if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[0] > 0:
+                obs0 = vec[0]
+                # Activate on first nonzero norm
+                if self._train_env0_obs_state == 0:
+                    if float(torch.norm(obs0).item()) > 0.0:
+                        self._train_env0_obs_state = 1
+                        self._train_env0_obs_step = 0
                         if VERBOSE:
                             print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
                         self._train_env0_obs_step += 1
-        except Exception:
-            pass
+                elif self._train_env0_obs_state == 1:
+                    if VERBOSE:
+                        print(f"[TRAIN_ENV0_OBS] step={self._train_env0_obs_step} obs0={obs0.detach().cpu().numpy()}")
+                    self._train_env0_obs_step += 1
         # Optional: one-episode env0 latent per-frame logging during training
-        try:
-            if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true':
-                if not hasattr(self, '_train_env0_log_state'):
-                    self._train_env0_log_state = 0  # 0=armed, 1=active, 2=done
-                    self._train_env0_step = 0
-                vec = transformed_obs.get('obs', None)
-                if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[0] > 0 and vec.shape[1] >= 150:
-                    ze0 = vec[0, 22:86]; zs0 = vec[0, 86:150]
-                    ze_abs = float(torch.mean(torch.abs(ze0)).item()); zs_abs = float(torch.mean(torch.abs(zs0)).item())
-                    if self._train_env0_log_state == 0:
-                        if (ze_abs > 1e-6) or (zs_abs > 1e-6):
-                            self._train_env0_log_state = 1
-                            self._train_env0_step = 0
-                            if VERBOSE:
-                                print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
-                            self._train_env0_step += 1
-                    elif self._train_env0_log_state == 1:
+        if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true':
+            if not hasattr(self, '_train_env0_log_state'):
+                self._train_env0_log_state = 0  # 0=armed, 1=active, 2=done
+                self._train_env0_step = 0
+            vec = transformed_obs.get('obs', None)
+            if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[0] > 0 and vec.shape[1] >= 150:
+                ze0 = vec[0, 22:86]; zs0 = vec[0, 86:150]
+                ze_abs = float(torch.mean(torch.abs(ze0)).item()); zs_abs = float(torch.mean(torch.abs(zs0)).item())
+                if self._train_env0_log_state == 0:
+                    if (ze_abs > 1e-6) or (zs_abs > 1e-6):
+                        self._train_env0_log_state = 1
+                        self._train_env0_step = 0
                         if VERBOSE:
                             print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
                         self._train_env0_step += 1
-        except Exception:
-            pass
+                elif self._train_env0_log_state == 1:
+                    if VERBOSE:
+                        print(f"[TRAIN_ENV0_LATENTS] step={self._train_env0_step} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                    self._train_env0_step += 1
         
         # Collect first frame if GIF saving is enabled
         if self.save_gifs:
@@ -762,15 +747,12 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
         try:
             if isinstance(dce_action, torch.Tensor):
                 if not torch.isfinite(dce_action).all():
-                    try:
-                        import os as _os
-                        if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
-                            n_bad = int((~torch.isfinite(dce_action)).sum().item())
-                            print(f"[SANITIZE][action] replacing {n_bad} non-finite action values with 0 and clamping")
-                    except Exception:
-                        pass
+                    import os as _os
+                    if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
+                        n_bad = int((~torch.isfinite(dce_action)).sum().item())
+                        print(f"[SANITIZE][action] replacing {n_bad} non-finite action values with 0 and clamping")
                 dce_action = torch.nan_to_num(dce_action, nan=0.0, posinf=0.0, neginf=0.0).clamp_(-1.0, 1.0)
-        except Exception:
+        except (ValueError, TypeError):
             pass
             
         obs, rew, terminated, truncated, infos = self.env.step(dce_action)
@@ -787,7 +769,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 # Only save if env_agents is 16
                 try:
                     env_agents = int(os.environ.get('SF_ENV_AGENTS', '0'))
-                except Exception:
+                except (ValueError, TypeError):
                     env_agents = 0
                 if env_agents != 16:
                     # Clear frames and skip saving to control output volume
@@ -795,21 +777,18 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     self.episode_count += 1
                     return transformed_obs, rew, terminated, truncated, infos
                 # End training latent logging when env0 resets once
-                try:
-                    if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_log_state', 2) == 1:
-                        reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-                        if len(reset_ids) > 0 and 0 in reset_ids.tolist():
-                            self._train_env0_log_state = 2
-                            if VERBOSE:
-                                print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
-                    if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_obs_state', 2) == 1:
-                        reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-                        if len(reset_ids) > 0 and 0 in reset_ids.tolist():
-                            self._train_env0_obs_state = 2
-                            if VERBOSE:
-                                print(f"[TRAIN_ENV0_OBS] episode_end steps={self._train_env0_obs_step}")
-                except Exception:
-                    pass
+                if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_log_state', 2) == 1:
+                    reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+                    if len(reset_ids) > 0 and 0 in reset_ids.tolist():
+                        self._train_env0_log_state = 2
+                        if VERBOSE:
+                            print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
+                if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and getattr(self, '_train_env0_obs_state', 2) == 1:
+                    reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+                    if len(reset_ids) > 0 and 0 in reset_ids.tolist():
+                        self._train_env0_obs_state = 2
+                        if VERBOSE:
+                            print(f"[TRAIN_ENV0_OBS] episode_end steps={self._train_env0_obs_step}")
                 # Save every 5 episodes for env 0
                 if self.episode_count % 5 == 0:
                     if VERBOSE:
@@ -848,38 +827,35 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                                 return t.detach().cpu().tolist() if torch.is_tensor(t) else t
                             if reset_ids is not None:
                                 for eid in reset_ids:
-                                    try:
-                                        pe = float(per_env['path_efficiency'][eid].item())
-                                        mgd = float(per_env['min_gate_distance'][eid].item())
-                                        ttg = float(per_env['time_to_gate_steps'][eid].item())
-                                        co = float(per_env['center_offset_success'][eid].item())
-                                        ho = float(per_env['height_offset_success'][eid].item())
-                                        # Update totals
-                                        if math.isfinite(pe):
-                                            self._traj_running['path_efficiency_sum'] += pe
-                                            self._traj_running['path_efficiency_count'] += 1
-                                        if math.isfinite(mgd):
-                                            self._traj_running['min_gate_distance_sum'] += mgd
-                                            self._traj_running['min_gate_distance_count'] += 1
-                                        crossed = False
-                                        if isinstance(crossed_mask, torch.Tensor):
-                                            crossed = bool(crossed_mask[eid].item())
-                                        # Only update these when crossed (finite ttg/offsets expected)
-                                        if crossed and math.isfinite(ttg):
-                                            self._traj_running['time_to_gate_sum'] += ttg
-                                            self._traj_running['time_to_gate_count'] += 1
-                                        if crossed and math.isfinite(co):
-                                            self._traj_running['center_offset_sum'] += co
-                                            self._traj_running['center_offset_count'] += 1
-                                        if crossed and math.isfinite(ho):
-                                            self._traj_running['height_offset_sum'] += ho
-                                            self._traj_running['height_offset_count'] += 1
-                                        # Episode counters
-                                        self._traj_running['episodes_total'] += 1
-                                        if crossed:
-                                            self._traj_running['episodes_crossed'] += 1
-                                    except Exception:
-                                        pass
+                                    pe = float(per_env['path_efficiency'][eid].item())
+                                    mgd = float(per_env['min_gate_distance'][eid].item())
+                                    ttg = float(per_env['time_to_gate_steps'][eid].item())
+                                    co = float(per_env['center_offset_success'][eid].item())
+                                    ho = float(per_env['height_offset_success'][eid].item())
+                                    # Update totals
+                                    if math.isfinite(pe):
+                                        self._traj_running['path_efficiency_sum'] += pe
+                                        self._traj_running['path_efficiency_count'] += 1
+                                    if math.isfinite(mgd):
+                                        self._traj_running['min_gate_distance_sum'] += mgd
+                                        self._traj_running['min_gate_distance_count'] += 1
+                                    crossed = False
+                                    if isinstance(crossed_mask, torch.Tensor):
+                                        crossed = bool(crossed_mask[eid].item())
+                                    # Only update these when crossed (finite ttg/offsets expected)
+                                    if crossed and math.isfinite(ttg):
+                                        self._traj_running['time_to_gate_sum'] += ttg
+                                        self._traj_running['time_to_gate_count'] += 1
+                                    if crossed and math.isfinite(co):
+                                        self._traj_running['center_offset_sum'] += co
+                                        self._traj_running['center_offset_count'] += 1
+                                    if crossed and math.isfinite(ho):
+                                        self._traj_running['height_offset_sum'] += ho
+                                        self._traj_running['height_offset_count'] += 1
+                                    # Episode counters
+                                    self._traj_running['episodes_total'] += 1
+                                    if crossed:
+                                        self._traj_running['episodes_crossed'] += 1
                     # Log a run-level stat (aggregated by SF) without per-env nesting
                     extra['curriculum_level'] = float(curr_level) if curr_level is not None else -1.0
                     # Also provide curriculum level - 1 for plotting convenience
@@ -890,33 +866,21 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     # Inject traj metrics into episode_extra_stats following the same pattern
                     if isinstance(traj_avg, dict):
                         for k, v in traj_avg.items():
-                            try:
-                                extra[k] = float(v)
-                            except Exception:
-                                pass
+                            extra[k] = float(v)
                         # Also mirror last-position metrics when present
                         for k in ('last_position_x','last_position_y','last_position_z','last_center_distance'):
                             if k in traj_avg:
-                                try:
-                                    extra[k] = float(traj_avg[k])
-                                except Exception:
-                                    pass
+                                extra[k] = float(traj_avg[k])
                     # Pass-through any episode-level trajectory metrics already stored by env
                     # They will be aggregated by SF and picked up by the learner later
                     for k in ('path_efficiency','time_to_gate_steps','min_gate_distance','center_offset_success','height_offset_success','target_success_rate'):
                         if k in extra:
                             # ensure float cast
-                            try:
-                                extra[k] = float(extra[k])
-                            except Exception:
-                                pass
+                            extra[k] = float(extra[k])
                     # Include last-position series if present (already floats)
                     for k in ('last_position_x','last_position_y','last_position_z','last_center_distance'):
                         if k in extra:
-                            try:
-                                extra[k] = float(extra[k])
-                            except Exception:
-                                pass
+                            extra[k] = float(extra[k])
                     # Add running-mean episode-level metrics
                     # For success-conditioned metrics (time_to_gate/offsets), return None when count==0
                     def _safe_mean(sum_key, count_key, none_if_zero=False):
@@ -938,27 +902,24 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
 
                     # Curriculum (generic task) counters derived from infos flags
                     # Sum over the envs that reset this step
-                    try:
-                        if isinstance(infos, dict) and 'successes' in infos and 'crashes' in infos and 'timeouts' in infos:
-                            ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-                            if ids.numel() > 0:
-                                step_successes = int(infos['successes'][ids].sum().item())
-                                step_crashes = int(infos['crashes'][ids].sum().item())
-                                step_timeouts = int(infos['timeouts'][ids].sum().item())
-                                # Update running totals
-                                self._curriculum_totals['total_successes'] += step_successes
-                                self._curriculum_totals['total_crashes'] += step_crashes
-                                self._curriculum_totals['total_timeouts'] += step_timeouts
-                                # Expose per-episode counts for this step (averages not needed)
-                                extra['successes'] = float(step_successes)
-                                extra['crashes'] = float(step_crashes)
-                                extra['timeouts'] = float(step_timeouts)
-                                # Expose cumulative totals (curriculum namespace)
-                                extra['curriculum/total_successes'] = float(self._curriculum_totals['total_successes'])
-                                extra['curriculum/total_crashes'] = float(self._curriculum_totals['total_crashes'])
-                                extra['curriculum/total_timeouts'] = float(self._curriculum_totals['total_timeouts'])
-                    except Exception:
-                        pass
+                    if isinstance(infos, dict) and 'successes' in infos and 'crashes' in infos and 'timeouts' in infos:
+                        ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+                        if ids.numel() > 0:
+                            step_successes = int(infos['successes'][ids].sum().item())
+                            step_crashes = int(infos['crashes'][ids].sum().item())
+                            step_timeouts = int(infos['timeouts'][ids].sum().item())
+                            # Update running totals
+                            self._curriculum_totals['total_successes'] += step_successes
+                            self._curriculum_totals['total_crashes'] += step_crashes
+                            self._curriculum_totals['total_timeouts'] += step_timeouts
+                            # Expose per-episode counts for this step (averages not needed)
+                            extra['successes'] = float(step_successes)
+                            extra['crashes'] = float(step_crashes)
+                            extra['timeouts'] = float(step_timeouts)
+                            # Expose cumulative totals (curriculum namespace)
+                            extra['curriculum/total_successes'] = float(self._curriculum_totals['total_successes'])
+                            extra['curriculum/total_crashes'] = float(self._curriculum_totals['total_crashes'])
+                            extra['curriculum/total_timeouts'] = float(self._curriculum_totals['total_timeouts'])
 
                     # Mirror curriculum/current_* using task attributes (fallback) so they always show up
                     try:
@@ -969,38 +930,29 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                         if cur_lvl_tensor is not None:
                             extra['episode_extra_stats/curriculum/current_level'] = float(cur_lvl_tensor.mean().item()) if hasattr(cur_lvl_tensor, 'mean') else float(cur_lvl_tensor)
                             if 'curriculum/current_level' in infos:
-                                try:
-                                    del infos['curriculum/current_level']
-                                except Exception:
-                                    pass
+                                del infos['curriculum/current_level']
                         else:
                             if task is not None and hasattr(task, 'curriculum_level'):
                                 extra['episode_extra_stats/curriculum/current_level'] = float(getattr(task, 'curriculum_level'))
                         if cur_prog_tensor is not None:
                             extra['episode_extra_stats/curriculum/current_progress'] = float(cur_prog_tensor.mean().item()) if hasattr(cur_prog_tensor, 'mean') else float(cur_prog_tensor)
                             if 'curriculum/current_progress' in infos:
-                                try:
-                                    del infos['curriculum/current_progress']
-                                except Exception:
-                                    pass
+                                del infos['curriculum/current_progress']
                         else:
                             if task is not None and hasattr(task, 'curriculum_progress_fraction'):
                                 extra['episode_extra_stats/curriculum/current_progress'] = float(getattr(task, 'curriculum_progress_fraction'))
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
 
                     # Gate/task-specific + camera alignment — mean across envs if present in infos
-                    try:
-                        gate_keys = (
-                            'gate/passed','gate/distance','gate/alignment',
-                            'camera/facing_alignment','camera/alignment_angle_deg','camera/alignment_category',
-                        )
-                        for key in gate_keys:
-                            val = infos.get(key, None)
-                            if val is not None:
-                                extra[key] = float(val.mean().item()) if hasattr(val, 'mean') else float(val)
-                    except Exception:
-                        pass
+                    gate_keys = (
+                        'gate/passed','gate/distance','gate/alignment',
+                        'camera/facing_alignment','camera/alignment_angle_deg','camera/alignment_category',
+                    )
+                    for key in gate_keys:
+                        val = infos.get(key, None)
+                        if val is not None:
+                            extra[key] = float(val.mean().item()) if hasattr(val, 'mean') else float(val)
 
                     # Curriculum snapshot & progression (gate task)
                     # 1) Mirror when the task provides them in infos; 2) Fallback to task attributes so they always appear
@@ -1039,7 +991,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                                     obg = int(curri.get_obstacle_count_behind_gate(cur_lvl_val))
                                 else:
                                     obg = 0
-                            except Exception:
+                            except (ValueError, TypeError):
                                 obg = 0
                             if 'curriculum/obstacles_behind_gate' not in mirrored:
                                 extra['curriculum/obstacles_behind_gate'] = float(obg)
@@ -1093,81 +1045,68 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                                 scm = getattr(task, 'static_camera_manager', None)
                                 if scm is not None and hasattr(scm, 'current_camera_angles') and scm.current_camera_angles:
                                     cur_angle = float(scm.current_camera_angles[0])
-                            except Exception:
+                            except (ValueError, TypeError):
                                 cur_angle = 0.0
                             if 'curriculum/camera_current_angle' not in mirrored:
                                 extra['curriculum/camera_current_angle'] = float(cur_angle)
                             # State noise
-                            try:
-                                sn = None
-                                if curri is not None and getattr(curri, 'enable_state_noise', False) and hasattr(curri, 'get_state_noise'):
-                                    sn = curri.get_state_noise(cur_lvl_val)
-                                if sn is not None:
-                                    extra.setdefault('curriculum/state_noise_drone_pos_std_m', float(sn.get('drone_pos_std_m', 0.0)))
-                                    extra.setdefault('curriculum/state_noise_drone_orient_std_deg', float(sn.get('drone_orient_std_rad', 0.0) * 57.2958))
-                                    extra.setdefault('curriculum/state_noise_static_pos_std_m', float(sn.get('static_pos_std_m', 0.0)))
-                                    extra.setdefault('curriculum/state_noise_static_orient_std_deg', float(sn.get('static_orient_std_rad', 0.0) * 57.2958))
-                            except Exception:
-                                pass
+                            sn = None
+                            if curri is not None and getattr(curri, 'enable_state_noise', False) and hasattr(curri, 'get_state_noise'):
+                                sn = curri.get_state_noise(cur_lvl_val)
+                            if sn is not None:
+                                extra.setdefault('curriculum/state_noise_drone_pos_std_m', float(sn.get('drone_pos_std_m', 0.0)))
+                                extra.setdefault('curriculum/state_noise_drone_orient_std_deg', float(sn.get('drone_orient_std_rad', 0.0) * 57.2958))
+                                extra.setdefault('curriculum/state_noise_static_pos_std_m', float(sn.get('static_pos_std_m', 0.0)))
+                                extra.setdefault('curriculum/state_noise_static_orient_std_deg', float(sn.get('static_orient_std_rad', 0.0) * 57.2958))
                             # Success/Crash/Timeout rates (run-level, from running totals)
-                            try:
-                                tot_s = float(self._curriculum_totals['total_successes'])
-                                tot_c = float(self._curriculum_totals['total_crashes'])
-                                tot_t = float(self._curriculum_totals['total_timeouts'])
-                                total = max(1.0, tot_s + tot_c + tot_t)
-                                extra.setdefault('curriculum/success_rate', tot_s / total)
-                                extra.setdefault('curriculum/crash_rate', tot_c / total)
-                                extra.setdefault('curriculum/timeout_rate', tot_t / total)
-                            except Exception:
-                                pass
-                    except Exception:
+                            tot_s = float(self._curriculum_totals['total_successes'])
+                            tot_c = float(self._curriculum_totals['total_crashes'])
+                            tot_t = float(self._curriculum_totals['total_timeouts'])
+                            total = max(1.0, tot_s + tot_c + tot_t)
+                            extra.setdefault('curriculum/success_rate', tot_s / total)
+                            extra.setdefault('curriculum/crash_rate', tot_c / total)
+                            extra.setdefault('curriculum/timeout_rate', tot_t / total)
+                    except (ValueError, TypeError):
                         pass
                     infos['episode_extra_stats'] = extra
-                    try:
-                        # Existing compact log (kept for continuity)
-                        # print(f"[W&B_DEBUG][worker] episode_extra_stats added: curriculum_level={extra['curriculum_level']}, curriculum_level_minus_1={extra['curriculum_level_minus_1']}, traj_keys={[k for k in extra.keys() if k in ['path_efficiency','time_to_gate_steps','min_gate_distance','center_offset_success','height_offset_success']]}")
-                        # New temporary debug: show newly added groups
-                        debug_groups = {
-                            'curriculum_current': [
-                                'curriculum/current_level','curriculum/current_progress'
-                            ],
-                            'curriculum_totals': [
-                                'curriculum/total_successes','curriculum/total_crashes','curriculum/total_timeouts'
-                            ],
-                            'per_episode_counts': [
-                                'successes','crashes','timeouts'
-                            ],
-                            'gate_camera': [
-                                'gate/passed','gate/distance','gate/alignment',
-                                'camera/facing_alignment','camera/alignment_angle_deg','camera/alignment_category'
-                            ],
-                            'curriculum_snapshot_core': [
-                                'curriculum/level','curriculum/progress','curriculum/success_rate',
-                                'curriculum/crash_rate','curriculum/timeout_rate'
-                            ],
-                            'curriculum_snapshot_env': [
-                                'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached'
-                            ],
-                            'curriculum_snapshot_camera': [
-                                'curriculum/camera_gaussian_std','curriculum/camera_dropout_rate',
-                                'curriculum/camera_frame_dropout_drone_total','curriculum/camera_frame_dropout_static_total',
-                                'curriculum/camera_frame_freeze_drone','curriculum/camera_frame_blank_drone',
-                                'curriculum/camera_frame_freeze_static','curriculum/camera_frame_blank_static',
-                                'curriculum/camera_max_angle','curriculum/camera_current_angle'
-                            ],
-                            'curriculum_snapshot_state_noise': [
-                                'curriculum/state_noise_drone_pos_std_m','curriculum/state_noise_drone_orient_std_deg',
-                                'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg'
-                            ],
-                        }
-                        for group_name, keys in debug_groups.items():
-                            present = [k for k in keys if k in extra]
-                            if present:
-                                preview = {k: extra[k] for k in present}
-                                # print(f"[W&B_DEBUG][worker] {group_name}: {preview}")
-                    except Exception:
-                        pass
-        except Exception:
+                    debug_groups = {
+                        'curriculum_current': [
+                            'curriculum/current_level','curriculum/current_progress'
+                        ],
+                        'curriculum_totals': [
+                            'curriculum/total_successes','curriculum/total_crashes','curriculum/total_timeouts'
+                        ],
+                        'per_episode_counts': [
+                            'successes','crashes','timeouts'
+                        ],
+                        'gate_camera': [
+                            'gate/passed','gate/distance','gate/alignment',
+                            'camera/facing_alignment','camera/alignment_angle_deg','camera/alignment_category'
+                        ],
+                        'curriculum_snapshot_core': [
+                            'curriculum/level','curriculum/progress','curriculum/success_rate',
+                            'curriculum/crash_rate','curriculum/timeout_rate'
+                        ],
+                        'curriculum_snapshot_env': [
+                            'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached'
+                        ],
+                        'curriculum_snapshot_camera': [
+                            'curriculum/camera_gaussian_std','curriculum/camera_dropout_rate',
+                            'curriculum/camera_frame_dropout_drone_total','curriculum/camera_frame_dropout_static_total',
+                            'curriculum/camera_frame_freeze_drone','curriculum/camera_frame_blank_drone',
+                            'curriculum/camera_frame_freeze_static','curriculum/camera_frame_blank_static',
+                            'curriculum/camera_max_angle','curriculum/camera_current_angle'
+                        ],
+                        'curriculum_snapshot_state_noise': [
+                            'curriculum/state_noise_drone_pos_std_m','curriculum/state_noise_drone_orient_std_deg',
+                            'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg'
+                        ],
+                    }
+                    for group_name, keys in debug_groups.items():
+                        present = [k for k in keys if k in extra]
+                        if present:
+                            preview = {k: extra[k] for k in present}
+        except (ValueError, TypeError):
             pass
         
         # DYNAMIC OBSERVATION PROCESSING: Handle both standard DCE (81D) and gate navigation (145D)
@@ -1181,15 +1120,12 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             vec = transformed_obs.get('obs', None)
             if isinstance(vec, torch.Tensor):
                 if not torch.isfinite(vec).all():
-                    try:
-                        import os as _os
-                        if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
-                            n_bad = int((~torch.isfinite(vec)).sum().item())
-                            print(f"[SANITIZE][step] replacing {n_bad} non-finite obs values with 0")
-                    except Exception:
-                        pass
+                    import os as _os
+                    if _os.environ.get('ABLATE_DEBUG', 'false').lower() == 'true':
+                        n_bad = int((~torch.isfinite(vec)).sum().item())
+                        print(f"[SANITIZE][step] replacing {n_bad} non-finite obs values with 0")
                 transformed_obs['obs'] = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
-        except Exception:
+        except (ValueError, TypeError):
             pass
         
         self.step_count += 1
@@ -1232,7 +1168,7 @@ def make_aerialgym_env(
                         gate_config.disable_gate_size_randomization = False
                     try:
                         gate_config.fixed_gate_scale_percent = int(getattr(cfg, 'fixed_gate_scale_percent', 100))
-                    except Exception:
+                    except (ValueError, TypeError):
                         gate_config.fixed_gate_scale_percent = 100
                     # Obstacle ablation flags
                     try:
@@ -1241,7 +1177,7 @@ def make_aerialgym_env(
                         gate_config.disable_obstacle_randomization = False
                     try:
                         gate_config.fixed_obstacles_behind_gate = int(getattr(cfg, 'fixed_obstacles_behind_gate', 0))
-                    except Exception:
+                    except (ValueError, TypeError):
                         gate_config.fixed_obstacles_behind_gate = 0
                     # Handle headless and environment settings for gate task
                     TaskClass = DCE_RL_Navigation_Task_Gate
@@ -1276,7 +1212,7 @@ def make_aerialgym_env(
                 if cap is not None:
                     try:
                         config.max_curriculum_level = int(cap)
-                    except Exception:
+                    except (ValueError, TypeError):
                         config.max_curriculum_level = None
                 
                 # CRITICAL FIX: Override action space to match inference expectations
@@ -1318,7 +1254,7 @@ def make_aerialgym_env(
                 # Also register backup name for backward compatibility
                 task_registry.register_task(backup_name, TaskClass, config)
                 print(f"Registered {register_name} and {backup_name} in subprocess")
-            except Exception as e:
+            except (ValueError, TypeError) as e:
                 print(f"Failed to register quad_with_obstacles in subprocess: {e}")
 
     # Get save_gifs parameter from config
@@ -1342,7 +1278,7 @@ def make_aerialgym_env(
         active = gd.get('active_gate_variant_index', None)
         if active is not None:
             print(f"[GateVariant] Active gate variant index tensor: {active}")
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         print(f"[GateVariant] Debug listing failed: {e}")
     
     # CRITICAL FIX: Force action space to exactly match inference expectations
@@ -1402,7 +1338,7 @@ def add_extra_params_func(parser):
             return 'adaptive'
         try:
             return float(val)
-        except Exception:
+        except (ValueError, TypeError):
             raise ValueError("--static_camera_base_z must be a float or 'adaptive'")
     parser.add_argument("--static_camera_base_z", type=parse_base_z, default=None, help="Static cam Z (meters) or 'adaptive' to follow gate center height")
     # State noise randomization ablation flag (drone & static pose noise)
@@ -1930,7 +1866,7 @@ class DualFusionEncoder(Encoder):
                 try:
                     a, b = lhs.split(':', 1)
                     a = int(a); b = int(b)
-                except Exception:
+                except (ValueError, TypeError):
                     continue
                 if rhs in ('zero', 'zerograd'):
                     # Exact-match ablations
@@ -1966,10 +1902,7 @@ class DualFusionEncoder(Encoder):
         self._tap_count = 0
 
         # One-time info (print only in evaluation/inference)
-        try:
-            print(f"[FUSION] Using fusion mode: {self.fusion_mode} (gate_per_feature={int(self.gate_per_feature)})")
-        except Exception:
-            pass
+        print(f"[FUSION] Using fusion mode: {self.fusion_mode} (gate_per_feature={int(self.gate_per_feature)})")
 
     def _slice_latents(self, x: torch.Tensor):
         z_e = x[..., self.slice_drone_vae[0]:self.slice_drone_vae[1]]
@@ -2001,34 +1934,28 @@ class DualFusionEncoder(Encoder):
                     mn = float(torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0).min().item()) if n > 0 else 0.0
                     mx = float(torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0).max().item()) if n > 0 else 0.0
                     return f"{name}[{a}:{b}]: bad={bad}/{n} min={mn:.3e} max={mx:.3e}"
-                try:
-                    msg = ["[NAN_DIAG][encoder_in] non-finite detected or forced dump:" ]
-                    msg.append(_slice_stats('pos', x, 0, 3))
-                    msg.append(_slice_stats('static_pose', x, 3, 9))
-                    msg.append(_slice_stats('orient', x, 9, 12))
-                    msg.append(_slice_stats('vel', x, 12, 18))
-                    msg.append(_slice_stats('actions', x, 18, 22))
-                    msg.append(_slice_stats('ego_latent', x, 22, 86))
-                    msg.append(_slice_stats('static_latent', x, 86, 150))
-                    print(" | ".join(msg))
-                except Exception:
-                    pass
+                msg = ["[NAN_DIAG][encoder_in] non-finite detected or forced dump:" ]
+                msg.append(_slice_stats('pos', x, 0, 3))
+                msg.append(_slice_stats('static_pose', x, 3, 9))
+                msg.append(_slice_stats('orient', x, 9, 12))
+                msg.append(_slice_stats('vel', x, 12, 18))
+                msg.append(_slice_stats('actions', x, 18, 22))
+                msg.append(_slice_stats('ego_latent', x, 22, 86))
+                msg.append(_slice_stats('static_latent', x, 86, 150))
+                print(" | ".join(msg))
                 if not _want_diag:
                     self._nan_diag_printed = True
-        except Exception:
+        except (ValueError, TypeError):
             pass
         # Sanitize input to prevent NaN/Inf propagation into LayerNorm/gating
-        try:
-            x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
-        except Exception:
-            pass
+        x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
         z_e, z_s = self._slice_latents(x)
         rest = self._remove_latents(x)
         # Encoder tap: print what the encoder actually receives (before any LayerNorm/projections)
         try:
             import os
             tap_on = os.environ.get('ENC_TAP_DEBUG', os.environ.get('ABLATE_DEBUG', 'false')).lower() == 'true'
-        except Exception:
+        except (KeyError, TypeError):
             tap_on = False
         if tap_on:
             self._tap_count += 1
@@ -2043,38 +1970,35 @@ class DualFusionEncoder(Encoder):
                         z_e_abs = float(z_e.abs().mean().item()) if hasattr(z_e, 'abs') else float('nan')
                         z_s_abs = float(z_s.abs().mean().item()) if hasattr(z_s, 'abs') else float('nan')
                         # print(f"[ENC_TAP] preLN abs_mean: drone(22:86)={z_e_abs:.6e} static(86:150)={z_s_abs:.6e}")
-                except Exception:
+                except (ValueError, TypeError):
                     pass
         # Optional: training-time normalized env0 latents per-frame (one episode)
-        try:
-            import os as _os
-            if _os.environ.get('TRAIN_ENV0_LATENTS_NORM', 'false').lower() == 'true':
-                # Only print from the first env
-                ze0 = z_e[0]
-                zs0 = z_s[0]
-                # After projection+LayerNorm to match branch inputs, but before gating
-                e0 = self.ego_proj(ze0.unsqueeze(0))[0]
-                s0 = self.static_proj(zs0.unsqueeze(0))[0]
-                e_abs = float(e0.abs().mean().item())
-                s_abs = float(s0.abs().mean().item())
-                # Also compute raw (pre-normalization) abs-means for comparison
-                e_raw_abs = float(ze0.abs().mean().item())
-                s_raw_abs = float(zs0.abs().mean().item())
-                if not hasattr(self, '_train_env0_norm_state'):
-                    self._train_env0_norm_state = 0
+        import os as _os
+        if _os.environ.get('TRAIN_ENV0_LATENTS_NORM', 'false').lower() == 'true':
+            # Only print from the first env
+            ze0 = z_e[0]
+            zs0 = z_s[0]
+            # After projection+LayerNorm to match branch inputs, but before gating
+            e0 = self.ego_proj(ze0.unsqueeze(0))[0]
+            s0 = self.static_proj(zs0.unsqueeze(0))[0]
+            e_abs = float(e0.abs().mean().item())
+            s_abs = float(s0.abs().mean().item())
+            # Also compute raw (pre-normalization) abs-means for comparison
+            e_raw_abs = float(ze0.abs().mean().item())
+            s_raw_abs = float(zs0.abs().mean().item())
+            if not hasattr(self, '_train_env0_norm_state'):
+                self._train_env0_norm_state = 0
+                self._train_env0_norm_step = 0
+            if self._train_env0_norm_state == 0:
+                # Arm -> activate on first nonzero
+                if (e_abs > 1e-6) or (s_abs > 1e-6):
+                    self._train_env0_norm_state = 1
                     self._train_env0_norm_step = 0
-                if self._train_env0_norm_state == 0:
-                    # Arm -> activate on first nonzero
-                    if (e_abs > 1e-6) or (s_abs > 1e-6):
-                        self._train_env0_norm_state = 1
-                        self._train_env0_norm_step = 0
-                        print(f"[TRAIN_ENV0_LATENTS_NORM] step={self._train_env0_norm_step} abs_mean: drone_norm={e_abs:.6f} static_norm={s_abs:.6f} | drone_raw={e_raw_abs:.6f} static_raw={s_raw_abs:.6f}")
-                        self._train_env0_norm_step += 1
-                elif self._train_env0_norm_state == 1:
                     print(f"[TRAIN_ENV0_LATENTS_NORM] step={self._train_env0_norm_step} abs_mean: drone_norm={e_abs:.6f} static_norm={s_abs:.6f} | drone_raw={e_raw_abs:.6f} static_raw={s_raw_abs:.6f}")
                     self._train_env0_norm_step += 1
-        except Exception:
-            pass
+            elif self._train_env0_norm_state == 1:
+                print(f"[TRAIN_ENV0_LATENTS_NORM] step={self._train_env0_norm_step} abs_mean: drone_norm={e_abs:.6f} static_norm={s_abs:.6f} | drone_raw={e_raw_abs:.6f} static_raw={s_raw_abs:.6f}")
+                self._train_env0_norm_step += 1
         if self.fusion_mode == 'gated':
             # If a full-slice zero ablation was requested, detach those inputs so grads cannot route via gate
             if self._ablate_drone_zero:
@@ -2102,25 +2026,22 @@ class DualFusionEncoder(Encoder):
                             f"norms: e={e_norm:.3f} z={z_norm:.3f}"
                         )
                         # Log to W&B even when static is disabled (treat gate as 0 towards static)
-                        try:
-                            import wandb  # noqa: F401
-                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
-                            payload = {
-                                'episode_extra_stats/fusion/gate_mean_pct': 0.0,  # g≈0 → drone-only
-                                'episode_extra_stats/fusion/gate_std_pct': 0.0,
-                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 0.0,
-                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 100.0,
-                                'episode_extra_stats/fusion/e_norm_mean': float(e_norm),
-                                'episode_extra_stats/fusion/s_norm_mean': 0.0,
-                                'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
-                            }
-                            if frames is not None and frames > 0:
-                                wandb.log(payload, step=frames)
-                            else:
-                                wandb.log(payload)
-                        except Exception:
-                            pass
-                    except Exception:
+                        import wandb  # noqa: F401
+                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        payload = {
+                            'episode_extra_stats/fusion/gate_mean_pct': 0.0,  # g≈0 → drone-only
+                            'episode_extra_stats/fusion/gate_std_pct': 0.0,
+                            'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 0.0,
+                            'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 100.0,
+                            'episode_extra_stats/fusion/e_norm_mean': float(e_norm),
+                            'episode_extra_stats/fusion/s_norm_mean': 0.0,
+                            'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
+                        }
+                        if frames is not None and frames > 0:
+                            wandb.log(payload, step=frames)
+                        else:
+                            wandb.log(payload)
+                    except RuntimeError:
                         pass
             elif self._ablate_drone_zero and not self._ablate_static_zero:
                 # Use only static branch
@@ -2138,25 +2059,22 @@ class DualFusionEncoder(Encoder):
                             f"norms: s={s_norm:.3f} z={z_norm:.3f}"
                         )
                         # Log to W&B even when drone is disabled (treat gate as 1 towards static)
-                        try:
-                            import wandb  # noqa: F401
-                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
-                            payload = {
-                                'episode_extra_stats/fusion/gate_mean_pct': 100.0,  # g≈1 → static-only
-                                'episode_extra_stats/fusion/gate_std_pct': 0.0,
-                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 100.0,
-                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 0.0,
-                                'episode_extra_stats/fusion/e_norm_mean': 0.0,
-                                'episode_extra_stats/fusion/s_norm_mean': float(s_norm),
-                                'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
-                            }
-                            if frames is not None and frames > 0:
-                                wandb.log(payload, step=frames)
-                            else:
-                                wandb.log(payload)
-                        except Exception:
-                            pass
-                    except Exception:
+                        import wandb  # noqa: F401
+                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        payload = {
+                            'episode_extra_stats/fusion/gate_mean_pct': 100.0,  # g≈1 → static-only
+                            'episode_extra_stats/fusion/gate_std_pct': 0.0,
+                            'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 100.0,
+                            'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 0.0,
+                            'episode_extra_stats/fusion/e_norm_mean': 0.0,
+                            'episode_extra_stats/fusion/s_norm_mean': float(s_norm),
+                            'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
+                        }
+                        if frames is not None and frames > 0:
+                            wandb.log(payload, step=frames)
+                        else:
+                            wandb.log(payload)
+                    except RuntimeError:
                         pass
             elif self._ablate_drone_zero and self._ablate_static_zero:
                 # Both ablated: feed zeros latent
@@ -2170,48 +2088,36 @@ class DualFusionEncoder(Encoder):
                             f"[FUSION] gated(per_feature={int(self.gate_per_feature)}) both_cameras_disabled: true | norms: z=0.000"
                         )
                         # Log a minimal payload when both branches are disabled
-                        try:
-                            import wandb  # noqa: F401
-                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
-                            payload = {
-                                'episode_extra_stats/fusion/gate_mean_pct': 50.0,  # undefined, show neutral
-                                'episode_extra_stats/fusion/gate_std_pct': 0.0,
-                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 0.0,
-                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 0.0,
-                                'episode_extra_stats/fusion/e_norm_mean': 0.0,
-                                'episode_extra_stats/fusion/s_norm_mean': 0.0,
-                                'episode_extra_stats/fusion/z_norm_mean': 0.0,
-                            }
-                            if frames is not None and frames > 0:
-                                wandb.log(payload, step=frames)
-                            else:
-                                wandb.log(payload)
-                        except Exception:
-                            pass
-                    except Exception:
+                        import wandb  # noqa: F401
+                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        payload = {
+                            'episode_extra_stats/fusion/gate_mean_pct': 50.0,  # undefined, show neutral
+                            'episode_extra_stats/fusion/gate_std_pct': 0.0,
+                            'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': 0.0,
+                            'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': 0.0,
+                            'episode_extra_stats/fusion/e_norm_mean': 0.0,
+                            'episode_extra_stats/fusion/s_norm_mean': 0.0,
+                            'episode_extra_stats/fusion/z_norm_mean': 0.0,
+                        }
+                        if frames is not None and frames > 0:
+                            wandb.log(payload, step=frames)
+                        else:
+                            wandb.log(payload)
+                    except RuntimeError:
                         pass
             else:
                 # Normal gated fusion
                 e = self.ego_proj(z_e)
                 s = self.static_proj(z_s)
                 # Sanitize branch activations before gating
-                try:
-                    e = torch.nan_to_num(e, nan=0.0, posinf=0.0, neginf=0.0)
-                    s = torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0)
-                except Exception:
-                    pass
+                e = torch.nan_to_num(e, nan=0.0, posinf=0.0, neginf=0.0)
+                s = torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0)
                 g = torch.sigmoid(self.gate(torch.cat([e, s], dim=-1)))
-                try:
-                    g = torch.nan_to_num(g, nan=0.5, posinf=1.0, neginf=0.0)
-                except Exception:
-                    pass
+                g = torch.nan_to_num(g, nan=0.5, posinf=1.0, neginf=0.0)
                 if g.shape[-1] == 1:
                     g = g.expand_as(e)
                 z = g * s + (1 - g) * e
-                try:
-                    z = torch.nan_to_num(z, nan=0.0, posinf=0.0, neginf=0.0)
-                except Exception:
-                    pass
+                z = torch.nan_to_num(z, nan=0.0, posinf=0.0, neginf=0.0)
                 fused = torch.cat([rest, z], dim=-1)
 
             # Periodic debug print for gate stats
@@ -2243,51 +2149,42 @@ class DualFusionEncoder(Encoder):
                             f"|| norms: e={e_norm:.3f} s={s_norm:.3f} z={z_norm:.3f}"
                         )
                         # Mirror to W&B payload under episode_extra_stats/fusion/* (only for gated and both cameras enabled)
-                        try:
-                            import wandb  # ensure wandb available
-                            frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
-                            payload = {
-                                'episode_extra_stats/fusion/gate_mean_pct': float(gate_mean * 100.0),
-                                'episode_extra_stats/fusion/gate_std_pct': float(gate_std * 100.0),
-                                'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': float(frac_high * 100.0),
-                                'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': float(frac_low * 100.0),
-                                'episode_extra_stats/fusion/e_norm_mean': float(e_norm),
-                                'episode_extra_stats/fusion/s_norm_mean': float(s_norm),
-                                'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
-                            }
-                            if frames is not None and frames > 0:
-                                wandb.log(payload, step=frames)
-                            else:
-                                wandb.log(payload)
-                        except Exception:
-                            pass
-                    except Exception:
+                        import wandb  # ensure wandb available
+                        frames = int(getattr(self, '_last_step_logged', 0)) if hasattr(self, '_last_step_logged') else None
+                        payload = {
+                            'episode_extra_stats/fusion/gate_mean_pct': float(gate_mean * 100.0),
+                            'episode_extra_stats/fusion/gate_std_pct': float(gate_std * 100.0),
+                            'episode_extra_stats/fusion/gate_frac_gt_0_7_pct': float(frac_high * 100.0),
+                            'episode_extra_stats/fusion/gate_frac_lt_0_3_pct': float(frac_low * 100.0),
+                            'episode_extra_stats/fusion/e_norm_mean': float(e_norm),
+                            'episode_extra_stats/fusion/s_norm_mean': float(s_norm),
+                            'episode_extra_stats/fusion/z_norm_mean': float(z_norm),
+                        }
+                        if frames is not None and frames > 0:
+                            wandb.log(payload, step=frames)
+                        else:
+                            wandb.log(payload)
+                    except RuntimeError:
                         pass
         else:
             # Early concat baseline (kept for easy revert)
             fused = torch.cat([rest, z_e, z_s], dim=-1)
-            try:
-                fused = torch.nan_to_num(fused, nan=0.0, posinf=0.0, neginf=0.0)
-            except Exception:
-                pass
+            fused = torch.nan_to_num(fused, nan=0.0, posinf=0.0, neginf=0.0)
             # Periodic debug print for concat stats
             self._fwd_count += 1
             if (self._fwd_count % 200) == 0:
-                try:
-                    B = int(x.shape[0]) if torch.is_tensor(x) else 0
-                    D_e = int(z_e.shape[-1])
-                    D_s = int(z_s.shape[-1])
-                    e_norm = float(z_e.norm(dim=1).mean().item())
-                    s_norm = float(z_s.norm(dim=1).mean().item())
-                    cat_norm = float(fused[:, - (D_e + D_s):].norm(dim=1).mean().item())
-                    balance = float((s_norm / (e_norm + s_norm + 1e-8)))
-                    print(
-                        f"[FUSION] mode=concat B={B} D_e={D_e} D_s={D_s} | "
-                        f"L2 norms (mean): ego={e_norm:.3f} static={s_norm:.3f} cat={cat_norm:.3f} | "
-                        f"static_balance≈{balance:.2%}"
-                    )
-                except Exception:
-                    pass
+                B = int(x.shape[0]) if torch.is_tensor(x) else 0
+                D_e = int(z_e.shape[-1])
+                D_s = int(z_s.shape[-1])
+                e_norm = float(z_e.norm(dim=1).mean().item())
+                s_norm = float(z_s.norm(dim=1).mean().item())
+                cat_norm = float(fused[:, - (D_e + D_s):].norm(dim=1).mean().item())
+                balance = float((s_norm / (e_norm + s_norm + 1e-8)))
+                print(
+                    f"[FUSION] mode=concat B={B} D_e={D_e} D_s={D_s} | "
+                    f"L2 norms (mean): ego={e_norm:.3f} static={s_norm:.3f} cat={cat_norm:.3f} | "
+                    f"static_balance≈{balance:.2%}"
+                )
         return self.mlp(fused)
 
     def get_out_size(self) -> int:
@@ -2367,7 +2264,7 @@ def register_aerialgym_custom_components():
         # Also register as "dce_navigation_task" for backward compatibility with inference scripts
         task_registry.register_task("dce_navigation_task", DCE_RL_Navigation_Task, dce_config)
         print("Successfully registered dce_navigation_task for backward compatibility")
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         print(f"Warning: Could not register quad_with_obstacles: {e}")
     
     # Register Gate Navigation task as "quad_with_obstacles_gate"
@@ -2396,7 +2293,7 @@ def register_aerialgym_custom_components():
         # Also register as "dce_navigation_task_gate" for backward compatibility with inference scripts
         task_registry.register_task("dce_navigation_task_gate", DCE_RL_Navigation_Task_Gate, gate_config)
         print("Successfully registered dce_navigation_task_gate for backward compatibility")
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         print(f"Warning: Could not register quad_with_obstacles_gate: {e}")
     
     for env_name in env_configs:
@@ -2406,7 +2303,7 @@ def register_aerialgym_custom_components():
     try:
         global_model_factory().register_encoder_factory(make_dual_fusion_encoder)
         print("Registered DualFusionEncoder with fusion/ gating options")
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         print(f"Warning: Could not register DualFusionEncoder: {e}")
 
 
@@ -2499,35 +2396,29 @@ def parse_aerialgym_cfg(evaluation=False):
             os.environ['SF_DISABLE_CURRICULUM_MULTIPLIER'] = 'true' if final_cfg.disable_curriculum_multiplier else 'false'
             print(f"[CFG] curriculum multiplier disabled: {final_cfg.disable_curriculum_multiplier}")
         if hasattr(final_cfg, 'force_curriculum_level') and (final_cfg.force_curriculum_level is not None):
-            try:
-                lvl_str = str(final_cfg.force_curriculum_level).strip().lower()
-                if lvl_str and lvl_str != 'none':
-                    os.environ['SF_FORCE_CURRICULUM_LEVEL'] = str(int(lvl_str))
-                    print(f"[CFG] forcing curriculum level: {lvl_str}")
-                else:
-                    # ensure any previous env var is cleared
-                    os.environ.pop('SF_FORCE_CURRICULUM_LEVEL', None)
-                    print("[CFG] force curriculum level: none (disabled)")
-            except Exception:
-                pass
+            lvl_str = str(final_cfg.force_curriculum_level).strip().lower()
+            if lvl_str and lvl_str != 'none':
+                os.environ['SF_FORCE_CURRICULUM_LEVEL'] = str(int(lvl_str))
+                print(f"[CFG] forcing curriculum level: {lvl_str}")
+            else:
+                # ensure any previous env var is cleared
+                os.environ.pop('SF_FORCE_CURRICULUM_LEVEL', None)
+                print("[CFG] force curriculum level: none (disabled)")
         # Apply min_curriculum_level ONLY during training; do not affect evaluation/inference
         try:
             if not getattr(final_cfg, 'evaluation', False):
                 min_lvl_override = getattr(final_cfg, 'min_curriculum_level', None)
                 if min_lvl_override is not None:
-                    try:
-                        min_lvl = int(min_lvl_override)
-                        # Respect any explicit max cap if provided
-                        max_cap = getattr(final_cfg, 'max_curriculum_level', None)
-                        if max_cap is not None:
-                            os.environ['SF_MAX_CURRICULUM_LEVEL'] = str(int(max_cap))
-                        os.environ['SF_MIN_CURRICULUM_LEVEL'] = str(min_lvl)
-                        print(f"[CFG] Curriculum start level (training): min_level={min_lvl}, max_level={max_cap if max_cap is not None else 'config default'}")
-                    except Exception:
-                        pass
-        except Exception:
+                    min_lvl = int(min_lvl_override)
+                    # Respect any explicit max cap if provided
+                    max_cap = getattr(final_cfg, 'max_curriculum_level', None)
+                    if max_cap is not None:
+                        os.environ['SF_MAX_CURRICULUM_LEVEL'] = str(int(max_cap))
+                    os.environ['SF_MIN_CURRICULUM_LEVEL'] = str(min_lvl)
+                    print(f"[CFG] Curriculum start level (training): min_level={min_lvl}, max_level={max_cap if max_cap is not None else 'config default'}")
+        except (ValueError, TypeError):
             pass
-    except Exception:
+    except (ValueError, TypeError):
         pass
     return final_cfg
 
@@ -2631,11 +2522,7 @@ def run_with_influence_tracking(cfg: Config):
         
         # Prefer Sample Factory train_step as global step
         global_step = None
-        try:
-            from sample_factory.algo.learning.learner import Learner as _L
-            # Try to read from a live learner if available via a global reference (best-effort)
-        except Exception:
-            pass
+        from sample_factory.algo.learning.learner import Learner as _L
         
         # Fallback: attach frames/env_steps from cfg if available
         frames = None
@@ -2650,28 +2537,22 @@ def run_with_influence_tracking(cfg: Config):
         # Merge influence and grad metrics
         if influence_tracker:
             if not influence_tracker.should_log():
-                try:
-                    print("[W&B_DEBUG][obs_grad] influence_tracker present but not scheduled to log at this step (forcing minimal log header)")
-                except Exception:
-                    pass
+                print("[W&B_DEBUG][obs_grad] influence_tracker present but not scheduled to log at this step (forcing minimal log header)")
             influence_metrics = influence_tracker.get_logging_metrics()
             # Cast to plain floats
             for k, v in list(influence_metrics.items()):
                 try:
                     influence_metrics[k] = float(v)
-                except Exception:
+                except (ValueError, TypeError):
                     del influence_metrics[k]
             metrics.update(influence_metrics)
             # Update cache if we received any obs/influence keys
-            try:
-                had = any(
-                    isinstance(k, str) and k.startswith(('obs_grad/', 'influence/', 'grad_attr/', 'obs_influence/'))
-                    for k in influence_metrics.keys()
-                )
-                if had:
-                    _last_obsgrad_from_influence = dict(influence_metrics)
-            except Exception:
-                pass
+            had = any(
+                isinstance(k, str) and k.startswith(('obs_grad/', 'influence/', 'grad_attr/', 'obs_influence/'))
+                for k in influence_metrics.keys()
+            )
+            if had:
+                _last_obsgrad_from_influence = dict(influence_metrics)
             # Also mirror per-slice obs_grad/influence summaries under episode_extra_stats for dashboard grouping
             try:
                 episode_extra = {}
@@ -2683,12 +2564,9 @@ def run_with_influence_tracking(cfg: Config):
                     if not isinstance(name, str):
                         continue
                     if name.startswith(('obs_grad/', 'influence/', 'grad_attr/', 'obs_influence/')):
-                        try:
-                            prefix_removed = name.split('/', 1)[1] if '/' in name else name
-                            new_key = 'episode_extra_stats/obs_grad/' + prefix_removed
-                            episode_extra[new_key] = float(val)
-                        except Exception:
-                            pass
+                        prefix_removed = name.split('/', 1)[1] if '/' in name else name
+                        new_key = 'episode_extra_stats/obs_grad/' + prefix_removed
+                        episode_extra[new_key] = float(val)
                 if len(episode_extra) > 0:
                     metrics.update(episode_extra)
                     # try:
@@ -2724,25 +2602,19 @@ def run_with_influence_tracking(cfg: Config):
                     # Extract slice label after 'slice_pct'/'slice_mag' if present
                     label = parts[-1]
                     if 'slice_pct' in parts:
-                        try:
-                            idx = parts.index('slice_pct')
-                            if idx + 1 < len(parts):
-                                label = parts[idx + 1]
-                        except Exception:
-                            pass
+                        idx = parts.index('slice_pct')
+                        if idx + 1 < len(parts):
+                            label = parts[idx + 1]
                     elif 'slice_mag' in parts:
-                        try:
-                            idx = parts.index('slice_mag')
-                            if idx + 1 < len(parts):
-                                label = parts[idx + 1]
-                        except Exception:
-                            pass
+                        idx = parts.index('slice_mag')
+                        if idx + 1 < len(parts):
+                            label = parts[idx + 1]
                     suffix = parts[-1]
                     if suffix.startswith('total_') or suffix == 'backward_passes':
                         continue
                     try:
                         scalar = float(val)
-                    except Exception:
+                    except (ValueError, TypeError):
                         continue
                     total_val += scalar
                     # Normalize label by removing common postfixes
@@ -2819,7 +2691,7 @@ def run_with_influence_tracking(cfg: Config):
                                     break
                             try:
                                 scalar = float(val)
-                            except Exception:
+                            except (ValueError, TypeError):
                                 continue
                             if suffix.endswith('_mean_norm_recent') or suffix.endswith('_recent'):
                                 base_recent[base] = base_recent.get(base, 0.0) + scalar
@@ -2845,14 +2717,14 @@ def run_with_influence_tracking(cfg: Config):
                                 sum_pct_o += p
                             metrics['episode_extra_stats/obs_grad/obs_pct_overall/_sum'] = float(sum_pct_o)
                             metrics['episode_extra_stats/obs_grad/obs_pct_overall/_residual'] = float(100.0 - sum_pct_o)
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
                     # try:
                     #     captured = ','.join(sorted(list(slice_values.keys()))[:8])
                     #     print(f"[W&B_DEBUG][obs_grad] shares computed: camera={camera_share*100.0:.1f}% state={state_share*100.0:.1f}% total_slices={len(slice_values)} captured=[{captured}…]")
                     # except Exception:
                     #     pass
-            except Exception:
+            except (ValueError, TypeError):
                 pass
             if influence_tracker.should_log():
                 influence_tracker.step()
@@ -2866,25 +2738,18 @@ def run_with_influence_tracking(cfg: Config):
             for k, v in list(grad_metrics.items()):
                 try:
                     grad_metrics[k] = float(v)
-                except Exception:
+                except (ValueError, TypeError):
                     del grad_metrics[k]
             metrics.update(grad_metrics)
             # Mirror obs_grad from gradient attribution tracker as well
-            try:
-                mirrored = {}
-                for name, val in list(grad_metrics.items()):
-                    if isinstance(name, str) and name.startswith(('obs_grad/', 'influence/', 'grad_attr/')):
-                        prefix_removed = name.split('/', 1)[1] if '/' in name else name
-                        mirrored['episode_extra_stats/obs_grad/' + prefix_removed] = float(val)
-                if len(mirrored) > 0:
-                    metrics.update(mirrored)
-                    _last_obsgrad_from_grad = dict(grad_metrics)
-                    # try:
-                    #     print(f"[W&B_DEBUG][obs_grad] mirrored {len([k for k in mirrored.keys() if k.startswith('episode_extra_stats/obs_grad/')])} obs_grad keys from grad tracker")
-                    # except Exception:
-                    #     pass
-            except Exception:
-                pass
+            mirrored = {}
+            for name, val in list(grad_metrics.items()):
+                if isinstance(name, str) and name.startswith(('obs_grad/', 'influence/', 'grad_attr/')):
+                    prefix_removed = name.split('/', 1)[1] if '/' in name else name
+                    mirrored['episode_extra_stats/obs_grad/' + prefix_removed] = float(val)
+            if len(mirrored) > 0:
+                metrics.update(mirrored)
+                _last_obsgrad_from_grad = dict(grad_metrics)
         else:
             pass
         
@@ -2892,51 +2757,42 @@ def run_with_influence_tracking(cfg: Config):
         for k, v in list(metrics.items()):
             try:
                 metrics[k] = float(v)
-            except Exception:
+            except (ValueError, TypeError):
                 try:
                     metrics[k] = int(v)
-                except Exception:
+                except (ValueError, TypeError):
                     # Drop non-loggable values
                     del metrics[k]
 
         # Drop non-finite episode_extra_stats/* entries to prevent NaN/Inf propagation in W&B
-        try:
-            for k in list(metrics.keys()):
-                if isinstance(k, str) and k.startswith('episode_extra_stats/'):
-                    v = metrics[k]
-                    if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
-                        del metrics[k]
-        except Exception:
-            pass
+        for k in list(metrics.keys()):
+            if isinstance(k, str) and k.startswith('episode_extra_stats/'):
+                v = metrics[k]
+                if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+                    del metrics[k]
         
         # Remove any top-level curriculum/* metrics to avoid logging them (keep episode_extra_stats/*)
-        try:
-            for k in list(metrics.keys()):
-                if isinstance(k, str) and k.startswith('curriculum/'):
-                    del metrics[k]
-        except Exception:
-            pass
+        for k in list(metrics.keys()):
+            if isinstance(k, str) and k.startswith('curriculum/'):
+                del metrics[k]
         
         # Define metrics with step mapping once
-        try:
-            import wandb
-            if hasattr(wandb, 'define_metric'):
-                wandb.define_metric('frames')
-                # Namespace common custom groups (exclude top-level curriculum/*)
-                for name in list(metrics.keys()):
-                    if name.startswith(('obs_grad/', 'influence/', 'gpu/', 'reward_breakdown/', 'episode_extra_stats/obs_grad/', 'episode_extra_stats/curriculum/')):
-                        wandb.define_metric(name, step_metric='frames')
-                # Ensure episode_extra_stats trajectory keys are tracked against frames
-                for key in (
-                    'episode_extra_stats/path_efficiency',
-                    'episode_extra_stats/time_to_gate_steps',
-                    'episode_extra_stats/min_gate_distance',
-                    'episode_extra_stats/center_offset_success',
-                    'episode_extra_stats/height_offset_success',
-                ):
-                    wandb.define_metric(key, step_metric='frames')
-        except Exception:
-            pass
+        import wandb
+        if hasattr(wandb, 'define_metric'):
+            wandb.define_metric('frames')
+            # Namespace common custom groups (exclude top-level curriculum/*)
+            for name in list(metrics.keys()):
+                if name.startswith(('obs_grad/', 'influence/', 'gpu/', 'reward_breakdown/', 'episode_extra_stats/obs_grad/', 'episode_extra_stats/curriculum/')):
+                    wandb.define_metric(name, step_metric='frames')
+            # Ensure episode_extra_stats trajectory keys are tracked against frames
+            for key in (
+                'episode_extra_stats/path_efficiency',
+                'episode_extra_stats/time_to_gate_steps',
+                'episode_extra_stats/min_gate_distance',
+                'episode_extra_stats/center_offset_success',
+                'episode_extra_stats/height_offset_success',
+            ):
+                wandb.define_metric(key, step_metric='frames')
         
         if original_wandb_log:
             original_wandb_log(metrics, **kwargs)
@@ -2997,7 +2853,7 @@ def run_with_influence_tracking(cfg: Config):
                 else:
                     influence_tracker = None
                     print("🚫 Influence tracker DISABLED (via flag/env)")
-            except Exception as e:
+            except (ValueError, TypeError) as e:
                 print(f"❌ Error creating influence tracker: {e}")
                 influence_tracker = None
             
@@ -3017,7 +2873,7 @@ def run_with_influence_tracking(cfg: Config):
                 else:
                     grad_tracker = None
                     print("🚫 Gradient attribution DISABLED (via flag/env)")
-            except Exception as e:
+            except (ValueError, TypeError) as e:
                 print(f"❌ Error creating gradient attribution tracker: {e}")
                 grad_tracker = None
 
@@ -3034,17 +2890,11 @@ def run_with_influence_tracking(cfg: Config):
                                 t = arg.get('obs', None)
                                 if torch.is_tensor(t) and t.dim() == 2 and t.shape[1] == 150:
                                     # Sanitize normalized obs before encoder to kill any non-finite values
-                                    try:
-                                        t = torch.nan_to_num(t, nan=0.0, posinf=0.0, neginf=0.0)
-                                        t = t.clamp_(-1e6, 1e6)
-                                    except Exception:
-                                        pass
+                                    t = torch.nan_to_num(t, nan=0.0, posinf=0.0, neginf=0.0)
+                                    t = t.clamp_(-1e6, 1e6)
                                     x = t.detach().requires_grad_(True)
-                                    try:
-                                        if hasattr(self, '_grad_tracker') and self._grad_tracker:
-                                            x.register_hook(lambda g: self._grad_tracker.consume_grad(g))
-                                    except Exception:
-                                        pass
+                                    if hasattr(self, '_grad_tracker') and self._grad_tracker:
+                                        x.register_hook(lambda g: self._grad_tracker.consume_grad(g))
                                     # Stash proxy for backward hook
                                     mod._obs_proxy = x
                                     # Replace in a shallow-copied dict to avoid in-place side-effects
@@ -3058,17 +2908,11 @@ def run_with_influence_tracking(cfg: Config):
                             # Case 2: raw tensor input
                             if torch.is_tensor(arg) and arg.dim() == 2 and arg.shape[1] == 150:
                                 t = arg
-                                try:
-                                    t = torch.nan_to_num(t, nan=0.0, posinf=0.0, neginf=0.0)
-                                    t = t.clamp_(-1e6, 1e6)
-                                except Exception:
-                                    pass
+                                t = torch.nan_to_num(t, nan=0.0, posinf=0.0, neginf=0.0)
+                                t = t.clamp_(-1e6, 1e6)
                                 x = t.detach().requires_grad_(True)
-                                try:
-                                    if hasattr(self, '_grad_tracker') and self._grad_tracker:
-                                        x.register_hook(lambda g: self._grad_tracker.consume_grad(g))
-                                except Exception:
-                                    pass
+                                if hasattr(self, '_grad_tracker') and self._grad_tracker:
+                                    x.register_hook(lambda g: self._grad_tracker.consume_grad(g))
                                 mod._obs_proxy = x
                                 if isinstance(inp, tuple):
                                     lst = list(inp)
@@ -3077,7 +2921,7 @@ def run_with_influence_tracking(cfg: Config):
                                 else:
                                     return x
                             return None
-                        except Exception:
+                        except (KeyError, TypeError):
                             return None
                     # Prefer encoder if not scripted, else fall back to actor_critic root
                     target = getattr(self.actor_critic, 'encoder', None)
@@ -3086,14 +2930,11 @@ def run_with_influence_tracking(cfg: Config):
                     self._grad_attr_forward_handle = target.register_forward_pre_hook(_ac_forward_hook)
 
                     def _ac_backward_hook(mod, grad_in, grad_out):
-                        try:
-                            x = getattr(mod, '_obs_proxy', None)
-                            if x is not None and x.grad is not None and hasattr(self, '_grad_tracker') and self._grad_tracker:
-                                self._grad_tracker.consume_grad(x.grad)
-                        except Exception:
-                            pass
+                        x = getattr(mod, '_obs_proxy', None)
+                        if x is not None and x.grad is not None and hasattr(self, '_grad_tracker') and self._grad_tracker:
+                            self._grad_tracker.consume_grad(x.grad)
                     self._grad_attr_backward_handle = target.register_full_backward_hook(_ac_backward_hook)
-            except Exception as e:
+            except (KeyError, TypeError) as e:
                 print(f"❌ Failed to attach actor_critic grad mirror hooks: {e}")
         else:
             print("🔧 Cannot create influence/gradient trackers - model not available")
@@ -3107,27 +2948,24 @@ def run_with_influence_tracking(cfg: Config):
         self._grad_tracker = grad_tracker
 
         # One-time: emit initial curriculum keys only under episode_extra_stats/* to avoid top-level curriculum/*
-        try:
-            import wandb
-            frames0 = int(getattr(self, 'train_step', 0))
-            curriculum_keys = [
-                'curriculum/level','curriculum/progress','curriculum/success_rate','curriculum/crash_rate','curriculum/timeout_rate',
-                'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached',
-                'curriculum/camera_gaussian_std','curriculum/camera_dropout_rate',
-                'curriculum/camera_frame_dropout_drone_total','curriculum/camera_frame_dropout_static_total',
-                'curriculum/camera_frame_freeze_drone','curriculum/camera_frame_blank_drone',
-                'curriculum/camera_frame_freeze_static','curriculum/camera_frame_blank_static',
-                'curriculum/camera_max_angle','curriculum/camera_current_angle',
-                'curriculum/state_noise_drone_pos_std_m','curriculum/state_noise_drone_orient_std_deg',
-                'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg',
-                'curriculum/total_successes','curriculum/total_crashes','curriculum/total_timeouts',
-            ]
-            boot = {'frames': frames0}
-            for k in curriculum_keys:
-                boot[f'episode_extra_stats/{k}'] = 0.0
-            wandb.log(boot, step=frames0)
-        except Exception:
-            pass
+        import wandb
+        frames0 = int(getattr(self, 'train_step', 0))
+        curriculum_keys = [
+            'curriculum/level','curriculum/progress','curriculum/success_rate','curriculum/crash_rate','curriculum/timeout_rate',
+            'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached',
+            'curriculum/camera_gaussian_std','curriculum/camera_dropout_rate',
+            'curriculum/camera_frame_dropout_drone_total','curriculum/camera_frame_dropout_static_total',
+            'curriculum/camera_frame_freeze_drone','curriculum/camera_frame_blank_drone',
+            'curriculum/camera_frame_freeze_static','curriculum/camera_frame_blank_static',
+            'curriculum/camera_max_angle','curriculum/camera_current_angle',
+            'curriculum/state_noise_drone_pos_std_m','curriculum/state_noise_drone_orient_std_deg',
+            'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg',
+            'curriculum/total_successes','curriculum/total_crashes','curriculum/total_timeouts',
+        ]
+        boot = {'frames': frames0}
+        for k in curriculum_keys:
+            boot[f'episode_extra_stats/{k}'] = 0.0
+        wandb.log(boot, step=frames0)
         return result
 
     def enhanced_train(self, *args, **kwargs):
@@ -3160,27 +2998,21 @@ def run_with_influence_tracking(cfg: Config):
                     # common aggregation stores arrays; try several namespaces
                     for key in ('curriculum/level', 'curriculum_level', 'episode_extra_stats/curriculum_level'):
                         if key in latest:
-                            try:
-                                v = latest[key]
-                                if isinstance(v, (list, tuple)) and len(v) > 0:
-                                    curr_level = float(v[-1])
-                                elif isinstance(v, (int, float)):
-                                    curr_level = float(v)
-                                break
-                            except Exception:
-                                pass
+                            v = latest[key]
+                            if isinstance(v, (list, tuple)) and len(v) > 0:
+                                curr_level = float(v[-1])
+                            elif isinstance(v, (int, float)):
+                                curr_level = float(v)
+                            break
                     # Also try to read the minus_1 variant
                     for key in ('curriculum/level_minus_1', 'curriculum_level_minus_1', 'episode_extra_stats/curriculum_level_minus_1'):
                         if key in latest:
-                            try:
-                                v = latest[key]
-                                if isinstance(v, (list, tuple)) and len(v) > 0:
-                                    curr_level_minus_1 = float(v[-1])
-                                elif isinstance(v, (int, float)):
-                                    curr_level_minus_1 = float(v)
-                                break
-                            except Exception:
-                                pass
+                            v = latest[key]
+                            if isinstance(v, (list, tuple)) and len(v) > 0:
+                                curr_level_minus_1 = float(v[-1])
+                            elif isinstance(v, (int, float)):
+                                curr_level_minus_1 = float(v)
+                            break
                     # Fetch episode_extra_stats trajectory metrics if available
                     def _get_last(key_name):
                         try:
@@ -3190,7 +3022,7 @@ def run_with_influence_tracking(cfg: Config):
                                     return float(v[-1])
                                 elif isinstance(v, (int, float)):
                                     return float(v)
-                        except Exception:
+                        except (ValueError, TypeError):
                             return None
                         return None
                     path_efficiency = _get_last('episode_extra_stats/path_efficiency') or _get_last('path_efficiency')
@@ -3245,30 +3077,21 @@ def run_with_influence_tracking(cfg: Config):
                         if len(cur_payload) > 0:
                             cur_payload['frames'] = frames
                             wandb.log(cur_payload, step=frames)
-                        try:
-                            first_keys = list(cur_payload.keys())[:6]
-                            print(f"[W&B_DEBUG][learner] logged curriculum keys: {first_keys} ... (total {len(cur_payload)})")
-                        except Exception:
-                            pass
+                        first_keys = list(cur_payload.keys())[:6]
+                        print(f"[W&B_DEBUG][learner] logged curriculum keys: {first_keys} ... (total {len(cur_payload)})")
                     # Update last-known curriculum values
-                    try:
-                        for k in curriculum_keys:
-                            if k in cur_payload:
-                                _last_curriculum[k] = float(cur_payload[k])
-                    except Exception:
-                        pass
+                    for k in curriculum_keys:
+                        if k in cur_payload:
+                            _last_curriculum[k] = float(cur_payload[k])
                     # Emit continuous curriculum series each step, carrying forward last-known values
-                    try:
-                        forward_payload = {'frames': frames}
-                        for k in curriculum_keys:
-                            if k in ('curriculum/current_level','curriculum/current_level_minus_1','curriculum/current_progress'):
-                                continue
-                            forward_payload[f'episode_extra_stats/{k}'] = float(_last_curriculum.get(k, 0.0))
-                        if len(forward_payload) > 1:
-                            wandb.log(forward_payload, step=frames)
-                    except Exception:
-                        pass
-                except Exception:
+                    forward_payload = {'frames': frames}
+                    for k in curriculum_keys:
+                        if k in ('curriculum/current_level','curriculum/current_level_minus_1','curriculum/current_progress'):
+                            continue
+                        forward_payload[f'episode_extra_stats/{k}'] = float(_last_curriculum.get(k, 0.0))
+                    if len(forward_payload) > 1:
+                        wandb.log(forward_payload, step=frames)
+                except RuntimeError:
                     pass
                 # Log trajectory metrics if present (NaN will be ignored by W&B)
                 traj_payload = {}
@@ -3305,36 +3128,30 @@ def run_with_influence_tracking(cfg: Config):
                 if ep_cross is not None:
                     traj_payload['episode_extra_stats/episodes_crossed'] = ep_cross
                 # Also forward VAE latent diagnostics if present in latest infos
-                try:
-                    def _get_last_any(names):
-                        for nm in names:
-                            v = _get_last(nm)
-                            if v is not None:
-                                return v
-                        return None
-                    for name in (
-                        'episode_extra_stats/vae/drone_mean',
-                        'episode_extra_stats/vae/static_mean',
-                        'episode_extra_stats/vae/drone_std',
-                        'episode_extra_stats/vae/static_std',
-                        'episode_extra_stats/vae/drone_dim_std_mean',
-                        'episode_extra_stats/vae/static_dim_std_mean',
-                        'episode_extra_stats/vae/static_to_drone_norm_ratio',
-                    ):
-                        v = _get_last_any([name, name.replace('episode_extra_stats/','')])
+                def _get_last_any(names):
+                    for nm in names:
+                        v = _get_last(nm)
                         if v is not None:
-                            traj_payload[name] = float(v)
-                except Exception:
-                    pass
+                            return v
+                    return None
+                for name in (
+                    'episode_extra_stats/vae/drone_mean',
+                    'episode_extra_stats/vae/static_mean',
+                    'episode_extra_stats/vae/drone_std',
+                    'episode_extra_stats/vae/static_std',
+                    'episode_extra_stats/vae/drone_dim_std_mean',
+                    'episode_extra_stats/vae/static_dim_std_mean',
+                    'episode_extra_stats/vae/static_to_drone_norm_ratio',
+                ):
+                    v = _get_last_any([name, name.replace('episode_extra_stats/','')])
+                    if v is not None:
+                        traj_payload[name] = float(v)
 
                 if len(traj_payload) > 0:
                     traj_payload['frames'] = frames
                     wandb.log(traj_payload, step=frames)
-                    try:
-                        print(f"[W&B_DEBUG][learner] logged traj metrics keys: {list(traj_payload.keys())}")
-                    except Exception:
-                        pass
-        except Exception:
+                    print(f"[W&B_DEBUG][learner] logged traj metrics keys: {list(traj_payload.keys())}")
+        except RuntimeError:
             pass
         
         if hasattr(self, '_influence_tracker') and self._influence_tracker and self._influence_tracker.enabled:
@@ -3369,22 +3186,13 @@ def run_with_influence_tracking(cfg: Config):
             # Prefer influence tracker; fall back to grad tracker
             metric_sources = []
             if hasattr(self, '_influence_tracker') and self._influence_tracker and self._influence_tracker.enabled:
-                try:
-                    metric_sources.append(self._influence_tracker.get_logging_metrics())
-                except Exception:
-                    pass
+                metric_sources.append(self._influence_tracker.get_logging_metrics())
             if hasattr(self, '_grad_tracker') and self._grad_tracker and self._grad_tracker.enabled:
-                try:
-                    metric_sources.append(self._grad_tracker.get_logging_metrics())
-                except Exception:
-                    pass
+                metric_sources.append(self._grad_tracker.get_logging_metrics())
             merged = {}
             for src in metric_sources:
                 for k, v in list(src.items()):
-                    try:
-                        merged[k] = float(v)
-                    except Exception:
-                        pass
+                    merged[k] = float(v)
             # Build payload like curriculum block
             obs_payload = {}
             # Mirror raw slice metrics
@@ -3426,7 +3234,7 @@ def run_with_influence_tracking(cfg: Config):
                     continue
                 try:
                     scalar = float(val)
-                except Exception:
+                except (ValueError, TypeError):
                     continue
                 total_val += scalar
                 slice_vals[suffix] = scalar
@@ -3532,19 +3340,13 @@ def run_with_influence_tracking(cfg: Config):
             if len(obs_payload) > 0:
                 obs_payload['frames'] = frames
                 # Print the two target metrics for debugging
-                try:
-                    ss = obs_payload.get('episode_extra_stats/obs_grad/state_share', None)
-                    ssp = obs_payload.get('episode_extra_stats/obs_grad/state_share_pct', None)
-                    if (ss is not None) or (ssp is not None):
-                        print(f"[OBS_GRAD_DEBUG] frames={frames} state_share={ss if ss is not None else 'None'} state_share_pct={ssp if ssp is not None else 'None'}", flush=True)
-                except Exception:
-                    pass
+                ss = obs_payload.get('episode_extra_stats/obs_grad/state_share', None)
+                ssp = obs_payload.get('episode_extra_stats/obs_grad/state_share_pct', None)
+                if (ss is not None) or (ssp is not None):
+                    print(f"[OBS_GRAD_DEBUG] frames={frames} state_share={ss if ss is not None else 'None'} state_share_pct={ssp if ssp is not None else 'None'}", flush=True)
                 wandb.log(obs_payload, step=frames)
-                try:
-                    print(f"[W&B_DEBUG][obs_grad] explicit_log keys={len(obs_payload)}", flush=True)
-                except Exception:
-                    pass
-        except Exception:
+                print(f"[W&B_DEBUG][obs_grad] explicit_log keys={len(obs_payload)}", flush=True)
+        except RuntimeError:
             pass
         
         return result
@@ -3593,13 +3395,10 @@ def run_with_influence_tracking(cfg: Config):
         Learner.init = original_learner_init
         Learner.train = original_learner_train
         # Remove grad mirror hooks if present
-        try:
-            if hasattr(self, '_grad_attr_forward_handle'):
-                self._grad_attr_forward_handle.remove()
-            if hasattr(self, '_grad_attr_backward_handle'):
-                self._grad_attr_backward_handle.remove()
-        except Exception:
-            pass
+        if hasattr(self, '_grad_attr_forward_handle'):
+            self._grad_attr_forward_handle.remove()
+        if hasattr(self, '_grad_attr_backward_handle'):
+            self._grad_attr_backward_handle.remove()
         if original_wandb_log:
             import wandb
             wandb.log = original_wandb_log

@@ -176,12 +176,9 @@ class EnvManager(BaseManager):
         self.truncation_tensor = self.global_tensor_dict["truncations"]
 
         # Initialize per-env gate variant selection counters for deterministic randomization
-        try:
-            self.global_tensor_dict["gate_variant_counter"] = torch.zeros(
-                (self.num_envs), device=self.device, dtype=torch.int64
-            )
-        except Exception:
-            pass
+        self.global_tensor_dict["gate_variant_counter"] = torch.zeros(
+            (self.num_envs), device=self.device, dtype=torch.int64
+        )
 
         # Before we populate the environment, we need to create the ground plane
         if self.cfg.env.create_ground_plane:
@@ -334,14 +331,14 @@ class EnvManager(BaseManager):
         # then enforce the exact fixed count after gate selection.
         try:
             obs_dis = bool(self.global_tensor_dict.get('obstacles_randomization/disabled', False))
-        except Exception:
+        except (KeyError, TypeError):
             obs_dis = False
         if obs_dis:
             # Show all assets for now so none are hidden prematurely
             try:
                 env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
                 total_assets = env_asset_state.shape[1]
-            except Exception:
+            except (KeyError, TypeError):
                 total_assets = self.asset_manager.env_asset_state_tensor.shape[1]
             obstacle_count = int(total_assets)
         # logger.warning(f"[OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count={obstacle_count}")
@@ -352,29 +349,26 @@ class EnvManager(BaseManager):
         if obs_dis:
             try:
                 fixed_count = int(self.global_tensor_dict.get('obstacles_randomization/fixed_count', 0))
-            except Exception:
+            except (ValueError, TypeError):
                 fixed_count = 0
-            try:
-                env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
-                gate_indices_all = self.global_tensor_dict.get("gate_variant_indices_per_env", [])
-                total_assets = env_asset_state.shape[1]
-                # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
-                fixed_indices = set(range(int(self.keep_in_env or 0)))
-                # For each env, keep exactly `fixed_count` candidate obstacles (non-fixed, non-gate)
-                loop_envs = env_ids.tolist() if hasattr(env_ids, 'tolist') else list(env_ids)
-                for env_id in loop_envs:
-                    gate_indices = set(gate_indices_all[env_id]) if gate_indices_all else set()
-                    candidates = [i for i in range(total_assets) if (i not in fixed_indices) and (i not in gate_indices)]
-                    # Keep the first N candidates; hide the rest
-                    keep = set(candidates[: max(0, fixed_count)])
-                    for i in candidates:
-                        if i in keep:
-                            continue
-                        env_asset_state[env_id, i, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
-                # Write back
-                self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
-            except Exception:
-                pass
+            env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
+            gate_indices_all = self.global_tensor_dict.get("gate_variant_indices_per_env", [])
+            total_assets = env_asset_state.shape[1]
+            # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
+            fixed_indices = set(range(int(self.keep_in_env or 0)))
+            # For each env, keep exactly `fixed_count` candidate obstacles (non-fixed, non-gate)
+            loop_envs = env_ids.tolist() if hasattr(env_ids, 'tolist') else list(env_ids)
+            for env_id in loop_envs:
+                gate_indices = set(gate_indices_all[env_id]) if gate_indices_all else set()
+                candidates = [i for i in range(total_assets) if (i not in fixed_indices) and (i not in gate_indices)]
+                # Keep the first N candidates; hide the rest
+                keep = set(candidates[: max(0, fixed_count)])
+                for i in candidates:
+                    if i in keep:
+                        continue
+                    env_asset_state[env_id, i, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
+            # Write back
+            self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
         if self.cfg.env.use_warp:
             self.warp_env.reset_idx(env_ids)
         self.robot_manager.reset_idx(env_ids)
@@ -415,7 +409,7 @@ class EnvManager(BaseManager):
                     if isinstance(name, str) and "gate_scale_" in name:
                         try:
                             scale = int(name.replace("gate_scale_", ""))
-                        except Exception:
+                        except (ValueError, TypeError):
                             scale = 100
                     parsed.append((j, scale, name))
                 if parsed:
@@ -448,7 +442,7 @@ class EnvManager(BaseManager):
             cur_level = self.global_tensor_dict.get("curriculum_level", 3)
             try:
                 cur_level = int(cur_level.item()) if hasattr(cur_level, 'item') else int(cur_level)
-            except Exception:
+            except (ValueError, TypeError):
                 cur_level = 3
             
             # Unlock smaller gate scales beyond level 23 up to 50% at level 33 during eval-stretch
@@ -483,7 +477,7 @@ class EnvManager(BaseManager):
                 if isinstance(name, str) and "gate_scale_" in name:
                     try:
                         scale = int(name.replace("gate_scale_", ""))
-                    except Exception:
+                    except (ValueError, TypeError):
                         scale = 100
                 parsed.append((j, scale, name))
             # Allowed indices are those with scale >= min_allowed_scale
@@ -498,10 +492,7 @@ class EnvManager(BaseManager):
                 allowed_pairs = [(j, scale) for (j, scale, _) in parsed if j in allowed_js]
                 unique_scales = sorted({scale for (_, scale) in allowed_pairs}, reverse=True)
                 # Increment per-env counter to advance RNG in a deterministic manner
-                try:
-                    self.global_tensor_dict["gate_variant_counter"][env_id] += 1
-                except Exception:
-                    pass
+                self.global_tensor_dict["gate_variant_counter"][env_id] += 1
                 # Sample an index deterministically using torch's seeded RNG
                 # Pick a scale bucket first
                 scale_idx = int(torch.randint(low=0, high=len(unique_scales), size=(1,), device=self.device).item())

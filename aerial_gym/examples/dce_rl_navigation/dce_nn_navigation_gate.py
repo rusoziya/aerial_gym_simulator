@@ -119,30 +119,24 @@ def main():
         if hasattr(base_task_config, "disable_static_camera_orientation_randomization"):
             base_task_config.disable_static_camera_orientation_randomization = bool(getattr(cfg, "disable_static_camera_orientation_randomization", False))
         # Dynamic camera following toggles
-        try:
-            cur = getattr(base_task_config, 'curriculum', None)
-            if cur is not None:
-                if hasattr(cfg, 'disable_dynamic_camera_following') and bool(getattr(cfg, 'disable_dynamic_camera_following', False)):
-                    setattr(cur, 'enable_dynamic_camera_following', False)
-                if hasattr(cfg, 'enable_dynamic_camera_following') and getattr(cfg, 'enable_dynamic_camera_following') is not None:
-                    setattr(cur, 'enable_dynamic_camera_following', bool(getattr(cfg, 'enable_dynamic_camera_following')))
-        except Exception:
-            pass
+        cur = getattr(base_task_config, 'curriculum', None)
+        if cur is not None:
+            if hasattr(cfg, 'disable_dynamic_camera_following') and bool(getattr(cfg, 'disable_dynamic_camera_following', False)):
+                setattr(cur, 'enable_dynamic_camera_following', False)
+            if hasattr(cfg, 'enable_dynamic_camera_following') and getattr(cfg, 'enable_dynamic_camera_following') is not None:
+                setattr(cur, 'enable_dynamic_camera_following', bool(getattr(cfg, 'enable_dynamic_camera_following')))
         # Arc-follow overrides to env variables
-        try:
-            if bool(getattr(args, 'enable_static_camera_arc_follow', False)):
-                os.environ['SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW'] = 'true'
-            if hasattr(args, 'static_camera_arc_radius_m') and args.static_camera_arc_radius_m is not None:
-                os.environ['SF_STATIC_CAMERA_ARC_RADIUS_M'] = str(float(args.static_camera_arc_radius_m))
-            # Dynamic follow distance override (honored only if dynamic-follow is active)
-            if hasattr(args, 'dynamic_camera_follow_y_offset_m') and args.dynamic_camera_follow_y_offset_m is not None:
-                os.environ['SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y'] = str(float(args.dynamic_camera_follow_y_offset_m))
-            # Disable dynamic follow gate blending (optional)
-            if hasattr(args, 'disable_dynamic_follow_gate_blending'):
-                os.environ['SF_DISABLE_DYNAMIC_FOLLOW_GATE_BLENDING'] = 'true' if bool(getattr(args, 'disable_dynamic_follow_gate_blending')) else 'false'
-        except Exception:
-            pass
-    except Exception:
+        if bool(getattr(args, 'enable_static_camera_arc_follow', False)):
+            os.environ['SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW'] = 'true'
+        if hasattr(args, 'static_camera_arc_radius_m') and args.static_camera_arc_radius_m is not None:
+            os.environ['SF_STATIC_CAMERA_ARC_RADIUS_M'] = str(float(args.static_camera_arc_radius_m))
+        # Dynamic follow distance override (honored only if dynamic-follow is active)
+        if hasattr(args, 'dynamic_camera_follow_y_offset_m') and args.dynamic_camera_follow_y_offset_m is not None:
+            os.environ['SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y'] = str(float(args.dynamic_camera_follow_y_offset_m))
+        # Disable dynamic follow gate blending (optional)
+        if hasattr(args, 'disable_dynamic_follow_gate_blending'):
+            os.environ['SF_DISABLE_DYNAMIC_FOLLOW_GATE_BLENDING'] = 'true' if bool(getattr(args, 'disable_dynamic_follow_gate_blending')) else 'false'
+    except (ValueError, TypeError):
         pass
 
     # Register gate task for inference with updated config
@@ -157,7 +151,7 @@ def main():
     try:
         if hasattr(cfg, "seed") and cfg.seed is not None:
             seed_val = int(cfg.seed)
-    except Exception:
+    except (ValueError, TypeError):
         seed_val = None
     rl_task = task_registry.make_task(
         "dce_navigation_task_gate", seed=seed_val, use_warp=True, headless=headless
@@ -169,10 +163,7 @@ def main():
     parity_dump_steps = int(os.environ.get('OBS_PARITY_STEPS', '0'))
 
     # Set compat attribute on the task
-    try:
-        setattr(rl_task, "sf_cfg", cfg)
-    except Exception:
-        pass
+    setattr(rl_task, "sf_cfg", cfg)
 
     # obs/action dims for gate task
     num_actions = rl_task.task_config.action_space_dim
@@ -190,22 +181,19 @@ def main():
         # envs that finish during warm-up to avoid stale memory.
         try:
             warmup_steps = max(0, int(getattr(args, 'rnn_warmup_steps', 0)))
-        except Exception:
+        except (ValueError, TypeError):
             warmup_steps = 0
         # Fallback to environment variable if CLI flag not provided
         if warmup_steps == 0:
             try:
                 warmup_steps = max(0, int(os.environ.get('RNN_WARMUP_STEPS', '0')))
-            except Exception:
+            except (ValueError, TypeError):
                 warmup_steps = 0
         if warmup_steps > 0:
             try:
                 print(f"[RNN_WARMUP] Running {warmup_steps} warm-up steps (not logged)")
                 # Ensure model stays in eval mode
-                try:
-                    nn_model.eval(); nn_model.actor_critic.eval()
-                except Exception:
-                    pass
+                nn_model.eval(); nn_model.actor_critic.eval()
                 o_w = obs_dict
                 for _ in range(warmup_steps):
                     v_w = o_w["observations"] if isinstance(o_w, dict) and "observations" in o_w else o_w.get(nn_obs_key, o_w["obs"])  # prefer nn_obs_key if present
@@ -217,16 +205,13 @@ def main():
                         o_next = step_result_w[0] if isinstance(step_result_w, tuple) else step_result_w
                         term_w = None; trunc_w = None
                     # Per-env done handling: reset RNN hidden state for finished envs
-                    try:
-                        if term_w is not None and trunc_w is not None:
-                            done_ids = (term_w | trunc_w).nonzero(as_tuple=True)[0]
-                            if done_ids.numel() > 0:
-                                nn_model.reset(done_ids)
-                    except Exception:
-                        pass
+                    if term_w is not None and trunc_w is not None:
+                        done_ids = (term_w | trunc_w).nonzero(as_tuple=True)[0]
+                        if done_ids.numel() > 0:
+                            nn_model.reset(done_ids)
                     o_w = o_next
                 # Do not reset env; proceed with current obs_dict so RNN state is primed.
-            except Exception:
+            except (ValueError, TypeError):
                 pass
 
         # Optional W&B init for inference logging
@@ -234,7 +219,7 @@ def main():
         try:
             import os as _os
             use_wandb = _os.environ.get("WANDB_DISABLED", "true").lower() == "false"
-        except Exception:
+        except RuntimeError:
             use_wandb = False
         if use_wandb:
             try:
@@ -305,28 +290,19 @@ def main():
                         'spatial/height_offset_p50','spatial/height_offset_p90',
                         'spatial/min_gate_distance_p50','spatial/min_gate_distance_p90'
                     ):
-                        try:
-                            wandb.define_metric(name, step_metric='episodes')
-                        except Exception:
-                            pass
+                        wandb.define_metric(name, step_metric='episodes')
                     # Visibility/FOV running means (inference-only metrics)
                     for name in (
                         'visibility/abs_running_mean','visibility/frustum_running_mean','visibility/eff_running_mean',
                         'fov/score_running_mean','fov/visible_rate_running_mean',
                         'fov/horiz_angle_rad_running_mean','fov/vert_angle_rad_running_mean'
                     ):
-                        try:
-                            wandb.define_metric(name, step_metric='episodes')
-                        except Exception:
-                            pass
+                        wandb.define_metric(name, step_metric='episodes')
                     # Per-batch success fraction (averaged across envs that reset this tick)
-                    try:
-                        wandb.define_metric('episodes/success_rate_batch', step_metric='episodes_batch')
-                    except Exception:
-                        pass
-                except Exception:
+                    wandb.define_metric('episodes/success_rate_batch', step_metric='episodes_batch')
+                except RuntimeError:
                     pass
-            except Exception:
+            except RuntimeError:
                 wandb_run = None
 
         # Global step/episode counters for logging
@@ -334,7 +310,7 @@ def main():
         _episodes_done = 0
         try:
             _max_episodes = int(getattr(cfg, 'max_num_episodes', 0))
-        except Exception:
+        except (ValueError, TypeError):
             _max_episodes = 0
 
         # Running episode-aggregates to mirror training-side summaries
@@ -453,22 +429,19 @@ def main():
                     img = _np.squeeze(img)
                 img_u8 = (img.clip(0.0, 1.0) * 255.0).astype('uint8')
                 return _PILImage.fromarray(img_u8)
-            except Exception:
+            except ImportError:
                 return None
 
         def _save_gif(frames, filename):
             if not frames or len(frames) < 1:
                 return
-            try:
-                frames[0].save(
-                    os.path.join(gif_dir, filename),
-                    save_all=True,
-                    append_images=frames[1:],
-                    duration=100,
-                    loop=0,
-                )
-            except Exception:
-                pass
+            frames[0].save(
+                os.path.join(gif_dir, filename),
+                save_all=True,
+                append_images=frames[1:],
+                duration=100,
+                loop=0,
+            )
 
         # Rolling windows / CI helpers
         _success_flags = []  # append 1 for success, 0 otherwise
@@ -500,59 +473,47 @@ def main():
             # Curriculum level
             try:
                 lvl = int(getattr(rl_task, 'curriculum_level', -1))
-            except Exception:
+            except (ValueError, TypeError):
                 lvl = -1
             print(f"  Curriculum level: {lvl}")
             # Curriculum-derived camera noise and frame dropout at this level (if available)
             try:
                 cur = getattr(rl_task.task_config, 'curriculum', None)
                 if cur is not None:
-                    try:
-                        cstd, cdrop = cur.get_camera_noise(lvl)
-                        print(f"  Camera noise: gaussian_std={float(cstd):.4f}, dropout={float(cdrop):.4f}")
-                    except Exception:
-                        pass
-                    try:
-                        fd = cur.get_camera_frame_dropout(lvl)
-                        if isinstance(fd, dict):
-                            dt = fd.get('drone_total', 0.0); st = fd.get('static_total', 0.0)
-                            print(f"  Frame dropout: drone_total={float(dt):.4f}, static_total={float(st):.4f}")
-                    except Exception:
-                        pass
-            except Exception:
+                    cstd, cdrop = cur.get_camera_noise(lvl)
+                    print(f"  Camera noise: gaussian_std={float(cstd):.4f}, dropout={float(cdrop):.4f}")
+                    fd = cur.get_camera_frame_dropout(lvl)
+                    if isinstance(fd, dict):
+                        dt = fd.get('drone_total', 0.0); st = fd.get('static_total', 0.0)
+                        print(f"  Frame dropout: drone_total={float(dt):.4f}, static_total={float(st):.4f}")
+            except (ValueError, TypeError):
                 pass
             # Effective toggles from global tensor dict (authoritative during runtime)
-            try:
-                gtd = getattr(rl_task, 'sim_env', None)
-                g = gtd.global_tensor_dict if (gtd is not None and hasattr(gtd, 'global_tensor_dict')) else {}
-                def _p(key, label=None):
-                    if key in g:
-                        print(f"  {(label or key)}: {g[key]}")
-                _p('gate_randomization/disabled', 'Gate size randomization disabled')
-                _p('obstacles_randomization/disabled', 'Obstacle randomization disabled')
-                _p('obstacles_randomization/fixed_count', 'Fixed obstacles behind gate')
-                _p('state_randomization/noise_disabled', 'State noise disabled')
-                _p('camera_randomization/noise_disabled', 'Camera noise disabled (global)')
-                _p('camera_randomization/drone_noise_disabled', 'Drone noise disabled')
-                _p('camera_randomization/static_noise_disabled', 'Static noise disabled')
-                _p('camera_randomization/frame_dropout_disabled', 'Camera frame dropout disabled (global)')
-                _p('camera_randomization/drone_frame_dropout_disabled', 'Drone frame dropout disabled')
-                _p('camera_randomization/static_frame_dropout_disabled', 'Static frame dropout disabled')
-                _p('dynamic_camera_following/disabled', 'Dynamic camera following disabled')
-                _p('static_camera/yaw_sweep_enabled', 'Static camera yaw sweep enabled')
-                _p('static_camera/yaw_sweep_speed_deg', 'Static camera yaw sweep speed (deg/s)')
-                _p('static_camera/base_y', 'Static camera base Y')
-                _p('static_camera/base_z', 'Static camera base Z')
-            except Exception:
-                pass
+            gtd = getattr(rl_task, 'sim_env', None)
+            g = gtd.global_tensor_dict if (gtd is not None and hasattr(gtd, 'global_tensor_dict')) else {}
+            def _p(key, label=None):
+                if key in g:
+                    print(f"  {(label or key)}: {g[key]}")
+            _p('gate_randomization/disabled', 'Gate size randomization disabled')
+            _p('obstacles_randomization/disabled', 'Obstacle randomization disabled')
+            _p('obstacles_randomization/fixed_count', 'Fixed obstacles behind gate')
+            _p('state_randomization/noise_disabled', 'State noise disabled')
+            _p('camera_randomization/noise_disabled', 'Camera noise disabled (global)')
+            _p('camera_randomization/drone_noise_disabled', 'Drone noise disabled')
+            _p('camera_randomization/static_noise_disabled', 'Static noise disabled')
+            _p('camera_randomization/frame_dropout_disabled', 'Camera frame dropout disabled (global)')
+            _p('camera_randomization/drone_frame_dropout_disabled', 'Drone frame dropout disabled')
+            _p('camera_randomization/static_frame_dropout_disabled', 'Static frame dropout disabled')
+            _p('dynamic_camera_following/disabled', 'Dynamic camera following disabled')
+            _p('static_camera/yaw_sweep_enabled', 'Static camera yaw sweep enabled')
+            _p('static_camera/yaw_sweep_speed_deg', 'Static camera yaw sweep speed (deg/s)')
+            _p('static_camera/base_y', 'Static camera base Y')
+            _p('static_camera/base_z', 'Static camera base Z')
             # Observation ablation spec
-            try:
-                import os as _os
-                print(f"  ABLATE_OBS_RANGES: {_os.environ.get('ABLATE_OBS_RANGES', '')}")
-            except Exception:
-                pass
+            import os as _os
+            print(f"  ABLATE_OBS_RANGES: {_os.environ.get('ABLATE_OBS_RANGES', '')}")
             print("=" * 80)
-        except Exception:
+        except (ValueError, TypeError):
             pass
         # Apply the same observation ablation used during training if requested via env vars
         # Global cap for ablation debug prints across the whole run
@@ -594,7 +555,7 @@ def main():
                 try:
                     start_s, end_s = lhs.split(":", 1)
                     start = int(start_s); end = int(end_s)
-                except Exception:
+                except (ValueError, TypeError):
                     continue
                 op = rhs
                 if op == "zero":
@@ -615,7 +576,7 @@ def main():
                 elif op.startswith("noise:"):
                     try:
                         std = float(op.split(":", 1)[1])
-                    except Exception:
+                    except (ValueError, TypeError):
                         std = 0.0
                     if std > 0.0:
                         obs_tensor[:, start:end] = obs_tensor[:, start:end] + torch.randn_like(obs_tensor[:, start:end]) * std
@@ -646,14 +607,10 @@ def main():
         while True:
             vec = obs_dict["observations"] if isinstance(obs_dict, dict) and "observations" in obs_dict else obs_dict["obs"]
             if dump_obs_parity and step_counter_total < parity_dump_steps:
-                try:
-                    # Dump basic stats for key slices to aid train vs infer parity checks
-                    if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
-                        z_drone = vec[:, 22:86]
-                        z_static = vec[:, 86:150]
-                        print(f"[OBS_PARITY] step={step_counter_total} abs_mean: drone={float(z_drone.abs().mean().item()):.6f} static={float(z_static.abs().mean().item()):.6f}")
-                except Exception:
-                    pass
+                if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
+                    z_drone = vec[:, 22:86]
+                    z_static = vec[:, 86:150]
+                    print(f"[OBS_PARITY] step={step_counter_total} abs_mean: drone={float(z_drone.abs().mean().item()):.6f} static={float(z_static.abs().mean().item()):.6f}")
             # Apply ablation if configured
             vec = _apply_obs_ablation(vec)
             # Optional: print env0 latent stats every frame for one episode only
@@ -671,22 +628,6 @@ def main():
                                 _env0_step_in_ep = 0
                                 print(f"[ENV0_LATENTS] step={_env0_step_in_ep} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
                                 # Also print normalized latents for the same step
-                                try:
-                                    norm = prepare_and_normalize_obs(nn_model.actor_critic, {nn_obs_key: vec})
-                                    pvec = norm.get(nn_obs_key, None)
-                                    if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
-                                        ze0n = pvec[0, 22:86]
-                                        zs0n = pvec[0, 86:150]
-                                        ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
-                                        zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
-                                        print(f"[ENV0_LATENTS_NORM] step={_env0_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
-                                except Exception:
-                                    pass
-                                _env0_step_in_ep += 1
-                        elif _env0_log_state == 1:
-                            print(f"[ENV0_LATENTS] step={_env0_step_in_ep} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
-                            # Also print normalized latents for the same step
-                            try:
                                 norm = prepare_and_normalize_obs(nn_model.actor_critic, {nn_obs_key: vec})
                                 pvec = norm.get(nn_obs_key, None)
                                 if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
@@ -695,40 +636,44 @@ def main():
                                     ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
                                     zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
                                     print(f"[ENV0_LATENTS_NORM] step={_env0_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
-                            except Exception:
-                                pass
+                                _env0_step_in_ep += 1
+                        elif _env0_log_state == 1:
+                            print(f"[ENV0_LATENTS] step={_env0_step_in_ep} abs_mean: drone={ze_abs:.6f} static={zs_abs:.6f}")
+                            # Also print normalized latents for the same step
+                            norm = prepare_and_normalize_obs(nn_model.actor_critic, {nn_obs_key: vec})
+                            pvec = norm.get(nn_obs_key, None)
+                            if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
+                                ze0n = pvec[0, 22:86]
+                                zs0n = pvec[0, 86:150]
+                                ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
+                                zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
+                                print(f"[ENV0_LATENTS_NORM] step={_env0_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
                             _env0_step_in_ep += 1
-                except Exception:
+                except (ValueError, TypeError):
                     pass
 
             # Optional: print env0 NORMALIZED latent stats every frame for one episode only
             if _env0_norm_log_state != 2:
-                try:
-                    mo = {nn_obs_key: vec}
-                    norm = prepare_and_normalize_obs(nn_model.actor_critic, mo)
-                    pvec = norm.get(nn_obs_key, None)
-                    if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
-                        ze0n = pvec[0, 22:86]
-                        zs0n = pvec[0, 86:150]
-                        ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
-                        zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
-                        if _env0_norm_log_state == 0:
-                            if (ze_nabs > 1e-6) or (zs_nabs > 1e-6):
-                                _env0_norm_log_state = 1
-                                _env0_norm_step_in_ep = 0
-                                print(f"[ENV0_LATENTS_NORM] step={_env0_norm_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
-                                _env0_norm_step_in_ep += 1
-                        elif _env0_norm_log_state == 1:
+                mo = {nn_obs_key: vec}
+                norm = prepare_and_normalize_obs(nn_model.actor_critic, mo)
+                pvec = norm.get(nn_obs_key, None)
+                if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[0] > 0 and pvec.shape[1] >= 150:
+                    ze0n = pvec[0, 22:86]
+                    zs0n = pvec[0, 86:150]
+                    ze_nabs = float(torch.mean(torch.abs(ze0n)).item())
+                    zs_nabs = float(torch.mean(torch.abs(zs0n)).item())
+                    if _env0_norm_log_state == 0:
+                        if (ze_nabs > 1e-6) or (zs_nabs > 1e-6):
+                            _env0_norm_log_state = 1
+                            _env0_norm_step_in_ep = 0
                             print(f"[ENV0_LATENTS_NORM] step={_env0_norm_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
                             _env0_norm_step_in_ep += 1
-                except Exception:
-                    pass
+                    elif _env0_norm_log_state == 1:
+                        print(f"[ENV0_LATENTS_NORM] step={_env0_norm_step_in_ep} abs_mean: drone={ze_nabs:.6f} static={zs_nabs:.6f}")
+                        _env0_norm_step_in_ep += 1
             # Sanitize obs before passing to model to avoid NaN/Inf in normalization/encoder
-            try:
-                if isinstance(vec, torch.Tensor):
-                    vec = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
-            except Exception:
-                pass
+            if isinstance(vec, torch.Tensor):
+                vec = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
             model_obs = {nn_obs_key: vec}
             actions = nn_model.get_action(model_obs)
             step_result = rl_task.step(actions)
@@ -744,12 +689,9 @@ def main():
             _frames += 1
 
             # Accumulate returns and lengths
-            try:
-                if isinstance(rew, torch.Tensor):
-                    _ep_return += rew.float().cpu()
-                _ep_length += 1
-            except Exception:
-                pass
+            if isinstance(rew, torch.Tensor):
+                _ep_return += rew.float().cpu()
+            _ep_length += 1
 
             # Action stats
             try:
@@ -761,12 +703,9 @@ def main():
                 # Store prev
                 _prev_actions = a
                 # Update episode accumulators
-                try:
-                    _ep_action_diff_sum += adiff
-                    _ep_action_diff_count += 1
-                except Exception:
-                    pass
-            except Exception:
+                _ep_action_diff_sum += adiff
+                _ep_action_diff_count += 1
+            except (ValueError, TypeError):
                 abs_mean = None; diff_mean = None; sat = None
 
             # Collect GIF frames (env 0 only, noised versions)
@@ -780,46 +719,40 @@ def main():
                             if pil is not None:
                                 _gif_drone_noised_frames.append(pil)
                         # Also capture clean (non-noised) drone depth if available
-                        try:
-                            dc = d.get('depth_range_pixels', None)
-                            pil_clean = None
-                            if isinstance(dc, torch.Tensor):
-                                if dc.ndim == 4:  # (N,C,H,W)
-                                    pil_clean = _to_pil_gray(dc[0, 0])
-                                elif dc.ndim == 3:  # (N,H,W)
-                                    pil_clean = _to_pil_gray(dc[0])
-                                elif dc.ndim == 2:  # (H,W)
-                                    pil_clean = _to_pil_gray(dc)
-                            elif dc is not None:
+                        dc = d.get('depth_range_pixels', None)
+                        pil_clean = None
+                        if isinstance(dc, torch.Tensor):
+                            if dc.ndim == 4:  # (N,C,H,W)
+                                pil_clean = _to_pil_gray(dc[0, 0])
+                            elif dc.ndim == 3:  # (N,H,W)
+                                pil_clean = _to_pil_gray(dc[0])
+                            elif dc.ndim == 2:  # (H,W)
                                 pil_clean = _to_pil_gray(dc)
-                            if pil_clean is not None:
-                                _gif_drone_clean_frames.append(pil_clean)
-                        except Exception:
-                            pass
+                        elif dc is not None:
+                            pil_clean = _to_pil_gray(dc)
+                        if pil_clean is not None:
+                            _gif_drone_clean_frames.append(pil_clean)
                     # Also collect drone segmentation if available
-                    try:
-                        ds = d.get('segmentation_pixels', None)
-                        if isinstance(ds, torch.Tensor):
-                            if ds.ndim == 4:
-                                ds0 = ds[0, 0]
-                            elif ds.ndim == 3:
-                                ds0 = ds[0]
-                            else:
-                                ds0 = ds
-                            import numpy as _np
-                            seg = ds0.detach().cpu().numpy()
-                            # Normalize to [0,1] for visualization
-                            seg_min = _np.min(seg)
-                            seg_max = _np.max(seg)
-                            if (seg_max - seg_min) > 0:
-                                seg_norm = (seg - seg_min) / float(seg_max - seg_min)
-                            else:
-                                seg_norm = _np.zeros_like(seg, dtype=_np.float32)
-                            pil_dseg = _to_pil_gray(seg_norm)
-                            if pil_dseg is not None:
-                                _gif_drone_seg_frames.append(pil_dseg)
-                    except Exception:
-                        pass
+                    ds = d.get('segmentation_pixels', None)
+                    if isinstance(ds, torch.Tensor):
+                        if ds.ndim == 4:
+                            ds0 = ds[0, 0]
+                        elif ds.ndim == 3:
+                            ds0 = ds[0]
+                        else:
+                            ds0 = ds
+                        import numpy as _np
+                        seg = ds0.detach().cpu().numpy()
+                        # Normalize to [0,1] for visualization
+                        seg_min = _np.min(seg)
+                        seg_max = _np.max(seg)
+                        if (seg_max - seg_min) > 0:
+                            seg_norm = (seg - seg_min) / float(seg_max - seg_min)
+                        else:
+                            seg_norm = _np.zeros_like(seg, dtype=_np.float32)
+                        pil_dseg = _to_pil_gray(seg_norm)
+                        if pil_dseg is not None:
+                            _gif_drone_seg_frames.append(pil_dseg)
                     if isinstance(d, dict) and 'static_depth_noised' in d:
                         sd = d['static_depth_noised']
                         # static_depth_noised may be tensor (H,W) or (N,H,W); pick env 0
@@ -833,40 +766,34 @@ def main():
                         if pil is not None:
                             _gif_static_noised_frames.append(pil)
                         # Also capture clean (non-noised) static depth if available
-                        try:
-                            sc = d.get('static_depth', None)
-                            pil_sclean = None
-                            if isinstance(sc, torch.Tensor):
-                                if sc.ndim == 3:
-                                    pil_sclean = _to_pil_gray(sc[0])
-                                elif sc.ndim == 2:
-                                    pil_sclean = _to_pil_gray(sc)
-                            elif sc is not None:
+                        sc = d.get('static_depth', None)
+                        pil_sclean = None
+                        if isinstance(sc, torch.Tensor):
+                            if sc.ndim == 3:
+                                pil_sclean = _to_pil_gray(sc[0])
+                            elif sc.ndim == 2:
                                 pil_sclean = _to_pil_gray(sc)
-                            if pil_sclean is not None:
-                                _gif_static_clean_frames.append(pil_sclean)
-                        except Exception:
-                            pass
+                        elif sc is not None:
+                            pil_sclean = _to_pil_gray(sc)
+                        if pil_sclean is not None:
+                            _gif_static_clean_frames.append(pil_sclean)
                     # Also collect static segmentation directly from StaticCameraManager (env 0)
                     try:
                         scm = getattr(rl_task, 'static_camera_manager', None)
                         if scm is not None and hasattr(scm, 'capture_images'):
                             _d, _seg = scm.capture_images(batched=False)
                             # Save clean static depth from camera manager if available
-                            try:
-                                import numpy as _np
-                                if _d is not None:
-                                    if isinstance(_d, _np.ndarray):
-                                        if _d.ndim == 3:  # (N,H,W)
-                                            pil_d = _to_pil_gray(_d[0])
-                                        else:  # (H,W)
-                                            pil_d = _to_pil_gray(_d)
-                                    else:
+                            import numpy as _np
+                            if _d is not None:
+                                if isinstance(_d, _np.ndarray):
+                                    if _d.ndim == 3:  # (N,H,W)
+                                        pil_d = _to_pil_gray(_d[0])
+                                    else:  # (H,W)
                                         pil_d = _to_pil_gray(_d)
-                                    if pil_d is not None:
-                                        _gif_static_clean_frames.append(pil_d)
-                            except Exception:
-                                pass
+                                else:
+                                    pil_d = _to_pil_gray(_d)
+                                if pil_d is not None:
+                                    _gif_static_clean_frames.append(pil_d)
                             if _seg is not None:
                                 # Normalize to [0,1] for visualization
                                 import numpy as _np
@@ -882,75 +809,63 @@ def main():
                                 pil_seg = _to_pil_gray(seg_norm)
                                 if pil_seg is not None:
                                     _gif_static_seg_frames.append(pil_seg)
-                    except Exception:
+                    except (ValueError, TypeError):
                         pass
-                except Exception:
+                except (ValueError, TypeError):
                     pass
 
             # VAE latent norms (periodic)
             vae_drone_norm = None; vae_static_norm = None; vae_ratio = None
-            try:
-                if (_frames % 100) == 0:
-                    z_e = vec[:, 22:86]
-                    z_s = vec[:, 86:150]
-                    vae_drone_norm = float(torch.linalg.norm(z_e, dim=1).mean().item())
-                    vae_static_norm = float(torch.linalg.norm(z_s, dim=1).mean().item())
-                    vae_ratio = float(vae_static_norm / (vae_drone_norm + 1e-6))
-            except Exception:
-                pass
+            if (_frames % 100) == 0:
+                z_e = vec[:, 22:86]
+                z_s = vec[:, 86:150]
+                vae_drone_norm = float(torch.linalg.norm(z_e, dim=1).mean().item())
+                vae_static_norm = float(torch.linalg.norm(z_s, dim=1).mean().item())
+                vae_ratio = float(vae_static_norm / (vae_drone_norm + 1e-6))
 
             # Per-reset logging similar to training
             try:
                 import torch as _torch
                 # Update per-env episode accumulators for visibility/FOV metrics from infos
-                try:
-                    if isinstance(infos, dict):
-                        vabs = infos.get('static_visibility/abs', None)
-                        vfru = infos.get('static_visibility/frustum', None)
-                        veff = infos.get('static_visibility/eff', None)
-                        fvis = infos.get('static_fov/visible', None)
-                        fscore = infos.get('static_fov/score', None)
-                        fh = infos.get('static_fov/horiz_angle_rad', None)
-                        fv = infos.get('static_fov/vert_angle_rad', None)
-                        if isinstance(vabs, _torch.Tensor):
-                            _vis_ep['abs_sum_env'] += vabs.detach().float().cpu()
-                            _vis_ep['abs_count_env'] += 1
-                        if isinstance(vfru, _torch.Tensor):
-                            _vis_ep['frustum_sum_env'] += vfru.detach().float().cpu()
-                            _vis_ep['frustum_count_env'] += 1
-                        if isinstance(veff, _torch.Tensor):
-                            _vis_ep['eff_sum_env'] += veff.detach().float().cpu()
-                            _vis_ep['eff_count_env'] += 1
-                        if isinstance(fvis, _torch.Tensor):
-                            _vis_ep['fov_visible_sum_env'] += fvis.detach().float().cpu()
-                            _vis_ep['fov_visible_count_env'] += 1
-                        if isinstance(fscore, _torch.Tensor):
-                            _vis_ep['fov_score_sum_env'] += fscore.detach().float().cpu()
-                            _vis_ep['fov_score_count_env'] += 1
-                        if isinstance(fh, _torch.Tensor):
-                            _vis_ep['fov_horiz_sum_env'] += fh.detach().float().cpu()
-                            _vis_ep['fov_horiz_count_env'] += 1
-                        if isinstance(fv, _torch.Tensor):
-                            _vis_ep['fov_vert_sum_env'] += fv.detach().float().cpu()
-                            _vis_ep['fov_vert_count_env'] += 1
-                except Exception:
-                    pass
+                if isinstance(infos, dict):
+                    vabs = infos.get('static_visibility/abs', None)
+                    vfru = infos.get('static_visibility/frustum', None)
+                    veff = infos.get('static_visibility/eff', None)
+                    fvis = infos.get('static_fov/visible', None)
+                    fscore = infos.get('static_fov/score', None)
+                    fh = infos.get('static_fov/horiz_angle_rad', None)
+                    fv = infos.get('static_fov/vert_angle_rad', None)
+                    if isinstance(vabs, _torch.Tensor):
+                        _vis_ep['abs_sum_env'] += vabs.detach().float().cpu()
+                        _vis_ep['abs_count_env'] += 1
+                    if isinstance(vfru, _torch.Tensor):
+                        _vis_ep['frustum_sum_env'] += vfru.detach().float().cpu()
+                        _vis_ep['frustum_count_env'] += 1
+                    if isinstance(veff, _torch.Tensor):
+                        _vis_ep['eff_sum_env'] += veff.detach().float().cpu()
+                        _vis_ep['eff_count_env'] += 1
+                    if isinstance(fvis, _torch.Tensor):
+                        _vis_ep['fov_visible_sum_env'] += fvis.detach().float().cpu()
+                        _vis_ep['fov_visible_count_env'] += 1
+                    if isinstance(fscore, _torch.Tensor):
+                        _vis_ep['fov_score_sum_env'] += fscore.detach().float().cpu()
+                        _vis_ep['fov_score_count_env'] += 1
+                    if isinstance(fh, _torch.Tensor):
+                        _vis_ep['fov_horiz_sum_env'] += fh.detach().float().cpu()
+                        _vis_ep['fov_horiz_count_env'] += 1
+                    if isinstance(fv, _torch.Tensor):
+                        _vis_ep['fov_vert_sum_env'] += fv.detach().float().cpu()
+                        _vis_ep['fov_vert_count_env'] += 1
                 if (terminated is not None and truncated is not None and
                         (_torch.any(terminated) or _torch.any(truncated))):
                     if wandb_run is not None:
                         payload = {}
                         payload['frames'] = _frames
                         # Curriculum level/progress (log only under episode namespace)
-                        try:
-                            lvl = float(getattr(rl_task, 'curriculum_level', -1))
-                            payload['episode_extra_stats/curriculum/level'] = lvl
-                        except Exception:
-                            pass
-                        try:
-                            prog = float(getattr(rl_task, 'curriculum_progress_fraction', 0.0))
-                            payload['episode_extra_stats/curriculum/progress'] = prog
-                        except Exception:
-                            pass
+                        lvl = float(getattr(rl_task, 'curriculum_level', -1))
+                        payload['episode_extra_stats/curriculum/level'] = lvl
+                        prog = float(getattr(rl_task, 'curriculum_progress_fraction', 0.0))
+                        payload['episode_extra_stats/curriculum/progress'] = prog
                         # Episode-level metrics provided by env
                         if isinstance(infos, dict):
                             extra = infos.get('episode_extra_stats', None)
@@ -958,24 +873,21 @@ def main():
                                 for k, v in list(extra.items()):
                                     try:
                                         payload[k] = float(v)
-                                    except Exception:
-                                        try:
-                                            import torch as __t
-                                            if isinstance(v, __t.Tensor):
-                                                payload[k] = float(v.item()) if v.numel() == 1 else None
-                                        except Exception:
-                                            pass
+                                    except (ValueError, TypeError):
+                                        import torch as __t
+                                        if isinstance(v, __t.Tensor):
+                                            payload[k] = float(v.item()) if v.numel() == 1 else None
                                 # Update running aggregates from episode_extra_stats
                                 def _get_float(name):
                                     val = extra.get(name, None)
                                     try:
                                         return float(val)
-                                    except Exception:
+                                    except (ValueError, TypeError):
                                         try:
                                             import torch as __tt
                                             if isinstance(val, __tt.Tensor):
                                                 return float(val.item()) if val.numel() == 1 else None
-                                        except Exception:
+                                        except (ValueError, TypeError):
                                             return None
                                         return None
                                 pe = _get_float('path_efficiency')
@@ -1024,17 +936,14 @@ def main():
                             # successes/crashes/timeouts if present this step
                             for key in ('successes', 'crashes', 'timeouts'):
                                 val = infos.get(key, None)
-                                try:
-                                    if isinstance(val, _torch.Tensor):
-                                        c = float(val.sum().item())
-                                        payload[f'episode_extra_stats/{key}'] = c
-                                        _totals[key] += int(c)
-                                    elif isinstance(val, (int, float)):
-                                        c = float(val)
-                                        payload[f'episode_extra_stats/{key}'] = c
-                                        _totals[key] += int(c)
-                                except Exception:
-                                    pass
+                                if isinstance(val, _torch.Tensor):
+                                    c = float(val.sum().item())
+                                    payload[f'episode_extra_stats/{key}'] = c
+                                    _totals[key] += int(c)
+                                elif isinstance(val, (int, float)):
+                                    c = float(val)
+                                    payload[f'episode_extra_stats/{key}'] = c
+                                    _totals[key] += int(c)
                         # Episode return/length for envs that reset now
                         try:
                             ids = (terminated | truncated).nonzero(as_tuple=True)[0]
@@ -1054,50 +963,38 @@ def main():
                                 # Reset accumulators and RNN state for those envs (parity with training masking)
                                 _ep_return[ids_cpu] = 0.0
                                 _ep_length[ids_cpu] = 0
-                                try:
-                                    nn_model.reset(ids)
-                                except Exception:
-                                    pass
+                                nn_model.reset(ids)
                                 # Episode action diff means per dimension (average over steps, then average over resetting envs)
-                                try:
-                                    counts = _ep_action_diff_count[ids].float().clamp_min(1.0)
-                                    per_env_means = _ep_action_diff_sum[ids] / counts.unsqueeze(1)
-                                    diff_ep_mean = per_env_means.mean(dim=0)
-                                    dims = ['x','y','z','yaw']
-                                    for i, d in enumerate(dims[:diff_ep_mean.numel()]):
-                                        payload[f'episode_action_diff_mean/{d}'] = float(diff_ep_mean[i].item())
-                                except Exception:
-                                    pass
+                                counts = _ep_action_diff_count[ids].float().clamp_min(1.0)
+                                per_env_means = _ep_action_diff_sum[ids] / counts.unsqueeze(1)
+                                diff_ep_mean = per_env_means.mean(dim=0)
+                                dims = ['x','y','z','yaw']
+                                for i, d in enumerate(dims[:diff_ep_mean.numel()]):
+                                    payload[f'episode_action_diff_mean/{d}'] = float(diff_ep_mean[i].item())
                                 # Clear episode accumulators for these envs
-                                try:
-                                    _ep_action_diff_sum[ids] = 0.0
-                                    _ep_action_diff_count[ids] = 0
-                                except Exception:
-                                    pass
+                                _ep_action_diff_sum[ids] = 0.0
+                                _ep_action_diff_count[ids] = 0
                                 # Identify success/crash via infos tensors when available
                                 succ_mask = None
                                 try:
                                     s = infos.get('successes', None)
                                     if isinstance(s, _torch.Tensor):
                                         succ_mask = s[ids].bool().cpu().numpy()
-                                except Exception:
+                                except (KeyError, TypeError):
                                     succ_mask = None
                                 # Per-batch success fraction across resetting envs this tick
-                                try:
-                                    if wandb_run is not None:
-                                        if succ_mask is not None:
-                                            batch_succ = float(succ_mask.sum() / max(1, succ_mask.size))
-                                        else:
-                                            # fallback: derive successes from episode_extra_stats deltas if needed
-                                            batch_succ = float('nan')
-                                        # Maintain an independent batch counter (episodes_batch)
-                                        _episodes_batch = _episode_counter_total
-                                        wandb.log({'episodes_batch': float(_episodes_batch),
-                                                   'episodes/success_rate_batch': batch_succ,
-                                                   'frames': _frames,
-                                                   'global_step': _frames}, step=_frames)
-                                except Exception:
-                                    pass
+                                if wandb_run is not None:
+                                    if succ_mask is not None:
+                                        batch_succ = float(succ_mask.sum() / max(1, succ_mask.size))
+                                    else:
+                                        # fallback: derive successes from episode_extra_stats deltas if needed
+                                        batch_succ = float('nan')
+                                    # Maintain an independent batch counter (episodes_batch)
+                                    _episodes_batch = _episode_counter_total
+                                    wandb.log({'episodes_batch': float(_episodes_batch),
+                                               'episodes/success_rate_batch': batch_succ,
+                                               'frames': _frames,
+                                               'global_step': _frames}, step=_frames)
                                 # Per-reset binary success logging (0/1) under 'episodes/success_binary'
                                 try:
                                     if wandb_run is not None and ids_cpu.numel() > 0:
@@ -1110,12 +1007,9 @@ def main():
                                                 'frames': _frames,
                                                 'global_step': _frames,
                                             }
-                                            try:
-                                                import wandb  # noqa: F401
-                                                wandb.log(single, step=_frames)
-                                            except Exception:
-                                                pass
-                                except Exception:
+                                            import wandb  # noqa: F401
+                                            wandb.log(single, step=_frames)
+                                except RuntimeError:
                                     pass
                                 # Update histories
                                 _hist_returns.extend(ret.tolist())
@@ -1134,16 +1028,13 @@ def main():
                                 if len(_hist_lengths_success) > 0:
                                     payload['success_only/episode_length_mean'] = float(np.mean(_hist_lengths_success))
                                 # Early crash rate among current resets (<=5 steps and crash)
-                                try:
-                                    c = infos.get('crashes', None)
-                                    if isinstance(c, _torch.Tensor):
-                                        crashed = c[ids].bool().cpu().numpy()
-                                        early = (length <= 5)
-                                        denom = max(1, crashed.size)
-                                        payload['early_crash_rate'] = float((crashed & early).sum() / denom)
-                                except Exception:
-                                    pass
-                        except Exception:
+                                c = infos.get('crashes', None)
+                                if isinstance(c, _torch.Tensor):
+                                    crashed = c[ids].bool().cpu().numpy()
+                                    early = (length <= 5)
+                                    denom = max(1, crashed.size)
+                                    payload['early_crash_rate'] = float((crashed & early).sum() / denom)
+                        except RuntimeError:
                             pass
                         # Running means (mirroring training names)
                         def _safe_mean(sum_key, count_key, none_if_zero=False):
@@ -1174,65 +1065,50 @@ def main():
                             payload['episode_extra_stats/curriculum/crash_rate'] = float(_totals['crashes']) / float(total_resets)
                             payload['episode_extra_stats/curriculum/timeout_rate'] = float(_totals['timeouts']) / float(total_resets)
                         # Success EMA
-                        try:
-                            if _success_ema is None and total_resets > 0:
-                                _success_ema = payload.get('episode_extra_stats/curriculum/success_rate', None)
-                            elif total_resets > 0 and _success_ema is not None:
-                                _success_ema = (1 - _ema_alpha) * _success_ema + _ema_alpha * payload.get('episode_extra_stats/curriculum/success_rate', 0.0)
-                            if _success_ema is not None:
-                                payload['success_rate_running'] = float(_success_ema)
-                        except Exception:
-                            pass
+                        if _success_ema is None and total_resets > 0:
+                            _success_ema = payload.get('episode_extra_stats/curriculum/success_rate', None)
+                        elif total_resets > 0 and _success_ema is not None:
+                            _success_ema = (1 - _ema_alpha) * _success_ema + _ema_alpha * payload.get('episode_extra_stats/curriculum/success_rate', 0.0)
+                        if _success_ema is not None:
+                            payload['success_rate_running'] = float(_success_ema)
                         # Spatial quantiles
-                        try:
-                            if len(_hist_center_offset) > 0:
-                                payload['spatial/center_offset_p50'] = float(np.percentile(_hist_center_offset, 50))
-                                payload['spatial/center_offset_p90'] = float(np.percentile(_hist_center_offset, 90))
-                            if len(_hist_height_offset) > 0:
-                                payload['spatial/height_offset_p50'] = float(np.percentile(_hist_height_offset, 50))
-                                payload['spatial/height_offset_p90'] = float(np.percentile(_hist_height_offset, 90))
-                            if len(_hist_min_gate_distance) > 0:
-                                payload['spatial/min_gate_distance_p50'] = float(np.percentile(_hist_min_gate_distance, 50))
-                                payload['spatial/min_gate_distance_p90'] = float(np.percentile(_hist_min_gate_distance, 90))
-                        except Exception:
-                            pass
+                        if len(_hist_center_offset) > 0:
+                            payload['spatial/center_offset_p50'] = float(np.percentile(_hist_center_offset, 50))
+                            payload['spatial/center_offset_p90'] = float(np.percentile(_hist_center_offset, 90))
+                        if len(_hist_height_offset) > 0:
+                            payload['spatial/height_offset_p50'] = float(np.percentile(_hist_height_offset, 50))
+                            payload['spatial/height_offset_p90'] = float(np.percentile(_hist_height_offset, 90))
+                        if len(_hist_min_gate_distance) > 0:
+                            payload['spatial/min_gate_distance_p50'] = float(np.percentile(_hist_min_gate_distance, 50))
+                            payload['spatial/min_gate_distance_p90'] = float(np.percentile(_hist_min_gate_distance, 90))
                         # Action stats (latest step)
-                        try:
-                            if abs_mean is not None:
-                                dims = ['x','y','z','yaw']
-                                for i, d in enumerate(dims[:abs_mean.numel()]):
-                                    payload[f'action_abs_mean/{d}'] = float(abs_mean[i].item())
-                            if diff_mean is not None:
-                                dims = ['x','y','z','yaw']
-                                for i, d in enumerate(dims[:diff_mean.numel()]):
-                                    payload[f'action_diff_mean/{d}'] = float(diff_mean[i].item())
-                            if sat is not None:
-                                payload['action_saturation_rate'] = float(sat)
-                        except Exception:
-                            pass
+                        if abs_mean is not None:
+                            dims = ['x','y','z','yaw']
+                            for i, d in enumerate(dims[:abs_mean.numel()]):
+                                payload[f'action_abs_mean/{d}'] = float(abs_mean[i].item())
+                        if diff_mean is not None:
+                            dims = ['x','y','z','yaw']
+                            for i, d in enumerate(dims[:diff_mean.numel()]):
+                                payload[f'action_diff_mean/{d}'] = float(diff_mean[i].item())
+                        if sat is not None:
+                            payload['action_saturation_rate'] = float(sat)
                         # VAE norms (periodic)
                         if vae_drone_norm is not None:
                             payload['vae/drone_norm_mean'] = vae_drone_norm
                             payload['vae/static_norm_mean'] = vae_static_norm if vae_static_norm is not None else 0.0
                             payload['vae/static_to_drone_norm_ratio'] = vae_ratio if vae_ratio is not None else 0.0
                         # Throughput
-                        try:
-                            dt = max(1e-6, time.time() - _t0)
-                            fps = _frames / dt
-                            epm = (_episode_counter_total / dt) * 60.0
-                            payload['throughput/fps_env'] = float(fps)
-                            payload['throughput/episodes_per_min'] = float(epm)
-                            # Keep auxiliary step aliases in payload as well
-                            payload['global_step'] = _frames
-                        except Exception:
-                            pass
+                        dt = max(1e-6, time.time() - _t0)
+                        fps = _frames / dt
+                        epm = (_episode_counter_total / dt) * 60.0
+                        payload['throughput/fps_env'] = float(fps)
+                        payload['throughput/episodes_per_min'] = float(epm)
+                        # Keep auxiliary step aliases in payload as well
+                        payload['global_step'] = _frames
                         # Log
-                        try:
-                            import wandb  # noqa: F401
-                            payload['global_step'] = _frames
-                            wandb.log(payload, step=_frames)
-                        except Exception:
-                            pass
+                        import wandb  # noqa: F401
+                        payload['global_step'] = _frames
+                        wandb.log(payload, step=_frames)
                     # Update episode counter by number of resets this step
                     try:
                         ids = (terminated | truncated).nonzero(as_tuple=True)[0]
@@ -1240,17 +1116,14 @@ def main():
                         if ids.numel() > 0:
                             ids_cpu = ids.cpu()
                             def _update_running(sum_key_env, count_key_env, sum_key_run, count_key_run):
-                                try:
-                                    s = _vis_ep[sum_key_env][ids_cpu]
-                                    c = _vis_ep[count_key_env][ids_cpu].float().clamp_min(1.0)
-                                    means = (s / c).numpy()
-                                    _vis_running[sum_key_run] += float(means.sum())
-                                    _vis_running[count_key_run] += int(means.size)
-                                    # reset per-env episode accumulators
-                                    _vis_ep[sum_key_env][ids_cpu] = 0.0
-                                    _vis_ep[count_key_env][ids_cpu] = 0
-                                except Exception:
-                                    pass
+                                s = _vis_ep[sum_key_env][ids_cpu]
+                                c = _vis_ep[count_key_env][ids_cpu].float().clamp_min(1.0)
+                                means = (s / c).numpy()
+                                _vis_running[sum_key_run] += float(means.sum())
+                                _vis_running[count_key_run] += int(means.size)
+                                # reset per-env episode accumulators
+                                _vis_ep[sum_key_env][ids_cpu] = 0.0
+                                _vis_ep[count_key_env][ids_cpu] = 0
                             _update_running('abs_sum_env','abs_count_env','abs_sum','abs_count')
                             _update_running('frustum_sum_env','frustum_count_env','frustum_sum','frustum_count')
                             _update_running('eff_sum_env','eff_count_env','eff_sum','eff_count')
@@ -1275,11 +1148,8 @@ def main():
                                 vis_payload['fov/visible_rate_running_mean'] = _safe_run_mean('fov_visible_sum','fov_visible_count')
                                 vis_payload['fov/horiz_angle_rad_running_mean'] = _safe_run_mean('fov_horiz_sum','fov_horiz_count')
                                 vis_payload['fov/vert_angle_rad_running_mean'] = _safe_run_mean('fov_vert_sum','fov_vert_count')
-                                try:
-                                    import wandb  # noqa: F401
-                                    wandb.log(vis_payload, step=_frames)
-                                except Exception:
-                                    pass
+                                import wandb  # noqa: F401
+                                wandb.log(vis_payload, step=_frames)
                         _episodes_done += int(ids.numel())
                         _episode_counter_total += int(ids.numel())
                         # Save GIFs for env 0 occasionally
@@ -1303,9 +1173,9 @@ def main():
                             _gif_static_seg_frames = []
                             _gif_drone_recon_frames = []
                             _gif_static_recon_frames = []
-                    except Exception:
+                    except RuntimeError:
                         _episodes_done += 1
-            except Exception:
+            except RuntimeError:
                 pass
 
             # Termination condition by episodes if configured
