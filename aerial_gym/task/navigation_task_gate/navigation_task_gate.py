@@ -77,18 +77,6 @@ class NavigationTaskGate(BaseTask):
                 self.task_config.reward_parameters[key], device=self.device
             )
         
-        # # CONFIG VERIFICATION: Print key reward parameters to verify loading
-        # logger.warning("="*60)
-        # logger.warning("CONFIG VERIFICATION - REWARD PARAMETERS:")
-        # logger.warning(f"pos_reward_magnitude: {self.task_config.reward_parameters['pos_reward_magnitude']}")
-        # logger.warning(f"very_close_to_goal_reward_magnitude: {self.task_config.reward_parameters['very_close_to_goal_reward_magnitude']}")
-        # logger.warning(f"getting_closer_reward_multiplier: {self.task_config.reward_parameters['getting_closer_reward_multiplier']}")
-        # logger.warning(f"gate_approach_reward_magnitude: {self.task_config.reward_parameters['gate_approach_reward_magnitude']}")
-        # logger.warning(f"gate_passage_reward_magnitude: {self.task_config.reward_parameters['gate_passage_reward_magnitude']}")
-        # logger.warning(f"camera_facing_reward_magnitude: {self.task_config.reward_parameters.get('camera_facing_reward_magnitude', 'NOT FOUND!')}")
-        # logger.warning(f"collision_penalty: {self.task_config.reward_parameters['collision_penalty']}")
-        # logger.warning("="*60)
-        
         logger.info("Building environment for gate navigation task.")
         logger.info(
             "Sim Name: {}, Env Name: {}, Robot Name: {}, Controller Name: {}".format(
@@ -134,7 +122,6 @@ class NavigationTaskGate(BaseTask):
         
         logger.info(f"PRE-INIT: Setting curriculum level {self.curriculum_level} with {obstacles_behind_gate} curriculum obstacles")
         logger.info(f"PRE-INIT: Visible assets (env assets only): {visible_gates} gate + {walls} walls + {obstacles_behind_gate} curriculum = {total_obstacles_in_env} total")
-        # logger.warning(f"[OBSTACLE_FIX] PRE-INIT: Level {self.curriculum_level} should spawn {obstacles_behind_gate} curriculum obstacles")
         logger.info(f"PRE-INIT: Total obstacle count for asset manager: {total_obstacles_in_env}")
 
         self.sim_env = SimBuilder().build_env(
@@ -946,7 +933,6 @@ class NavigationTaskGate(BaseTask):
             logger.debug(f"Updated static camera angles for {len(env_ids)} resetting environments: {env_ids.tolist()}")
         
         # Add debugging for gate randomization on reset
-        # logger.warning(f"[GATE_RESET_DEBUG] Episode reset for environments {env_ids.tolist()} - new random gate sizes will be selected")
         
         # Persist curriculum level for env manager (for gated gate randomization)
         self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
@@ -1048,7 +1034,6 @@ class NavigationTaskGate(BaseTask):
                         height = top_z  # Height to top bar
                         center_height = top_z / 2  # Center height
             
-            # logger.warning(f"[GATE_ADAPTIVE] Extracted dimensions from {filename}: width={width:.3f}m, height={height:.3f}m, center_height={center_height:.3f}m, scale={scale_factor:.2f}")
             return width, height, center_height, scale_factor
             
         except Exception as e:
@@ -1157,7 +1142,6 @@ class NavigationTaskGate(BaseTask):
                 self.gate_center_height[env_id] = center_height
                 self.gate_scale_factors[env_id] = scale_factor
                 
-                # logger.warning(f"[GATE_ADAPTIVE] Env {env_id}: Updated to gate '{active_gate_name}' - width={width:.3f}m, height={height:.3f}m, scale={scale_factor:.2f}")
             else:
                 # Default dimensions if no active gate found
                 self.gate_width[env_id] = 2.5
@@ -1261,7 +1245,6 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-        # logger.info(f"Curricluum Level: {self.curriculum_level}")
 
         if self.task_config.return_state_before_reset == True:
             return_tuple = self.get_return_tuple()
@@ -1473,7 +1456,6 @@ class NavigationTaskGate(BaseTask):
         except Exception:
             pass
 
-        # self.logging_sanity_check(self.infos)  # Disabled per user request
         self.check_and_update_curriculum_level(
             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
         )
@@ -1533,7 +1515,6 @@ class NavigationTaskGate(BaseTask):
                     overall_success_rate = torch.tensor(float('nan'), device=self.device)
                     target_success_rate = torch.tensor(float('nan'), device=self.device)
                 # num = len(env_ids)
-                # logger.warning(f"[TRAJ_METRICS][DEBUG][avg over {num} envs] path_efficiency={float(pe_avg.item()):.3f}, time_to_gate_steps={float(ttg_avg.item()):.2f}, min_gate_distance={float(mgd_avg.item()):.3f}, center_offset_success={float(co_avg.item()):.3f}, height_offset_success={float(ho_avg.item()):.3f}, last_position=({float(lpx_avg.item()):.2f},{float(lpy_avg.item()):.2f},{float(lpz_avg.item()):.2f}), last_center_distance={float(lcd_avg.item()):.3f}")
                 # Stash per-env episode metrics for worker-side running aggregation
                 try:
                     self._last_traj_metrics_per_env = {
@@ -1700,9 +1681,6 @@ class NavigationTaskGate(BaseTask):
                 envs_to_check = [5]  # reduced debug output: only env5
                 means = {i: _mean_env(i) for i in envs_to_check}
                 sames = {i: _same(i) for i in [1, 5, 8, 12]}
-                # logger.warning(
-                #     f"[DroneCam] depth shape={tuple(image_obs.shape)} env5_mean={means.get(5, float('nan')):.4f}"
-                # )
                 self._drone_cam_debug_last = self.num_task_steps
         except Exception:
             pass
@@ -1814,9 +1792,6 @@ class NavigationTaskGate(BaseTask):
                     envs_to_check = [5]  # reduced debug output: only env5
                     means = {i: _absmean_env(i) for i in envs_to_check}
                     sames = {i: _same(i) for i in [1, 5, 8, 12]}
-                    # logger.warning(
-                    #     f"[DroneVAE] latents shape={tuple(z.shape)} env5_absmean={means.get(5, float('nan')):.4f}"
-                    # )
                     self._drone_vae_debug_last = self.num_task_steps
             except Exception:
                 pass
@@ -1847,9 +1822,6 @@ class NavigationTaskGate(BaseTask):
                         envs_to_check = [5]  # reduced debug output: only env5
                         means = {i: _mean_env(i) for i in envs_to_check}
                         # sames calculation omitted for brevity
-                        # logger.warning(
-                        #     f"[StaticCamCapture] depth shape={tuple(x.shape)} env5_mean={means.get(5, float('nan')):.4f}"
-                        # )
                         self._static_cam_debug_last = self.num_task_steps
             except Exception:
                 pass
@@ -1965,14 +1937,6 @@ class NavigationTaskGate(BaseTask):
                             envs_to_check = [0, 1, 5, 8, 12]
                             means = {i: _mean_env(i) for i in envs_to_check}
                             sames = {i: _same(i) for i in [1, 5, 8, 12]}
-                            # logger.warning(
-                            #     f"[StaticCam] depth shape={tuple(depth.shape)} "
-                            #     f"env0_mean={means[0]:.4f} env1_mean={means.get(1, float('nan')):.4f} "
-                            #     f"env5_mean={means.get(5, float('nan')):.4f} env8_mean={means.get(8, float('nan')):.4f} "
-                            #     f"env12_mean={means.get(12, float('nan')):.4f} "
-                            #     f"same0_1={sames.get(1, False)} same0_5={sames.get(5, False)} "
-                            #     f"same0_8={sames.get(8, False)} same0_12={sames.get(12, False)}"
-                            # )
                     except Exception:
                         pass
 
@@ -1996,9 +1960,6 @@ class NavigationTaskGate(BaseTask):
                                 return (idx < ne) and bool(torch.allclose(z[0], z[idx]))
                             envs_to_check = [5]  # reduced debug output: only env5
                             means = {i: _absmean_env(i) for i in envs_to_check}
-                            # logger.warning(
-                            #     f"[StaticCamVAE] latents shape={tuple(z.shape)} env5_absmean={means.get(5, float('nan')):.4f}"
-                            # )
                     except Exception:
                         pass
                 except Exception as e:
@@ -2048,16 +2009,6 @@ class NavigationTaskGate(BaseTask):
             safe_count = torch.sum(self.min_pixel_dist >= 4.0).item()  # > 4m
             
             # COMMENTED OUT: Verbose image reward analysis (clutters training output)
-            # logger.warning("="*60)
-            # logger.warning(f"📷 IMAGE REWARD ANALYSIS (Step {self.num_task_steps}):")
-            # logger.warning(f"  🎯 Average Image Reward:   {avg_image_reward:.3f}")
-            # logger.warning(f"  📏 Distance Stats:")
-            # logger.warning(f"    • Average:               {avg_min_dist:.2f}m")
-            # logger.warning(f"    • Range:                 {min_pixel_dist:.2f}m - {max_pixel_dist:.2f}m")
-            # logger.warning(f"  🚦 Environment Distribution:")
-            # logger.warning(f"    • Very Close (<2m):      {very_close_count}/16 envs")
-            # logger.warning(f"    • Close (2-4m):          {close_count}/16 envs")
-            # logger.warning(f"    • Safe (>4m):            {safe_count}/16 envs")
             # 
             # # Safety warnings
             # if avg_min_dist < 1.5:
@@ -2069,7 +2020,6 @@ class NavigationTaskGate(BaseTask):
             # else:
             #     logger.warning("  ✅ Image rewards normal - good collision avoidance")
             # 
-            # logger.warning("="*60)
         
         # Apply the image rewards
         self.rewards[~self.terminations] += image_rewards
@@ -2138,15 +2088,6 @@ class NavigationTaskGate(BaseTask):
                         ce = getattr(self, '_debug_cam_eul', None)
                         de0 = de[0] if isinstance(de, torch.Tensor) and de.shape[0] > 0 else torch.zeros(3, device=self.device)
                         ce0 = ce[0] if isinstance(ce, torch.Tensor) and ce.shape[0] > 0 else torch.zeros(3, device=self.device)
-                        # logger.warning(
-                        #     f"[StaticObs] step={int(self.num_task_steps)} env0 "
-                        #     f"drone_w=({rp0[0].item():+.3f},{rp0[1].item():+.3f},{rp0[2].item():+.3f}) "
-                        #     f"cam_w=({cw0[0].item():+.3f},{cw0[1].item():+.3f},{cw0[2].item():+.3f}) "
-                        #     f"drone_eul_w=({de0[0].item():+.3f},{de0[1].item():+.3f},{de0[2].item():+.3f}) "
-                        #     f"cam_eul_w=({ce0[0].item():+.3f},{ce0[1].item():+.3f},{ce0[2].item():+.3f}) "
-                        #     f"pos_rel=({sp[0].item():+.3f},{sp[1].item():+.3f},{sp[2].item():+.3f}) "
-                        #     f"eul_rel=({so[0].item():+.3f},{so[1].item():+.3f},{so[2].item():+.3f})"
-                        # )
         except Exception:
             pass
         
@@ -2337,10 +2278,6 @@ class NavigationTaskGate(BaseTask):
                             gx0 = float(self.gate_position[e0, 0].item()); gy0 = float(self.gate_position[e0, 1].item()); gz0 = float(self.gate_position[e0, 2].item())
                             w0 = float(self.gate_width[e0].item()); h0 = float(self.gate_height[e0].item())
                             vf = float(vis_frac[e0].item()); ff = float(frustum_frac[e0].item()); ef = float(eff[e0].item())
-                            # logger.warning(
-                            #     f"[VIS] episode={ep_idx0} step={disp_step} env0 V_abs={vf:.3f} V_frustum={ff:.3f} V_eff={ef:.3f} | "
-                            #     f"cam=({cx:+.2f},{cy:+.2f},{cz:+.2f}) gate=({gx0:+.2f},{gy0:+.2f},{gz0:+.2f}) W={w0:.2f} H={h0:.2f}"
-                            # )
                     except Exception:
                         pass
                 else:
@@ -2413,10 +2350,6 @@ class NavigationTaskGate(BaseTask):
                     if _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') and self.num_envs > 0:
                         e0 = 0
                         step_ep0 = int(self.episode_lengths[0].item()) if hasattr(self, 'episode_lengths') else int(getattr(self, 'num_task_steps', 0))
-                        # logger.warning(
-                        #     f"[FOVM] episode={max(0, len(getattr(self, 'completed_episodes', [])) - 1)} step={step_ep0} env0 score={float(fov_score[e0].item()):.3f} "
-                        #     f"visible={bool(visible[e0].item())} h={float(horiz_angle[e0].item()):.3f}rad v={float(vert_angle[e0].item()):.3f}rad"
-                        # )
                 except Exception:
                     pass
         except Exception:
@@ -3138,17 +3071,8 @@ class NavigationTaskGate(BaseTask):
                 prev_action_std = torch.std(prev_action, dim=0)
                 
                 # COMMENTED OUT: Verbose action debug logs (clutters training output)
-                # logger.warning(f"🔧 ACTION DEBUG - Action differences (avg): X={avg_action_diff[0]:.6f}, Y={avg_action_diff[1]:.6f}, Z={avg_action_diff[2]:.6f}, Yaw={avg_action_diff[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Action differences (max): X={max_action_diff[0]:.6f}, Y={max_action_diff[1]:.6f}, Z={max_action_diff[2]:.6f}, Yaw={max_action_diff[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Current actions (avg): X={avg_current[0]:.6f}, Y={avg_current[1]:.6f}, Z={avg_current[2]:.6f}, Yaw={avg_current[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Previous actions (avg): X={avg_previous[0]:.6f}, Y={avg_previous[1]:.6f}, Z={avg_previous[2]:.6f}, Yaw={avg_previous[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Current action std: X={action_std[0]:.6f}, Y={action_std[1]:.6f}, Z={action_std[2]:.6f}, Yaw={action_std[3]:.6f}")
-                # logger.warning(f"🔧 ACTION DEBUG - Previous action std: X={prev_action_std[0]:.6f}, Y={prev_action_std[1]:.6f}, Z={prev_action_std[2]:.6f}, Yaw={prev_action_std[3]:.6f}")
                 # 
                 # # Check first environment for exact values
-                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Current: {action[0].tolist()}")
-                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Previous: {prev_action[0].tolist()}")
-                # logger.warning(f"🔧 ACTION DEBUG - Env[0] Difference: {action_diff[0].tolist()}")
             
             x_diff_penalty = exponential_penalty_function(
                 self.task_config.reward_parameters["x_action_diff_penalty_magnitude"],
@@ -3651,14 +3575,12 @@ class NavigationTaskGate(BaseTask):
                 
             total_obstacles_in_env = fixed_assets_visible + obstacles_behind_gate
             self.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
-            # logger.warning(f"[OBSTACLE_DEBUG] Curriculum update: Level {self.curriculum_level} -> fixed {fixed_assets_visible} (1 gate + 6 walls), curriculum {obstacles_behind_gate}, total {total_obstacles_in_env}")
             
             # CRITICAL: Also update the environment manager's global tensor dict for asset management
             # This ensures the asset manager gets the updated obstacle count when environments reset
             if hasattr(self.sim_env, 'global_tensor_dict'):
                 old_count = self.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
                 self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
-                # logger.warning(f"[OBSTACLE_DEBUG] Curriculum update: Updated global_tensor_dict from {old_count} to {total_obstacles_in_env}")
             
             # CRITICAL FIX: Force asset manager to update obstacle count
             # The asset manager may be caching the initial obstacle count, so we need to force it to update
@@ -4978,11 +4900,6 @@ class StaticCameraManager:
                     pass
                 # Debug only for env 0 to avoid spam
                 if env_idx == 0:
-                    # logger.warning(
-                    #     f"[StaticCamReset] env0 base_y={base_camera_env_pos.y:.3f} env_base_z={base_camera_env_pos.z:.3f} "
-                    #     f"pos=({base_camera_env_pos.x:.3f},{base_camera_env_pos.y:.3f},{base_camera_env_pos.z:.3f}) "
-                    #     f"target=({new_target.x:.3f},{new_target.y:.3f},{new_target.z:.3f}) angle_deg={angle_offset_degrees:.1f}"
-                    # )
                     pass
                 
                 # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{debug_max_range:.1f}°)")

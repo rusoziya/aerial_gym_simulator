@@ -82,8 +82,6 @@ class PositionSetpointTaskSim2Real(BaseTask):
             (self.sim_env.num_envs, 3), device=self.device, requires_grad=False
         )
 
-        # self.action_file = open("actions.txt", "w")
-
         # Get the dictionary once from the environment and use it to get the observations later.
         # This is to avoid constant retuning of data back anf forth across functions as the tensors update and can be read in-place.
         self.obs_dict = self.sim_env.get_obs()
@@ -159,8 +157,6 @@ class PositionSetpointTaskSim2Real(BaseTask):
             self.target_position - self.obs_dict["robot_position"], dim=1
         )
         self.actions = actions
-        # self.action_file.write(f"{self.actions[0].cpu().numpy()[0]}, {self.actions[0].cpu().numpy()[1]}, {self.actions[0].cpu().numpy()[2]}, {self.actions[0].cpu().numpy()[3]},\n")
-        # print(self.actions[0].cpu().numpy())
 
         # this uses the action, gets observations
         # calculates rewards, returns tuples

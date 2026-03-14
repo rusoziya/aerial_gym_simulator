@@ -38,7 +38,6 @@ if __name__ == "__main__":
             logger.info(f"Step {i}, changing target setpoint.")
             actions[:, 0:3] = 2.0 * (torch.rand_like(actions[:, 0:3]) * 2 - 1)
             actions[:, 3] = torch.pi * (torch.rand_like(actions[:, 3]) * 2 - 1)
-            # env_manager.reset()
         asset_twist[:, :, 0] = torch.sin(0.2 * i * torch.ones_like(asset_twist[:, :, 0]))
         asset_twist[:, :, 1] = torch.cos(0.2 * i * torch.ones_like(asset_twist[:, :, 1]))
         asset_twist[:, :, 2] = 0.0

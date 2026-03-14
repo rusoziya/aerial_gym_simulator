@@ -17,8 +17,6 @@ from aerial_gym.config.robot_config.snakey6_config import Snakey6Cfg
 from aerial_gym.config.robot_config.tinyprop_config import TinyPropCfg
 from aerial_gym.config.robot_config.x500_config import X500Cfg
 
-from aerial_gym.config.robot_config.lmf2_config import LMF2Cfg
-
 # import robot classes here
 from aerial_gym.robots.base_multirotor import BaseMultirotor
 from aerial_gym.robots.base_rov import BaseROV
@@ -57,6 +55,3 @@ robot_registry.register("base_quadrotor_with_camera_imu", BaseMultirotor, BaseQu
 robot_registry.register("base_quadrotor_with_lidar", BaseMultirotor, BaseQuadWithLidarCfg)
 robot_registry.register("base_quadrotor_with_faceid_normal_camera", BaseMultirotor, BaseQuadWithFaceIDNormalCameraCfg)
 robot_registry.register("base_quadrotor_with_stereo_camera", BaseMultirotor, BaseQuadWithStereoCameraCfg)
-
-robot_registry.register("tinyprop", BaseMultirotor, TinyPropCfg)
-
