@@ -276,7 +276,7 @@ class BaseMultirotor(BaseRobot):
                 yaw_abs = float(sr_local.get('yaw_abs_rad', 0.0))
             else:
                 yaw_abs = 0.0
-        except Exception:
+        except ImportError:
             yaw_abs = 0.0
 
         # Compute yaw to face the gate center at (0, 0) in world X-Y (gate opening faces +Y)
@@ -291,28 +291,19 @@ class BaseMultirotor(BaseRobot):
         random_state[env_ids, 5] = yaw_face + jitter
 
         # Optional spawn debug (disabled)
-        try:
-            pass
-        except Exception:
-            pass
+        pass
 
         # Optional debug: print a few spawned positions and yaw to verify ranges
         try:
             from aerial_gym.config.task_config.navigation_task_config_gate import task_config
             do_debug = bool(getattr(task_config.curriculum, 'enable_detailed_logging', False))
-        except Exception:
+        except ImportError:
             do_debug = False
         if do_debug:
-            try:
-                sample_n = min(3, env_ids.shape[0] if hasattr(env_ids, 'shape') else int(len(env_ids)))
-                sample_envs = env_ids[:sample_n] if hasattr(env_ids, 'shape') else env_ids[:sample_n]
-                pos_samples = self.robot_state[sample_envs, 0:3].detach().cpu()
-                yaw_samples = random_state[sample_envs, 5].detach().cpu()
-                # logger.warning(f"[SPAWN_DEBUG] Sampled positions (envs {sample_envs.tolist()}): {pos_samples.numpy().round(3).tolist()}")
-                # logger.warning(f"[SPAWN_DEBUG] Sampled yaw (rad): {yaw_samples.numpy().round(3).tolist()}")
-            except Exception as e:
-                # logger.warning(f"[SPAWN_DEBUG] Failed to log spawn samples: {e}")
-                pass
+            sample_n = min(3, env_ids.shape[0] if hasattr(env_ids, 'shape') else int(len(env_ids)))
+            sample_envs = env_ids[:sample_n] if hasattr(env_ids, 'shape') else env_ids[:sample_n]
+            pos_samples = self.robot_state[sample_envs, 0:3].detach().cpu()
+            yaw_samples = random_state[sample_envs, 5].detach().cpu()
 
         # logger.debug(
         #     f"Random state: {random_state[0]}, min init state: {self.min_init_state[0]}, max init state: {self.max_init_state[0]}"
