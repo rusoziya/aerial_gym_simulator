@@ -32,7 +32,7 @@ from typing import List, Optional, Tuple
 try:
     import trimesh  # type: ignore
     _HAS_TRIMESH = True
-except Exception:
+except ImportError:
     trimesh = None  # type: ignore
     _HAS_TRIMESH = False
 
@@ -42,7 +42,7 @@ def _to_floats(text: Optional[str]) -> Optional[List[float]]:
         return None
     try:
         return [float(x) for x in text.strip().split()]
-    except Exception:
+    except (ValueError, TypeError):
         return None
 
 
@@ -93,7 +93,7 @@ def _mesh_volume(mesh_path: str, scale: Optional[List[float]]) -> Optional[float
                 elif len(scale) >= 3:
                     vol *= float(scale[0] * scale[1] * scale[2])
             return vol
-    except Exception:
+    except (ValueError, TypeError, RuntimeError, OSError):
         return None
     return None
 
@@ -111,14 +111,14 @@ def _geom_volume_from_element(urdf_path: str, geom: ET.Element) -> Optional[floa
             radius = float(cyl.get("radius"))  # type: ignore
             length = float(cyl.get("length"))  # type: ignore
             return float(math.pi * radius * radius * length)
-        except Exception:
+        except (ValueError, TypeError):
             return None
     if geom.find("sphere") is not None:
         sph = geom.find("sphere")
         try:
             radius = float(sph.get("radius"))  # type: ignore
             return float(4.0 / 3.0 * math.pi * (radius ** 3))
-        except Exception:
+        except (ValueError, TypeError):
             return None
     if geom.find("mesh") is not None:
         msh = geom.find("mesh")
@@ -136,7 +136,7 @@ def compute_urdf_volume(urdf_path: str) -> Tuple[float, List[str]]:
     try:
         tree = ET.parse(urdf_path)
         root = tree.getroot()
-    except Exception as e:
+    except ET.ParseError as e:
         return 0.0, [f"PARSE_FAIL:{e}"]
 
     total = 0.0
@@ -222,7 +222,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                     f.write(f"{p},{v:.6f},{note}\n")
                 f.write("TOTAL_VOLUME_M3,%.6f\n" % total_vol)
             print(f"Report written to {args.csv}")
-        except Exception as e:
+        except OSError as e:
             print(f"Failed to write CSV: {e}")
     return 0
 
