@@ -15,7 +15,6 @@ from aerial_gym.sim.sim_builder import SimBuilder
 import torch
 import numpy as np
 import os
-import math
 
 from aerial_gym.utils.math import *
 
@@ -23,12 +22,9 @@ from aerial_gym.utils.logging import CustomLogger
 
 from aerial_gym.utils.vae.vae_image_encoder import VAEImageEncoder
 
-import gymnasium as gym
 from gym.spaces import Dict, Box
 
 # Isaac Gym imports for static camera management
-from isaacgym import gymapi, gymtorch
-from typing import Tuple
 
 from aerial_gym.sensors.static_camera_manager import StaticCameraManager
 from aerial_gym.utils.env_flag_utils import (
@@ -72,7 +68,7 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
         
         # If static latents (86:150) are fully ablated, disable static FOV visibility reward
         try:
-            spec_str = _os.environ.get('ABLATE_OBS_RANGES', '').strip()
+            spec_str = os.environ.get('ABLATE_OBS_RANGES', '').strip()
             static_ablated = False
             if spec_str:
                 for spec in [s.strip() for s in spec_str.split(',') if s.strip() and '=' in s]:
