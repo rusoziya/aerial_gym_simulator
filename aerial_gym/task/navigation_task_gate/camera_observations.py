@@ -5,6 +5,7 @@ import torch
 import numpy as np
 
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.utils.math import *  # noqa: F401,F403
 
 logger = CustomLogger("navigation_task_gate_camera")
@@ -318,9 +319,9 @@ class CameraObservations:
         # Disabled by default; enable with SF_ENABLE_GEOM_VISIBILITY, static_visibility/enable, or VISIBILITY_DEBUG
         try:
             gtd = self.task.sim_env.global_tensor_dict
-            _flag_env = _os.environ.get('SF_ENABLE_GEOM_VISIBILITY', '').strip().lower() in ('1', 'true', 'yes', 'y')
+            _flag_env = read_env_bool('SF_ENABLE_GEOM_VISIBILITY')
             _flag_gtd = bool(gtd.get('static_visibility/enable', False))
-            _flag_dbg = _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y')
+            _flag_dbg = read_env_bool('VISIBILITY_DEBUG')
             if _flag_env or _flag_gtd or _flag_dbg:
                 # Grid resolution (defaults 30x30)
                 try:
@@ -429,8 +430,8 @@ class CameraObservations:
                     # Optional env0 debug print (every 5 steps) when VISIBILITY_DEBUG or ABLATE_DEBUG
                     try:
                         debug_on = (
-                            _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') or
-                            _os.environ.get('ABLATE_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y')
+                            read_env_bool('VISIBILITY_DEBUG') or
+                            read_env_bool('ABLATE_DEBUG')
                         )
                         step_i = int(self.task.num_task_steps)
                         # Use env0's current episode-relative step for display; clamp to be non-decreasing within episode
@@ -459,7 +460,7 @@ class CameraObservations:
         except (ValueError, TypeError) as _e_vis:
             # Keep visibility diagnostics non-fatal
             try:
-                if _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') or _os.environ.get('ABLATE_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y'):
+                if read_env_bool('VISIBILITY_DEBUG') or read_env_bool('ABLATE_DEBUG'):
                     logger.warning(f"[VIS] Geometric visibility computation skipped due to: {_e_vis}")
                 else:
                     logger.debug(f"[VIS] Geometric visibility computation skipped: {_e_vis}")
@@ -510,7 +511,7 @@ class CameraObservations:
                 infos_to_return["static_fov/vert_angle_rad"] = vert_angle
                 infos_to_return["static_fov/score"] = fov_score
                 # Optional env0 debug
-                if _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') and self.task.num_envs > 0:
+                if read_env_bool('VISIBILITY_DEBUG') and self.task.num_envs > 0:
                     e0 = 0
                     step_ep0 = int(self.task.episode_lengths[0].item())
         except (ValueError, TypeError):
