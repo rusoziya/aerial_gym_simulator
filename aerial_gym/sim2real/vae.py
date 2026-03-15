@@ -58,12 +58,10 @@ class ImgDecoder(nn.Module):
         x = torch.relu(x)
 
         x = self.deconv7(x)
-        # print(f"- After deconv 7, mean: {x.mean():.3f} var: {x.var():.3f}")
         if self.with_logits:
             return x
 
         x = torch.sigmoid(x)
-        # print(f"- After sigmoid, mean: {x.mean():.3f} var: {x.var():.3f}")
         return x
 
 

@@ -91,10 +91,6 @@ if __name__ == "__main__":
             cosine_vec = torch.abs(
                 torch.sum(one_vec * env_manager.global_tensor_dict["depth_range_pixels"], dim=-1)
             )
-            # max_dr = torch.max(cosine_vec)
-            # min_dr = torch.min(cosine_vec)
-
-            # print(torch.mean(cosine_vec), max_dr, min_dr)
             image1 = (255.0 * cosine_vec)[0, 0].cpu().numpy().astype(np.uint8)
 
             seg_image1 = env_manager.global_tensor_dict["segmentation_pixels"][0, 0].cpu().numpy()

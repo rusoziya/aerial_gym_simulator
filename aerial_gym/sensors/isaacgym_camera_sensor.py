@@ -125,7 +125,6 @@ class IsaacGymCameraSensor(BaseSensor):
                 )
             )
         )
-        # self.color_tensors.append(gymtorch.wrap_tensor(self.gym.get_camera_image_gpu_tensor(self.sim, env_handle, self.cam_handle, gymapi.IMAGE_COLOR)))
         logger.debug(f"Camera sensor added to env {env_handle} and actor {actor_handle}")
 
     def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
@@ -174,21 +173,17 @@ class IsaacGymCameraSensor(BaseSensor):
 
     def apply_range_limits(self) -> None:
         """ """
-        # logger.debug("Applying range limits")
         self.pixels[self.pixels > self.cfg.max_range] = self.cfg.far_out_of_range_value
         self.pixels[self.pixels < self.cfg.min_range] = self.cfg.near_out_of_range_value
-        # logger.debug("[DONE] Applying range limits")
 
     def normalize_observation(self) -> None:
         if self.cfg.normalize_range and self.cfg.pointcloud_in_world_frame == False:
-            # logger.debug("Normalizing pointcloud values")
             self.pixels[:] = self.pixels / self.cfg.max_range
         if self.cfg.pointcloud_in_world_frame == True:
             logger.error("Pointcloud is in world frame. Not supported for this sensor")
 
     def apply_noise(self) -> None:
         if self.cfg.sensor_noise.enable_sensor_noise == True:
-            # logger.debug("Applying sensor noise")
             self.pixels[:] = torch.normal(
                 mean=self.pixels, std=self.cfg.sensor_noise.pixel_std_dev_multiplier * self.pixels
             )

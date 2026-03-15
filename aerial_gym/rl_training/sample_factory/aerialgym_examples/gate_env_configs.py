@@ -322,47 +322,4 @@ env_configs = dict(
 # 
 # All configurations maintain the same core training parameters (3D actions, 81D obs, etc.)
 #
-# CURRENT ACTIVE CONFIG (128 environments) - MAXIMUM PARALLELIZATION DCE CONFIG:
-# env_agents=128             # 128 environments (8x original for maximum parallelization)
-# batch_size=16384           # 8x batch size for 128 environments
-# num_batches_to_accumulate=1 # Reduced accumulation for memory optimization
-# num_batches_per_epoch=8    # Keep batches per epoch the same
-# Effective Batch Size=16384  # 16384 * 1 = 16384 (4x original 4096, memory optimized)
-#
-# ORIGINAL CONFIG (16 environments) - ORIGINAL DCE CONFIG (1333.322 reward):
-# env_agents=16              # 16 environments (original successful model)
-# batch_size=2048            # Original batch size
-# num_batches_to_accumulate=2 # Original accumulation  
-# num_batches_per_epoch=8    # Original batches per epoch
-# Effective Batch Size=4096   # 2048 * 2 = 4096 (original)
-# curriculum.min_level=36    # Original curriculum level
-# curriculum.max_level=50    # Original max level
-# action_space_dim=3         # 3D actions (x_vel, y_vel, yaw_rate)
-# observation_space_dim=81   # 17D basic state + 64D VAE latents
-# environment="quad_with_obstacles" # Forest environment with obstacles
-# robot="lmf2"              # LMF2 quadrotor with velocity control
-# controller="lmf2_velocity_control" # Velocity control
-#
-# PREVIOUS CONFIG (32 environments) - UPDATED DCE CONFIG:
-# env_agents=32              # 32 environments (2x original)
-# batch_size=4096            # 2x batch size for 32 environments
-# num_batches_to_accumulate=2 # Same accumulation as original
-# num_batches_per_epoch=8    # Same batches per epoch
-# Effective Batch Size=8192   # 4096 * 2 = 8192 (2x original 4096)
-#
-# MEDIUM CONFIG (6 environments) - Reduced Memory Usage:
-# env_agents=6
-# batch_size=1536
-# num_batches_to_accumulate=2
-# num_batches_per_epoch=4
-#
-# LOW CONFIG (1 environment) - Minimum Memory Usage:
-# env_agents=1  
-# batch_size=512
-# num_batches_to_accumulate=4
-# num_batches_per_epoch=2
-
-
-# CustomEncoder removed - DCE task handles VAE encoding internally and provides 81-dimensional observations
-
 

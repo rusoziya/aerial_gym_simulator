@@ -66,14 +66,3 @@ class BaseRobot(ABC):
     def step(self) -> None:
         pass
 
-    # @abstractmethod
-    # def apply_noise(self):
-    #     pass
-
-    # @abstractmethod
-    # def get_state(self):
-    #     pass
-
-    # @abstractmethod
-    # def set_state(self, state):
-    #     pass

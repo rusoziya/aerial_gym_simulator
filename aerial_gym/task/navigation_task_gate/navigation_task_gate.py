@@ -535,15 +535,12 @@ class NavigationTaskGate(BaseTask):
                 _ids = torch.nonzero(nan_trunc_mask, as_tuple=False).squeeze(-1).tolist()
                 logger.warning(f"[NaNGuard] Truncating envs due to NaN/Inf: {_ids}")
 
-        # --- Gate passage detection ---
         robot_position = self.obs_dict["robot_position"]
         robot_position_before_reset = robot_position.clone()
         successes, target_successes, gate_passage_success = self._step._detect_gate_passage(robot_position)
 
-        # --- Timeout / truncation handling and infos population ---
         self._step._apply_timeout_and_populate_infos(successes)
 
-        # --- Gate navigation metrics ---
         robot_position = self.obs_dict["robot_position"]
         gate_center_position, gate_passed_current = self._step._compute_gate_navigation_metrics(
             robot_position, camera_gate_alignment,
@@ -556,7 +553,6 @@ class NavigationTaskGate(BaseTask):
             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
         )
 
-        # --- Post-reward reset and trajectory metric stashing ---
         reset_envs = self.sim_env.post_reward_calculation_step()
         if len(reset_envs) > 0:
             self._step._handle_post_reward_reset(
@@ -565,7 +561,6 @@ class NavigationTaskGate(BaseTask):
             )
         self.num_task_steps += 1
 
-        # --- Image processing and final return ---
         self._step._process_images_and_finalize()
 
         if self.task_config.return_state_before_reset == False:

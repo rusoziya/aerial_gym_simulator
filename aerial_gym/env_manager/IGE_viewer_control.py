@@ -237,7 +237,6 @@ class IGEViewerControl:
         while self.pause_sim:
             self.render()
             time.sleep(0.1)
-            # self.gym.poll_viewer_events(self.viewer)
         return
 
     def set_camera_lookat(self, pos=None, quat_or_target=None) -> None:

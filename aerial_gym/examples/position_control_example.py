@@ -26,7 +26,5 @@ if __name__ == "__main__":
     for i in range(10000):
         if i % 1000 == 0:
             logger.info(f"Step {i}, changing target setpoint.")
-            # actions[:, 0:3] = 2.0 * (torch.rand_like(actions[:, 0:3]) * 2 - 1)
-            # actions[:, 3] = torch.pi * (torch.rand_like(actions[:, 3]) * 2 - 1)
             env_manager.reset()
         env_manager.step(actions=actions)

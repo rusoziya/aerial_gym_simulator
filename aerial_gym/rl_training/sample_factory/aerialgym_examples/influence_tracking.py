@@ -604,7 +604,6 @@ def run_with_influence_tracking(cfg: Config) -> None:
                 # Do not log continuous curriculum/current_* or derived level values anymore
                 curr_level = None
                 curr_level_minus_1 = None
-                # --- Explicit curriculum mirror block: ensure ~25+ curriculum keys are present each step ---
                 try:
                     # Helper that tries multiple namespaces to find the latest value
                     def _get_last_with_prefixes(key_name: str) -> None:

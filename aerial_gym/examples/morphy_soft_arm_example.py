@@ -116,7 +116,6 @@ if __name__ == "__main__":
                 x_inp = torch.tensor(x).to("cuda:0")
                 x_inp[0] -= 7.2 * torch.pi / 180.0
                 xdot = mass_spring_damper(x_inp, 0, *popt)
-                # print(xdot)
                 for j in range(2):
                     x[j] += xdot[j].cpu().numpy() * dt
 
@@ -132,8 +131,6 @@ if __name__ == "__main__":
             ax.plot(time_stamp, angle_rad, label="Ground Truth Response")
             ax.set(xlabel="Time (s)", ylabel=r"$\theta_j$ (rad)")
             ax.legend()
-            # save plot as a pdf
-            # plt.savefig('morphy_response.pdf')
             plt.show()
             exit(0)
         env_manager.step(actions=actions)

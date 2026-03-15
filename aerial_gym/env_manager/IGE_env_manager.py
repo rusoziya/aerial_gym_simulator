@@ -350,7 +350,6 @@ class IsaacGymEnv(BaseManager):
         self.global_tensor_dict["unfolded_dof_state_tensor"] = gymtorch.wrap_tensor(
             self.gym.acquire_dof_state_tensor(self.sim)
         )
-        # if not None, view the tensor as (num_envs, num_dofs, 2)
         if not self.global_tensor_dict["unfolded_dof_state_tensor"] is None:
             self.sim_has_dof = True
             self.global_tensor_dict["dof_state_tensor"] = self.global_tensor_dict[
@@ -394,7 +393,6 @@ class IsaacGymEnv(BaseManager):
             "global_torque_tensor"
         ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, :idx, :]
 
-        # ==============================
         # Populate obstacle tensors
         if self.num_assets_per_env > 0:
             self.global_tensor_dict["obstacle_position"] = self.global_tensor_dict[

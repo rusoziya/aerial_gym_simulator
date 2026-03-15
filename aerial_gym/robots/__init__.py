@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# import configs here
 from aerial_gym.config.robot_config.base_quad_config import BaseQuadCfg
 from aerial_gym.config.robot_config.base_octarotor_config import BaseOctarotorCfg
 from aerial_gym.config.robot_config.base_random_config import BaseRandCfg
@@ -19,7 +18,6 @@ from aerial_gym.config.robot_config.snakey6_config import Snakey6Cfg
 from aerial_gym.config.robot_config.tinyprop_config import TinyPropCfg
 from aerial_gym.config.robot_config.x500_config import X500Cfg
 
-# import robot classes here
 from aerial_gym.robots.base_multirotor import BaseMultirotor
 from aerial_gym.robots.base_rov import BaseROV
 from aerial_gym.robots.base_reconfigurable import BaseReconfigurable

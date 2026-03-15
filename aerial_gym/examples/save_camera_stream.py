@@ -86,16 +86,9 @@ if __name__ == "__main__":
             logger.error("Seems like the image tensors have not been created yet.")
             logger.error("This is likely due to absence of a functional camera in the environment")
             raise e
-        # seg_image1[seg_image1 <= 0] = seg_image1[seg_image1 > 0].min()
         seg_image1_normalized = (seg_image1 - seg_image1.min()) / (
             seg_image1.max() - seg_image1.min()
         )
-
-        # for when Isaac Gym cameras are used for RGB images
-        # image_frame1 = env_manager.global_tensor_dict["rgb_pixels"][0, 0].cpu().numpy().astype(np.uint8)
-        # # save to file
-        # im1 = Image.fromarray(image_frame1)
-        # im1.save(f"image_frame_{i}.png")
 
         # set colormap to plasma in matplotlib
         seg_image1_normalized_plasma = matplotlib.cm.plasma(seg_image1_normalized)

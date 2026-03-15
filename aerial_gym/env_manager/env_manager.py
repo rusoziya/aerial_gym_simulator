@@ -90,12 +90,10 @@ class EnvManager(BaseManager):
         logger.info("Creating simulation instance.")
         logger.info("Instantiating IGE object.")
 
-        # === Need to check this here otherwise IGE will crash with segfault for different CUDA GPUs ====
         has_IGE_cameras = False
         robot_config = robot_registry.get_robot_config(self.robot_name)
         if robot_config.sensor_config.enable_camera == True and self.use_warp == False:
             has_IGE_cameras = True
-        # ===============================================================================================
 
         self.IGE_env = IsaacGymEnv(env_cfg, sim_cfg, has_IGE_cameras, self.device)
 
@@ -225,7 +223,6 @@ class EnvManager(BaseManager):
                     local_gate_variant_indices.append(local_index_counter)
                     gate_variant_name = asset_info_dict.get("gate_variant_name", "unknown")
                     local_gate_variant_names.append(gate_variant_name)
-                    # logger.warning(f"[GATE_DEBUG] Env {i}: Found gate variant '{gate_variant_name}' at local index {local_index_counter} (file: {asset_info_dict.get('filename', 'unknown')})")
                 self.num_obs_in_env += 1
                 warp_segmentation_ctr = 0
                 if self.cfg.env.use_warp:
@@ -262,15 +259,6 @@ class EnvManager(BaseManager):
             # Persist gate variant indices for this env
             self.global_tensor_dict["gate_variant_indices_per_env"][i] = local_gate_variant_indices
             self.global_tensor_dict["gate_variant_names_per_env"][i] = local_gate_variant_names
-            # logger.warning(f"[GateVariant] Env {i}: discovered {len(local_gate_variant_indices)} gate variants -> {local_gate_variant_names}")
-            
-            # DEBUG: Count different asset types for this environment
-            # gate_count = len([name for name in local_gate_variant_names if "gate_scale_" in name])
-            # wall_count = len([asset_dict for asset_dict in self.global_asset_dicts[i] if "wall" in asset_dict.get("asset_type", "")])
-            # object_count = len([asset_dict for asset_dict in self.global_asset_dicts[i] if asset_dict.get("asset_type", "") == "objects"])
-            # other_count = len(self.global_asset_dicts[i]) - gate_count - wall_count - object_count
-            
-            # logger.warning(f"[OBSTACLE_DEBUG] Env {i} asset breakdown: {gate_count} gates, {wall_count} walls, {object_count} objects, {other_count} other, TOTAL: {len(self.global_asset_dicts[i])}")
 
         # check if environment has 0 objects. If so, skip this step
         if self.asset_min_state_ratio is not None:
@@ -291,7 +279,6 @@ class EnvManager(BaseManager):
             )
 
         self.global_tensor_dict["num_obstacles_in_env"] = self.num_obs_in_env
-        # logger.warning(f"[OBSTACLE_DEBUG] EnvManager setting num_obstacles_in_env = {self.num_obs_in_env} (this is total loaded assets per env)")
 
         # Initial activation: select a gate for each env
         self.apply_gate_variant_selection(env_ids=torch.arange(self.cfg.env.num_envs, device=self.device))
@@ -323,7 +310,6 @@ class EnvManager(BaseManager):
         # then reset the asset managet that respositions assets within the environment
         # then reset the warp environment if it is being used that reads the state tensors from the assets and transforms meshes
         # finally reset the robot manager that resets the robot state tensors and the sensors
-        # logger.debug(f"Resetting environments {env_ids}.")
         self.IGE_env.reset_idx(env_ids)
         # Determine how many assets to keep visible this reset
         obstacle_count = self.global_tensor_dict["num_obstacles_in_env"]
@@ -341,7 +327,6 @@ class EnvManager(BaseManager):
             except (KeyError, TypeError):
                 total_assets = self.asset_manager.env_asset_state_tensor.shape[1]
             obstacle_count = int(total_assets)
-        # logger.warning(f"[OBSTACLE_DEBUG] EnvManager.reset_idx calling asset_manager.reset_idx with obstacle_count={obstacle_count}")
         self.asset_manager.reset_idx(env_ids, obstacle_count)
         # IMPORTANT: After asset manager randomization, activate one gate variant per env
         self.apply_gate_variant_selection(env_ids=env_ids)
@@ -510,8 +495,6 @@ class EnvManager(BaseManager):
             if "gate_scale_" in active_name:
                 scale_info = active_name.replace("gate_scale_", "") + "%"
             
-            # logger.warning(f"[GATE_RANDOM_SELECT] Env {env_id}: RANDOMLY SELECTED gate variant '{active_name}' (scale: {scale_info}, local index {chosen_local_index}) from {len(allowed_js)} allowed / {len(gate_indices)} total")
-            
             self.global_tensor_dict["active_gate_variant_index"][env_id] = chosen_local_index  # Asset index
             self.global_tensor_dict["active_gate_variant_array_index"][env_id] = chosen_idx  # Index in gate variant arrays
             # Iterate all gate variants and place only the chosen at center; others moved far away
@@ -523,14 +506,11 @@ class EnvManager(BaseManager):
                 if j == chosen_idx:
                     # place at center (already configured by min/max), but ensure visible by mirroring center pose
                     env_asset_state[env_id, local_index, 0:3] = torch.tensor([0.0, 0.0, 0.0], device=self.device)
-                    # logger.warning(f"[GATE_VISIBILITY] Env {env_id}: SHOWING gate '{gate_name}' at center (0,0,0)")
                 else:
                     # move out of bounds to hide
                     env_asset_state[env_id, local_index, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
-                    # logger.warning(f"[GATE_VISIBILITY] Env {env_id}: HIDING gate '{gate_name}' at (-1000,-1000,-1000)")
         # Write back the unfolded state tensor
         self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
-        # logger.warning("[GateVariant] Applied gate variant selection for env_ids: {}".format(ids))
 
     def log_memory_use(self) -> None:
         """
@@ -566,7 +546,6 @@ class EnvManager(BaseManager):
         self.obstacle_manager.pre_physics_step(env_actions)
         # then the simulator applies them here
         self.IGE_env.pre_physics_step(actions)
-        # if warp is used, the warp environment applies the actions here
         # If you change the mesh, refit() needs to be called (expensive).
         if self.use_warp:
             self.warp_env.pre_physics_step(actions)

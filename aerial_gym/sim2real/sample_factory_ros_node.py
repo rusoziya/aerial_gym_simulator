@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import rospy
 
-# import Image, Twist, Odometry, Velocity message from ROS
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist, PoseStamped, Vector3, TwistStamped
 from nav_msgs.msg import Odometry
@@ -179,8 +178,6 @@ class RlNavClass:
         self.position[0] = self.odom.pose.pose.position.x
         self.position[1] = self.odom.pose.pose.position.y
         self.position[2] = self.odom.pose.pose.position.z
-        # print("Current position: ", self.position)
-        # print("current orientation: ", self.odom.pose.pose.orientation)
         quat_msg = self.odom.pose.pose.orientation
         quat = R.from_quat([quat_msg.x, quat_msg.y, quat_msg.z, quat_msg.w])
         ### TODO: Check if this is the correct order for the euler angles
@@ -193,7 +190,6 @@ class RlNavClass:
         self.vehicle_rpy = self.rpy.copy()
         self.vehicle_rpy[2] = 0.0
         self.vehicle_frame_matrix = R.from_euler("xyz", self.rpy, degrees=False)
-        # print(self.rpy)
 
         self.body_lin_vel = np.zeros(3)
         self.body_lin_vel[0] = odom.twist.twist.linear.x
@@ -275,7 +271,6 @@ class RlNavClass:
         action_msg.linear.x = vel_x
         action_msg.linear.z = vel_z
         action_msg.angular.z = yaw_rate
-        # self.action_pub.publish(action_msg)
         action_viz_msg = TwistStamped()
         action_viz_msg.header.frame_id = BODY_FRAME_ID
         action_viz_msg.twist = action_msg
@@ -319,8 +314,6 @@ class RlNavClass:
         self.goal_dir_publisher.publish(goal_dir_marker)
 
     def mavros_state_callback(self, data) -> None:
-        # check if mavros state is "OFFBOARD" or "GUIDED".
-        # if it is either of them, set enable to True, otherwise set it to False
         if self.use_mavros_state:
             if data.mode == "OFFBOARD" or data.mode == "GUIDED":
                 if self.enable == False:
@@ -337,9 +330,6 @@ class RlNavClass:
         nn_input = np.zeros(TOTAL_IP_DIMS)
         self.goal_dir = self.target - self.position
         self.goal_dir = self.vehicle_frame_matrix.inv().apply(self.goal_dir)
-        # print("Goal dir: ", self.goal_dir)
-        # print("Target: ", self.target)
-        # print("Position: ", self.position)
 
         self.current_dir_msg = PoseStamped()
         self.current_dir_msg.pose.position.x = self.position[0]
@@ -415,37 +405,6 @@ if __name__ == "__main__":
     parser.add_argument("--sim", default="True")
     parser.add_argument("--show_cv", default="False")
     args, unknown_args = parser.parse_known_args()
-
-    # if args.sim == "False":
-    #     IS_SIM = False
-    #     IMAGE_TOPIC = "/d455/depth/image_rect_raw"
-    #     ODOM_TOPIC = "/mavros/local_position/odom_in_map"
-    #     ACTION_PUB_TOPIC = "/mavros/setpoint_velocity/cmd_vel_unstamped"
-    #     MAVROS_STATE_TOPIC = "/mavros/state"
-    #     TARGET_TOPIC = "/target"
-    #     CALCULATE_RECONSTRUCTION = True
-    #     TARGET_FRAME_ID = "map"
-    #     BODY_FRAME_ID = "state"
-    #     MAVROS_STATE_TOPIC = "/mavros/state"
-    #     USE_MAVROS_STATE = True
-    #     BODY_FRAME_DIR_TOPIC = "/current_direction"
-    #     ODOM_FRAME_ID = "t265_pose_frame"
-    #     PUBLISH_FILTERED_IMAGE = True
-
-    # else:
-    # IS_SIM = True
-    # IMAGE_TOPIC = "/m100/depth_image"
-    # ODOM_TOPIC = "/m100/odom"
-    # ACTION_PUB_TOPIC = "/m100/cmd_vel"
-    # MAVROS_STATE_TOPIC = "/m100/mavros/state"
-    # CALCULATE_RECONSTRUCTION = True
-    # USE_MAVROS_STATE = False
-    # TARGET_FRAME_ID = "empty_world"
-    # BODY_FRAME_DIR_TOPIC = "/current_direction"
-
-    # BODY_FRAME_ID = "m100/base_link"
-    # ODOM_FRAME_ID = "m100/base_link"
-    # PUBLISH_FILTERED_IMAGE = False
 
     IS_SIM = True
     IMAGE_TOPIC = "/m100/front/depth_image"

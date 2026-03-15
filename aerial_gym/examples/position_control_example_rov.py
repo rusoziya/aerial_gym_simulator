@@ -38,5 +38,4 @@ if __name__ == "__main__":
             actions[:, 3:7] = quat_from_euler_xyz_tensor(
                 torch.pi * (torch.rand_like(actions[:, 3:6]) * 2 - 1)
             )
-            # actions[:, 3] = 0.0#torch.pi * (torch.rand_like(actions[:, 3]) * 2 - 1)
         env_manager.step(actions=actions)
