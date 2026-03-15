@@ -20,6 +20,7 @@ from aerial_gym.env_manager.gate_variant_selection import (
 )
 from aerial_gym.env_manager.IGE_env_manager import IsaacGymEnv
 from aerial_gym.env_manager.obstacle_manager import ObstacleManager
+from aerial_gym.env_manager.tensor_state import TensorState
 from aerial_gym.env_manager.warp_env_manager import WarpEnv
 from aerial_gym.registry.env_registry import env_config_registry
 from aerial_gym.registry.robot_registry import robot_registry
@@ -65,7 +66,7 @@ class EnvManager(BaseManager):
 
         self.keep_in_env = None
 
-        self.global_tensor_dict: GlobalTensorDict = {}
+        self.global_tensor_dict: TensorState = TensorState()
 
         logger.info("Populating environments.")
         self.populate_env(env_cfg=self.cfg, sim_cfg=self.sim_config)
