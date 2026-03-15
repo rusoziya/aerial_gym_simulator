@@ -773,7 +773,7 @@ class StaticCameraManager:
                     logger.warning("Static camera not set up; attempting one-time lazy initialization")
                     try:
                         self._setup_static_camera()
-                    except Exception as e:
+                    except RuntimeError as e:
                         logger.warning(f"Lazy static camera setup attempt failed: {e}")
                     # Re-check after lazy init
                     if not self.camera_setup_success or len(self.camera_handles) == 0:
@@ -782,7 +782,7 @@ class StaticCameraManager:
                 else:
                     logger.error("Static camera not set up; returning no images.")
                     return None, None
-            except Exception:
+            except RuntimeError:
                 logger.error("Static camera not set up; returning no images.")
                 return None, None
         

@@ -1031,7 +1031,7 @@ class NavigationTaskGate(BaseTask):
                     logger.warning(f"[NaNGuard] Invalid ACTION in envs {_ids}; zeroed and will truncate")
             else:
                 nan_trunc_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        except Exception:
+        except RuntimeError:
             nan_trunc_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         logger.debug(f"raw_action: {actions[0]}, transformed action: {transformed_action[0]}")
         
@@ -1126,7 +1126,7 @@ class NavigationTaskGate(BaseTask):
             self._ep_target_success_flag[immediate_success_mask] |= target_success_immediate[immediate_success_mask]
             try:
                 success_envs = torch.nonzero(immediate_success_mask, as_tuple=False).squeeze(-1).tolist()
-            except Exception:
+            except RuntimeError:
                 success_envs = []
             logger.debug(f"[SUCCESS_RESET] Immediate success achieved in envs: {success_envs}. Terminating and resetting.")
         
@@ -1217,19 +1217,16 @@ class NavigationTaskGate(BaseTask):
 
         # ===== Per-env episode trajectory state update =====
         # Initialize newly reset envs on their first step
-        try:
-            fresh_mask = self._episode_fresh
-            if torch.any(fresh_mask):
-                self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
-                # Store gate CENTER at spawn (z corrected by current center height)
-                _gcenter = self.gate_position.clone()
-                _gcenter[:, 2] = _gcenter[:, 2] + self.gate_center_height
-                self._ep_gate_center_at_spawn[fresh_mask] = _gcenter[fresh_mask]
-                self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
-                # counters and accumulators already zeroed in reset_idx
-                self._episode_fresh[fresh_mask] = False
-        except Exception:
-            pass
+        fresh_mask = self._episode_fresh
+        if torch.any(fresh_mask):
+            self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
+            # Store gate CENTER at spawn (z corrected by current center height)
+            _gcenter = self.gate_position.clone()
+            _gcenter[:, 2] = _gcenter[:, 2] + self.gate_center_height
+            self._ep_gate_center_at_spawn[fresh_mask] = _gcenter[fresh_mask]
+            self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
+            # counters and accumulators already zeroed in reset_idx
+            self._episode_fresh[fresh_mask] = False
         
         # Incremental path length accumulation and min distance tracking
         step_deltas = robot_position - self._ep_last_pos
@@ -2179,7 +2176,7 @@ class NavigationTaskGate(BaseTask):
             try:
                 from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
                 x_off, y_off, z_off = _tc.curriculum.get_dynamic_camera_follow_offset()
-            except Exception:
+            except ImportError:
                 x_off, y_off, z_off = 0.0, -1.0, 0.0
             try:
                 robot_pos_world = self.obs_dict['robot_position'].to(device=device, dtype=torch.float32)
@@ -2476,7 +2473,7 @@ class NavigationTaskGate(BaseTask):
                 try:
                     parent = self.sim_env
                     gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                except Exception:
+                except (AttributeError, KeyError):
                     gtd = {}
                 try:
                     base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
@@ -2822,7 +2819,7 @@ class NavigationTaskGate(BaseTask):
                 try:
                     parent = self.sim_env
                     gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                except Exception:
+                except (AttributeError, KeyError):
                     gtd = {}
                 try:
                     base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
@@ -2988,7 +2985,7 @@ class NavigationTaskGate(BaseTask):
             avg_current_action_penalty = torch.mean(self.episode_action_penalty).item()
             try:
                 avg_current_boundary_penalty = torch.mean(self.episode_boundary_violation_penalty).item()
-            except Exception:
+            except RuntimeError:
                 avg_current_boundary_penalty = 0.0
             avg_current_collision_penalty = torch.mean(self.episode_collision_penalty).item()
             avg_current_episode_length = torch.mean(self.episode_lengths).item()
@@ -3025,7 +3022,7 @@ class NavigationTaskGate(BaseTask):
                     # Also log boundary violation mask to see if it caused spikes
                     try:
                         _bv = boundary_violation_one_shot_mask[_s].tolist()
-                    except Exception:
+                    except RuntimeError:
                         _bv = []
                     logger.warning(f"[RewardOutlier] dist={_dist.tolist()} y={_y.tolist()} boundary_violation={_bv}")
         except (ValueError, TypeError):
