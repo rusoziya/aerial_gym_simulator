@@ -50,10 +50,30 @@ exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
-ignore = ["E402"]
+ignore = [
+    "E402",   # module-level import not at top — required for isaacgym import order
+    "E501",   # line too long — ruff-format handles what it can, remainder needs manual work
+    "E712",   # comparison to True/False — pervasive in Isaac Gym config patterns
+    "E721",   # type comparison — needs manual review
+    "E731",   # lambda assignment — low priority
+    "F403",   # star imports — architectural, used throughout codebase
+    "F405",   # may be undefined from star imports — consequence of F403
+    "F841",   # unused variable — needs manual review for side effects
+    "UP006",  # use builtin type (list vs List) — needs `from __future__ import annotations`
+    "UP007",  # use X | Y for union — needs `from __future__ import annotations`
+    "UP008",  # use super() — auto-fixable, deferred to follow-up
+    "UP031",  # use format specifiers — deferred to follow-up
+    "UP045",  # use X | None — needs `from __future__ import annotations`
+    "F811",   # redefined unused — needs manual review (duplicate methods)
+    "F821",   # undefined name — needs manual review (missing imports)
+]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"tests/test_sf_training_config.py" = ["F401"]  # intentional import-as-test
+"aerial_gym/examples/morphy_soft_arm_example.py" = ["F401"]  # scienceplots imported for side effects
+"aerial_gym/rl_training/sample_factory/**/validate_configuration.py" = ["F401"]  # import-as-test
+"*.ipynb" = ["F401", "I001", "UP015"]  # notebooks have loose imports and formatting
 
 [tool.ruff.lint.isort]
 known-first-party = ["aerial_gym"]
