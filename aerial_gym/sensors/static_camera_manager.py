@@ -5,7 +5,6 @@ import os
 
 import numpy as np
 import torch
-from isaacgym import gymapi
 
 from aerial_gym.env_manager.env_manager import EnvManager
 from aerial_gym.sensors.static_camera_angle_computation import (
@@ -32,6 +31,7 @@ from aerial_gym.sensors.static_camera_follow_modes import (
 )
 from aerial_gym.task.task_config_protocol import TaskConfig
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.sim_types import CameraProps, Vec3, camera_props_to_gymapi, vec3_to_gymapi
 
 logger = CustomLogger("static_camera_manager")
 
@@ -107,27 +107,29 @@ class StaticCameraManager:
             self.camera_setup_success = False
             self.use_synthetic_camera = False
 
-    def _create_camera_properties(self) -> gymapi.CameraProperties:
+    def _create_camera_properties(self) -> CameraProps:
         """Create D455 depth camera properties."""
-        camera_props = gymapi.CameraProperties()
-        camera_props.width = 240
-        camera_props.height = 135
-        camera_props.horizontal_fov = 87.0
-        camera_props.near_plane = 0.4
-        camera_props.far_plane = 20.0
-        camera_props.enable_tensors = True
+        camera_props = CameraProps(
+            width=240,
+            height=135,
+            horizontal_fov=87.0,
+            near_plane=0.4,
+            far_plane=20.0,
+            enable_tensors=True,
+        )
         logger.info(
             f"Static camera properties (D455 specs): {camera_props.width}x{camera_props.height}, "
             f"FOV: {camera_props.horizontal_fov}"
         )
         return camera_props
 
-    def _create_camera_sensors(self, camera_props: gymapi.CameraProperties) -> None:
+    def _create_camera_sensors(self, camera_props: CameraProps) -> None:
         """Create camera sensor in each environment."""
         self.camera_handles = []
         failed_envs: list[int] = []
+        gymapi_props = camera_props_to_gymapi(camera_props)
         for i, env_handle in enumerate(self.env_handles):
-            cam_handle = self.gym.create_camera_sensor(env_handle, camera_props)
+            cam_handle = self.gym.create_camera_sensor(env_handle, gymapi_props)
             if cam_handle >= 0:
                 self.camera_handles.append(cam_handle)
             else:
@@ -194,19 +196,17 @@ class StaticCameraManager:
                 env_base_z = float(base_z_value)
 
             jx, jy, jz = self._trans_jitter[i]
-            camera_pos = gymapi.Vec3(0.0 + jx, float(base_y) + jy, env_base_z + jz)
-            camera_target = gymapi.Vec3(0.0, 0.0, env_base_z)
-            self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-
-            self.last_camera_pos[i] = (
-                float(camera_pos.x),
-                float(camera_pos.y),
-                float(camera_pos.z),
+            camera_pos = Vec3(0.0 + jx, float(base_y) + jy, env_base_z + jz)
+            camera_target = Vec3(0.0, 0.0, env_base_z)
+            self.gym.set_camera_location(
+                cam_handle, env_handle, vec3_to_gymapi(camera_pos), vec3_to_gymapi(camera_target)
             )
+
+            self.last_camera_pos[i] = (camera_pos.x, camera_pos.y, camera_pos.z)
             self.last_camera_target[i] = (
-                float(camera_target.x),
-                float(camera_target.y),
-                float(camera_target.z),
+                camera_target.x,
+                camera_target.y,
+                camera_target.z,
             )
             self.last_angle_deg[i] = 0.0
 

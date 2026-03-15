@@ -4,9 +4,9 @@ import math
 import os
 
 import torch
-from isaacgym import gymapi
 
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.sim_types import Vec3, vec3_to_gymapi
 
 logger = CustomLogger("static_camera_angle_computation")
 
@@ -32,7 +32,7 @@ def read_ablation_flags_and_robot_positions(
 
 def resolve_base_camera_position(
     env_manager: object,
-) -> tuple[gymapi.Vec3, float | None, dict]:
+) -> tuple[Vec3, float | None, dict]:
     """Resolve the base camera position from env vars and global tensor dict.
 
     Returns:
@@ -62,7 +62,7 @@ def resolve_base_camera_position(
         base_z = 1.5
 
     base_z_for_vec = 1.5 if base_z is None else float(base_z)
-    base_camera_pos = gymapi.Vec3(0.0, base_y, base_z_for_vec)
+    base_camera_pos = Vec3(0.0, base_y, base_z_for_vec)
     return base_camera_pos, base_z, gtd
 
 
@@ -220,7 +220,7 @@ def compute_spawn_aware_angle(
     env_idx: int,
     curriculum_level: int,
     base_angle_range: float,
-    base_camera_pos: gymapi.Vec3,
+    base_camera_pos: Vec3,
     disable_flag: bool,
     rp: torch.Tensor | None,
     base_y: float,
@@ -319,7 +319,7 @@ def apply_camera_transform(
     sweep_enabled: bool,
     disable_flag: bool,
     max_angle_range: float,
-    base_camera_pos: gymapi.Vec3,
+    base_camera_pos: Vec3,
     base_z: float | None,
     gtd: dict,
     gym: object,
@@ -349,12 +349,12 @@ def apply_camera_transform(
     pitch_rad = jitter_pitch_deg * (3.14159 / 180.0)
 
     env_base_z = _resolve_env_base_z(base_z, gtd, env_idx)
-    base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
 
     jx, jy, jz = trans_jitter[env_idx] if (0 <= env_idx < len(trans_jitter)) else (0.0, 0.0, 0.0)
-    base_camera_env_pos = gymapi.Vec3(
-        base_camera_env_pos.x + jx, base_camera_env_pos.y + jy, base_camera_env_pos.z + jz
-    )
+    cam_x = base_camera_pos.x + jx
+    cam_y = base_camera_pos.y + jy
+    cam_z = env_base_z + jz
+    base_camera_env_pos = Vec3(cam_x, cam_y, cam_z)
 
     target_distance = abs(base_camera_env_pos.y)
     yaw_total = angle_offset_radians + (jitter_yaw_deg * (3.14159 / 180.0))
@@ -363,22 +363,20 @@ def apply_camera_transform(
 
     target_z = _resolve_target_z(gtd, env_idx, env_base_z)
     target_z = target_z + math.tan(pitch_rad) * target_distance
-    new_target = gymapi.Vec3(target_x, target_y, target_z)
+    new_target = Vec3(target_x, target_y, target_z)
 
     env_handle = env_handles[env_idx]
     cam_handle = camera_handles[env_idx]
-    gym.set_camera_location(cam_handle, env_handle, base_camera_env_pos, new_target)
+    gym.set_camera_location(
+        cam_handle, env_handle, vec3_to_gymapi(base_camera_env_pos), vec3_to_gymapi(new_target)
+    )
 
     last_camera_pos[env_idx] = (
-        float(base_camera_env_pos.x),
-        float(base_camera_env_pos.y),
-        float(base_camera_env_pos.z),
+        base_camera_env_pos.x,
+        base_camera_env_pos.y,
+        base_camera_env_pos.z,
     )
-    last_camera_target[env_idx] = (
-        float(new_target.x),
-        float(new_target.y),
-        float(new_target.z),
-    )
+    last_camera_target[env_idx] = (new_target.x, new_target.y, new_target.z)
     last_angle_deg[env_idx] = float(angle_offset_degrees)
 
 

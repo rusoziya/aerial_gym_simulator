@@ -4,9 +4,9 @@ import math
 import os
 
 import torch
-from isaacgym import gymapi
 
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.sim_types import Vec3, vec3_to_gymapi
 
 logger = CustomLogger("static_camera_follow_modes")
 
@@ -44,11 +44,12 @@ def update_dynamic_camera_following(
             cam_x = float(drone[0].item()) + x_off
             cam_y = float(drone[1].item()) + y_off
             cam_z = float(drone[2].item()) + z_off
-            camera_pos = gymapi.Vec3(cam_x, cam_y, cam_z)
+            camera_pos = Vec3(cam_x, cam_y, cam_z)
 
-            target_drone = gymapi.Vec3(
-                float(drone[0].item()), float(drone[1].item()), float(drone[2].item())
-            )
+            drone_x = float(drone[0].item())
+            drone_y = float(drone[1].item())
+            drone_z = float(drone[2].item())
+            target_drone = Vec3(drone_x, drone_y, drone_z)
 
             gate = gate_positions[env_idx]
             gate_cz = float(gate_center_heights[env_idx].item())
@@ -77,23 +78,21 @@ def update_dynamic_camera_following(
                 tgx = (1.0 - w) * target_drone.x + w * float(gate[0].item())
                 tgy = (1.0 - w) * target_drone.y + w * float(gate[1].item())
                 tgz = (1.0 - w) * target_drone.z + w * gate_cz
-                camera_target = gymapi.Vec3(tgx, tgy, tgz)
+                camera_target = Vec3(tgx, tgy, tgz)
             else:
                 camera_target = target_drone
 
             cam_handle = camera_handles[env_idx]
             env_handle = env_handles[env_idx]
-            gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
-
-            last_camera_pos[env_idx] = (
-                float(camera_pos.x),
-                float(camera_pos.y),
-                float(camera_pos.z),
+            gym.set_camera_location(
+                cam_handle, env_handle, vec3_to_gymapi(camera_pos), vec3_to_gymapi(camera_target)
             )
+
+            last_camera_pos[env_idx] = (camera_pos.x, camera_pos.y, camera_pos.z)
             last_camera_target[env_idx] = (
-                float(camera_target.x),
-                float(camera_target.y),
-                float(camera_target.z),
+                camera_target.x,
+                camera_target.y,
+                camera_target.z,
             )
             last_angle_deg[env_idx] = 0.0
 
@@ -128,18 +127,20 @@ def update_arc_follow(
             arc_x = gx + radius_m * math.sin(theta)
             arc_y = gy - radius_m * math.cos(theta)
             cam_z = gz_center
-            camera_pos = gymapi.Vec3(arc_x, arc_y, cam_z)
+            camera_pos = Vec3(arc_x, arc_y, cam_z)
 
             drone = robot_positions[env_idx]
             w = 0.3
             tgt_x = (1.0 - w) * float(drone[0].item()) + w * gx
             tgt_y = (1.0 - w) * float(drone[1].item()) + w * gy
             tgt_z = (1.0 - w) * float(drone[2].item()) + w * gz_center
-            camera_target = gymapi.Vec3(tgt_x, tgt_y, tgt_z)
+            camera_target = Vec3(tgt_x, tgt_y, tgt_z)
 
             cam_handle = camera_handles[env_idx]
             env_handle = env_handles[env_idx]
-            gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
+            gym.set_camera_location(
+                cam_handle, env_handle, vec3_to_gymapi(camera_pos), vec3_to_gymapi(camera_target)
+            )
     except RuntimeError as e:
         logger.warning(f"Failed to update arc-follow camera: {e}")
 
@@ -177,14 +178,14 @@ def update_locked_follow(
                 except (ValueError, TypeError):
                     cam_z = 1.5
 
-            camera_pos = gymapi.Vec3(cam_x, cam_y, cam_z)
+            camera_pos = Vec3(cam_x, cam_y, cam_z)
             drone = robot_positions[env_idx]
-            target = gymapi.Vec3(
-                float(drone[0].item()), float(drone[1].item()), float(drone[2].item())
-            )
+            target = Vec3(float(drone[0].item()), float(drone[1].item()), float(drone[2].item()))
             cam_handle = camera_handles[env_idx]
             env_handle = env_handles[env_idx]
-            gym.set_camera_location(cam_handle, env_handle, camera_pos, target)
+            gym.set_camera_location(
+                cam_handle, env_handle, vec3_to_gymapi(camera_pos), vec3_to_gymapi(target)
+            )
     except RuntimeError as e:
         logger.warning(f"Failed to update locked-follow camera: {e}")
 
