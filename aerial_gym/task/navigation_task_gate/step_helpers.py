@@ -46,7 +46,10 @@ class StepHelpers:
         # Observation NaN/Inf guard
         for k, v in self.task.obs_dict.items():
             if isinstance(v, torch.Tensor) and v.shape[0] == self.task.num_envs:
-                bad = torch.any((~torch.isfinite(v)).flatten(start_dim=1), dim=1)
+                not_finite = ~torch.isfinite(v)
+                bad = (
+                    torch.any(not_finite.flatten(start_dim=1), dim=1) if v.ndim > 1 else not_finite
+                )
                 if self.task.task_config.guard_debug_enabled and torch.any(bad):
                     _ids = torch.nonzero(bad, as_tuple=False).squeeze(-1).tolist()
                     logger.warning(f"[NaNGuard] Invalid OBS '{k}' in envs {_ids}")
