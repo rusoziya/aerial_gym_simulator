@@ -879,7 +879,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 cstd, cdrop = curri.get_camera_noise(cur_lvl_val)
             else:
                 cstd, cdrop = 0.0, 0.0
-        except Exception:
+        except (AttributeError, ValueError, TypeError):
             cstd, cdrop = 0.0, 0.0
         if 'curriculum/camera_gaussian_std' not in mirrored:
             extra['curriculum/camera_gaussian_std'] = float(cstd)
@@ -893,7 +893,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 fd = curri.get_camera_frame_dropout(cur_lvl_val)
             else:
                 fd = {'drone_total': 0.0, 'static_total': 0.0, 'drone_freeze': 0.0, 'drone_blank': 0.0, 'static_freeze': 0.0, 'static_blank': 0.0}
-        except Exception:
+        except (AttributeError, ValueError, TypeError):
             fd = {'drone_total': 0.0, 'static_total': 0.0, 'drone_freeze': 0.0, 'drone_blank': 0.0, 'static_freeze': 0.0, 'static_blank': 0.0}
 
         def _put_if_missing(k: str) -> None:
@@ -913,7 +913,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             max_angle = getattr(task, 'max_camera_angle', None)
             if max_angle is None and curri is not None and hasattr(curri, 'get_static_camera_difficulty'):
                 max_angle, _, _ = curri.get_static_camera_difficulty(cur_lvl_val)
-        except Exception:
+        except (AttributeError, ValueError, TypeError):
             max_angle = 0.0
         if 'curriculum/camera_max_angle' not in mirrored:
             extra['curriculum/camera_max_angle'] = float(max_angle if max_angle is not None else 0.0)
@@ -933,7 +933,7 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             sn = None
             if curri is not None and getattr(curri, 'enable_state_noise', False) and hasattr(curri, 'get_state_noise'):
                 sn = curri.get_state_noise(cur_lvl_val)
-        except Exception:
+        except (AttributeError, ValueError, TypeError):
             sn = None
         if sn is not None:
             extra.setdefault('curriculum/state_noise_drone_pos_std_m', float(sn.get('drone_pos_std_m', 0.0)))

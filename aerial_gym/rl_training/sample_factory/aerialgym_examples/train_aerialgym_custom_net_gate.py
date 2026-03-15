@@ -116,7 +116,7 @@ def make_aerialgym_env(
                     # Apply ablation flags from CLI cfg so the task can propagate to EnvManager
                     try:
                         gate_config.disable_gate_size_randomization = bool(cfg.disable_gate_size_randomization)
-                    except Exception:
+                    except (AttributeError, TypeError):
                         gate_config.disable_gate_size_randomization = False
                     try:
                         gate_config.fixed_gate_scale_percent = int(cfg.fixed_gate_scale_percent)
@@ -125,7 +125,7 @@ def make_aerialgym_env(
                     # Obstacle ablation flags
                     try:
                         gate_config.disable_obstacle_randomization = bool(cfg.disable_obstacle_randomization)
-                    except Exception:
+                    except (AttributeError, TypeError):
                         gate_config.disable_obstacle_randomization = False
                     try:
                         gate_config.fixed_obstacles_behind_gate = int(cfg.fixed_obstacles_behind_gate)
@@ -159,7 +159,7 @@ def make_aerialgym_env(
                 # Propagate optional max curriculum cap from CLI
                 try:
                     cap = cfg.max_curriculum_level
-                except Exception:
+                except AttributeError:
                     cap = None
                 if cap is not None:
                     try:
