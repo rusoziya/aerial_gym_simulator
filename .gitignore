@@ -86,3 +86,4 @@ datasets/
 *.png
 !docs/**/*.png
 !resources/**/*.png
+!aerial_gym/utils/vae/weights/*.pth

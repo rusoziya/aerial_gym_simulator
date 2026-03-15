@@ -40,7 +40,8 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_tracking
     run_with_influence_tracking,
 )
 
-torch.use_deterministic_algorithms(True)
+# Deterministic mode disabled — incompatible with Isaac Gym CuBLAS operations
+# torch.use_deterministic_algorithms(True)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 

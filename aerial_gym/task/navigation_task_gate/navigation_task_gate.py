@@ -229,6 +229,15 @@ class NavigationTaskGate(BaseTask):
         """Sanity check for logging to detect issues with success/crash/timeout logic."""
         _logging_sanity_check(self, infos)
 
+    # Delegation methods so composed helpers can call through self.task
+    def setup_curriculum_logging(self): self._curriculum.setup_curriculum_logging()
+    def log_curriculum_update(self, msg): self._curriculum.log_curriculum_update(msg)
+    def extract_gate_dimensions_from_urdf(self, p): return self._geometry.extract_gate_dimensions_from_urdf(p)
+    def calculate_gate_dimensions_from_name(self, n): return self._geometry.calculate_gate_dimensions_from_name(n)
+    def update_gate_dimensions_for_environments(self, ids): self._geometry.update_gate_dimensions_for_environments(ids)
+    def process_image_observation(self): self._camera.process_image_observation()
+    def process_static_camera_observation(self): self._camera.process_static_camera_observation()
+
     def close(self) -> None:
         self.sim_env.delete_env()
 

@@ -202,7 +202,7 @@ class InitHelpers:
 
         # Initialize curriculum logging first
         self.task.curriculum_log_file = None  # Initialize to None
-        self.task.setup_curriculum_logging()  # Set up logging before using it
+        self.task._curriculum.setup_curriculum_logging()  # Set up logging before using it
 
         # FIXED CALCULATION: Account for visible assets only (not all loaded assets)
         # Even though 11 gate variants are loaded, only 1 is visible at any time
@@ -423,6 +423,6 @@ class InitHelpers:
             f"   9. EVALUATION: Check every {self.task.task_config.curriculum.check_after_log_instances} instances (success rate threshold: {self.task.task_config.curriculum.success_rate_for_increase:.3f})"
         )
 
-        self.task.log_curriculum_update(
+        self.task._curriculum.log_curriculum_update(
             f"[INIT] Multi-aspect curriculum initialized at level {self.task.curriculum_level}"
         )

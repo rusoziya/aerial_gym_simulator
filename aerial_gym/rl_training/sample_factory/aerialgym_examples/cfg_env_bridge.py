@@ -101,19 +101,19 @@ def _bridge_optional_float_env(key: str, value: float | None) -> None:
 
 def _bridge_curriculum_flags(cfg: Config) -> None:
     """Propagate curriculum override flags."""
-    if cfg.force_curriculum_level is not None:
-        lvl_str = str(cfg.force_curriculum_level).strip().lower()
+    if getattr(cfg, 'force_curriculum_level', None) is not None:
+        lvl_str = str(getattr(cfg, 'force_curriculum_level', None)).strip().lower()
         if lvl_str and lvl_str != "none":
             os.environ["SF_FORCE_CURRICULUM_LEVEL"] = str(int(lvl_str))
         else:
             os.environ.pop("SF_FORCE_CURRICULUM_LEVEL", None)
 
     try:
-        if not cfg.evaluation:
-            min_lvl_override = cfg.min_curriculum_level
+        if not getattr(cfg, 'evaluation', False):
+            min_lvl_override = getattr(cfg, 'min_curriculum_level', None)
             if min_lvl_override is not None:
                 min_lvl = int(min_lvl_override)
-                max_cap = cfg.max_curriculum_level
+                max_cap = getattr(cfg, 'max_curriculum_level', None)
                 if max_cap is not None:
                     os.environ["SF_MAX_CURRICULUM_LEVEL"] = str(int(max_cap))
                 os.environ["SF_MIN_CURRICULUM_LEVEL"] = str(min_lvl)
