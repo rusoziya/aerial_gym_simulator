@@ -9,6 +9,7 @@ from aerial_gym.env_manager.warp_env_manager import WarpEnv
 from aerial_gym.env_manager.asset_loader import AssetLoader
 from aerial_gym.robots.robot_manager import RobotManagerIGE
 from aerial_gym.env_manager.obstacle_manager import ObstacleManager
+from aerial_gym.env_manager.gate_variant_selection import apply_gate_variant_selection as _apply_gate_variant_selection
 
 
 from aerial_gym.registry.env_registry import env_config_registry
@@ -25,18 +26,6 @@ logger = CustomLogger("env_manager")
 
 
 class EnvManager(BaseManager):
-    """
-    This class manages the environment. This can handle the creation of the
-    robot, environment, and asset managers. This class handles the tensor creation and destruction.
-
-    Moreover, the environment manager can be called within the main environment
-    class to manipulate the environment by abstracting the interface.
-
-    This script can remain as generic as possible to handle different types of
-    environments, while changes can be made in the individual robot or environment
-    managers to handle specific cases.
-    """
-
     def __init__(
         self,
         sim_name: str,
@@ -83,10 +72,6 @@ class EnvManager(BaseManager):
         )
 
     def create_sim(self, env_cfg: object, sim_cfg: object) -> None:
-        """
-        This function creates the environment and the robot manager. Does the necessary things to create the environment
-        for an IsaacGym environment instance.
-        """
         logger.info("Creating simulation instance.")
         logger.info("Instantiating IGE object.")
 
@@ -126,10 +111,6 @@ class EnvManager(BaseManager):
         logger.info("[DONE] Creating simulation instance.")
 
     def populate_env(self, env_cfg: object, sim_cfg: object) -> None:
-        """
-        This function populates the environment with the necessary assets and robots.
-        """
-        # create the simulation instance with the environment and robot manager
         self.create_sim(env_cfg, sim_cfg)
 
         self.robot_manager.create_robot(self.asset_loader)
@@ -284,9 +265,6 @@ class EnvManager(BaseManager):
         self.apply_gate_variant_selection(env_ids=torch.arange(self.cfg.env.num_envs, device=self.device))
 
     def prepare_sim(self) -> None:
-        """
-        This function prepares the simulation for the environment.
-        """
         if not self.IGE_env.prepare_for_simulation(self, self.global_tensor_dict):
             raise Exception("Failed to prepare the simulation")
         if self.cfg.env.use_warp:
@@ -361,178 +339,25 @@ class EnvManager(BaseManager):
         self.sim_steps[env_ids] = 0
 
     def apply_gate_variant_selection(self, env_ids: torch.Tensor | None) -> None:
-        """
-        Select exactly one gate variant to be visible per environment, and hide the others by moving them far away.
-        This must be called after AssetManager.reset_idx so that our visibility settings are not overwritten.
-        """
-        if env_ids is None:
-            return
-        # Guard: only apply after prepare_for_simulation sets num_assets_per_env
-        if not hasattr(self.IGE_env, 'num_assets_per_env'):
-            logger.debug("[GateVariant] Skipping selection (IGE_env not prepared yet)")
-            return
-        if isinstance(env_ids, torch.Tensor):
-            ids = env_ids.tolist()
-        else:
-            ids = list(env_ids)
-        env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
-        for env_id in ids:
-            gate_indices = self.global_tensor_dict["gate_variant_indices_per_env"][env_id]
-            gate_names = self.global_tensor_dict["gate_variant_names_per_env"][env_id]
-            if not gate_indices:
-                continue
-            
-            # Check ablation flags to optionally disable gate size randomization
-            disable_rand = bool(self.global_tensor_dict.get('gate_randomization/disabled', False))
-            if disable_rand:
-                # Fixed-scale mode
-                fixed_scale = int(self.global_tensor_dict.get('gate_randomization/fixed_scale_percent', 100))
-                # Parse available (index, scale)
-                parsed = []
-                for j, name in enumerate(gate_names):
-                    scale = 100
-                    if isinstance(name, str) and "gate_scale_" in name:
-                        try:
-                            scale = int(name.replace("gate_scale_", ""))
-                        except (ValueError, TypeError):
-                            scale = 100
-                    parsed.append((j, scale, name))
-                if parsed:
-                    # Find exact or nearest scale
-                    exact = [j for (j, s, _) in parsed if s == fixed_scale]
-                    if exact:
-                        chosen_idx = exact[0]
-                    else:
-                        nearest = min(parsed, key=lambda t: abs(t[1] - fixed_scale))
-                        chosen_idx = nearest[0]
-                else:
-                    chosen_idx = 0
-                chosen_local_index = gate_indices[chosen_idx]
-                active_name = gate_names[chosen_idx] if gate_names and chosen_idx < len(gate_names) else "unknown"
-                # Place only the chosen variant at center; others hidden
-                for j, local_index in enumerate(gate_indices):
-                    if local_index < 0 or local_index >= env_asset_state.shape[1]:
-                        continue
-                    if j == chosen_idx:
-                        env_asset_state[env_id, local_index, 0:3] = torch.tensor([0.0, 0.0, 0.0], device=self.device)
-                    else:
-                        env_asset_state[env_id, local_index, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
-                self.global_tensor_dict["active_gate_variant_index"][env_id] = chosen_local_index
-                self.global_tensor_dict["active_gate_variant_array_index"][env_id] = chosen_idx
-                continue
-
-            # Curriculum-gated unlocking of gate variants (threshold-based):
-            # At level 3: allow all scales >= 80%
-            # At level 23: allow all scales >= 60% (enforced lower bound)
-            cur_level = self.global_tensor_dict.get("curriculum_level", 3)
-            try:
-                cur_level = int(cur_level.item()) if hasattr(cur_level, 'item') else int(cur_level)
-            except (ValueError, TypeError):
-                cur_level = 3
-            
-            # Unlock smaller gate scales beyond level 23 up to 50% at level 33 during eval-stretch
-            # Training: linear threshold from 80 -> 60 over levels 3..23 (never below 60)
-            # Eval-stretch (if enabled via global_tensor_dict): continue linearly 60 -> 40 over 23..stretch_end_level
-            eval_stretch_enabled = bool(self.global_tensor_dict.get('eval_stretch_enabled', False))
-            stretch_end_level = int(self.global_tensor_dict.get('eval_stretch_end_level', 23))
-            if cur_level <= 3:
-                min_allowed_scale = 80
-            elif cur_level >= 23 and (not eval_stretch_enabled or stretch_end_level <= 23):
-                min_allowed_scale = 60
-            else:
-                if cur_level < 23:
-                    frac = (cur_level - 3) / (23 - 3)
-                    raw = 80 - frac * (80 - 60)
-                else:
-                    upper = max(23, stretch_end_level)
-                    span = max(1, upper - 23)
-                    frac = min(1.0, (cur_level - 23) / float(span))
-                    raw = 60 - frac * (60 - 50)
-                # Quantize down to nearest 2% step (80, 78, ..., 50)
-                min_allowed_scale = int((int(raw) // 2) * 2)
-                if min_allowed_scale < 50:
-                    min_allowed_scale = 50
-                if min_allowed_scale > 100:
-                    min_allowed_scale = 100
-            
-            # Parse (index, scale, name) and keep those meeting the threshold
-            parsed = []
-            for j, name in enumerate(gate_names):
-                scale = 100
-                if isinstance(name, str) and "gate_scale_" in name:
-                    try:
-                        scale = int(name.replace("gate_scale_", ""))
-                    except (ValueError, TypeError):
-                        scale = 100
-                parsed.append((j, scale, name))
-            # Allowed indices are those with scale >= min_allowed_scale
-            allowed_js = [j for (j, scale, _) in parsed if scale >= min_allowed_scale]
-            # If nothing matched (e.g., unusual naming), fall back to largest scales
-            if not allowed_js:
-                parsed.sort(key=lambda x: x[1], reverse=True)
-                allowed_js = [j for (j, _, __) in parsed[:1]] if parsed else []
-            
-            # Deterministic randomization across runs: use torch RNG seeded globally and per-env counter
-            if allowed_js:
-                allowed_pairs = [(j, scale) for (j, scale, _) in parsed if j in allowed_js]
-                unique_scales = sorted({scale for (_, scale) in allowed_pairs}, reverse=True)
-                # Increment per-env counter to advance RNG in a deterministic manner
-                self.global_tensor_dict["gate_variant_counter"][env_id] += 1
-                # Sample an index deterministically using torch's seeded RNG
-                # Pick a scale bucket first
-                scale_idx = int(torch.randint(low=0, high=len(unique_scales), size=(1,), device=self.device).item())
-                chosen_scale = unique_scales[scale_idx]
-                candidates = [j for (j, scale) in allowed_pairs if scale == chosen_scale]
-                cand_idx = int(torch.randint(low=0, high=len(candidates), size=(1,), device=self.device).item())
-                chosen_idx = candidates[cand_idx]
-            else:
-                chosen_idx = 0
-            chosen_local_index = gate_indices[chosen_idx]
-            active_name = gate_names[chosen_idx] if gate_names and chosen_idx < len(gate_names) else "unknown"
-            
-            # Extract scale from gate name for debugging
-            scale_info = "unknown"
-            if "gate_scale_" in active_name:
-                scale_info = active_name.replace("gate_scale_", "") + "%"
-            
-            self.global_tensor_dict["active_gate_variant_index"][env_id] = chosen_local_index  # Asset index
-            self.global_tensor_dict["active_gate_variant_array_index"][env_id] = chosen_idx  # Index in gate variant arrays
-            # Iterate all gate variants and place only the chosen at center; others moved far away
-            for j, local_index in enumerate(gate_indices):
-                if local_index < 0 or local_index >= env_asset_state.shape[1]:
-                    logger.debug(f"[GateVariant] Env {env_id}: local_index {local_index} out of bounds for assets {env_asset_state.shape[1]}")
-                    continue
-                gate_name = gate_names[j] if gate_names and j < len(gate_names) else f"gate_{j}"
-                if j == chosen_idx:
-                    # place at center (already configured by min/max), but ensure visible by mirroring center pose
-                    env_asset_state[env_id, local_index, 0:3] = torch.tensor([0.0, 0.0, 0.0], device=self.device)
-                else:
-                    # move out of bounds to hide
-                    env_asset_state[env_id, local_index, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
-        # Write back the unfolded state tensor
-        self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
+        """Select exactly one gate variant per environment, hiding the rest."""
+        ige_prepared = hasattr(self.IGE_env, "num_assets_per_env")
+        _apply_gate_variant_selection(
+            env_ids=env_ids,
+            global_tensor_dict=self.global_tensor_dict,
+            num_envs=self.cfg.env.num_envs,
+            device=self.device,
+            ige_env_prepared=ige_prepared,
+        )
 
     def log_memory_use(self) -> None:
-        """
-        This function logs the memory usage of the GPU.
-        """
-        logger.warning(
-            f"torch.cuda.memory_allocated: {torch.cuda.memory_allocated(0)/1024/1024/1024}GB"
-        )
-        logger.warning(
-            f"torch.cuda.memory_reserved: {torch.cuda.memory_reserved(0)/1024/1024/1024}GB"
-        )
-        logger.warning(
-            f"torch.cuda.max_memory_reserved: {torch.cuda.max_memory_reserved(0)/1024/1024/1024}GB"
-        )
-
-        # Calculate and system RAM usage used by the objects of this class
-        total_memory = 0
-        for key, value in self.__dict__.items():
-            total_memory += value.__sizeof__()
-        logger.warning(
-            f"Total memory used by the objects of this class: {total_memory/1024/1024}MB"
-        )
+        allocated_gb = torch.cuda.memory_allocated(0) / 1024 / 1024 / 1024
+        reserved_gb = torch.cuda.memory_reserved(0) / 1024 / 1024 / 1024
+        max_reserved_gb = torch.cuda.max_memory_reserved(0) / 1024 / 1024 / 1024
+        logger.warning(f"torch.cuda.memory_allocated: {allocated_gb}GB")
+        logger.warning(f"torch.cuda.memory_reserved: {reserved_gb}GB")
+        logger.warning(f"torch.cuda.max_memory_reserved: {max_reserved_gb}GB")
+        total_memory = sum(v.__sizeof__() for v in self.__dict__.values())
+        logger.warning(f"Total memory used by objects: {total_memory / 1024 / 1024}MB")
 
     def reset(self) -> None:
         self.reset_idx(env_ids=torch.arange(self.cfg.env.num_envs))
@@ -612,11 +437,6 @@ class EnvManager(BaseManager):
         return envs_to_reset
 
     def step(self, actions: torch.Tensor, env_actions: torch.Tensor | None = None) -> None:
-        """
-        This function steps the simulation for the environment.
-        actions: The actions that are sent to the robot.
-        env_actions: The actions that are sent to the environment entities.
-        """
         self.reset_tensors()
         if env_actions is not None:
             if self.global_tensor_dict["env_actions"] is None:
