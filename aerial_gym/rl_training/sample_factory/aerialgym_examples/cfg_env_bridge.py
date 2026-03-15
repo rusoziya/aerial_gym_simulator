@@ -112,7 +112,9 @@ def _bridge_curriculum_flags(cfg: Config) -> None:
             os.environ.pop("SF_FORCE_CURRICULUM_LEVEL", None)
 
     try:
-        if not cfg.evaluation:
+        # evaluation attribute only exists on SF Config when parse_aerialgym_cfg(evaluation=True)
+        is_eval = bool(cfg.evaluation) if hasattr(cfg, "evaluation") else False
+        if not is_eval:
             min_lvl_override = cfg.min_curriculum_level
             if min_lvl_override is not None:
                 min_lvl = int(min_lvl_override)
