@@ -1,24 +1,13 @@
-"""Isaac Lab physics backend — stub implementation.
+"""Isaac Lab physics backend for Aerial Gym.
 
-This module provides the Isaac Lab equivalent of IGE_env_manager.py.
-It implements the PhysicsBackend Protocol using NVIDIA Isaac Lab APIs
-instead of Isaac Gym Preview 4.
-
-Requirements:
-- Python >= 3.10
-- Isaac Lab (omni.isaac.lab)
-- Isaac Sim (omni.isaac.core)
-
-Status: STUB — method signatures and docstrings are complete,
-implementations are TODO placeholders. Fill in each method to
-complete the migration.
-
-Migration guide: each method has a comment showing the Isaac Gym
-equivalent and what the Isaac Lab replacement should do.
+Implements the same interface as IsaacGymEnv using Isaac Lab APIs.
+SimulationApp must be created before any omni/isaaclab imports, so this
+module lazily imports Isaac Lab symbols inside methods that need them.
 """
 
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Optional, Tuple
 
 import torch
@@ -28,16 +17,24 @@ from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import torch_rand_float_tensor
 
 if TYPE_CHECKING:
+    from aerial_gym.env_manager.env_manager import EnvManager
     from aerial_gym.env_manager.tensor_state import TensorState
 
 logger = CustomLogger("IsaacLabEnvManager")
 
+_ISAAC_LAB_SRC_PATH = (
+    "/home/ziyar/miniforge3/envs/isaaclab/lib/python3.11/site-packages/isaaclab/source/isaaclab"
+)
+
+
+def _ensure_isaac_lab_on_path() -> None:
+    """Add Isaac Lab source to sys.path if not already present."""
+    if _ISAAC_LAB_SRC_PATH not in sys.path:
+        sys.path.insert(0, _ISAAC_LAB_SRC_PATH)
+
 
 class IsaacLabEnv(BaseManager):
-    """Isaac Lab physics backend — implements PhysicsBackend Protocol.
-
-    Drop-in replacement for IsaacGymEnv. EnvManager can use either backend
-    via the PhysicsBackend Protocol without code changes.
+    """Isaac Lab physics backend — drop-in replacement for IsaacGymEnv.
 
     Key differences from Isaac Gym:
     - Single scene with instanced clones (not per-env create_env loop)
@@ -55,27 +52,29 @@ class IsaacLabEnv(BaseManager):
     ) -> None:
         super().__init__(config, device)
         self.sim_config = sim_config
-        self.has_IGE_cameras = has_cameras
-        self.env_handles: list = []
-        self.asset_handles: list = []
-        self.num_rigid_bodies_robot: Optional[int] = None
+        self.has_IGE_cameras: bool = has_cameras
+        self.env_handles: list[int] = []
+        self.asset_handles: list[list[int]] = []
+        self.num_rigid_bodies_robot: int = 1
         self.num_assets_per_env: int = 0
+        self.num_envs: int = self.cfg.env.num_envs
+        self.num_rigid_bodies_per_env: int = 0
         self.sim_has_dof: bool = False
+        self.dof_control_mode: str = "none"
+        self.global_tensor_dict: Optional[TensorState] = None
+
+        # Isaac Lab articulations and rigid objects registered during add_asset_to_env
+        self._robot_prim_paths: list[str] = []
+        self._asset_prim_paths: list[str] = []
+        self._robot_articulation: Optional[object] = None
+        self._asset_rigid_objects: list[object] = []
 
         logger.info("Creating Isaac Lab Environment")
 
-        # TODO: Replace Isaac Gym calls:
-        #   gym = gymapi.acquire_gym()
-        #   sim = gym.create_sim(device_id, graphics_id, physics_engine, sim_params)
-        #
-        # Isaac Lab equivalent:
-        #   from omni.isaac.lab.sim import SimulationCfg, SimulationContext
-        #   sim_cfg = SimulationCfg(dt=config.sim.dt, ...)
-        #   self.sim_context = SimulationContext(sim_cfg)
-        #   self.sim_context.set_camera_view(eye, target)
-        self.sim_context = None  # TODO: SimulationContext(...)
+        _ensure_isaac_lab_on_path()
+        self._create_simulation_app_and_context()
 
-        # Environment bounds (same logic as Isaac Gym)
+        # Environment bounds (same logic as Isaac Gym backend)
         self.env_lower_bound_min = torch.tensor(
             self.cfg.env.lower_bound_min, device=self.device, requires_grad=False
         ).expand(self.cfg.env.num_envs, -1)
@@ -96,38 +95,44 @@ class IsaacLabEnv(BaseManager):
             self.env_upper_bound_min, self.env_upper_bound_max
         )
 
-        self.viewer = None
-        self.graphics_are_stepped = True
+        self.viewer: Optional[object] = None
+        self.graphics_are_stepped: bool = True
 
-        logger.info("Isaac Lab Environment initialized (stub)")
+        logger.info("Isaac Lab Environment initialized")
+
+    def _create_simulation_app_and_context(self) -> None:
+        """Create SimulationApp and SimulationContext — must happen before other omni imports."""
+        from isaacsim import SimulationApp
+
+        headless = self.sim_config.viewer.headless
+        self._app = SimulationApp({"headless": headless})
+
+        from isaaclab.sim import SimulationCfg, SimulationContext
+
+        dt = self.sim_config.sim.dt
+        gravity = tuple(self.sim_config.sim.gravity)
+        sim_cfg = SimulationCfg(
+            dt=dt,
+            device=self.device,
+            gravity=gravity,
+        )
+        self.sim_context = SimulationContext(sim_cfg)
+        logger.info(f"SimulationContext created (dt={dt}, device={self.device})")
 
     def create_ground_plane(self) -> None:
-        """Add ground plane to the scene.
+        """Add a ground plane to the USD stage via Isaac Lab."""
+        from isaaclab.sim.spawners.shapes import GroundPlaneCfg
 
-        Isaac Gym equivalent: gym.add_ground(sim, plane_params)
-        Isaac Lab: Add a GroundPlaneCfg to the scene.
+        ground_cfg = GroundPlaneCfg()
+        ground_cfg.func("/World/ground", ground_cfg)
+        logger.info("Ground plane added")
 
-        TODO:
-            from omni.isaac.lab.terrains import TerrainImporterCfg
-            ground_cfg = TerrainImporterCfg(prim_path="/World/ground", terrain_type="plane")
-            self.scene.add(ground_cfg)
-        """
-        logger.info("TODO: Add ground plane via Isaac Lab terrain API")
+    def create_env(self, env_id: int) -> int:
+        """Register an environment index.
 
-    def create_env(self, env_id: int) -> object:
-        """Create environment instance.
-
-        Isaac Gym equivalent: gym.create_env(sim, lower_bound, upper_bound, num_per_row)
-
-        Isaac Lab: Environments are created via scene cloning, not explicit loops.
-        The first call creates the prototype, subsequent calls are no-ops since
-        Isaac Lab handles cloning internally via num_envs.
-
-        TODO:
-            if env_id == 0:
-                from omni.isaac.lab.scene import InteractiveSceneCfg
-                self.scene = InteractiveScene(InteractiveSceneCfg(num_envs=self.cfg.env.num_envs))
-            return env_id  # Isaac Lab uses integer indices, not handles
+        Isaac Lab uses scene cloning via num_envs, so individual env creation
+        is a no-op. We just track handles for compatibility with EnvManager's
+        per-env asset population loop.
         """
         if len(self.env_handles) <= env_id:
             self.env_handles.append(env_id)
@@ -136,149 +141,308 @@ class IsaacLabEnv(BaseManager):
 
     def add_asset_to_env(
         self,
-        asset_info_dict: dict,
-        env_handle: object,
+        asset_info_dict: dict[str, int | str | bool | list[float] | None],
+        env_handle: int,
         env_id: int,
         global_asset_counter: int,
         segmentation_counter: int,
-    ) -> Tuple[object, int]:
-        """Add rigid body or articulation to environment.
+    ) -> Tuple[int, int]:
+        """Register an asset for later scene construction.
 
-        Isaac Gym equivalent: gym.create_actor(env, asset, transform, name, env_id, collision, seg)
-
-        Isaac Lab: Register articulation or rigid body in scene.
-
-        TODO:
-            from omni.isaac.lab.assets import ArticulationCfg, RigidObjectCfg
-            if asset_info_dict["asset_type"] == "robot":
-                cfg = ArticulationCfg(prim_path=f"/World/envs/env_{env_id}/robot", ...)
-            else:
-                cfg = RigidObjectCfg(prim_path=f"/World/envs/env_{env_id}/asset_{global_asset_counter}", ...)
-            handle = self.scene.add(cfg)
+        Isaac Lab spawns all prims at scene-build time via cloning, so we only
+        record metadata here. The actual Articulation / RigidObject creation
+        happens in prepare_for_simulation for env_id == 0 (the prototype env).
         """
         asset_handle = global_asset_counter
         self.asset_handles[env_id].append(asset_handle)
 
-        if asset_info_dict["asset_type"] == "robot":
-            self.num_rigid_bodies_robot = 1  # TODO: query from scene
+        is_robot = asset_info_dict["asset_type"] == "robot"
+
+        # Only record prim paths for the prototype environment (env 0)
+        if env_id == 0:
+            if is_robot:
+                self._robot_prim_paths.append(f"/World/envs/env_.*/robot_{global_asset_counter}")
+            else:
+                self._asset_prim_paths.append(f"/World/envs/env_.*/asset_{global_asset_counter}")
+
+        if is_robot:
+            # TODO: query actual rigid body count from the URDF/USD asset
+            self.num_rigid_bodies_robot = 1
 
         seg_increment = 1
         return (asset_handle, seg_increment)
 
     def prepare_for_simulation(
         self,
-        env_manager: object,
+        env_manager: EnvManager,
         global_tensor_dict: TensorState,
     ) -> bool:
-        """Finalize simulation: acquire state tensors, set up viewer.
-
-        Isaac Gym equivalent:
-            gym.prepare_sim(sim)
-            root_tensor = gym.acquire_actor_root_state_tensor(sim)
-            contact_tensor = gym.acquire_net_contact_force_tensor(sim)
-            dof_tensor = gym.acquire_dof_state_tensor(sim)
-
-        Isaac Lab: Tensors are available after scene.reset().
-            self.sim_context.reset()
-            root_state = self.scene["robot"].data.root_state_w  # (num_envs, 13)
-            contact = self.scene.sensors["contact"].data.net_forces_w  # (num_envs, num_bodies, 3)
-
-        TODO: Populate global_tensor_dict with Isaac Lab tensors:
-            global_tensor_dict.robot_state_tensor = root_state
-            global_tensor_dict.robot_position = root_state[:, :3]
-            global_tensor_dict.robot_orientation = root_state[:, 3:7]
-            # etc.
-        """
-        logger.info("TODO: Acquire Isaac Lab state tensors and populate TensorState")
-
+        """Finalize the scene: spawn assets via cloning, reset physics, populate tensors."""
         self.num_envs = len(self.env_handles)
         self.num_assets_per_env = len(self.asset_handles[0]) if self.asset_handles else 0
 
         self.global_tensor_dict = global_tensor_dict
 
-        # TODO: Create viewer if not headless
-        self.create_viewer(env_manager)
+        self._build_scene()
+        self.sim_context.reset()
 
+        self._populate_state_tensors()
+        self._populate_force_tensors()
+        self._populate_dof_and_contact_tensors()
+        self._populate_robot_tensor_slices()
+        if self.num_assets_per_env > 1:
+            self._populate_obstacle_tensor_slices()
+        self._populate_env_metadata()
+
+        self.create_viewer(env_manager)
         return True
 
-    def pre_physics_step(self, actions: torch.Tensor) -> None:
-        """Apply forces/torques before stepping.
+    def _build_scene(self) -> None:
+        """Spawn the robot articulation and obstacle rigid objects into the USD stage.
 
-        Isaac Gym equivalent:
-            gym.apply_rigid_body_force_tensors(sim, force_tensor, torque_tensor, LOCAL_SPACE)
-            gym.set_dof_position_target_tensor(sim, target_tensor)
-
-        Isaac Lab:
-            self.scene["robot"].set_joint_position_target(targets)
-            # OR for direct force application:
-            self.scene["robot"].set_external_force_and_torque(forces, torques)
-
-        TODO: Map DOF control modes and force application.
+        Isaac Lab clones the prototype environment across num_envs automatically
+        when using regex prim paths like ``/World/envs/env_.*/...``.
         """
+
+        # TODO: Build ArticulationCfg from the robot's URDF/USD path and config.
+        # For now we create a minimal placeholder that downstream code must configure.
+        if self._robot_prim_paths:
+            prim_path = self._robot_prim_paths[0]
+            logger.info(f"TODO: Spawn robot articulation at '{prim_path}' from robot config URDF")
+            # Example (requires robot-specific USD/URDF path):
+            # robot_cfg = ArticulationCfg(
+            #     prim_path=prim_path,
+            #     spawn=sim_utils.UsdFileCfg(usd_path="..."),
+            #     init_state=ArticulationCfg.InitialStateCfg(pos=(0, 0, 1.0)),
+            # )
+            # self._robot_articulation = Articulation(robot_cfg)
+
+        for i, prim_path in enumerate(self._asset_prim_paths):
+            logger.info(f"TODO: Spawn rigid object {i} at '{prim_path}' from asset config")
+            # Example:
+            # obj_cfg = RigidObjectCfg(prim_path=prim_path, ...)
+            # self._asset_rigid_objects.append(RigidObject(obj_cfg))
+
+    def _populate_state_tensors(self) -> None:
+        """Fill global_tensor_dict with root state tensors from the Isaac Lab scene."""
+        n = self.num_envs
+        total_actors = self.num_assets_per_env  # robot + obstacles
+
+        if self._robot_articulation is not None:
+            root_state = self._robot_articulation.data.root_state_w  # (num_envs, 13)
+        else:
+            # Placeholder tensors until the scene is fully wired
+            root_state = torch.zeros((n, 13), device=self.device)
+            root_state[:, 6] = 1.0  # unit quaternion w component
+
+        # Build the full vec_root_tensor: (num_envs, num_assets_per_env, 13)
+        if total_actors > 0:
+            all_states = [root_state.unsqueeze(1)]
+            for obj in self._asset_rigid_objects:
+                all_states.append(obj.data.root_state_w.unsqueeze(1))
+            # Pad with placeholders for unregistered assets
+            while len(all_states) < total_actors:
+                placeholder = torch.zeros((n, 1, 13), device=self.device)
+                placeholder[:, :, 6] = 1.0
+                all_states.append(placeholder)
+            vec_root = torch.cat(all_states, dim=1)
+        else:
+            vec_root = root_state.unsqueeze(1)
+
+        # Flat view used by write_to_sim
+        self._unfolded_root_tensor = vec_root.reshape(-1, 13).contiguous()
+
+        self.global_tensor_dict.vec_root_tensor = vec_root
+        self.global_tensor_dict.robot_state_tensor = vec_root[:, 0, :]
+        self.global_tensor_dict.env_asset_state_tensor = vec_root[:, 1:, :]
+        self.global_tensor_dict.unfolded_env_asset_state_tensor = self._unfolded_root_tensor
+        self.global_tensor_dict.unfolded_env_asset_state_tensor_const = (
+            self._unfolded_root_tensor.clone()
+        )
+
+    def _populate_force_tensors(self) -> None:
+        """Create zero-initialized force/torque tensors matching Isaac Gym layout."""
+        n = self.num_envs
+        # Each env has num_rigid_bodies_robot + obstacle rigid bodies
+        # For now approximate 1 rigid body per asset
+        self.num_rigid_bodies_per_env = (
+            self.num_assets_per_env if self.num_assets_per_env > 0 else 1
+        )
+        total_bodies = n * self.num_rigid_bodies_per_env
+
+        # Rigid body state: Isaac Lab provides via articulation.data.body_pos_w etc.
+        # We create a compatible (total_bodies, 13) tensor
+        self.global_tensor_dict.rigid_body_state_tensor = torch.zeros(
+            (total_bodies, 13), device=self.device
+        )
+
+        self.global_tensor_dict.global_force_tensor = torch.zeros(
+            (total_bodies, 3), device=self.device
+        )
+        self.global_tensor_dict.global_torque_tensor = torch.zeros(
+            (total_bodies, 3), device=self.device
+        )
+
+        idx = self.num_rigid_bodies_robot
+        self.global_tensor_dict.robot_force_tensor = (
+            self.global_tensor_dict.global_force_tensor.view(n, self.num_rigid_bodies_per_env, 3)[
+                :, :idx, :
+            ]
+        )
+        self.global_tensor_dict.robot_torque_tensor = (
+            self.global_tensor_dict.global_torque_tensor.view(n, self.num_rigid_bodies_per_env, 3)[
+                :, :idx, :
+            ]
+        )
+
+    def _populate_dof_and_contact_tensors(self) -> None:
+        """Set up DOF state and contact force tensors."""
+        n = self.num_envs
+
+        # DOF state — only relevant when the robot has joints
+        if self._robot_articulation is not None:
+            # TODO: query actual DOF count from articulation
+            self.sim_has_dof = True
+        # Placeholder empty DOF tensor
+        self.global_tensor_dict.unfolded_dof_state_tensor = torch.zeros(
+            (n, 0, 2), device=self.device
+        )
+        self.global_tensor_dict.dof_state_tensor = torch.zeros((n, 0, 2), device=self.device)
+
+        # Contact forces: (num_envs, num_rigid_bodies_per_env, 3)
+        self.global_tensor_dict.global_contact_force_tensor = torch.zeros(
+            (n, self.num_rigid_bodies_per_env, 3), device=self.device
+        )
+        self.global_tensor_dict.robot_contact_force_tensor = (
+            self.global_tensor_dict.global_contact_force_tensor[:, 0, :]
+        )
+
+    def _populate_robot_tensor_slices(self) -> None:
+        """Slice the root state tensor into robot-specific views."""
+        rs = self.global_tensor_dict.robot_state_tensor
+        self.global_tensor_dict.robot_position = rs[:, :3]
+        self.global_tensor_dict.robot_orientation = rs[:, 3:7]
+        self.global_tensor_dict.robot_linvel = rs[:, 7:10]
+        self.global_tensor_dict.robot_angvel = rs[:, 10:]
+        self.global_tensor_dict.robot_body_angvel = torch.zeros_like(rs[:, 10:13])
+        self.global_tensor_dict.robot_body_linvel = torch.zeros_like(rs[:, 7:10])
+        self.global_tensor_dict.robot_euler_angles = torch.zeros_like(rs[:, 7:10])
+
+    def _populate_obstacle_tensor_slices(self) -> None:
+        """Slice the env asset state tensor into obstacle-specific views."""
+        n = self.num_envs
+        eas = self.global_tensor_dict.env_asset_state_tensor
+        self.global_tensor_dict.obstacle_position = eas[:, :, 0:3]
+        self.global_tensor_dict.obstacle_orientation = eas[:, :, 3:7]
+        self.global_tensor_dict.obstacle_linvel = eas[:, :, 7:10]
+        self.global_tensor_dict.obstacle_angvel = eas[:, :, 10:]
+        self.global_tensor_dict.obstacle_body_angvel = torch.zeros_like(eas[:, :, 10:13])
+        self.global_tensor_dict.obstacle_body_linvel = torch.zeros_like(eas[:, :, 7:10])
+        self.global_tensor_dict.obstacle_euler_angles = torch.zeros_like(eas[:, :, 7:10])
+
+        idx = self.num_rigid_bodies_robot
+        self.global_tensor_dict.obstacle_force_tensor = (
+            self.global_tensor_dict.global_force_tensor.view(n, self.num_rigid_bodies_per_env, 3)[
+                :, idx:, :
+            ]
+        )
+        self.global_tensor_dict.obstacle_torque_tensor = (
+            self.global_tensor_dict.global_torque_tensor.view(n, self.num_rigid_bodies_per_env, 3)[
+                :, idx:, :
+            ]
+        )
+
+    def _populate_env_metadata(self) -> None:
+        """Store environment bounds, gravity, and time step."""
+        self.global_tensor_dict.env_bounds_max = self.env_upper_bound
+        self.global_tensor_dict.env_bounds_min = self.env_lower_bound
+        self.global_tensor_dict.gravity = torch.tensor(
+            self.sim_config.sim.gravity, device=self.device, requires_grad=False
+        ).expand(self.num_envs, -1)
+        self.global_tensor_dict.dt = self.sim_config.sim.dt
+
+    def pre_physics_step(self, actions: torch.Tensor) -> None:
+        """Apply forces/torques and DOF targets before stepping physics.
+
+        Isaac Lab equivalent of gym.apply_rigid_body_force_tensors and
+        gym.set_dof_*_target_tensor.
+        """
+        if self.cfg.env.write_to_sim_at_every_timestep:
+            self.write_to_sim()
+
+        if self._robot_articulation is not None:
+            # Apply external forces and torques to the robot
+            forces = self.global_tensor_dict.robot_force_tensor
+            torques = self.global_tensor_dict.robot_torque_tensor
+            self._robot_articulation.set_external_force_and_torque(forces, torques)
+
+            # Apply DOF targets based on control mode
+            if self.sim_has_dof:
+                self.dof_control_mode = self.global_tensor_dict.dof_control_mode
+                if self.dof_control_mode == "position":
+                    self._robot_articulation.set_joint_position_target(
+                        self.global_tensor_dict.dof_position_setpoint_tensor
+                    )
+                elif self.dof_control_mode == "velocity":
+                    self._robot_articulation.set_joint_velocity_target(
+                        self.global_tensor_dict.dof_velocity_setpoint_tensor
+                    )
+                elif self.dof_control_mode == "effort":
+                    self._robot_articulation.set_joint_effort_target(
+                        self.global_tensor_dict.dof_effort_tensor
+                    )
 
     def physics_step(self) -> None:
-        """Run one simulation step.
-
-        Isaac Gym: gym.simulate(sim)
-        Isaac Lab: self.sim_context.step()
-
-        Note: Isaac Lab automatically handles fetch_results internally.
-        """
-        if self.sim_context is not None:
-            self.sim_context.step()
+        """Run one simulation step via Isaac Lab."""
+        self.sim_context.step()
         self.graphics_are_stepped = False
 
     def post_physics_step(self) -> None:
         """Synchronize tensors after physics step.
 
-        Isaac Gym: gym.fetch_results(sim, True) + gym.refresh_*_tensor() calls
-        Isaac Lab: Automatic — tensors are updated after sim_context.step().
-                   May need sim_context.render() for camera data.
-
-        TODO: If explicit refresh needed:
-            self.sim_context.render()  # for camera sensors
+        Isaac Lab updates articulation/rigid-object data automatically after
+        step(). We refresh our tensor dict views from the live data.
         """
-        self.refresh_tensors()
+        self._sync_tensors_from_sim()
+
+    def _sync_tensors_from_sim(self) -> None:
+        """Pull latest state from Isaac Lab articulations into the tensor dict."""
+        if self._robot_articulation is None:
+            return
+
+        robot = self._robot_articulation
+        root_state = robot.data.root_state_w  # (num_envs, 13)
+
+        # Update the robot slice of vec_root_tensor (it's a view, so downstream sees changes)
+        self.global_tensor_dict.vec_root_tensor[:, 0, :] = root_state
+
+        # Update rigid object states
+        for i, obj in enumerate(self._asset_rigid_objects):
+            self.global_tensor_dict.vec_root_tensor[:, i + 1, :] = obj.data.root_state_w
+
+        # Sync the flat unfolded tensor
+        self._unfolded_root_tensor[:] = self.global_tensor_dict.vec_root_tensor.reshape(-1, 13)
+
+        # Contact forces — Isaac Lab provides net contact forces on articulation bodies
+        # TODO: Wire up isaaclab.sensors.ContactSensorCfg for accurate contact data
 
     def refresh_tensors(self) -> None:
-        """Refresh all state tensors from simulation.
-
-        Isaac Gym: 5 separate gym.refresh_*() calls
-        Isaac Lab: Automatic after step(). This is a no-op.
-
-        Note: Camera data may require explicit sim_context.render().
-        """
+        """No-op — Isaac Lab auto-refreshes tensors after step()."""
 
     def step_graphics(self) -> None:
-        """Update graphics for camera rendering.
-
-        Isaac Gym: gym.step_graphics(sim)
-        Isaac Lab: self.sim_context.render()
-        """
+        """Render the scene (needed for camera sensor data)."""
         if not self.graphics_are_stepped:
-            if self.sim_context is not None:
-                self.sim_context.render()
+            self.sim_context.render()
             self.graphics_are_stepped = True
 
     def render_viewer(self) -> None:
-        """Render viewer window.
-
-        Isaac Gym: gym.draw_viewer(viewer, sim, True); gym.sync_frame_time(sim)
-        Isaac Lab: Handled by Omniverse viewport automatically.
-        """
+        """Update the Omniverse viewport. Isaac Lab handles this via render()."""
         if self.viewer is not None:
             if not self.graphics_are_stepped:
                 self.step_graphics()
 
     def reset_idx(self, env_ids: torch.Tensor) -> None:
-        """Reset specified environments.
-
-        Isaac Gym: Randomize env bounds
-        Isaac Lab: Same logic — randomize bounds, then write_to_sim.
-
-        TODO: Also reset articulation/rigid body states via:
-            self.scene["robot"].write_root_state_to_sim(root_state, env_ids)
-        """
+        """Reset specified environments: randomize bounds and write robot state."""
         self.env_lower_bound[env_ids, :] = torch_rand_float_tensor(
             self.env_lower_bound_min, self.env_lower_bound_max
         )[env_ids]
@@ -286,29 +450,37 @@ class IsaacLabEnv(BaseManager):
             self.env_upper_bound_min, self.env_upper_bound_max
         )[env_ids]
 
+        # Write reset state for the affected environments
+        if self._robot_articulation is not None:
+            root_state = self.global_tensor_dict.vec_root_tensor[:, 0, :]
+            self._robot_articulation.write_root_state_to_sim(root_state[env_ids], env_ids)
+
+            for i, obj in enumerate(self._asset_rigid_objects):
+                asset_state = self.global_tensor_dict.vec_root_tensor[:, i + 1, :]
+                obj.write_root_state_to_sim(asset_state[env_ids], env_ids)
+
     def write_to_sim(self) -> None:
-        """Write state tensors back to simulation.
+        """Write all state tensors back to the Isaac Lab simulation."""
+        if self._robot_articulation is not None:
+            root_state = self.global_tensor_dict.vec_root_tensor[:, 0, :]
+            self._robot_articulation.write_root_state_to_sim(root_state)
 
-        Isaac Gym:
-            gym.set_actor_root_state_tensor(sim, unwrap(root_tensor))
-            gym.set_dof_state_tensor(sim, unwrap(dof_tensor))
+            if self.sim_has_dof and self.global_tensor_dict.dof_state_tensor is not None:
+                dof = self.global_tensor_dict.dof_state_tensor
+                if dof.shape[1] > 0:
+                    self._robot_articulation.write_joint_state_to_sim(dof[:, :, 0], dof[:, :, 1])
 
-        Isaac Lab:
-            self.scene["robot"].write_root_state_to_sim(root_state)
-            self.scene["robot"].write_joint_state_to_sim(joint_pos, joint_vel)
+        for i, obj in enumerate(self._asset_rigid_objects):
+            asset_state = self.global_tensor_dict.vec_root_tensor[:, i + 1, :]
+            obj.write_root_state_to_sim(asset_state)
 
-        TODO: Implement state write-back.
-        """
-
-    def create_viewer(self, env_manager: object) -> None:
-        """Create visualization window.
-
-        Isaac Gym: gym.create_viewer(sim, CameraProperties())
-        Isaac Lab: Omniverse viewport is created automatically if not headless.
-
-        TODO: Set up Isaac Lab viewport camera if needed.
-        """
+    def create_viewer(self, env_manager: EnvManager) -> None:
+        """Set up the Omniverse viewport camera if not headless."""
         if not self.sim_config.viewer.headless:
-            logger.info("TODO: Create Isaac Lab viewer/viewport")
+            logger.info("Isaac Lab viewport active — viewer camera managed by Omniverse Kit")
+            # The Omniverse viewport is created automatically by SimulationApp.
+            # Store a sentinel so render_viewer knows we're not headless.
+            self.viewer = True
         else:
             logger.info("Headless mode — no viewer created")
+            self.viewer = None

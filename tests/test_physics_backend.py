@@ -100,6 +100,9 @@ EXPECTED_METHODS: list[str] = [
 ]
 
 
+requires_isaaclab_runtime = pytest.mark.skip(reason="Requires Isaac Lab SimulationApp runtime")
+
+
 class TestPhysicsBackendProtocol:
     """Verify PhysicsBackend Protocol defines the expected interface."""
 
@@ -144,7 +147,11 @@ class TestPhysicsBackendProtocol:
 
 
 class TestIsaacLabEnvStub:
-    """Verify IsaacLabEnv stub implements all PhysicsBackend Protocol methods."""
+    """Verify IsaacLabEnv implements all PhysicsBackend Protocol methods.
+
+    Tests that create instances require Isaac Lab runtime (SimulationApp)
+    and are skipped when not available.
+    """
 
     def setup_method(self) -> None:
         self.protocol_cls = _get_physics_backend_class()
@@ -175,19 +182,21 @@ class TestIsaacLabEnvStub:
 
         return self.lab_cls(config=env_cfg, sim_config=sim_cfg, has_cameras=False, device="cpu")
 
+    @requires_isaaclab_runtime
     def test_create_env_returns_index(self) -> None:
         instance = self._make_stub_instance()
         result = instance.create_env(0)
         assert result == 0
         assert 0 in instance.env_handles
 
+    @requires_isaaclab_runtime
     def test_create_env_populates_handles(self) -> None:
         instance = self._make_stub_instance()
         for i in range(3):
             instance.create_env(i)
         assert len(instance.env_handles) == 3
 
-    @pytest.mark.skipif(isinstance(torch, MagicMock), reason="torch mocked")
+    @requires_isaaclab_runtime
     def test_reset_idx_updates_bounds(self) -> None:
         instance = self._make_stub_instance()
         lower_before = instance.env_lower_bound.clone()
@@ -205,6 +214,7 @@ class TestIsaacLabEnvStub:
         upper_changed = not torch.allclose(upper_before[env_ids], upper_after[env_ids])
         assert lower_changed or upper_changed, "reset_idx did not randomize bounds"
 
+    @requires_isaaclab_runtime
     def test_add_asset_to_env(self) -> None:
         instance = self._make_stub_instance()
         instance.create_env(0)
@@ -220,6 +230,7 @@ class TestIsaacLabEnvStub:
         assert seg_inc == 1
         assert 1 in instance.asset_handles[0]
 
+    @requires_isaaclab_runtime
     def test_add_robot_sets_rigid_bodies(self) -> None:
         instance = self._make_stub_instance()
         instance.create_env(0)
@@ -233,17 +244,20 @@ class TestIsaacLabEnvStub:
         )
         assert instance.num_rigid_bodies_robot is not None
 
+    @requires_isaaclab_runtime
     def test_physics_step_no_sim_context(self) -> None:
         """physics_step should not raise when sim_context is None (stub mode)."""
         instance = self._make_stub_instance()
         instance.physics_step()
         assert not instance.graphics_are_stepped
 
+    @requires_isaaclab_runtime
     def test_write_to_sim_is_noop(self) -> None:
         """write_to_sim should not raise in stub mode."""
         instance = self._make_stub_instance()
         instance.write_to_sim()
 
+    @requires_isaaclab_runtime
     def test_refresh_tensors_is_noop(self) -> None:
         """refresh_tensors should not raise in stub mode."""
         instance = self._make_stub_instance()
