@@ -1006,21 +1006,46 @@ class NavigationTaskGate(BaseTask):
 
     def render(self) -> None:
         return self.sim_env.render()
-    def step(self, actions: torch.Tensor) -> StepReturn:
-        # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
-        # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
-        # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
-        
-        # Apply action transformation function from task config (4D -> 4D)
+    def _update_trajectory_state(
+        self, robot_position: torch.Tensor, gate_center_position: torch.Tensor, gate_passed_current: torch.Tensor
+    ) -> None:
+        """Update per-env episode trajectory tracking: spawn capture, path length, gate crossing."""
+        fresh_mask = self._episode_fresh
+        if torch.any(fresh_mask):
+            self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
+            _gcenter = self.gate_position.clone()
+            _gcenter[:, 2] = _gcenter[:, 2] + self.gate_center_height
+            self._ep_gate_center_at_spawn[fresh_mask] = _gcenter[fresh_mask]
+            self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
+            self._episode_fresh[fresh_mask] = False
+
+        step_deltas = robot_position - self._ep_last_pos
+        step_dist = torch.norm(step_deltas, dim=1)
+        self._ep_path_len += step_dist
+        self._ep_last_pos = robot_position
+        self._ep_steps += 1
+
+        step_gate_dist = torch.norm(robot_position - gate_center_position, dim=1)
+        self._ep_min_gate_dist = torch.minimum(self._ep_min_gate_dist, step_gate_dist)
+
+        newly_crossed = (~self._ep_gate_crossed) & gate_passed_current
+        if torch.any(newly_crossed):
+            self._ep_gate_crossed[newly_crossed] = True
+            self._ep_time_to_gate[newly_crossed] = self._ep_steps[newly_crossed].to(torch.float32)
+            dx_cross = robot_position[newly_crossed, 0] - gate_center_position[newly_crossed, 0]
+            dz_cross = robot_position[newly_crossed, 2] - gate_center_position[newly_crossed, 2]
+            self._ep_center_offset_cross[newly_crossed] = torch.sqrt(dx_cross * dx_cross + dz_cross * dz_cross)
+            self._ep_height_offset_cross[newly_crossed] = torch.abs(dz_cross)
+
+    def _validate_and_step(self, actions: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Transform actions, run physics step, detect NaN/Inf in actions and observations."""
         transformed_action = self.action_transformation_function(actions)
-        # NaN/Inf guard: detect invalid actions per env, zero them and mark for truncation
+        # Action NaN/Inf guard
         try:
             invalid_action_mask = torch.any(torch.isnan(transformed_action) | torch.isinf(transformed_action), dim=1)
             if torch.any(invalid_action_mask):
                 transformed_action[invalid_action_mask] = 0.0
-                # Defer truncation application until after time-limit assignment below
                 nan_trunc_mask = invalid_action_mask.clone()
-                # Guard debug: log offending envs for invalid actions
                 if self.task_config.guard_debug_enabled:
                     _ids = torch.nonzero(invalid_action_mask, as_tuple=False).squeeze(-1).tolist()
                     logger.warning(f"[NaNGuard] Invalid ACTION in envs {_ids}; zeroed and will truncate")
@@ -1028,31 +1053,29 @@ class NavigationTaskGate(BaseTask):
                 nan_trunc_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         except RuntimeError:
             nan_trunc_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        logger.debug(f"raw_action: {actions[0]}, transformed action: {transformed_action[0]}")
-        
-        # Pass 4D velocity commands directly to simulation environment
+
         self.sim_env.step(actions=transformed_action)
-        
-        # Observation NaN/Inf guard: scan tensors in obs_dict and truncate offending envs
-        invalid_obs_mask = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+
+        # Observation NaN/Inf guard
         for k, v in self.obs_dict.items():
             if isinstance(v, torch.Tensor) and v.shape[0] == self.num_envs:
                 bad = torch.any(torch.isnan(v) | torch.isinf(v), dim=tuple(range(1, v.ndim)))
-                # Guard debug: log offending obs keys and envs
                 if self.task_config.guard_debug_enabled and torch.any(bad):
                     _ids = torch.nonzero(bad, as_tuple=False).squeeze(-1).tolist()
                     logger.warning(f"[NaNGuard] Invalid OBS '{k}' in envs {_ids}")
-                invalid_obs_mask |= bad
-        if torch.any(invalid_obs_mask):
-            # zero-out obvious offenders to keep reward path stable for this step
+                nan_trunc_mask |= bad
+        if torch.any(nan_trunc_mask):
             if "robot_position" in self.obs_dict and isinstance(self.obs_dict["robot_position"], torch.Tensor):
-                rp = self.obs_dict["robot_position"]
-                rp[invalid_obs_mask] = 0.0
-            # Guard debug: log envs that will be truncated due to invalid observations
-            if self.task_config.guard_debug_enabled:
-                _ids = torch.nonzero(invalid_obs_mask, as_tuple=False).squeeze(-1).tolist()
-                logger.warning(f"[NaNGuard] Invalid OBS detected; envs {_ids} will truncate")
-            nan_trunc_mask |= invalid_obs_mask
+                self.obs_dict["robot_position"][nan_trunc_mask] = 0.0
+
+        return transformed_action, nan_trunc_mask
+
+    def step(self, actions: torch.Tensor) -> StepReturn:
+        # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
+        # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
+        # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
+        
+        transformed_action, nan_trunc_mask = self._validate_and_step(actions)
 
         # This step must be done since the reset is done after the reward is calculated.
         # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
@@ -1210,42 +1233,8 @@ class NavigationTaskGate(BaseTask):
         # Skip logging of continuous curriculum/current_* to W&B entirely
         # (retain internal counters elsewhere if needed)
 
-        # ===== Per-env episode trajectory state update =====
-        # Initialize newly reset envs on their first step
-        fresh_mask = self._episode_fresh
-        if torch.any(fresh_mask):
-            self._ep_spawn_pos[fresh_mask] = robot_position[fresh_mask]
-            # Store gate CENTER at spawn (z corrected by current center height)
-            _gcenter = self.gate_position.clone()
-            _gcenter[:, 2] = _gcenter[:, 2] + self.gate_center_height
-            self._ep_gate_center_at_spawn[fresh_mask] = _gcenter[fresh_mask]
-            self._ep_last_pos[fresh_mask] = robot_position[fresh_mask]
-            # counters and accumulators already zeroed in reset_idx
-            self._episode_fresh[fresh_mask] = False
-        
-        # Incremental path length accumulation and min distance tracking
-        step_deltas = robot_position - self._ep_last_pos
-        step_dist = torch.norm(step_deltas, dim=1)
-        self._ep_path_len += step_dist
-        self._ep_last_pos = robot_position
-        # Update episode step counters
-        self._ep_steps += 1
-        # Update min distance to gate center within episode (center-corrected)
-        step_gate_dist = torch.norm(robot_position - gate_center_position, dim=1)
-        self._ep_min_gate_dist = torch.minimum(self._ep_min_gate_dist, step_gate_dist)
-        # Record first crossing time and offsets (2D XZ center error; height error in Z only)
-        newly_crossed = (~self._ep_gate_crossed) & gate_passed_current
-        if torch.any(newly_crossed):
-            self._ep_gate_crossed[newly_crossed] = True
-            # Time to gate in episode steps
-            self._ep_time_to_gate[newly_crossed] = self._ep_steps[newly_crossed].to(torch.float32)
-            # Offsets at crossing relative to ADAPTIVE gate center (2D XZ distance)
-            dx_cross = robot_position[newly_crossed, 0] - gate_center_position[newly_crossed, 0]
-            dz_cross = robot_position[newly_crossed, 2] - gate_center_position[newly_crossed, 2]
-            co = torch.sqrt(dx_cross * dx_cross + dz_cross * dz_cross)
-            ho = torch.abs(dz_cross)
-            self._ep_center_offset_cross[newly_crossed] = co
-            self._ep_height_offset_cross[newly_crossed] = ho
+        # Update per-env episode trajectory state
+        self._update_trajectory_state(robot_position, gate_center_position, gate_passed_current)
 
         self.check_and_update_curriculum_level(
             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
