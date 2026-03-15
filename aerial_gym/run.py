@@ -1,9 +1,10 @@
-"""Unified entry point for training and evaluation.
+"""Unified entry point for Sample Factory training and evaluation.
 
 Usage:
-    python -m aerial_gym.run --config configs/train_gate_navigation.yaml
-    python -m aerial_gym.run --config configs/train_gate_navigation.yaml --set common.num_envs=512
-    python -m aerial_gym.run --config configs/eval_gate_navigation.yaml
+    python -m aerial_gym.run --config configs/train_gate_sf.yaml
+    python -m aerial_gym.run --config configs/train_gate_sf.yaml --set common.num_envs=512
+    python -m aerial_gym.run --config configs/eval_gate_drone_only.yaml
+    python -m aerial_gym.run --config configs/eval_gate_all_modalities.yaml
 """
 
 from __future__ import annotations
@@ -21,45 +22,29 @@ from aerial_gym.config.run_config import (
     load_config,
     load_config_with_overrides,
 )
+from aerial_gym.config.run_config_enums import Mode
 
 AERIAL_GYM_ROOT: Path = Path(__file__).resolve().parent.parent
 
 
 def _parse_cli_args() -> argparse.Namespace:
-    """Parse command-line arguments for the unified runner."""
     parser = argparse.ArgumentParser(
-        description="Aerial Gym unified training and evaluation entry point.",
+        description="Aerial Gym — Sample Factory training and evaluation runner.",
     )
-    parser.add_argument(
-        "--config",
-        type=str,
-        required=True,
-        help="Path to YAML configuration file.",
-    )
+    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file.")
     parser.add_argument(
         "--set",
         nargs="*",
         default=[],
         metavar="KEY=VALUE",
-        help="Override config values using dotted key paths (e.g. common.num_envs=512).",
+        help="Override config values (e.g. common.num_envs=512).",
     )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=False,
-        help="Print the command that would be executed without running it.",
-    )
-    parser.add_argument(
-        "--validate-only",
-        action="store_true",
-        default=False,
-        help="Validate the configuration file and exit.",
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Print command without executing.")
+    parser.add_argument("--validate-only", action="store_true", help="Validate config and exit.")
     return parser.parse_args()
 
 
 def _parse_overrides(raw_overrides: List[str]) -> Dict[str, object]:
-    """Convert a list of 'key=value' strings into a dict of dotted-key overrides."""
     overrides: Dict[str, object] = {}
     for item in raw_overrides:
         if "=" not in item:
@@ -70,12 +55,10 @@ def _parse_overrides(raw_overrides: List[str]) -> Dict[str, object]:
 
 
 def _print_config_summary(cfg: RunConfig) -> None:
-    """Print a human-readable summary of the validated configuration."""
     print("=" * 60)
     print("Aerial Gym — Run Configuration")
     print("=" * 60)
     print(f"  Mode:        {cfg.mode.value}")
-    print(f"  Framework:   {cfg.framework.value}")
     print(f"  Task:        {cfg.common.task}")
     print(f"  Num envs:    {cfg.common.num_envs}")
     print(f"  Device:      {cfg.common.device}")
@@ -83,211 +66,290 @@ def _print_config_summary(cfg: RunConfig) -> None:
     print(f"  Use warp:    {cfg.common.use_warp}")
     if cfg.common.seed is not None:
         print(f"  Seed:        {cfg.common.seed}")
-    if cfg.mode.value == "train":
+    if cfg.mode == Mode.train:
         print(f"  Total steps: {cfg.training.total_steps:,}")
         print(f"  Batch size:  {cfg.training.batch_size}")
         print(f"  LR:          {cfg.training.learning_rate}")
         print(f"  Gamma:       {cfg.training.gamma}")
+        print(f"  Fusion:      {cfg.sample_factory.fusion}")
         print(f"  Checkpoint:  {cfg.training.checkpoint_dir}")
-    if cfg.mode.value in ("eval", "play") and cfg.eval is not None:
+    if cfg.mode in (Mode.eval, Mode.play) and cfg.eval is not None:
         print(f"  Checkpoint:  {cfg.eval.checkpoint}")
         print(f"  Episodes:    {cfg.eval.num_episodes}")
+    if cfg.mode == Mode.inference_suite and cfg.inference_suite is not None:
+        s = cfg.inference_suite
+        print(f"  Seeds:       {s.seeds}")
+        print(f"  Levels:      {s.curriculum_levels}")
+        total = len(s.seeds) * len(s.curriculum_levels)
+        print(f"  Total runs:  {total}")
+    if cfg.ablation.obs_ranges:
+        print(f"  Ablation:    {cfg.ablation.obs_ranges}")
     if cfg.wandb.enabled:
         print(f"  W&B project: {cfg.wandb.project}")
     print("=" * 60)
 
 
-def _set_curriculum_env_vars(cfg: RunConfig) -> None:
-    """Export curriculum-related overrides as environment variables."""
+def _setenv(key: str, value: bool) -> None:
+    os.environ[key] = "true" if value else "false"
+
+
+def _set_env_vars_from_config(cfg: RunConfig) -> None:
+    """Set ALL environment variables matching cfg_env_bridge.py behavior."""
+    cam = cfg.camera
     cur = cfg.curriculum
+    sf = cfg.sample_factory
+
+    # Camera orientation and noise
+    _setenv("SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION", cam.disable_static_camera_orientation)
+    _setenv("SF_DISABLE_CAMERA_NOISE_RANDOMIZATION", cam.disable_camera_noise)
+    _setenv("SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION", cam.disable_frame_dropout)
+    _setenv("SF_DISABLE_STATE_NOISE_RANDOMIZATION", cam.disable_state_noise)
+
+    # Per-camera noise/dropout (only set if explicitly configured)
+    if cam.disable_drone_camera_noise is not None:
+        _setenv("SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION", cam.disable_drone_camera_noise)
+    if cam.disable_static_camera_noise is not None:
+        _setenv("SF_DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION", cam.disable_static_camera_noise)
+    if cam.disable_drone_camera_frame_dropout is not None:
+        _setenv("SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT", cam.disable_drone_camera_frame_dropout)
+    if cam.disable_static_camera_frame_dropout is not None:
+        _setenv("SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT", cam.disable_static_camera_frame_dropout)
+
+    # Camera modes
+    _setenv("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", cam.enable_yaw_sweep)
+    _setenv("SF_STATIC_CAMERA_LOCKED_FOLLOW", cam.enable_locked_follow)
+    _setenv("SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW", cam.enable_arc_follow)
+    os.environ["SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG"] = str(cam.yaw_sweep_speed_deg)
+    os.environ["SF_STATIC_CAMERA_ARC_RADIUS_M"] = str(cam.arc_follow_radius_m)
+
+    # Camera position
+    os.environ["SF_STATIC_CAMERA_BASE_Y"] = str(cam.static_camera_base_y)
+    base_z = cam.static_camera_base_z
+    os.environ["SF_STATIC_CAMERA_BASE_Z"] = (
+        "adaptive" if isinstance(base_z, str) and base_z.lower() == "adaptive" else str(base_z)
+    )
+    if cam.dynamic_camera_follow_y_offset_m is not None:
+        os.environ["SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y"] = str(cam.dynamic_camera_follow_y_offset_m)
+    _setenv("SF_DISABLE_DYNAMIC_FOLLOW_GATE_BLENDING", cam.disable_dynamic_follow_gate_blending)
+
+    # Dynamic camera following
+    if cam.enable_dynamic_following is not None:
+        _setenv("enable_dynamic_camera_following", cam.enable_dynamic_following)
+        _setenv("disable_dynamic_camera_following", not cam.enable_dynamic_following)
+
+    # Spawn randomization
+    _setenv("SF_DISABLE_SPAWN_POSITION_RANDOMIZATION", cur.disable_spawn_position)
+    _setenv("SF_DISABLE_SPAWN_ORIENTATION_RANDOMIZATION", cur.disable_spawn_orientation)
+
+    # Curriculum
+    _setenv("SF_DISABLE_CURRICULUM_MULTIPLIER", cur.disable_curriculum_multiplier)
+    if cur.force_level is not None:
+        os.environ["SF_FORCE_CURRICULUM_LEVEL"] = str(cur.force_level)
     if cur.min_level is not None:
         os.environ["SF_MIN_CURRICULUM_LEVEL"] = str(cur.min_level)
     if cur.max_level is not None:
         os.environ["SF_MAX_CURRICULUM_LEVEL"] = str(cur.max_level)
-    if cur.force_level is not None:
-        os.environ["SF_FORCE_CURRICULUM_LEVEL"] = str(cur.force_level)
-    if cur.disable_gate_size_randomization:
-        os.environ["SF_DISABLE_GATE_SIZE_RANDOMIZATION"] = "true"
+
+    # Gate/obstacle randomization
+    _setenv("SF_DISABLE_GATE_SIZE_RANDOMIZATION", cur.disable_gate_size_randomization)
     if cur.fixed_gate_scale_percent is not None:
         os.environ["SF_FIXED_GATE_SCALE_PERCENT"] = str(cur.fixed_gate_scale_percent)
-    if cur.disable_obstacle_randomization:
-        os.environ["SF_DISABLE_OBSTACLE_RANDOMIZATION"] = "true"
+    _setenv("SF_DISABLE_OBSTACLE_RANDOMIZATION", cur.disable_obstacle_randomization)
     if cur.fixed_obstacles_behind_gate is not None:
         os.environ["SF_FIXED_OBSTACLES_BEHIND_GATE"] = str(cur.fixed_obstacles_behind_gate)
 
+    # Ablation
+    if cfg.ablation.obs_ranges:
+        os.environ["ABLATE_OBS_RANGES"] = cfg.ablation.obs_ranges
+    _setenv("ABLATE_ZERO_RNN", cfg.ablation.zero_rnn)
 
-def _set_camera_env_vars(cfg: RunConfig) -> None:
-    """Export camera-related overrides as environment variables."""
-    cam = cfg.camera
-    if cam.static_camera_base_y != -3.0:
-        os.environ["SF_STATIC_CAMERA_BASE_Y"] = str(cam.static_camera_base_y)
-    base_z = cam.static_camera_base_z
-    if isinstance(base_z, str) and base_z == "adaptive":
-        os.environ["SF_STATIC_CAMERA_BASE_Z"] = "adaptive"
-    elif isinstance(base_z, (int, float)) and base_z != 1.5:
-        os.environ["SF_STATIC_CAMERA_BASE_Z"] = str(float(base_z))
-    if cam.disable_static_camera_orientation:
-        os.environ["SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION"] = "true"
-    if cam.disable_camera_noise:
-        os.environ["SF_DISABLE_CAMERA_NOISE_RANDOMIZATION"] = "true"
-    if cam.disable_frame_dropout:
-        os.environ["SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION"] = "true"
-    if cam.enable_yaw_sweep:
-        os.environ["SF_ENABLE_STATIC_CAMERA_YAW_SWEEP"] = "true"
-        os.environ["SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG"] = str(cam.yaw_sweep_speed_deg)
-    if cam.enable_arc_follow:
-        os.environ["SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW"] = "true"
-        os.environ["SF_STATIC_CAMERA_ARC_RADIUS_M"] = str(cam.arc_follow_radius_m)
-    if cam.enable_dynamic_following is not None:
-        val = "true" if cam.enable_dynamic_following else "false"
-        os.environ["enable_dynamic_camera_following"] = val
+    # Gradient monitoring
+    _setenv("SF_ENABLE_INFLUENCE_TRACKER", cfg.gradient_monitoring.enable_influence_tracker)
+    _setenv("SF_ENABLE_GRAD_ATTR", cfg.gradient_monitoring.enable_grad_attribution)
+
+    # Fusion
+    os.environ["SF_FUSION_MODE"] = sf.fusion.value
+    os.environ["SF_GATE_PER_FEATURE"] = "1" if sf.gate_per_feature else "0"
+
+    # Eval stretch
+    if cfg.eval is not None and cfg.eval.eval_stretch_enabled:
+        os.environ["EVAL_STRETCH_ENABLED"] = "1"
+        os.environ["EVAL_STRETCH_END_LEVEL"] = str(cfg.eval.eval_stretch_end_level)
+
+    # Deterministic CUDA
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+
+    # Agent count and headless
+    os.environ["SF_ENV_AGENTS"] = str(cfg.common.num_envs)
+    _setenv("SF_HEADLESS", cfg.common.headless)
 
 
-def _build_sample_factory_train_args(cfg: RunConfig) -> List[str]:
-    """Build CLI argument list for Sample Factory training."""
+def _get_sf_train_script(cfg: RunConfig) -> str:
+    """Select the correct SF training script based on task name."""
+    task = cfg.common.task
+    base = AERIAL_GYM_ROOT / "aerial_gym" / "rl_training" / "sample_factory" / "aerialgym_examples"
+    if "gate" in task:
+        return str(base / "train_aerialgym_custom_net_gate.py")
+    if "quad_with_obstacles" in cfg.sample_factory.env_name:
+        return str(base / "train_aerialgym_custom_net.py")
+    return str(base / "train_aerialgym.py")
+
+
+def _build_train_args(cfg: RunConfig) -> List[str]:
+    """Build the full CLI argument list for SF training."""
     sf = cfg.sample_factory
-    script = str(
-        AERIAL_GYM_ROOT
-        / "aerial_gym"
-        / "rl_training"
-        / "sample_factory"
-        / "aerialgym_examples"
-        / "train_aerialgym_custom_net_gate.py"
+    t = cfg.training
+    c = cfg.common
+
+    args: List[str] = [sys.executable, _get_sf_train_script(cfg)]
+    args.extend(
+        [
+            f"--env={sf.env_name}",
+            f"--experiment={sf.experiment_name}",
+            f"--train_dir={sf.train_dir}",
+            f"--num_workers={sf.num_workers}",
+            f"--num_envs_per_worker={sf.num_envs_per_worker}",
+            f"--env_agents={c.num_envs}",
+            f"--obs_key={sf.obs_key}",
+            f"--batch_size={t.batch_size}",
+            f"--num_batches_to_accumulate={sf.num_batches_to_accumulate}",
+            f"--num_batches_per_epoch={sf.num_batches_per_epoch}",
+            f"--num_epochs={t.num_epochs}",
+            f"--rollout={t.rollout_horizon}",
+            f"--learning_rate={t.learning_rate}",
+            f"--use_rnn={str(sf.use_rnn).lower()}",
+            f"--rnn_size={sf.rnn_size}",
+            f"--rnn_num_layers={sf.rnn_num_layers}",
+        ]
     )
-    args: List[str] = [sys.executable, script]
-    args.extend(["--env", cfg.common.task])
-    args.extend(["--train_for_env_steps", str(cfg.training.total_steps)])
-    args.extend(["--batch_size", str(cfg.training.batch_size)])
-    args.extend(["--learning_rate", str(cfg.training.learning_rate)])
-    args.extend(["--gamma", str(cfg.training.gamma)])
-    args.extend(["--rollout", str(cfg.training.rollout_horizon)])
-    args.extend(["--max_grad_norm", str(cfg.training.max_grad_norm)])
-    args.extend(["--num_epochs", str(cfg.training.num_epochs)])
-    args.extend(["--num_workers", str(sf.num_workers)])
-    args.extend(["--num_envs_per_worker", str(sf.num_envs_per_worker)])
-    args.extend(["--num_batches_per_epoch", str(sf.num_batches_per_epoch)])
-    args.extend(["--save_best_after", str(sf.save_best_after)])
-    args.extend(["--exploration_loss_coeff", str(sf.exploration_loss_coeff)])
-    if sf.use_rnn:
-        args.extend(["--use_rnn", "True"])
-        args.extend(["--rnn_size", str(sf.rnn_size)])
-        args.extend(["--rnn_type", sf.rnn_type])
-        args.extend(["--rnn_num_layers", str(sf.rnn_num_layers)])
-    args.extend(["--fusion", sf.fusion])
-    if sf.gate_per_feature:
-        args.extend(["--gate_per_feature", "True"])
-    if cfg.common.seed is not None:
-        args.extend(["--seed", str(cfg.common.seed)])
-    if cfg.common.headless:
-        args.extend(["--headless", "True"])
-    if sf.experiment_name:
-        args.extend(["--experiment", sf.experiment_name])
-    if cfg.training.checkpoint_dir:
-        args.extend(["--train_dir", cfg.training.checkpoint_dir])
-    if cfg.wandb.enabled:
-        args.extend(["--with_wandb", "True"])
-        args.extend(["--wandb_project", cfg.wandb.project])
-        if cfg.wandb.tags:
-            args.extend(["--wandb_tags", " ".join(cfg.wandb.tags)])
-        if cfg.wandb.entity:
-            args.extend(["--wandb_entity", cfg.wandb.entity])
+
+    args.append("--encoder_mlp_layers")
+    args.extend(str(x) for x in sf.encoder_mlp_layers)
+
+    args.extend(
+        [
+            f"--gamma={t.gamma}",
+            f"--reward_scale={sf.reward_scale}",
+            f"--max_grad_norm={t.max_grad_norm}",
+            f"--normalize_input={str(sf.normalize_input).lower()}",
+            "--use_env_info_cache=false",
+            f"--with_wandb={str(cfg.wandb.enabled).lower()}",
+            f"--wandb_project={cfg.wandb.project}",
+            f"--wandb_user={cfg.wandb.user}",
+            f"--wandb_group={cfg.wandb.group}",
+        ]
+    )
+    if cfg.wandb.tags:
+        args.append("--wandb_tags")
+        args.extend(cfg.wandb.tags)
+
+    args.extend(
+        [
+            f"--save_every_sec={sf.save_every_sec}",
+            f"--save_best_every_sec={sf.save_best_every_sec}",
+            f"--train_for_env_steps={t.total_steps}",
+            f"--train_for_seconds={sf.train_for_seconds}",
+            f"--async_rl={str(sf.async_rl).lower()}",
+            f"--serial_mode={str(sf.serial_mode).lower()}",
+            f"--policy_workers_per_policy={sf.policy_workers_per_policy}",
+            f"--headless={str(c.headless).lower()}",
+            f"--fusion={sf.fusion}",
+            f"--gate_per_feature={'1' if sf.gate_per_feature else '0'}",
+        ]
+    )
+
+    if c.seed is not None:
+        args.extend(["--seed", str(c.seed)])
+    if cfg.curriculum.force_level is not None:
+        args.extend(["--force_curriculum_level", str(cfg.curriculum.force_level)])
+    if sf.load_checkpoint_kind.value:
+        args.extend([f"--load_checkpoint_kind={sf.load_checkpoint_kind.value}"])
+    args.extend([f"--restart_behavior={sf.restart_behavior.value}"])
+
     return args
 
 
-def _build_sample_factory_eval_args(cfg: RunConfig) -> List[str]:
-    """Build CLI argument list for Sample Factory evaluation."""
-    script = str(
-        AERIAL_GYM_ROOT
-        / "aerial_gym"
-        / "rl_training"
-        / "sample_factory"
-        / "aerialgym_examples"
-        / "enjoy_aerialgym.py"
-    )
+def _build_eval_args(cfg: RunConfig) -> List[str]:
+    """Build CLI argument list for SF evaluation."""
+    base = AERIAL_GYM_ROOT / "aerial_gym" / "rl_training" / "sample_factory" / "aerialgym_examples"
+    script = str(base / "enjoy_aerialgym.py")
     args: List[str] = [sys.executable, script]
-    args.extend(["--env", cfg.common.task])
+
+    sf = cfg.sample_factory
+    c = cfg.common
+    args.extend([f"--env={sf.env_name}", f"--env_agents={c.num_envs}"])
+    args.extend([f"--headless={str(c.headless).lower()}"])
+
     if cfg.eval is not None:
-        args.extend(["--train_dir", str(Path(cfg.eval.checkpoint).parent)])
+        if cfg.eval.checkpoint:
+            checkpoint_path = Path(cfg.eval.checkpoint)
+            args.extend([f"--train_dir={checkpoint_path.parent}"])
+        args.extend([f"--max_num_episodes={cfg.eval.num_episodes}"])
+        args.extend([f"--eval_deterministic={str(cfg.eval.eval_deterministic).lower()}"])
         if cfg.eval.save_gifs:
-            args.extend(["--save_gifs", "True"])
-    if cfg.common.seed is not None:
-        args.extend(["--seed", str(cfg.common.seed)])
+            args.append("--save_gifs=true")
+
+    if sf.experiment_name:
+        args.extend([f"--experiment={sf.experiment_name}"])
+    if c.seed is not None:
+        args.extend(["--seed", str(c.seed)])
+
     return args
 
 
-def _build_rl_games_args(cfg: RunConfig) -> List[str]:
-    """Build CLI argument list for RL-Games training or evaluation."""
-    script = str(AERIAL_GYM_ROOT / "aerial_gym" / "rl_training" / "rl_games" / "runner.py")
-    args: List[str] = [sys.executable, script]
-    args.extend(["--task", cfg.common.task])
-    args.extend(["--num_envs", str(cfg.common.num_envs)])
-    if cfg.common.headless:
-        args.extend(["--headless", "True"])
-    if cfg.common.use_warp:
-        args.extend(["--use_warp", "True"])
-    if cfg.common.seed is not None:
-        args.extend(["--seed", str(cfg.common.seed)])
-    if cfg.mode.value in ("eval", "play"):
-        args.append("--play")
-        if cfg.eval is not None and cfg.eval.checkpoint:
-            args.extend(["--checkpoint", cfg.eval.checkpoint])
-    return args
+def _run_inference_suite(cfg: RunConfig, dry_run: bool) -> int:
+    """Run batch inference across all seed x level combinations."""
+    suite = cfg.inference_suite
+    if suite is None:
+        raise ValueError("inference_suite config is required for inference_suite mode")
 
+    total_runs = len(suite.seeds) * len(suite.curriculum_levels)
+    run_idx = 0
+    failed_runs: List[str] = []
 
-def _build_cleanrl_args(cfg: RunConfig) -> List[str]:
-    """Build CLI argument list for CleanRL training."""
-    script = str(
-        AERIAL_GYM_ROOT / "aerial_gym" / "rl_training" / "cleanrl" / "ppo_continuous_action.py"
-    )
-    cr = cfg.cleanrl
-    args: List[str] = [sys.executable, script]
-    args.extend(["--task", cfg.common.task])
-    args.extend(["--num_envs", str(cfg.common.num_envs)])
-    args.extend(["--total_timesteps", str(cfg.training.total_steps)])
-    args.extend(["--learning_rate", str(cfg.training.learning_rate)])
-    args.extend(["--gamma", str(cfg.training.gamma)])
-    args.extend(["--num_steps", str(cfg.training.rollout_horizon)])
-    args.extend(["--gae_lambda", str(cr.gae_lambda)])
-    args.extend(["--num_minibatches", str(cr.num_minibatches)])
-    args.extend(["--update_epochs", str(cr.update_epochs)])
-    args.extend(["--clip_coef", str(cr.clip_coef)])
-    args.extend(["--ent_coef", str(cr.ent_coef)])
-    args.extend(["--vf_coef", str(cr.vf_coef)])
-    if cr.anneal_lr:
-        args.extend(["--anneal_lr", "True"])
-    if cfg.common.seed is not None:
-        args.extend(["--seed", str(cfg.common.seed)])
-    if cfg.common.headless:
-        args.extend(["--headless", "True"])
-    return args
+    for seed in suite.seeds:
+        for level in suite.curriculum_levels:
+            run_idx += 1
+            run_name = f"L{level}_SEED{seed}"
+            print(f"\n{'=' * 60}")
+            print(f"[{run_idx}/{total_runs}] {run_name}")
+            print(f"{'=' * 60}")
+
+            os.environ["SF_FORCE_CURRICULUM_LEVEL"] = str(level)
+            if cfg.wandb.enabled:
+                os.environ["WANDB_RUN_NAME"] = run_name
+
+            # Build eval args with this seed
+            eval_cfg = cfg.model_copy(
+                update={"common": cfg.common.model_copy(update={"seed": seed})}
+            )
+            args = _build_eval_args(eval_cfg)
+            args.extend([f"--force_curriculum_level={level}"])
+
+            if dry_run:
+                print("  [dry-run] " + " ".join(args))
+                continue
+
+            print(f"  Executing: {' '.join(args)}")
+            result = subprocess.run(args)
+            if result.returncode != 0:
+                failed_runs.append(run_name)
+                print(f"  [WARN] {run_name} exited with code {result.returncode}")
+
+    if failed_runs:
+        print(f"\n{len(failed_runs)}/{total_runs} runs failed: {', '.join(failed_runs)}")
+        return 1
+    print(f"\nAll {total_runs} inference runs completed successfully.")
+    return 0
 
 
 def _build_command(cfg: RunConfig) -> List[str]:
-    """Dispatch to the correct framework command builder."""
-    framework = cfg.framework.value
-    mode = cfg.mode.value
-
-    if framework == "sample_factory":
-        if mode == "train":
-            return _build_sample_factory_train_args(cfg)
-        return _build_sample_factory_eval_args(cfg)
-
-    if framework == "rl_games":
-        return _build_rl_games_args(cfg)
-
-    if framework == "cleanrl":
-        if mode in ("eval", "play"):
-            print(
-                "Warning: CleanRL does not have a dedicated eval script. "
-                "Building training command instead."
-            )
-        return _build_cleanrl_args(cfg)
-
-    raise ValueError(f"Unsupported framework: {framework}")
+    if cfg.mode == Mode.train:
+        return _build_train_args(cfg)
+    return _build_eval_args(cfg)
 
 
 def main() -> int:
-    """Entry point for `python -m aerial_gym.run`."""
     cli_args = _parse_cli_args()
 
     overrides = _parse_overrides(cli_args.set)
@@ -302,8 +364,10 @@ def main() -> int:
         return 0
 
     _print_config_summary(cfg)
-    _set_curriculum_env_vars(cfg)
-    _set_camera_env_vars(cfg)
+    _set_env_vars_from_config(cfg)
+
+    if cfg.mode == Mode.inference_suite:
+        return _run_inference_suite(cfg, cli_args.dry_run)
 
     cmd = _build_command(cfg)
 

@@ -1,430 +1,336 @@
-"""Pydantic-validated configuration schema for the aerial_gym training and evaluation pipeline.
+"""Pydantic-validated configuration schema for the aerial_gym Sample Factory pipeline.
 
-Supports all three RL frameworks (rl_games, sample_factory, cleanrl) with a unified interface.
-Load configs from YAML with optional CLI overrides.
+Load configs from YAML with optional CLI overrides. All training, evaluation, and
+inference-suite modes are supported through a single RunConfig schema.
 """
 
 from __future__ import annotations
 
 import copy
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import yaml
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-try:
-    from pydantic import BaseModel as _BaseModel
-    from pydantic import field_validator, model_validator
-
-    PYDANTIC_V2 = True
-except ImportError:
-    try:
-        from pydantic import BaseModel as _BaseModel
-        from pydantic import validator
-
-        PYDANTIC_V2 = False
-    except ImportError as exc:
-        raise ImportError(
-            "pydantic is required for run_config. Install with: pip install pydantic"
-        ) from exc
-
-
-class _StrictBase(_BaseModel):
-    """Base model that forbids extra fields to catch typos."""
-
-    if PYDANTIC_V2:
-
-        class Config:
-            extra = "forbid"
-
-    else:
-
-        class Config:
-            extra = "forbid"
+from aerial_gym.config.run_config_enums import (
+    CheckpointKind,
+    FusionMode,
+    LRSchedule,
+    Mode,
+    Nonlinearity,
+    ObsKey,
+    PolicyInit,
+    RestartBehavior,
+    RNNType,
+    SFEnvName,
+    TaskName,
+)
 
 
-class Framework(str, Enum):
-    rl_games = "rl_games"
-    sample_factory = "sample_factory"
-    cleanrl = "cleanrl"
+class _StrictBase(BaseModel):
+    """Base model that forbids extra fields to catch typos in YAML configs."""
 
-
-class Mode(str, Enum):
-    train = "train"
-    eval = "eval"
-    play = "play"
+    model_config = {"extra": "forbid"}
 
 
 class CommonConfig(_StrictBase):
-    """Shared parameters across all frameworks."""
+    """Shared environment parameters."""
 
-    task: str
-    num_envs: int = 256
-    seed: Optional[int] = None
-    device: str = "cuda:0"
-    headless: bool = True
-    use_warp: bool = True
-
-    if PYDANTIC_V2:
-
-        @field_validator("num_envs")
-        @classmethod
-        def _num_envs_positive(cls, v: int) -> int:
-            if v < 1:
-                raise ValueError("num_envs must be >= 1")
-            return v
-
-    else:
-
-        @validator("num_envs")
-        @classmethod
-        def _num_envs_positive(cls, v: int) -> int:
-            if v < 1:
-                raise ValueError("num_envs must be >= 1")
-            return v
+    task: TaskName = Field(..., description="Task name from task_registry")
+    num_envs: int = Field(256, ge=1, description="Number of parallel environments")
+    seed: Optional[int] = Field(None, description="Random seed (None = unseeded)")
+    device: str = Field("cuda:0", description="Compute device")
+    headless: bool = Field(True, description="Run without viewer")
+    use_warp: bool = Field(True, description="Use Warp rendering pipeline")
 
 
 class TrainingConfig(_StrictBase):
-    """Training hyperparameters."""
+    """Training hyperparameters (framework-agnostic subset)."""
 
-    total_steps: int = 100_000_000
-    batch_size: int = 2048
-    learning_rate: float = 3e-4
-    gamma: float = 0.99
-    rollout_horizon: int = 32
-    max_grad_norm: float = 1.0
-    num_epochs: int = 4
-    checkpoint_interval: int = 1_000_000
-    checkpoint_dir: str = "./train_dir"
-    resume_from: Optional[str] = None
-
-    if PYDANTIC_V2:
-
-        @field_validator(
-            "total_steps", "batch_size", "rollout_horizon", "num_epochs", "checkpoint_interval"
-        )
-        @classmethod
-        def _positive_int(cls, v: int) -> int:
-            if v < 1:
-                raise ValueError("value must be >= 1")
-            return v
-
-        @field_validator("learning_rate", "max_grad_norm")
-        @classmethod
-        def _positive_float(cls, v: float) -> float:
-            if v <= 0:
-                raise ValueError("value must be > 0")
-            return v
-
-        @field_validator("gamma")
-        @classmethod
-        def _gamma_range(cls, v: float) -> float:
-            if not 0 <= v <= 1:
-                raise ValueError("gamma must be in [0, 1]")
-            return v
-
-    else:
-
-        @validator(
-            "total_steps", "batch_size", "rollout_horizon", "num_epochs", "checkpoint_interval"
-        )
-        @classmethod
-        def _positive_int(cls, v: int) -> int:
-            if v < 1:
-                raise ValueError("value must be >= 1")
-            return v
-
-        @validator("learning_rate", "max_grad_norm")
-        @classmethod
-        def _positive_float(cls, v: float) -> float:
-            if v <= 0:
-                raise ValueError("value must be > 0")
-            return v
-
-        @validator("gamma")
-        @classmethod
-        def _gamma_range(cls, v: float) -> float:
-            if not 0 <= v <= 1:
-                raise ValueError("gamma must be in [0, 1]")
-            return v
+    total_steps: int = Field(100_000_000, ge=1, description="Total environment steps")
+    batch_size: int = Field(2048, ge=1)
+    learning_rate: float = Field(3e-4, gt=0)
+    gamma: float = Field(0.99, ge=0, le=1, description="Discount factor")
+    rollout_horizon: int = Field(32, ge=1)
+    max_grad_norm: float = Field(1.0, gt=0)
+    num_epochs: int = Field(4, ge=1)
+    checkpoint_interval: int = Field(1_000_000, ge=1)
+    checkpoint_dir: str = Field("./train_dir")
+    resume_from: Optional[str] = Field(None, description="Path to checkpoint to resume from")
 
 
 class SampleFactoryConfig(_StrictBase):
-    """Sample Factory specific parameters."""
+    """Sample Factory framework parameters."""
 
-    num_workers: int = 1
-    num_envs_per_worker: int = 1
-    use_rnn: bool = True
-    rnn_size: int = 64
-    rnn_type: str = "gru"
-    rnn_num_layers: int = 1
-    encoder_mlp_layers: List[int] = [256, 128, 64]
-    fusion: str = "gated"
-    gate_per_feature: bool = True
-    num_batches_per_epoch: int = 4
-    exploration_loss_coeff: float = 0.0
-    save_best_after: int = 100_000
-    experiment_name: str = ""
+    # Environment naming
+    env_name: SFEnvName = Field(
+        SFEnvName.quad_with_obstacles_gate, description="SF --env parameter"
+    )
+    experiment_name: str = Field("", description="Experiment folder name (auto-generated if empty)")
+    train_dir: str = Field("./train_dir")
+    obs_key: ObsKey = Field(ObsKey.observations, description="Observation key in obs dict")
 
+    # Workers and parallelism
+    num_workers: int = Field(1, ge=1)
+    num_envs_per_worker: int = Field(1, ge=1)
+    async_rl: bool = Field(False)
+    serial_mode: bool = Field(True)
+    policy_workers_per_policy: int = Field(1, ge=1)
+    batched_sampling: bool = Field(True)
+    worker_num_splits: int = Field(1, ge=1)
+    actor_worker_gpus: List[int] = Field(default_factory=lambda: [0])
 
-class RlGamesConfig(_StrictBase):
-    """RL-Games specific parameters."""
+    # RNN
+    use_rnn: bool = Field(True)
+    rnn_size: int = Field(64, ge=1)
+    rnn_type: RNNType = Field(RNNType.gru)
+    rnn_num_layers: int = Field(1, ge=1)
 
-    config_file: str = "ppo_aerial_quad.yaml"
-    experiment_name: str = ""
+    # Encoder and fusion
+    encoder_mlp_layers: List[int] = Field(default_factory=lambda: [512, 256, 64])
+    fusion: FusionMode = Field(FusionMode.gated)
+    gate_per_feature: bool = Field(True)
 
+    # PPO hyperparameters
+    num_batches_per_epoch: int = Field(4, ge=1)
+    num_batches_to_accumulate: int = Field(1, ge=1)
+    exploration_loss_coeff: float = Field(0.001, ge=0)
+    adaptive_stddev: bool = Field(True)
+    policy_initialization: PolicyInit = Field(PolicyInit.torch_default)
+    env_gpu_actions: bool = Field(True)
+    env_gpu_observations: bool = Field(True)
+    reward_scale: float = Field(0.1, gt=0)
+    ppo_clip_ratio: float = Field(0.2, gt=0)
+    value_loss_coeff: float = Field(2.0, gt=0)
+    nonlinearity: Nonlinearity = Field(Nonlinearity.elu)
+    kl_loss_coeff: float = Field(0.1, ge=0)
+    gae_lambda: float = Field(0.95, ge=0, le=1)
+    with_vtrace: bool = Field(False)
+    value_bootstrap: bool = Field(True)
 
-class CleanRLConfig(_StrictBase):
-    """CleanRL specific parameters."""
+    # Learning rate schedule
+    lr_schedule: LRSchedule = Field(LRSchedule.kl_adaptive_epoch)
+    lr_schedule_kl_threshold: float = Field(0.016, gt=0)
 
-    gae_lambda: float = 0.95
-    num_minibatches: int = 4
-    update_epochs: int = 4
-    clip_coef: float = 0.2
-    ent_coef: float = 0.0
-    vf_coef: float = 0.5
-    anneal_lr: bool = True
-    experiment_name: str = ""
+    # Normalization
+    normalize_input: bool = Field(True)
+    normalize_returns: bool = Field(True)
+    shuffle_minibatches: bool = Field(False)
 
-    if PYDANTIC_V2:
+    # Checkpointing
+    save_best_after: int = Field(100_000, ge=0)
+    save_every_sec: int = Field(1800, ge=0)
+    save_best_every_sec: int = Field(500, ge=0)
+    restart_behavior: RestartBehavior = Field(RestartBehavior.resume)
+    load_checkpoint_kind: CheckpointKind = Field(CheckpointKind.none)
 
-        @field_validator("gae_lambda")
-        @classmethod
-        def _lambda_range(cls, v: float) -> float:
-            if not 0 <= v <= 1:
-                raise ValueError("gae_lambda must be in [0, 1]")
-            return v
-
-        @field_validator("clip_coef", "vf_coef")
-        @classmethod
-        def _positive(cls, v: float) -> float:
-            if v <= 0:
-                raise ValueError("value must be > 0")
-            return v
-
-        @field_validator("ent_coef")
-        @classmethod
-        def _non_negative(cls, v: float) -> float:
-            if v < 0:
-                raise ValueError("ent_coef must be >= 0")
-            return v
-
-    else:
-
-        @validator("gae_lambda")
-        @classmethod
-        def _lambda_range(cls, v: float) -> float:
-            if not 0 <= v <= 1:
-                raise ValueError("gae_lambda must be in [0, 1]")
-            return v
-
-        @validator("clip_coef", "vf_coef")
-        @classmethod
-        def _positive(cls, v: float) -> float:
-            if v <= 0:
-                raise ValueError("value must be > 0")
-            return v
-
-        @validator("ent_coef")
-        @classmethod
-        def _non_negative(cls, v: float) -> float:
-            if v < 0:
-                raise ValueError("ent_coef must be >= 0")
-            return v
+    # Time limit
+    train_for_seconds: int = Field(0, ge=0, description="0 = no time limit")
 
 
 class EvalConfig(_StrictBase):
     """Evaluation / inference parameters."""
 
-    checkpoint: str
-    num_episodes: int = 100
-    save_gifs: bool = False
-    gif_dir: str = "./gif_episodes"
-    rnn_warmup_steps: int = 50
-    dump_obs_parity: bool = False
-
-    if PYDANTIC_V2:
-
-        @field_validator("num_episodes")
-        @classmethod
-        def _episodes_positive(cls, v: int) -> int:
-            if v < 1:
-                raise ValueError("num_episodes must be >= 1")
-            return v
-
-        @field_validator("rnn_warmup_steps")
-        @classmethod
-        def _warmup_non_negative(cls, v: int) -> int:
-            if v < 0:
-                raise ValueError("rnn_warmup_steps must be >= 0")
-            return v
-
-    else:
-
-        @validator("num_episodes")
-        @classmethod
-        def _episodes_positive(cls, v: int) -> int:
-            if v < 1:
-                raise ValueError("num_episodes must be >= 1")
-            return v
-
-        @validator("rnn_warmup_steps")
-        @classmethod
-        def _warmup_non_negative(cls, v: int) -> int:
-            if v < 0:
-                raise ValueError("rnn_warmup_steps must be >= 0")
-            return v
+    checkpoint: str = Field("", description="Path to trained checkpoint .pth")
+    num_episodes: int = Field(100, ge=1)
+    save_gifs: bool = Field(False)
+    gif_dir: str = Field("./gif_episodes")
+    rnn_warmup_steps: int = Field(50, ge=0)
+    dump_obs_parity: bool = Field(False)
+    eval_deterministic: bool = Field(True)
+    eval_stretch_enabled: bool = Field(False)
+    eval_stretch_end_level: int = Field(33, ge=0)
 
 
 class WandbConfig(_StrictBase):
     """Weights & Biases logging configuration."""
 
-    enabled: bool = False
-    project: str = "aerial-gym"
-    entity: str = ""
-    run_name: str = ""
-    tags: List[str] = []
+    enabled: bool = Field(False)
+    project: str = Field("aerial-gym")
+    entity: str = Field("")
+    user: str = Field("")
+    run_name: str = Field("")
+    group: str = Field("")
+    tags: List[str] = Field(default_factory=list)
 
 
 class CurriculumOverrides(_StrictBase):
-    """Optional curriculum overrides."""
+    """Curriculum and spawn/obstacle randomization overrides."""
 
-    force_level: Optional[int] = None
-    min_level: Optional[int] = None
-    max_level: Optional[int] = None
-    disable_obstacle_randomization: bool = False
-    fixed_obstacles_behind_gate: Optional[int] = None
-    disable_gate_size_randomization: bool = False
-    fixed_gate_scale_percent: Optional[int] = None
+    # Level control
+    force_level: Optional[int] = Field(None, ge=0, description="Force specific curriculum level")
+    min_level: Optional[int] = Field(None, ge=0)
+    max_level: Optional[int] = Field(None, ge=0)
+    disable_curriculum_multiplier: bool = Field(False)
 
-    if PYDANTIC_V2:
+    # Spawn randomization
+    disable_spawn_position: bool = Field(False)
+    disable_spawn_orientation: bool = Field(False)
 
-        @field_validator("force_level", "min_level", "max_level", "fixed_obstacles_behind_gate")
-        @classmethod
-        def _non_negative_optional(cls, v: Optional[int]) -> Optional[int]:
-            if v is not None and v < 0:
-                raise ValueError("value must be >= 0")
-            return v
+    # Obstacle randomization
+    disable_obstacle_randomization: bool = Field(False)
+    fixed_obstacles_behind_gate: Optional[int] = Field(None, ge=0)
 
-        @field_validator("fixed_gate_scale_percent")
-        @classmethod
-        def _gate_scale_range(cls, v: Optional[int]) -> Optional[int]:
-            if v is not None and not 40 <= v <= 100:
-                raise ValueError("fixed_gate_scale_percent must be in [40, 100]")
-            return v
-
-    else:
-
-        @validator("force_level", "min_level", "max_level", "fixed_obstacles_behind_gate")
-        @classmethod
-        def _non_negative_optional(cls, v: Optional[int]) -> Optional[int]:
-            if v is not None and v < 0:
-                raise ValueError("value must be >= 0")
-            return v
-
-        @validator("fixed_gate_scale_percent")
-        @classmethod
-        def _gate_scale_range(cls, v: Optional[int]) -> Optional[int]:
-            if v is not None and not 40 <= v <= 100:
-                raise ValueError("fixed_gate_scale_percent must be in [40, 100]")
-            return v
+    # Gate randomization
+    disable_gate_size_randomization: bool = Field(False)
+    fixed_gate_scale_percent: Optional[int] = Field(
+        None, ge=40, le=100, description="Even integer in [40, 100]"
+    )
 
 
 class CameraOverrides(_StrictBase):
-    """Optional camera configuration overrides."""
+    """Camera mode and noise configuration.
 
-    disable_static_camera_orientation: bool = False
-    disable_camera_noise: bool = False
-    disable_frame_dropout: bool = False
-    enable_dynamic_following: Optional[bool] = None
-    enable_yaw_sweep: bool = False
-    yaw_sweep_speed_deg: float = 10.0
-    static_camera_base_y: float = -3.0
-    static_camera_base_z: Union[float, str] = 1.5
-    enable_arc_follow: bool = False
-    arc_follow_radius_m: float = 2.0
+    Camera modes are mutually exclusive — at most one of enable_dynamic_following,
+    enable_yaw_sweep, enable_locked_follow, enable_arc_follow can be True.
+    Default (all False) = static randomized orientation.
+    """
 
-    if PYDANTIC_V2:
+    # Global noise/dropout toggles
+    disable_static_camera_orientation: bool = Field(False)
+    disable_camera_noise: bool = Field(False)
+    disable_frame_dropout: bool = Field(False)
+    disable_state_noise: bool = Field(False)
 
-        @field_validator("static_camera_base_z")
-        @classmethod
-        def _validate_base_z(cls, v: Union[float, str]) -> Union[float, str]:
-            if isinstance(v, str) and v != "adaptive":
-                raise ValueError("static_camera_base_z string value must be 'adaptive'")
-            return v
+    # Per-camera noise/dropout (None = inherit from global)
+    disable_drone_camera_noise: Optional[bool] = Field(None)
+    disable_static_camera_noise: Optional[bool] = Field(None)
+    disable_drone_camera_frame_dropout: Optional[bool] = Field(None)
+    disable_static_camera_frame_dropout: Optional[bool] = Field(None)
 
-    else:
+    # Camera modes (mutually exclusive)
+    enable_dynamic_following: Optional[bool] = Field(None, description="Dynamic follow drone+gate")
+    enable_yaw_sweep: bool = Field(False, description="Oscillating yaw sweep")
+    enable_locked_follow: bool = Field(False, description="Lock camera to drone position")
+    enable_arc_follow: bool = Field(False, description="Arc orbit around gate")
 
-        @validator("static_camera_base_z")
-        @classmethod
-        def _validate_base_z(cls, v: Union[float, str]) -> Union[float, str]:
-            if isinstance(v, str) and v != "adaptive":
-                raise ValueError("static_camera_base_z string value must be 'adaptive'")
-            return v
+    # Camera position parameters
+    static_camera_base_y: float = Field(-3.0)
+    static_camera_base_z: Union[float, str] = Field(1.5, description="Float or 'adaptive'")
+    yaw_sweep_speed_deg: float = Field(10.0, gt=0)
+    arc_follow_radius_m: float = Field(2.0, gt=0)
+    dynamic_camera_follow_y_offset_m: Optional[float] = Field(None)
+    disable_dynamic_follow_gate_blending: bool = Field(False)
+
+    @field_validator("static_camera_base_z")
+    @classmethod
+    def _validate_base_z(cls, v: Union[float, str]) -> Union[float, str]:
+        if isinstance(v, str) and v != "adaptive":
+            raise ValueError("static_camera_base_z must be a number or 'adaptive'")
+        return v
+
+    @model_validator(mode="after")
+    def _enforce_camera_mode_exclusivity(self) -> CameraOverrides:
+        """Ensure at most one camera mode is active."""
+        active_modes = []
+        if self.enable_dynamic_following is True:
+            active_modes.append("enable_dynamic_following")
+        if self.enable_yaw_sweep:
+            active_modes.append("enable_yaw_sweep")
+        if self.enable_locked_follow:
+            active_modes.append("enable_locked_follow")
+        if self.enable_arc_follow:
+            active_modes.append("enable_arc_follow")
+        if len(active_modes) > 1:
+            raise ValueError(
+                f"Camera modes are mutually exclusive — only one can be active, "
+                f"but got: {', '.join(active_modes)}"
+            )
+        return self
+
+
+class AblationConfig(_StrictBase):
+    """Observation ablation for controlled experiments."""
+
+    obs_ranges: str = Field("", description="e.g. '0:22=zero,86:150=zero'")
+    zero_rnn: bool = Field(False, description="Zero out RNN hidden state")
+
+
+class GradientMonitoringConfig(_StrictBase):
+    """Gradient monitoring for observation influence tracking."""
+
+    enable_influence_tracker: bool = Field(False)
+    enable_grad_attribution: bool = Field(False)
+    log_interval: int = Field(100, ge=1)
+    print_interval: int = Field(100, ge=1)
+
+
+class InferenceSuiteConfig(_StrictBase):
+    """Batch inference across multiple seeds and curriculum levels."""
+
+    seeds: List[int] = Field(default_factory=lambda: [123, 231, 321, 456, 789])
+    curriculum_levels: List[int] = Field(default_factory=lambda: [3, 13, 23, 33])
+    max_episodes_per_run: int = Field(512, ge=1)
+    eval_deterministic: bool = Field(True)
+    checkpoint_path: str = Field("", description="Path to .pth checkpoint file")
+    policy_dir: str = Field("", description="Parent dir containing experiment folders")
+    experiment_name: str = Field("")
 
 
 class RunConfig(_StrictBase):
-    """Top-level run configuration for aerial_gym training and evaluation."""
+    """Top-level run configuration for aerial_gym Sample Factory pipeline."""
 
-    mode: Mode = Mode.train
-    framework: Framework = Framework.sample_factory
+    mode: Mode = Field(Mode.train)
     common: CommonConfig
-    training: TrainingConfig = TrainingConfig()
-    eval: Optional[EvalConfig] = None
-    sample_factory: SampleFactoryConfig = SampleFactoryConfig()
-    rl_games: RlGamesConfig = RlGamesConfig()
-    cleanrl: CleanRLConfig = CleanRLConfig()
-    wandb: WandbConfig = WandbConfig()
-    curriculum: CurriculumOverrides = CurriculumOverrides()
-    camera: CameraOverrides = CameraOverrides()
+    training: TrainingConfig = Field(default_factory=TrainingConfig)
+    eval: Optional[EvalConfig] = Field(None)
+    sample_factory: SampleFactoryConfig = Field(default_factory=SampleFactoryConfig)
+    wandb: WandbConfig = Field(default_factory=WandbConfig)
+    curriculum: CurriculumOverrides = Field(default_factory=CurriculumOverrides)
+    camera: CameraOverrides = Field(default_factory=CameraOverrides)
+    ablation: AblationConfig = Field(default_factory=AblationConfig)
+    gradient_monitoring: GradientMonitoringConfig = Field(default_factory=GradientMonitoringConfig)
+    inference_suite: Optional[InferenceSuiteConfig] = Field(None)
 
-    if PYDANTIC_V2:
+    @model_validator(mode="after")
+    def _check_mode_requirements(self) -> RunConfig:
+        if self.mode in (Mode.eval, Mode.play) and self.eval is None:
+            raise ValueError("'eval' config section is required when mode is 'eval' or 'play'")
+        if self.mode == Mode.inference_suite and self.inference_suite is None:
+            raise ValueError(
+                "'inference_suite' config section is required when mode is 'inference_suite'"
+            )
+        return self
 
-        @model_validator(mode="after")
-        def _eval_required_for_eval_mode(self) -> RunConfig:
-            if self.mode in (Mode.eval, Mode.play) and self.eval is None:
-                raise ValueError("eval config is required when mode is 'eval' or 'play'")
-            return self
+    @model_validator(mode="after")
+    def _check_cross_field_consistency(self) -> RunConfig:
+        """Validate that fields make sense together."""
+        # Arc follow requires a radius
+        cam = self.camera
+        if cam.enable_arc_follow and cam.arc_follow_radius_m <= 0:
+            raise ValueError("arc_follow_radius_m must be > 0 when enable_arc_follow is True")
 
-    else:
+        # Dynamic follow Y offset only makes sense when dynamic following is enabled
+        if cam.dynamic_camera_follow_y_offset_m is not None and not cam.enable_dynamic_following:
+            raise ValueError(
+                "dynamic_camera_follow_y_offset_m requires enable_dynamic_following=True"
+            )
 
-        @validator("eval", always=True)
-        @classmethod
-        def _eval_required_for_eval_mode(
-            cls,
-            v: Optional[EvalConfig],
-            values: Dict[str, object],
-        ) -> Optional[EvalConfig]:
-            mode = values.get("mode")
-            if mode in (Mode.eval, Mode.play) and v is None:
-                raise ValueError("eval config is required when mode is 'eval' or 'play'")
-            return v
+        # Gate blending disable only relevant with dynamic following
+        if cam.disable_dynamic_follow_gate_blending and not cam.enable_dynamic_following:
+            raise ValueError(
+                "disable_dynamic_follow_gate_blending requires enable_dynamic_following=True"
+            )
 
+        # Gradient monitoring makes no sense in eval mode
+        gm = self.gradient_monitoring
+        if self.mode in (Mode.eval, Mode.play, Mode.inference_suite):
+            if gm.enable_influence_tracker or gm.enable_grad_attribution:
+                raise ValueError("Gradient monitoring is only supported in train mode")
 
-# Pydantic v1 requires update_forward_refs() when using `from __future__ import annotations`
-if not PYDANTIC_V2:
-    _locals = {
-        "CommonConfig": CommonConfig,
-        "TrainingConfig": TrainingConfig,
-        "SampleFactoryConfig": SampleFactoryConfig,
-        "RlGamesConfig": RlGamesConfig,
-        "CleanRLConfig": CleanRLConfig,
-        "EvalConfig": EvalConfig,
-        "WandbConfig": WandbConfig,
-        "CurriculumOverrides": CurriculumOverrides,
-        "CameraOverrides": CameraOverrides,
-        "RunConfig": RunConfig,
-        "Mode": Mode,
-        "Framework": Framework,
-    }
-    for _cls in _locals.values():
-        if hasattr(_cls, "update_forward_refs"):
-            _cls.update_forward_refs(**_locals)
+        # Fixed gate scale only meaningful when gate randomization is disabled
+        cur = self.curriculum
+        if cur.fixed_gate_scale_percent is not None and not cur.disable_gate_size_randomization:
+            raise ValueError(
+                "fixed_gate_scale_percent requires disable_gate_size_randomization=True"
+            )
+
+        return self
 
 
 def _set_nested(data: Dict[str, object], dotted_key: str, value: object) -> None:
-    """Set a value in a nested dict using a dotted key path (e.g. 'training.learning_rate')."""
+    """Set a value in a nested dict using a dotted key path."""
     keys = dotted_key.split(".")
     current = data
     for key in keys[:-1]:
@@ -454,19 +360,7 @@ def _coerce_value(raw: str) -> object:
 
 
 def load_config(path: Union[str, Path]) -> RunConfig:
-    """Load a RunConfig from a YAML file, validated by Pydantic.
-
-    Args:
-        path: Filesystem path to the YAML configuration file.
-
-    Returns:
-        A fully validated RunConfig instance.
-
-    Raises:
-        FileNotFoundError: If the YAML file does not exist.
-        yaml.YAMLError: If the YAML is malformed.
-        pydantic.ValidationError: If the config fails validation.
-    """
+    """Load a RunConfig from a YAML file, validated by Pydantic."""
     config_path = Path(path)
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
@@ -481,18 +375,7 @@ def load_config_with_overrides(
     path: Union[str, Path],
     overrides: Dict[str, object],
 ) -> RunConfig:
-    """Load a RunConfig from YAML, then apply dict overrides before validation.
-
-    Overrides use dotted key paths (e.g. ``{"training.learning_rate": 1e-3}``).
-    String values from CLI are auto-coerced to bool/int/float where possible.
-
-    Args:
-        path: Filesystem path to the YAML configuration file.
-        overrides: Mapping of dotted-key paths to override values.
-
-    Returns:
-        A fully validated RunConfig instance with overrides applied.
-    """
+    """Load a RunConfig from YAML, then apply dotted-key overrides before validation."""
     config_path = Path(path)
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")

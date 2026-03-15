@@ -1,7 +1,7 @@
-# Aerial Gym Simulator — Common Commands
-# Usage: make train CONFIG=configs/train_gate_navigation.yaml
+# Aerial Gym Simulator — Sample Factory Training & Evaluation
+# Usage: make train CONFIG=configs/train_gate_sf.yaml
 
-CONFIG ?= configs/train_gate_navigation.yaml
+CONFIG ?= configs/train_gate_sf.yaml
 PYTHON ?= python3
 
 # ─── Training & Evaluation ───────────────────────────────────────
@@ -22,17 +22,43 @@ validate-config:
 dry-run:
 	$(PYTHON) -m aerial_gym.run --config $(CONFIG) --dry-run
 
-# ─── Quick Targets (common configurations) ───────────────────────
-.PHONY: train-gate train-position eval-gate
+# ─── Quick Targets ───────────────────────────────────────────────
+.PHONY: train-gate train-gate-fixed train-gate-arc train-gate-dynamic
+.PHONY: eval-gate-drone-only eval-gate-dynamic eval-gate-sweeping
+.PHONY: eval-gate-arc eval-gate-locked eval-gate-static eval-all-modalities
 
 train-gate:
-	$(PYTHON) -m aerial_gym.run --config configs/train_gate_navigation.yaml
+	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf.yaml
 
-train-position:
-	$(PYTHON) -m aerial_gym.run --config configs/train_position_setpoint.yaml
+train-gate-fixed:
+	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf_fixed_orient.yaml
 
-eval-gate:
-	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_navigation.yaml
+train-gate-arc:
+	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf_arc_follow.yaml
+
+train-gate-dynamic:
+	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf_dynamic_follow.yaml
+
+eval-gate-drone-only:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_drone_only.yaml
+
+eval-gate-dynamic:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_dynamic_follow.yaml
+
+eval-gate-sweeping:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_sweeping.yaml
+
+eval-gate-arc:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_arc_follow.yaml
+
+eval-gate-locked:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_locked_yaw.yaml
+
+eval-gate-static:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_static_random.yaml
+
+eval-all-modalities:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_all_modalities.yaml
 
 # ─── Development ─────────────────────────────────────────────────
 .PHONY: lint format test pre-commit
@@ -69,27 +95,34 @@ clean:
 
 .PHONY: help
 help:
-	@echo "Aerial Gym Simulator"
+	@echo "Aerial Gym Simulator — Sample Factory Pipeline"
 	@echo ""
-	@echo "Training & Evaluation:"
-	@echo "  make train CONFIG=<yaml>    Train with config file"
-	@echo "  make eval CONFIG=<yaml>     Evaluate with config file"
-	@echo "  make play CONFIG=<yaml>     Play/visualize with config file"
-	@echo "  make dry-run CONFIG=<yaml>  Show command without executing"
-	@echo "  make validate-config        Validate config file"
+	@echo "Training:"
+	@echo "  make train CONFIG=<yaml>      Train with config file"
+	@echo "  make train-gate               Gate nav (default SF config)"
+	@echo "  make train-gate-fixed         Gate nav, fixed orientation"
+	@echo "  make train-gate-arc           Gate nav, arc-follow camera"
+	@echo "  make train-gate-dynamic       Gate nav, dynamic-follow camera"
 	@echo ""
-	@echo "Quick Targets:"
-	@echo "  make train-gate             Train gate navigation (SF)"
-	@echo "  make train-position         Train position setpoint (rl_games)"
-	@echo "  make eval-gate              Evaluate gate navigation"
+	@echo "Evaluation:"
+	@echo "  make eval CONFIG=<yaml>       Evaluate with config file"
+	@echo "  make eval-gate-drone-only     Drone-only ablation"
+	@echo "  make eval-gate-dynamic        Dynamic-follow eval"
+	@echo "  make eval-gate-sweeping       Yaw-sweep eval"
+	@echo "  make eval-gate-arc            Arc-follow eval"
+	@echo "  make eval-gate-locked         Locked-yaw eval"
+	@echo "  make eval-gate-static         Static-random eval"
+	@echo "  make eval-all-modalities      All modalities x seeds x levels"
+	@echo ""
+	@echo "Utilities:"
+	@echo "  make dry-run CONFIG=<yaml>    Show command without executing"
+	@echo "  make validate-config          Validate config file"
+	@echo "  make play CONFIG=<yaml>       Visualize with config file"
 	@echo ""
 	@echo "Development:"
-	@echo "  make lint                   Run ruff linter"
-	@echo "  make format                 Format code with ruff"
-	@echo "  make test                   Run tests"
-	@echo "  make pre-commit             Run all pre-commit hooks"
-	@echo ""
-	@echo "Setup:"
-	@echo "  make install                Install package"
-	@echo "  make install-dev            Install with dev deps + pre-commit"
-	@echo "  make clean                  Remove __pycache__ and .pyc files"
+	@echo "  make lint                     Run ruff linter"
+	@echo "  make format                   Format code with ruff"
+	@echo "  make test                     Run tests"
+	@echo "  make pre-commit               Run all pre-commit hooks"
+	@echo "  make install-dev              Install with dev deps"
+	@echo "  make clean                    Remove __pycache__ and .pyc"

@@ -23,7 +23,7 @@ dependencies = [
     "gymnasium",
     "pillow>=9.4",
     "pyyaml>=6.0",
-    "pydantic>=1.10",
+    "pydantic>=2.0",
     "wandb",
 ]
 

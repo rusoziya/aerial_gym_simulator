@@ -1,0 +1,69 @@
+# Replicates: run_all_inference_sweeping.sh
+#
+# Inference with static yaw-sweeping camera modality enabled.
+# The static camera sweeps yaw at 180 deg/s while remaining at a fixed position.
+#
+# Policy: drone_and_static_sweeping_curriculum_L13_23_TEST6
+# Ablation: ABLATE_OBS_RANGES='0:22=zero' (only proprio zeroed)
+#
+# Loops over levels [3, 13, 23, 33] x seeds [123, 231, 321, 456, 789]
+# (512 episodes per seed-level pair)
+
+mode: eval
+
+common:
+  task: navigation_task_gate
+  num_envs: 128
+  device: "cuda:0"
+  headless: false
+  use_warp: true
+
+eval:
+  num_episodes: 512
+  eval_deterministic: true
+  rnn_warmup_steps: 50
+  save_gifs: false
+  checkpoint: ""
+
+sample_factory:
+  env_name: dce_navigation_task_gate
+  obs_key: observations
+  experiment_name: drone_and_static_sweeping_curriculum_L13_23_TEST6
+
+ablation:
+  obs_ranges: "0:22=zero"
+  zero_rnn: false
+
+curriculum:
+  force_level: 13
+  disable_curriculum_multiplier: true
+  disable_gate_size_randomization: false
+  disable_obstacle_randomization: false
+  fixed_obstacles_behind_gate: 1
+  disable_spawn_position: false
+  disable_spawn_orientation: false
+
+camera:
+  enable_yaw_sweep: true
+  yaw_sweep_speed_deg: 180
+  disable_static_camera_orientation: false
+  enable_dynamic_following: false
+  enable_locked_follow: false
+  enable_arc_follow: false
+  static_camera_base_y: -2.0
+  static_camera_base_z: adaptive
+  disable_drone_camera_noise: false
+  disable_static_camera_noise: false
+  disable_drone_camera_frame_dropout: false
+  disable_static_camera_frame_dropout: false
+  disable_state_noise: false
+
+wandb:
+  enabled: true
+  project: final_inference_individual_policies_2
+
+# Environment variables set by the shell script:
+# VISIBILITY_DEBUG=true
+# EVAL_STRETCH_ENABLED=1
+# EVAL_STRETCH_END_LEVEL=33
+# CUBLAS_WORKSPACE_CONFIG=:16:8

@@ -1,0 +1,84 @@
+# Replicates: run_all_inference_all_modalities.sh
+#
+# Batch inference suite that evaluates ALL camera modalities across multiple
+# seeds and curriculum levels using the correct per-modality policy checkpoint.
+#
+# Modalities evaluated:
+#   1. sweeping       — static yaw sweep (180 deg/s)
+#   2. dynamic_follow — dynamic camera following (-1.0 m Y offset)
+#   3. locked_yaw     — static locked orientation
+#   4. static_random  — static randomized orientation (baseline)
+#   5. drone_only     — egocentric only (static + proprio ablated)
+#   6. arc_follow     — static arc-follow (2.0 m radius)
+#
+# Policy checkpoint mapping (relative to FINAL POLICIES directory):
+#   sweeping       -> drone_and_static_sweeping_curriculum_L13_23_TEST6
+#   dynamic_follow -> drone_and_static_dynamic_following_curriculum_L13_23
+#   locked_yaw     -> drone_and_static_locked_following_curriculum_L13_23
+#   static_random  -> drone_and_static_fixed_orientation_2
+#   drone_only     -> drone_only_curriculum_L13_23
+#   arc_follow     -> drone_and_static_arc_following_curriculum_L13_23_4
+#
+# Default ablation for all modalities: ABLATE_OBS_RANGES='0:22=zero'
+# (drone_only overrides to '0:22=zero,86:150=zero')
+#
+# All runs: 512 episodes, deterministic evaluation, RNN warmup 50 steps
+
+mode: inference_suite
+
+common:
+  task: navigation_task_gate
+  num_envs: 16
+  device: "cuda:0"
+  headless: false
+  use_warp: true
+
+inference_suite:
+  seeds: [123, 231, 321, 456, 789]
+  curriculum_levels: [3, 13, 23, 33]
+  max_episodes_per_run: 512
+  eval_deterministic: true
+  policy_dir: "./train_dir"
+
+eval:
+  rnn_warmup_steps: 50
+  eval_stretch_enabled: true
+  eval_stretch_end_level: 33
+  save_gifs: false
+
+sample_factory:
+  env_name: dce_navigation_task_gate
+  obs_key: observations
+
+ablation:
+  obs_ranges: "0:22=zero"
+  zero_rnn: false
+
+camera:
+  yaw_sweep_speed_deg: 180
+  static_camera_base_y: -2.0
+  static_camera_base_z: adaptive
+  disable_drone_camera_noise: false
+  disable_static_camera_noise: false
+  disable_drone_camera_frame_dropout: false
+  disable_static_camera_frame_dropout: false
+  disable_state_noise: false
+
+curriculum:
+  disable_curriculum_multiplier: true
+  disable_gate_size_randomization: false
+  disable_obstacle_randomization: false
+  fixed_obstacles_behind_gate: 1
+  disable_spawn_position: false
+  disable_spawn_orientation: false
+
+wandb:
+  enabled: true
+  project: final_inference_individual_policies_2
+
+# Environment variables set by the shell script:
+# VISIBILITY_DEBUG=true
+# EVAL_STRETCH_ENABLED=1
+# EVAL_STRETCH_END_LEVEL=33
+# CUBLAS_WORKSPACE_CONFIG=:16:8
+# RNN_WARMUP_STEPS=50
