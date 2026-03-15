@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from aerial_gym.config.asset_config.env_object_config import (
+from aerial_gym.config.asset_config.env_asset_config import (
     back_wall,
     bottom_wall,
     front_wall,
     left_wall,
+    right_wall,
+    top_wall,
+)
+from aerial_gym.config.asset_config.env_object_config import (
     object_asset_params,
     panel_asset_params,
-    right_wall,
     thin_asset_params,
     tile_asset_params,
-    top_wall,
     tree_asset_params,
 )
 

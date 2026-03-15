@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from aerial_gym import AERIAL_GYM_DIRECTORY
 from aerial_gym.config.asset_config.base_asset import BaseAssetParams
+from aerial_gym.config.asset_config.env_asset_config import bottom_wall
 from aerial_gym.config.asset_config.env_object_config import (
-    AERIAL_GYM_DIRECTORY,
-    bottom_wall,
     object_asset_params,
     tree_asset_params,
 )
