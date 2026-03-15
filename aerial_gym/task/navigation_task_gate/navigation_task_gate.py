@@ -30,14 +30,14 @@ from aerial_gym.utils.env_flag_utils import (
     apply_ablation_flags_to_tensor_dict,
 )
 from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
-from aerial_gym.task.navigation_task_gate import init_helpers
-from aerial_gym.task.navigation_task_gate import step_helpers
-from aerial_gym.task.navigation_task_gate import reward_helpers
-from aerial_gym.task.navigation_task_gate import gate_geometry
-from aerial_gym.task.navigation_task_gate import curriculum_management
-from aerial_gym.task.navigation_task_gate import camera_observations
-from aerial_gym.task.navigation_task_gate import reward_tracking
-from aerial_gym.task.navigation_task_gate import curriculum_logging
+from aerial_gym.task.navigation_task_gate.init_helpers import InitHelpers
+from aerial_gym.task.navigation_task_gate.step_helpers import StepHelpers
+from aerial_gym.task.navigation_task_gate.reward_helpers import RewardHelpers
+from aerial_gym.task.navigation_task_gate.gate_geometry import GateGeometry
+from aerial_gym.task.navigation_task_gate.curriculum_management import CurriculumManager
+from aerial_gym.task.navigation_task_gate.camera_observations import CameraObservations
+from aerial_gym.task.navigation_task_gate.reward_tracking import RewardTracking
+from aerial_gym.task.navigation_task_gate.curriculum_logging import CurriculumLogging
 
 
 logger = CustomLogger("navigation_task_gate")
@@ -70,6 +70,17 @@ class NavigationTaskGate(BaseTask):
             task_config.use_warp = use_warp
         super().__init__(task_config)
         self.device = self.task_config.device
+
+        # Compose helper objects (composition over inheritance)
+        self._init = InitHelpers(self)
+        self._step = StepHelpers(self)
+        self._rewards = RewardHelpers(self)
+        self._geometry = GateGeometry(self)
+        self._curriculum = CurriculumManager(self)
+        self._camera = CameraObservations(self)
+        self._reward_tracking = RewardTracking(self)
+        self._curriculum_log = CurriculumLogging(self)
+
         
         # If static latents (86:150) are fully ablated, disable static FOV visibility reward
         try:
@@ -200,8 +211,8 @@ class NavigationTaskGate(BaseTask):
         self.crashes_aggregate = 0
         self.timeouts_aggregate = 0
 
-        init_helpers._init_gate_tracking_tensors(self)
-        init_helpers._init_vae_model(self)
+        self._init._init_gate_tracking_tensors()
+        self._init._init_vae_model()
 
         # Static camera management using Isaac Gym native API
         self.static_camera_manager = StaticCameraManager(self.sim_env, self.task_config)
@@ -276,7 +287,7 @@ class NavigationTaskGate(BaseTask):
         
         logger.warning("="*80)
         
-        init_helpers._init_curriculum(self)
+        self._init._init_curriculum()
 
         # Use dedicated terminations tensor if provided by env_manager; fallback to crashes
         try:
@@ -286,8 +297,8 @@ class NavigationTaskGate(BaseTask):
         self.truncations = self.obs_dict["truncations"]
         self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
 
-        init_helpers._init_observation_action_spaces(self)
-        init_helpers._init_task_observations(self)
+        self._init._init_observation_action_spaces()
+        self._init._init_task_observations()
 
         self.num_task_steps = 0
         
@@ -306,13 +317,13 @@ class NavigationTaskGate(BaseTask):
         self.num_task_steps = 0
         self.curriculum_progress_fraction = 0.0
         
-        init_helpers._init_episode_reward_tracking(self)
-        init_helpers._init_episode_trajectory_state(self)
-        init_helpers._init_debug_flags(self)
+        self._init._init_episode_reward_tracking()
+        self._init._init_episode_trajectory_state()
+        self._init._init_debug_flags()
 
         # Initialize gate dimensions for all environments after full initialization
         logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
-        gate_geometry.update_gate_dimensions_for_environments(self, torch.arange(self.sim_env.num_envs, device=self.device))
+        self._geometry.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
 
         # Ensure infos survive resets for logging back to the learner
         self._infos_to_return = None
@@ -420,7 +431,7 @@ class NavigationTaskGate(BaseTask):
         self.gate_approach_distance[env_ids] = 0.0
         
         # RESET EPISODE REWARD TRACKING: Store completed episode data and reset trackers
-        reward_tracking.reset_episode_reward_tracking(self, env_ids)
+        self._reward_tracking.reset_episode_reward_tracking(env_ids)
         
         # Update static camera position based on curriculum level (ONLY for resetting environments)
         if len(env_ids) > 0:
@@ -437,7 +448,7 @@ class NavigationTaskGate(BaseTask):
         self.sim_env.global_tensor_dict['eval_stretch_enabled'] = stretch_enabled
         self.sim_env.global_tensor_dict['eval_stretch_end_level'] = stretch_end
         # Update gate dimensions for adaptive rewards after gate selection
-        gate_geometry.update_gate_dimensions_for_environments(self, env_ids)
+        self._geometry.update_gate_dimensions_for_environments(env_ids)
         
         # CRITICAL: Set target position to adaptive gate center AFTER gate dimensions are updated
         # This ensures "Getting Closer" and "position reward" terms aim at the correct gate center
@@ -491,7 +502,7 @@ class NavigationTaskGate(BaseTask):
         # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] in [-1, 1]^4
         # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
 
-        transformed_action, nan_trunc_mask = step_helpers._validate_and_step(self, actions)
+        transformed_action, nan_trunc_mask = self._step._validate_and_step(actions)
 
         # This step must be done since the reset is done after the reward is calculated.
         # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
@@ -526,35 +537,35 @@ class NavigationTaskGate(BaseTask):
         # --- Gate passage detection ---
         robot_position = self.obs_dict["robot_position"]
         robot_position_before_reset = robot_position.clone()
-        successes, target_successes, gate_passage_success = step_helpers._detect_gate_passage(self, robot_position)
+        successes, target_successes, gate_passage_success = self._step._detect_gate_passage(robot_position)
 
         # --- Timeout / truncation handling and infos population ---
-        step_helpers._apply_timeout_and_populate_infos(self, successes)
+        self._step._apply_timeout_and_populate_infos(successes)
 
         # --- Gate navigation metrics ---
         robot_position = self.obs_dict["robot_position"]
-        gate_center_position, gate_passed_current = step_helpers._compute_gate_navigation_metrics(self, 
+        gate_center_position, gate_passed_current = self._step._compute_gate_navigation_metrics(
             robot_position, camera_gate_alignment,
         )
 
         # Update per-env episode trajectory state
-        step_helpers._update_trajectory_state(self, robot_position, gate_center_position, gate_passed_current)
+        self._step._update_trajectory_state(robot_position, gate_center_position, gate_passed_current)
 
-        curriculum_management.check_and_update_curriculum_level(self, 
+        self._curriculum.check_and_update_curriculum_level(
             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
         )
 
         # --- Post-reward reset and trajectory metric stashing ---
         reset_envs = self.sim_env.post_reward_calculation_step()
         if len(reset_envs) > 0:
-            step_helpers._handle_post_reward_reset(self, 
+            self._step._handle_post_reward_reset(
                 robot_position, robot_position_before_reset, gate_center_position,
                 successes, target_successes, reset_envs,
             )
         self.num_task_steps += 1
 
         # --- Image processing and final return ---
-        step_helpers._process_images_and_finalize(self)
+        self._step._process_images_and_finalize()
 
         if self.task_config.return_state_before_reset == False:
             return_tuple = self.get_return_tuple()
@@ -669,7 +680,7 @@ class NavigationTaskGate(BaseTask):
         except (ValueError, TypeError) as e:
             logger.debug(f"[YawSweep] Per-step update skipped due to: {e}")
 
-        camera_observations._compute_visibility_metrics(self, infos_to_return)
+        self._camera._compute_visibility_metrics(infos_to_return)
 
         
         return (
@@ -717,7 +728,7 @@ class NavigationTaskGate(BaseTask):
         obs[:, layout.drone_position] = drone_pos_noised
 
         # Static camera pose (relative to drone)
-        static_camera_pos, static_camera_orientation = camera_observations._get_static_camera_pose_relative_to_drone(self)
+        static_camera_pos, static_camera_orientation = self._camera._get_static_camera_pose_relative_to_drone()
         if self.task_config.curriculum.enable_state_noise and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
             noise_cfg = self.task_config.curriculum.get_state_noise(self.curriculum_level)
             sp_std = float(noise_cfg.get("static_pos_std_m", 0.0))
@@ -804,7 +815,7 @@ class NavigationTaskGate(BaseTask):
         frac_eff = 0.0 if cm_disabled else float(frac_current)
         self._curriculum_multiplier_factor = 1.0 + 0.5 * frac_eff
 
-        boundary_violation_one_shot_mask = reward_helpers._detect_boundary_violation(self, robot_position)
+        boundary_violation_one_shot_mask = self._rewards._detect_boundary_violation(robot_position)
 
         # Disable nvFuser optimizations for this scripted block to avoid CUDA fuser fallback warnings
         # (no change in semantics; prevents noisy warnings from TorchScript fuser)
@@ -827,11 +838,11 @@ class NavigationTaskGate(BaseTask):
                 boundary_violation_one_shot_mask,
             )
 
-        rewards = reward_helpers._apply_time_penalty(self, rewards, robot_position)
-        rewards = reward_helpers._apply_static_fov_reward(self, rewards, robot_position)
+        rewards = self._rewards._apply_time_penalty(rewards, robot_position)
+        rewards = self._rewards._apply_static_fov_reward(rewards, robot_position)
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
-        reward_tracking.update_episode_reward_tracking(self, obs_dict, rewards, crashes)
-        reward_tracking._log_comprehensive_reward_debug(self, obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment)
+        self._reward_tracking.update_episode_reward_tracking(obs_dict, rewards, crashes)
+        self._reward_tracking._log_comprehensive_reward_debug(obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment)
         
         # Store camera alignment for debugging
         self.camera_alignment_debug = camera_gate_alignment
