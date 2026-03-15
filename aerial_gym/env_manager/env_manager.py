@@ -75,7 +75,7 @@ class EnvManager(BaseManager):
 
         has_IGE_cameras = False
         robot_config = robot_registry.get_robot_config(self.robot_name)
-        if robot_config.sensor_config.enable_camera == True and self.use_warp == False:
+        if robot_config.sensor_config.enable_camera and not self.use_warp:
             has_IGE_cameras = True
 
         self.IGE_env = IsaacGymEnv(env_cfg, sim_cfg, has_IGE_cameras, self.device)
@@ -266,10 +266,10 @@ class EnvManager(BaseManager):
 
     def prepare_sim(self) -> None:
         if not self.IGE_env.prepare_for_simulation(self, self.global_tensor_dict):
-            raise Exception("Failed to prepare the simulation")
+            raise RuntimeError("Failed to prepare the simulation")
         if self.cfg.env.use_warp:
             if not self.warp_env.prepare_for_simulation(self.global_tensor_dict):
-                raise Exception("Failed to prepare the simulation")
+                raise RuntimeError("Failed to prepare the simulation")
 
         self.asset_manager = AssetManager(self.global_tensor_dict, self.keep_in_env)
         self.asset_manager.prepare_for_sim()
@@ -312,45 +312,45 @@ class EnvManager(BaseManager):
         self.apply_gate_variant_selection(env_ids=env_ids)
         # Enforce fixed obstacle count after gate selection if obstacle randomization is disabled
         if obs_dis:
-            try:
-                fixed_count = int(
-                    self.global_tensor_dict.get("obstacles_randomization/fixed_count", 0)
-                )
-            except (ValueError, TypeError):
-                fixed_count = 0
-            env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(
-                self.cfg.env.num_envs, -1, 13
-            )
-            gate_indices_all = self.global_tensor_dict.get("gate_variant_indices_per_env", [])
-            total_assets = env_asset_state.shape[1]
-            # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
-            fixed_indices = set(range(int(self.keep_in_env or 0)))
-            # For each env, keep exactly `fixed_count` candidate obstacles (non-fixed, non-gate)
-            loop_envs = env_ids.tolist()
-            for env_id in loop_envs:
-                gate_indices = set(gate_indices_all[env_id]) if gate_indices_all else set()
-                candidates = [
-                    i
-                    for i in range(total_assets)
-                    if (i not in fixed_indices) and (i not in gate_indices)
-                ]
-                # Keep the first N candidates; hide the rest
-                keep = set(candidates[: max(0, fixed_count)])
-                for i in candidates:
-                    if i in keep:
-                        continue
-                    env_asset_state[env_id, i, 0:3] = torch.tensor(
-                        [-1000.0, -1000.0, -1000.0], device=self.device
-                    )
-            # Write back
-            self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(
-                -1, 13
-            )
+            self._enforce_fixed_obstacle_count(env_ids)
         if self.cfg.env.use_warp:
             self.warp_env.reset_idx(env_ids)
         self.robot_manager.reset_idx(env_ids)
         self.IGE_env.write_to_sim()
         self.sim_steps[env_ids] = 0
+
+    def _enforce_fixed_obstacle_count(self, env_ids: torch.Tensor) -> None:
+        """Hide excess obstacles so exactly `fixed_count` non-fixed, non-gate assets remain."""
+        try:
+            fixed_count = int(self.global_tensor_dict.get("obstacles_randomization/fixed_count", 0))
+        except (ValueError, TypeError):
+            fixed_count = 0
+        env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(
+            self.cfg.env.num_envs, -1, 13
+        )
+        gate_indices_all = self.global_tensor_dict.get("gate_variant_indices_per_env", [])
+        total_assets = env_asset_state.shape[1]
+        # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
+        fixed_indices = set(range(int(self.keep_in_env or 0)))
+        # For each env, keep exactly `fixed_count` candidate obstacles (non-fixed, non-gate)
+        loop_envs = env_ids.tolist()
+        for env_id in loop_envs:
+            gate_indices = set(gate_indices_all[env_id]) if gate_indices_all else set()
+            candidates = [
+                i
+                for i in range(total_assets)
+                if (i not in fixed_indices) and (i not in gate_indices)
+            ]
+            # Keep the first N candidates; hide the rest
+            keep = set(candidates[: max(0, fixed_count)])
+            for i in candidates:
+                if i in keep:
+                    continue
+                env_asset_state[env_id, i, 0:3] = torch.tensor(
+                    [-1000.0, -1000.0, -1000.0], device=self.device
+                )
+        # Write back
+        self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
 
     def apply_gate_variant_selection(self, env_ids: torch.Tensor | None) -> None:
         """Select exactly one gate variant per environment, hiding the rest."""

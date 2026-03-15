@@ -90,44 +90,19 @@ class IsaacGymEnv(BaseManager):
         logger.info("Fixing devices")
         args.sim_device = self.device
         self.sim_device_type, self.sim_device_id = gymutil.parse_device_str(args.sim_device)
-        if self.sim_device_type == "cpu" and self.simulator_params.use_gpu_pipeline == True:
+        if self.sim_device_type == "cpu" and self.simulator_params.use_gpu_pipeline:
             logger.warning(
                 "The use_gpu_pipeline is set to True in the sim_config, but the device is set to CPU. Running the simulation on the CPU."
             )
             self.simulator_params.use_gpu_pipeline = False
-        if self.simulator_params.use_gpu_pipeline == False:
+        if not self.simulator_params.use_gpu_pipeline:
             logger.critical(
                 "The use_gpu_pipeline is set to False, this will result in slower simulation times"
             )
         else:
             logger.info("Using GPU pipeline for simulation.")
         logger.info(f"Sim Device type: {self.sim_device_type}, Sim Device ID: {self.sim_device_id}")
-        # In headless runs we still need a graphics device for Isaac Gym camera sensors (EGL).
-        # Honor env override SF_HEADLESS_USE_GRAPHICS (default: true).
-        try:
-            import os as _os
-
-            _use_graphics_env = _os.getenv("SF_HEADLESS_USE_GRAPHICS")
-            _use_graphics = (
-                (str(_use_graphics_env).lower() == "true")
-                if _use_graphics_env is not None
-                else True
-            )
-        except (ValueError, TypeError):
-            _use_graphics = True
-        if self.sim_config.viewer.headless:
-            if _use_graphics or self.has_IGE_cameras:
-                self.graphics_device_id = self.sim_device_id
-                logger.info("Headless mode with graphics enabled (EGL) for camera sensors.")
-            else:
-                self.graphics_device_id = -1
-                logger.critical(
-                    "\n Setting graphics device to -1."
-                    + "\n This is done because the simulation is run in headless mode and no Isaac Gym cameras are used."
-                    + "\n No need to worry. The simulation and warp rendering will work as expected."
-                )
-        else:
-            self.graphics_device_id = self.sim_device_id
+        self.graphics_device_id = self._resolve_graphics_device()
         logger.info(f"Graphics Device ID: {self.graphics_device_id}")
         logger.info("Creating Isaac Gym Simulation Object")
         warn_msg1 = (
@@ -148,11 +123,36 @@ class IsaacGymEnv(BaseManager):
         logger.info("Created Isaac Gym Simulation Object")
         return self.gym, self.sim
 
+    def _resolve_graphics_device(self) -> int:
+        """Determine the graphics device ID based on headless mode and camera usage."""
+        import os as _os
+
+        try:
+            _use_graphics_env = _os.getenv("SF_HEADLESS_USE_GRAPHICS")
+            _use_graphics = (
+                (str(_use_graphics_env).lower() == "true")
+                if _use_graphics_env is not None
+                else True
+            )
+        except (ValueError, TypeError):
+            _use_graphics = True
+
+        if self.sim_config.viewer.headless:
+            if _use_graphics or self.has_IGE_cameras:
+                logger.info("Headless mode with graphics enabled (EGL) for camera sensors.")
+                return self.sim_device_id
+            logger.critical(
+                "\n Setting graphics device to -1."
+                + "\n This is done because the simulation is run in headless mode and no Isaac Gym cameras are used."
+                + "\n No need to worry. The simulation and warp rendering will work as expected."
+            )
+            return -1
+        return self.sim_device_id
+
     def create_ground_plane(self) -> None:
         plane_params = gymapi.PlaneParams()
         plane_params.normal = gymapi.Vec3(0.0, 0.0, 1.0)
         self.gym.add_ground(self.sim, plane_params)
-        return
 
     def create_env(self, env_id: int) -> object:
         """
@@ -218,7 +218,7 @@ class IsaacGymEnv(BaseManager):
         if asset_info_dict["per_link_semantic"]:
             rigid_body_names_all = self.gym.get_actor_rigid_body_names(env_handle, asset_handle)
 
-            if not type(asset_info_dict["semantic_masked_links"]) == dict:
+            if not isinstance(asset_info_dict["semantic_masked_links"], dict):
                 raise ValueError("semantic_masked_links should be a dictionary")
 
             links_to_label = asset_info_dict["semantic_masked_links"].keys()
@@ -391,7 +391,6 @@ class IsaacGymEnv(BaseManager):
             logger.info("Created viewer")
         else:
             logger.info("Headless mode. Viewer not created.")
-        return
 
     def pre_physics_step(self, actions: torch.Tensor) -> None:
         """
@@ -427,7 +426,6 @@ class IsaacGymEnv(BaseManager):
             else:
                 raise ValueError("Invalid dof control mode")
             self.dof_application_function(self.sim, self.dof_application_tensor)
-        return
 
     def physics_step(self) -> None:
         """
@@ -435,7 +433,6 @@ class IsaacGymEnv(BaseManager):
         """
         self.gym.simulate(self.sim)
         self.graphics_are_stepped = False
-        return
 
     def post_physics_step(self) -> None:
         """
@@ -444,7 +441,6 @@ class IsaacGymEnv(BaseManager):
         # update the state tensors
         self.gym.fetch_results(self.sim, True)
         self.refresh_tensors()
-        return
 
     def refresh_tensors(self) -> None:
         self.gym.refresh_rigid_body_state_tensor(self.sim)
@@ -464,10 +460,6 @@ class IsaacGymEnv(BaseManager):
             if not self.graphics_are_stepped and self.viewer.enable_viewer_sync:
                 self.step_graphics()
             self.viewer.render()
-        return
-
-    def reset(self) -> None:
-        self.reset_idx(torch.arange(self.num_envs, device=self.device))
 
     def reset_idx(self, env_ids: torch.Tensor) -> None:
         self.env_lower_bound[env_ids, :] = torch_rand_float_tensor(
@@ -490,4 +482,3 @@ class IsaacGymEnv(BaseManager):
                 self.sim,
                 gymtorch.unwrap_tensor(self.global_tensor_dict["unfolded_dof_state_tensor"]),
             )
-        return
