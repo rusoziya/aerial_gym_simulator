@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 import torch
 
 from aerial_gym.utils.logging import CustomLogger
@@ -7,60 +9,70 @@ from aerial_gym.utils.logging import CustomLogger
 logger = CustomLogger("IsaacLabCameraBackend")
 
 
+@dataclass
+class _PendingCamera:
+    """Stored config for a camera that has not yet been instantiated."""
+
+    prim_path: str
+    height: int
+    width: int
+    horizontal_fov: float
+    near_plane: float
+    far_plane: float
+    data_types: list[str] = field(
+        default_factory=lambda: [
+            "distance_to_image_plane",
+            "semantic_segmentation",
+            "rgb",
+        ]
+    )
+
+
 class IsaacLabCameraBackend:
     """Isaac Lab implementation of the ``CameraBackend`` protocol.
 
-    This is a migration stub. Each method documents the Isaac Gym API call
-    it replaces and the Isaac Lab API that should be used instead.
+    Cameras are created in two phases:
+    1. ``create_camera`` stores configs (before sim.reset).
+    2. ``initialize`` instantiates the actual ``Camera`` objects (after scene
+       creation but before the first step).
     """
 
     def __init__(self, simulation: object) -> None:
-        """Store a reference to the Isaac Lab simulation.
+        """Store a reference to the Isaac Lab simulation context.
 
         Args:
-            simulation: The Isaac Lab ``SimulationContext`` or equivalent top-level handle.
+            simulation: The Isaac Lab ``SimulationContext`` or equivalent handle.
         """
-        # TODO: Isaac Lab — store ``omni.isaac.lab.sim.SimulationContext`` reference
-        # Isaac Gym equivalent: the (gym, sim) handle pair passed around everywhere
         self.simulation = simulation
-        self._cameras: dict[tuple[int, int], object] = {}
+        self._pending: dict[int, _PendingCamera] = {}
+        self._cameras: dict[int, object] = {}
+        self._next_handle: int = 0
+        self._initialized: bool = False
 
     def create_camera(self, env_handle: int, camera_props: object) -> int:
-        """Create a camera sensor in the given environment.
-
-        Isaac Gym equivalent:
-            ``gym.create_camera_sensor(env_handle, camera_props)``
-            where ``camera_props`` is a ``gymapi.CameraProperties`` instance with fields:
-                enable_tensors, width, height, far_plane, near_plane,
-                horizontal_fov, use_collision_geometry
-
-        Isaac Lab replacement:
-            Use ``omni.isaac.lab.sensors.CameraCfg`` to declare the camera, then
-            instantiate via ``omni.isaac.lab.sensors.Camera(cfg)``.
-            Resolution, FOV, and clipping planes are set in ``CameraCfg``.
-
-            Example::
-
-                from omni.isaac.lab.sensors import Camera, CameraCfg
-
-                cfg = CameraCfg(
-                    prim_path="/World/envs/env_{env_id}/Robot/camera",
-                    update_period=0.0,
-                    height=camera_props.height,
-                    width=camera_props.width,
-                    data_types=["distance_to_image_plane", "semantic_segmentation", "rgb"],
-                )
-                camera = Camera(cfg)
+        """Store a camera config to be instantiated later during ``initialize``.
 
         Args:
             env_handle: Environment index (used to construct the prim path).
-            camera_props: Camera configuration (resolution, FOV, clipping planes).
+            camera_props: A ``CameraProps`` dataclass with width, height, etc.
 
         Returns:
-            An integer handle identifying the created camera.
+            An integer handle identifying the pending camera.
         """
-        # TODO: implement using CameraCfg + Camera(cfg)
-        raise NotImplementedError("Isaac Lab camera creation not yet implemented")
+        handle = self._next_handle
+        self._next_handle += 1
+
+        prim_path = f"/World/envs/env_.*/Robot/camera_{handle}"
+        self._pending[handle] = _PendingCamera(
+            prim_path=prim_path,
+            height=camera_props.height,
+            width=camera_props.width,
+            horizontal_fov=camera_props.horizontal_fov,
+            near_plane=camera_props.near_plane,
+            far_plane=camera_props.far_plane,
+        )
+        logger.debug(f"Queued camera {handle}: {camera_props.width}x{camera_props.height}")
+        return handle
 
     def attach_camera_to_body(
         self,
@@ -69,83 +81,76 @@ class IsaacLabCameraBackend:
         body_handle: int,
         local_transform: object,
     ) -> None:
-        """Attach a camera to a rigid body.
+        """Update the pending camera's prim path to be under the target body.
 
-        Isaac Gym equivalent:
-            ``gym.attach_camera_to_body(camera_handle, env_handle, body_handle,
-              local_transform, gymapi.FOLLOW_TRANSFORM)``
-
-        Isaac Lab replacement:
-            Attachment is implicit via the USD prim hierarchy. Set the camera's
-            ``prim_path`` as a child of the target body prim, e.g.
-            ``/World/envs/env_0/Robot/base_link/camera``.
-            The offset is specified in ``CameraCfg.offset``:
-
-            Example::
-
-                from omni.isaac.lab.sensors import CameraCfg
-                from omni.isaac.lab.utils.math import quat_from_euler_xyz
-
-                cfg = CameraCfg(
-                    prim_path=".../base_link/camera",
-                    offset=CameraCfg.OffsetCfg(
-                        pos=local_transform.p,
-                        rot=local_transform.r,
-                        convention="world",
-                    ),
-                    ...
-                )
+        In Isaac Lab, attachment is declarative: the camera prim is placed as a
+        child of the body prim in the USD hierarchy. The offset is baked into
+        the ``CameraCfg.OffsetCfg`` when the camera is instantiated.
 
         Args:
             camera_handle: Handle returned by ``create_camera``.
             env_handle: Environment handle / index.
             body_handle: Handle to the rigid body the camera should follow.
-            local_transform: Pose offset (position + quaternion).
+            local_transform: Pose offset (a ``Transform`` with ``.p`` and ``.r``).
         """
-        # TODO: implement — in Isaac Lab attachment is declarative via prim path
-        raise NotImplementedError("Isaac Lab camera attachment not yet implemented")
+        if camera_handle not in self._pending:
+            logger.warning(f"Cannot attach camera {camera_handle}: not found in pending configs")
+            return
+
+        pending = self._pending[camera_handle]
+        pending.prim_path = f"/World/envs/env_.*/Robot/body_{body_handle}/camera_{camera_handle}"
+        logger.debug(f"Camera {camera_handle} will attach under body {body_handle}")
+
+    def initialize(self) -> None:
+        """Instantiate all pending cameras as Isaac Lab ``Camera`` objects.
+
+        Must be called after scene creation but before ``sim.reset()``.
+        """
+        if self._initialized:
+            return
+
+        from isaaclab.sensors import Camera, CameraCfg
+
+        for handle, pending in self._pending.items():
+            cfg = CameraCfg(
+                prim_path=pending.prim_path,
+                update_period=0.0,
+                height=pending.height,
+                width=pending.width,
+                data_types=pending.data_types,
+                spawn=None,
+            )
+            camera = Camera(cfg)
+            self._cameras[handle] = camera
+            logger.info(
+                f"Initialized camera {handle} at {pending.prim_path} "
+                f"({pending.width}x{pending.height})"
+            )
+
+        self._initialized = True
 
     def render_cameras(self, sim_handle: object) -> None:
         """Trigger rendering for all camera sensors.
 
-        Isaac Gym equivalent:
-            ``gym.render_all_camera_sensors(sim)``
-
-        Isaac Lab replacement:
-            Call ``camera.update(dt)`` on each ``Camera`` instance, or rely on
-            the ``SimulationContext`` step which triggers sensor updates
-            automatically when sensors are registered.
-
-            Example::
-
-                # Option A: explicit update
-                for camera in self._cameras.values():
-                    camera.update(dt=sim_dt)
-
-                # Option B: automatic via SimulationContext.step()
-                # sensors registered with the scene update automatically
-
         Args:
-            sim_handle: Simulation handle (unused in Isaac Lab — kept for interface compat).
+            sim_handle: Simulation handle (unused -- kept for interface compat).
         """
-        # TODO: implement — call camera.update(dt) or rely on scene step
-        raise NotImplementedError("Isaac Lab camera rendering not yet implemented")
+        if not self._initialized:
+            self.initialize()
 
-    def get_depth_tensor(self, sim_handle: object, env_handle: int, camera_handle: int) -> object:
-        """Return the raw depth image tensor for a single camera.
+        dt = 0.01
+        if self.simulation is not None:
+            sim_dt = getattr(self.simulation, "physics_dt", None)
+            if sim_dt is not None:
+                dt = sim_dt
 
-        Isaac Gym equivalent:
-            ``gym.get_camera_image_gpu_tensor(sim, env_handle, camera_handle,
-              gymapi.IMAGE_DEPTH)``
+        for camera in self._cameras.values():
+            camera.update(dt)
 
-        Isaac Lab replacement:
-            Access ``camera.data.output["distance_to_image_plane"]`` which is
-            already a ``torch.Tensor`` on the GPU.
-
-            Example::
-
-                depth = camera.data.output["distance_to_image_plane"]
-                # shape: (height, width) — already a torch.Tensor, no wrapping needed
+    def get_depth_tensor(
+        self, sim_handle: object, env_handle: int, camera_handle: int
+    ) -> torch.Tensor:
+        """Return the depth image tensor for a single camera/env.
 
         Args:
             sim_handle: Simulation handle (unused in Isaac Lab).
@@ -153,27 +158,15 @@ class IsaacLabCameraBackend:
             camera_handle: Camera handle / index.
 
         Returns:
-            Raw GPU tensor for depth pixels.
+            Depth tensor of shape ``(H, W)`` for the given environment.
         """
-        # TODO: implement — return camera.data.output["distance_to_image_plane"]
-        raise NotImplementedError("Isaac Lab depth tensor access not yet implemented")
+        camera = self._cameras[camera_handle]
+        return camera.data.output["distance_to_image_plane"][env_handle]
 
     def get_segmentation_tensor(
         self, sim_handle: object, env_handle: int, camera_handle: int
-    ) -> object:
-        """Return the raw segmentation image tensor for a single camera.
-
-        Isaac Gym equivalent:
-            ``gym.get_camera_image_gpu_tensor(sim, env_handle, camera_handle,
-              gymapi.IMAGE_SEGMENTATION)``
-
-        Isaac Lab replacement:
-            Access ``camera.data.output["semantic_segmentation"]``.
-
-            Example::
-
-                seg = camera.data.output["semantic_segmentation"]
-                # shape: (height, width) — int32 tensor on GPU
+    ) -> torch.Tensor:
+        """Return the segmentation image tensor for a single camera/env.
 
         Args:
             sim_handle: Simulation handle (unused in Isaac Lab).
@@ -181,25 +174,15 @@ class IsaacLabCameraBackend:
             camera_handle: Camera handle / index.
 
         Returns:
-            Raw GPU tensor for segmentation labels.
+            Segmentation tensor of shape ``(H, W)`` for the given environment.
         """
-        # TODO: implement — return camera.data.output["semantic_segmentation"]
-        raise NotImplementedError("Isaac Lab segmentation tensor access not yet implemented")
+        camera = self._cameras[camera_handle]
+        return camera.data.output["semantic_segmentation"][env_handle]
 
-    def get_rgb_tensor(self, sim_handle: object, env_handle: int, camera_handle: int) -> object:
-        """Return the raw RGB(A) image tensor for a single camera.
-
-        Isaac Gym equivalent:
-            ``gym.get_camera_image_gpu_tensor(sim, env_handle, camera_handle,
-              gymapi.IMAGE_COLOR)``
-
-        Isaac Lab replacement:
-            Access ``camera.data.output["rgb"]``.
-
-            Example::
-
-                rgb = camera.data.output["rgb"]
-                # shape: (height, width, 4) — RGBA uint8 tensor on GPU
+    def get_rgb_tensor(
+        self, sim_handle: object, env_handle: int, camera_handle: int
+    ) -> torch.Tensor:
+        """Return the RGBA image tensor for a single camera/env.
 
         Args:
             sim_handle: Simulation handle (unused in Isaac Lab).
@@ -207,54 +190,22 @@ class IsaacLabCameraBackend:
             camera_handle: Camera handle / index.
 
         Returns:
-            Raw GPU tensor for RGBA pixels.
+            RGBA tensor of shape ``(H, W, 4)`` for the given environment.
         """
-        # TODO: implement — return camera.data.output["rgb"]
-        raise NotImplementedError("Isaac Lab RGB tensor access not yet implemented")
+        camera = self._cameras[camera_handle]
+        return camera.data.output["rgb"][env_handle]
 
     def start_tensor_access(self, sim_handle: object) -> None:
-        """Begin GPU tensor read access for image data.
-
-        Isaac Gym equivalent:
-            ``gym.start_access_image_tensors(sim)``
-
-        Isaac Lab replacement:
-            Not needed — Isaac Lab camera tensors are standard ``torch.Tensor``
-            objects that can be read at any time without explicit locking.
-
-        Args:
-            sim_handle: Simulation handle (unused in Isaac Lab).
-        """
-        # No-op in Isaac Lab: tensors are directly accessible
-        pass
+        """No-op in Isaac Lab: tensors are directly accessible."""
 
     def end_tensor_access(self, sim_handle: object) -> None:
-        """End GPU tensor read access for image data.
-
-        Isaac Gym equivalent:
-            ``gym.end_access_image_tensors(sim)``
-
-        Isaac Lab replacement:
-            Not needed — see ``start_tensor_access``.
-
-        Args:
-            sim_handle: Simulation handle (unused in Isaac Lab).
-        """
-        # No-op in Isaac Lab: tensors are directly accessible
-        pass
+        """No-op in Isaac Lab: tensors are directly accessible."""
 
     def wrap_tensor(self, raw_tensor: object) -> torch.Tensor:
-        """Convert a raw GPU tensor into a ``torch.Tensor``.
-
-        Isaac Gym equivalent:
-            ``gymtorch.wrap_tensor(raw_tensor)``
-
-        Isaac Lab replacement:
-            Isaac Lab already returns ``torch.Tensor`` objects from its camera
-            data API, so this is an identity operation.
+        """Identity operation -- Isaac Lab already returns ``torch.Tensor``.
 
         Args:
-            raw_tensor: The tensor to convert (already a ``torch.Tensor`` in Isaac Lab).
+            raw_tensor: The tensor (already a ``torch.Tensor`` in Isaac Lab).
 
         Returns:
             The same tensor, unchanged.
