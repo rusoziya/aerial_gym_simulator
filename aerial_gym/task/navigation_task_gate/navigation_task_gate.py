@@ -9,6 +9,7 @@ from aerial_gym.task.schemas import (
 )
 from aerial_gym.sim.sim_builder import SimBuilder
 import torch
+from aerial_gym.utils.tensor_utils import invalid_mask_per_env, has_invalid, sanitize_tensor
 import numpy as np
 import os
 
@@ -768,7 +769,7 @@ class NavigationTaskGate(BaseTask):
         # Final observation NaN/Inf guard: sanitize outgoing observations tensor
         obs_tensor = self.task_obs.get("observations", None)
         if isinstance(obs_tensor, torch.Tensor):
-            bad = torch.isnan(obs_tensor) | torch.isinf(obs_tensor)
+            bad = ~torch.isfinite(obs_tensor)
             if torch.any(bad):
                 if self.task_config.guard_debug_enabled:
                     logger.warning(f"[NaNGuard] Sanitizing {int(torch.sum(bad).item())} invalid obs entries before return.")

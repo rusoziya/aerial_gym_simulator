@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import torch
+from aerial_gym.utils.tensor_utils import invalid_mask_per_env, has_invalid, sanitize_tensor
 
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import *  # noqa: F401,F403
@@ -17,7 +18,7 @@ class StepHelpers:
         transformed_action = self.task.action_transformation_function(actions)
         # Action NaN/Inf guard
         try:
-            invalid_action_mask = torch.any(torch.isnan(transformed_action) | torch.isinf(transformed_action), dim=1)
+            invalid_action_mask = invalid_mask_per_env(transformed_action)
             if torch.any(invalid_action_mask):
                 transformed_action[invalid_action_mask] = 0.0
                 nan_trunc_mask = invalid_action_mask.clone()
@@ -34,7 +35,7 @@ class StepHelpers:
         # Observation NaN/Inf guard
         for k, v in self.task.obs_dict.items():
             if isinstance(v, torch.Tensor) and v.shape[0] == self.task.num_envs:
-                bad = torch.any(torch.isnan(v) | torch.isinf(v), dim=tuple(range(1, v.ndim)))
+                bad = torch.any(~torch.isfinite(v), dim=tuple(range(1, v.ndim)))
                 if self.task.task_config.guard_debug_enabled and torch.any(bad):
                     _ids = torch.nonzero(bad, as_tuple=False).squeeze(-1).tolist()
                     logger.warning(f"[NaNGuard] Invalid OBS '{k}' in envs {_ids}")
