@@ -19,16 +19,18 @@ class CurriculumManager:
         try:
             # Try to determine train_dir path from Sample Factory environment or working directory
 
-            # Get train_dir from environment variable or use current directory/train_dir
+            # Resolve experiment directory: train_dir/experiment_name/
             train_dir = os.environ.get("SF_TRAIN_DIR", "./train_dir")
+            experiment_name = os.environ.get("SF_EXPERIMENT_NAME", "")
+            if experiment_name:
+                experiment_dir = os.path.join(train_dir, experiment_name)
+            else:
+                experiment_dir = train_dir
+            os.makedirs(experiment_dir, exist_ok=True)
 
-            # If train_dir doesn't exist, create it
-            os.makedirs(train_dir, exist_ok=True)
-
-            # Create curriculum log filename with timestamp
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            curriculum_log_filename = f"curriculum_gate_navigation_{timestamp}.log"
-            curriculum_log_path = os.path.join(train_dir, curriculum_log_filename)
+            curriculum_log_filename = f"curriculum_{timestamp}.log"
+            curriculum_log_path = os.path.join(experiment_dir, curriculum_log_filename)
 
             # Open curriculum log file in UTF-8 encoding
             self.task.curriculum_log_file = open(curriculum_log_path, "w", encoding="utf-8")

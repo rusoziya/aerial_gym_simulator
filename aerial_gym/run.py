@@ -191,9 +191,11 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
     # Deterministic CUDA
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
 
-    # Agent count and headless
+    # Agent count, headless, and experiment identity
     os.environ["SF_ENV_AGENTS"] = str(cfg.common.num_envs)
     _setenv("SF_HEADLESS", cfg.common.headless)
+    os.environ["SF_TRAIN_DIR"] = sf.train_dir
+    os.environ["SF_EXPERIMENT_NAME"] = sf.experiment_name
 
 
 def _get_sf_train_script(cfg: RunConfig) -> str:
