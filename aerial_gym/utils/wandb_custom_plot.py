@@ -41,7 +41,7 @@ import numpy as np
 
 try:
     from wandb import Api
-except Exception as e:
+except ImportError as e:
     print("wandb not installed. pip install wandb", file=sys.stderr)
     raise
 

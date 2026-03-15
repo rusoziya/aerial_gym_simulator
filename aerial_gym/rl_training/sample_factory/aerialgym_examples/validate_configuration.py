@@ -37,7 +37,7 @@ def validate_imports() -> None:
         
         return True
         
-    except Exception as e:
+    except (ImportError, KeyError, AttributeError, TypeError, ValueError) as e:
         print(f"❌ Import validation FAILED: {e}")
         return False
 
@@ -97,7 +97,7 @@ def validate_configuration() -> None:
             print("✅ Configuration validation: SUCCESS")
             return True
             
-    except Exception as e:
+    except (ImportError, KeyError, AttributeError, TypeError, ValueError) as e:
         print(f"❌ Configuration validation FAILED: {e}")
         return False
 
@@ -114,7 +114,7 @@ def validate_action_compatibility() -> None:
         try:
             from aerial_gym.examples.dce_rl_navigation.dce_nn_navigation import get_network
             print("✅ Inference script import: SUCCESS")
-        except Exception as e:
+        except (ImportError, KeyError, AttributeError, TypeError, ValueError) as e:
             print(f"❌ Inference script import FAILED: {e}")
             return False
         
@@ -131,7 +131,7 @@ def validate_action_compatibility() -> None:
             print(f"❌ Action space MISMATCH: training={training_action_dim}, inference={inference_action_dim}")
             return False
             
-    except Exception as e:
+    except (ImportError, KeyError, AttributeError, TypeError, ValueError) as e:
         print(f"❌ Action space validation FAILED: {e}")
         return False
 
@@ -158,7 +158,7 @@ def validate_shell_script() -> None:
             print("   Expected: ENV_AGENTS=16, BATCH_SIZE=2048")
             return False
             
-    except Exception as e:
+    except (ImportError, KeyError, AttributeError, TypeError, ValueError) as e:
         print(f"❌ Shell script validation FAILED: {e}")
         return False
 
@@ -199,7 +199,7 @@ def validate_training_script() -> None:
             print("❌ Training script configuration: quad_with_obstacles not found")
             return False
             
-    except Exception as e:
+    except (ImportError, KeyError, AttributeError, TypeError, ValueError) as e:
         print(f"❌ Training script validation FAILED: {e}")
         return False
 
