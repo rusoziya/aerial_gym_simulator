@@ -5,7 +5,6 @@ import torch
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import (
     compute_vee_map,
-    euler_rates_to_body_rates,
     quat_from_euler_xyz_tensor,
     quat_inverse,
     quat_mul,
