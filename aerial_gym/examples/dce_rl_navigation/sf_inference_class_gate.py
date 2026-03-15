@@ -7,7 +7,7 @@ import torch
 from torch import Tensor, nn
 import os
 from sample_factory.algo.utils.context import global_model_factory
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import (
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.dual_fusion_encoder import (
     make_dual_fusion_encoder,
 )
 
