@@ -3,7 +3,7 @@
 
 CONFIG ?= configs/train_gate_sf.yaml
 CONDA_PREFIX ?= $(HOME)/miniforge3/envs/aerialgym
-PYTHON ?= $(CONDA_PREFIX)/bin/python
+PYTHON ?= LD_LIBRARY_PATH=$(CONDA_PREFIX)/lib $(CONDA_PREFIX)/bin/python
 
 # ─── Training & Evaluation ───────────────────────────────────────
 .PHONY: train eval play validate-config dry-run
