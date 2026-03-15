@@ -3,6 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import math
 
+import torch
+
 
 class BaseSensor(ABC):
     def __init__(self, sensor_config: object, num_envs: int, device: str) -> None:
@@ -61,7 +63,7 @@ class BaseSensor(ABC):
     def print_params(self: object) -> None:
         for name, value in vars(self).items():
             # if dtype is a valid field, print it as well
-            if hasattr(value, "dtype"):
+            if isinstance(value, torch.Tensor):
                 print(name, type(value), value.dtype)
             else:
                 print(name, type(value))

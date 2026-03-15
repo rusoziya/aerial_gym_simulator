@@ -30,7 +30,7 @@ class TrajectoryAggregator:
 
     def update(self, reset_ids: list[int], task: object) -> None:
         """Accumulate per-env trajectory metrics for environments that just reset."""
-        per_env = getattr(task, "_last_traj_metrics_per_env", None)
+        per_env = task._last_traj_metrics_per_env if task is not None else None
         if not isinstance(per_env, dict):
             return
         crossed_mask = per_env.get("crossed", None)
@@ -135,7 +135,7 @@ def inject_traj_and_level_stats(
     """Inject curriculum level and trajectory averages into extra stats."""
     extra["curriculum_level"] = float(curr_level) if curr_level is not None else -1.0
     extra["curriculum_level_minus_1"] = float(curr_level - 1) if curr_level is not None else -1.0
-    traj_avg = getattr(task, "_last_traj_metrics_avg", None)
+    traj_avg = task._last_traj_metrics_avg if task is not None else None
     if isinstance(traj_avg, dict):
         for k, v in traj_avg.items():
             extra[k] = float(v)
@@ -167,22 +167,22 @@ def inject_curriculum_current_mirror(
         if cur_lvl_tensor is not None:
             val = (
                 float(cur_lvl_tensor.mean().item())
-                if hasattr(cur_lvl_tensor, "mean")
+                if isinstance(cur_lvl_tensor, torch.Tensor)
                 else float(cur_lvl_tensor)
             )
             extra["episode_extra_stats/curriculum/current_level"] = val
             del infos["curriculum/current_level"]
-        elif task is not None and hasattr(task, "curriculum_level"):
+        elif task is not None:
             extra["episode_extra_stats/curriculum/current_level"] = float(task.curriculum_level)
         if cur_prog_tensor is not None:
             val = (
                 float(cur_prog_tensor.mean().item())
-                if hasattr(cur_prog_tensor, "mean")
+                if isinstance(cur_prog_tensor, torch.Tensor)
                 else float(cur_prog_tensor)
             )
             extra["episode_extra_stats/curriculum/current_progress"] = val
             del infos["curriculum/current_progress"]
-        elif task is not None and hasattr(task, "curriculum_progress_fraction"):
+        elif task is not None:
             extra["episode_extra_stats/curriculum/current_progress"] = float(
                 task.curriculum_progress_fraction
             )
@@ -206,7 +206,7 @@ def inject_gate_camera_stats(
     for key in gate_keys:
         val = infos.get(key, None)
         if val is not None:
-            extra[key] = float(val.mean().item()) if hasattr(val, "mean") else float(val)
+            extra[key] = float(val.mean().item()) if isinstance(val, torch.Tensor) else float(val)
 
 
 def inject_curriculum_snapshot(
@@ -244,7 +244,9 @@ def inject_curriculum_snapshot(
         for key in snapshot_keys:
             val = infos.get(key, None)
             if val is not None:
-                extra[key] = float(val.mean().item()) if hasattr(val, "mean") else float(val)
+                extra[key] = (
+                    float(val.mean().item()) if isinstance(val, torch.Tensor) else float(val)
+                )
                 mirrored.add(key)
         if task is not None:
             _inject_snapshot_fallback(extra, task, mirrored)
@@ -278,7 +280,7 @@ def _inject_obstacle_counts(
     try:
         cur_lvl_val = int(task.curriculum_level)
         curri = task.task_config.curriculum
-        if curri is not None and hasattr(curri, "get_obstacle_count_behind_gate"):
+        if curri is not None:
             obg = int(curri.get_obstacle_count_behind_gate(cur_lvl_val))
         else:
             obg = 0
@@ -291,9 +293,7 @@ def _inject_obstacle_counts(
     if "curriculum/total_assets" not in mirrored:
         extra["curriculum/total_assets"] = float(fixed_assets_visible + obg)
     if "curriculum/max_level_reached" not in mirrored:
-        extra["curriculum/max_level_reached"] = float(
-            getattr(task, "max_curriculum_level_reached", cur_lvl_val)
-        )
+        extra["curriculum/max_level_reached"] = float(task.max_curriculum_level_reached)
 
 
 def _inject_camera_noise_fallback(
@@ -304,7 +304,7 @@ def _inject_camera_noise_fallback(
     try:
         curri = task.task_config.curriculum
         cur_lvl_val = int(task.curriculum_level)
-        if curri is not None and hasattr(curri, "get_camera_noise"):
+        if curri is not None:
             cstd, cdrop = curri.get_camera_noise(cur_lvl_val)
         else:
             cstd, cdrop = 0.0, 0.0
@@ -324,7 +324,7 @@ def _inject_frame_dropout_fallback(
     try:
         curri = task.task_config.curriculum
         cur_lvl_val = int(task.curriculum_level)
-        if curri is not None and hasattr(curri, "get_camera_frame_dropout"):
+        if curri is not None:
             fd = curri.get_camera_frame_dropout(cur_lvl_val)
         else:
             fd = _default_frame_dropout()
@@ -362,12 +362,8 @@ def _inject_camera_angle_fallback(
     try:
         curri = task.task_config.curriculum
         cur_lvl_val = int(task.curriculum_level)
-        max_angle = getattr(task, "max_camera_angle", None)
-        if (
-            max_angle is None
-            and curri is not None
-            and hasattr(curri, "get_static_camera_difficulty")
-        ):
+        max_angle = task.max_camera_angle
+        if max_angle is None and curri is not None:
             max_angle, _, _ = curri.get_static_camera_difficulty(cur_lvl_val)
     except (AttributeError, ValueError, TypeError):
         max_angle = 0.0
@@ -375,8 +371,8 @@ def _inject_camera_angle_fallback(
         extra["curriculum/camera_max_angle"] = float(max_angle if max_angle is not None else 0.0)
     try:
         cur_angle = 0.0
-        scm = getattr(task, "static_camera_manager", None)
-        if scm is not None and hasattr(scm, "current_camera_angles") and scm.current_camera_angles:
+        scm = task.static_camera_manager
+        if scm is not None and scm.current_camera_angles:
             cur_angle = float(scm.current_camera_angles[0])
     except (ValueError, TypeError):
         cur_angle = 0.0
@@ -393,11 +389,7 @@ def _inject_state_noise_fallback(
         curri = task.task_config.curriculum
         cur_lvl_val = int(task.curriculum_level)
         sn = None
-        if (
-            curri is not None
-            and getattr(curri, "enable_state_noise", False)
-            and hasattr(curri, "get_state_noise")
-        ):
+        if curri is not None and curri.enable_state_noise:
             sn = curri.get_state_noise(cur_lvl_val)
     except (AttributeError, ValueError, TypeError):
         sn = None
