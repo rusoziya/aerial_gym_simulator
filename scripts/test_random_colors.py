@@ -10,7 +10,7 @@ This script creates a simple gate navigation environment and verifies that:
 
 import sys
 import os
-sys.path.append('/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator')
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 def test_random_colors():
     """Test the random color functionality for gate navigation."""

@@ -13,7 +13,7 @@ import numpy as np
 import time
 
 # Add the current directory to Python path for imports
-sys.path.append('/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator')
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # CRITICAL: Import isaacgym BEFORE torch to avoid import conflicts
 from aerial_gym.registry.task_registry import task_registry
@@ -69,31 +69,31 @@ def test_static_camera_observations():
         # 2. Check Static Camera Manager
         print_section("2. STATIC CAMERA MANAGER VERIFICATION")
         
-        if hasattr(rl_task, 'static_camera_manager'):
+        try:
             scm = rl_task.static_camera_manager
-            print("✓ Static camera manager exists")
-            print(f"  - Camera setup success: {scm.camera_setup_success}")
-            print(f"  - Using synthetic camera: {scm.use_synthetic_camera}")
-            print(f"  - Number of camera handles: {len(scm.camera_handles)}")
-            print(f"  - Gate position: {scm.gate_position}")
-        else:
-            print("❌ Static camera manager not found!")
+        except AttributeError:
+            print("Static camera manager not found!")
             return False
+        print("Static camera manager exists")
+        print(f"  - Camera setup success: {scm.camera_setup_success}")
+        print(f"  - Using synthetic camera: {scm.use_synthetic_camera}")
+        print(f"  - Number of camera handles: {len(scm.camera_handles)}")
+        print(f"  - Gate position: {scm.gate_position}")
 
         # 3. Check Static Camera Latents Tensor
         print_section("3. STATIC CAMERA LATENTS TENSOR VERIFICATION")
         
-        if hasattr(rl_task, 'static_camera_latents'):
+        try:
             latents = rl_task.static_camera_latents
-            print("✓ Static camera latents tensor exists")
+            print("Static camera latents tensor exists")
             print(f"  - Shape: {latents.shape}")
             print(f"  - Device: {latents.device}")
             print(f"  - Dtype: {latents.dtype}")
             print(f"  - Requires grad: {latents.requires_grad}")
             print(f"  - Initial mean: {latents.mean().item():.6f}")
             print(f"  - Initial std: {latents.std().item():.6f}")
-        else:
-            print("❌ Static camera latents tensor not found!")
+        except AttributeError:
+            print("Static camera latents tensor not found!")
             return False
 
         # 4. Test Static Camera Image Capture
@@ -221,13 +221,13 @@ def test_static_camera_observations():
         print_section("8. SUMMARY AND DIAGNOSIS")
         
         print("Static Camera System Status:")
-        print(f"  ✓ Static camera manager: {'Present' if hasattr(rl_task, 'static_camera_manager') else 'Missing'}")
-        print(f"  ✓ Static camera latents: {'Present' if hasattr(rl_task, 'static_camera_latents') else 'Missing'}")
-        print(f"  ✓ Camera setup success: {scm.camera_setup_success if hasattr(rl_task, 'static_camera_manager') else 'N/A'}")
-        print(f"  ✓ Using synthetic camera: {scm.use_synthetic_camera if hasattr(rl_task, 'static_camera_manager') else 'N/A'}")
-        print(f"  ✓ VAE processing: {'Enabled' if rl_task.task_config.vae_config.use_vae else 'Disabled'}")
-        
-        if rl_task.task_config.vae_config.use_vae and hasattr(rl_task, 'static_camera_latents'):
+        print(f"  Static camera manager: Present")
+        print(f"  Static camera latents: Present")
+        print(f"  Camera setup success: {scm.camera_setup_success}")
+        print(f"  Using synthetic camera: {scm.use_synthetic_camera}")
+        print(f"  VAE processing: {'Enabled' if rl_task.task_config.vae_config.use_vae else 'Disabled'}")
+
+        if rl_task.task_config.vae_config.use_vae and rl_task.static_camera_latents is not None:
             current_mean = rl_task.static_camera_latents.mean().item()
             current_std = rl_task.static_camera_latents.std().item()
             

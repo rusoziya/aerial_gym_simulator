@@ -10,7 +10,7 @@ This script tests that:
 
 import sys
 import os
-sys.path.append('/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator')
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 def test_gate_obstacle_configuration():
     """Test that gate environment configuration is correct."""

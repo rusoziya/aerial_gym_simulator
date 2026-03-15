@@ -62,14 +62,15 @@ class BaseMultirotor(BaseRobot):
         logger.debug("[DONE] Initializing BaseQuadrotor")
 
     def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
-        """
-        Initialize the tensors for the robot state, force, torque, and action.
-        The tensors used in this function call are sent as slices from the main tensors in the environment.
-        These slices are only detemine the robot state, force, torque, and action.
-        The full tensors are not passed to this function to avoid access to data that is not needed by the robot.
-        """
+        """Initialize tensors for robot state, force, torque, and action."""
         super().init_tensors(global_tensor_dict)
-        # Adding more tensors to the global tensor dictionary
+        self._init_body_frame_tensors(global_tensor_dict)
+        self._init_state_and_disturbance_tensors()
+        self._init_controller_and_damping(global_tensor_dict)
+        self._init_motor_and_force_tensors(global_tensor_dict)
+
+    def _init_body_frame_tensors(self, global_tensor_dict: dict[str, object]) -> None:
+        """Allocate body-frame velocity/orientation tensors and register them."""
         self.robot_vehicle_orientation = torch.zeros_like(
             self.robot_orientation, requires_grad=False, device=self.device
         )
@@ -85,40 +86,35 @@ class BaseMultirotor(BaseRobot):
         self.robot_euler_angles = torch.zeros_like(
             self.robot_linvel, requires_grad=False, device=self.device
         )
-        # Add to tensor dictionary
         global_tensor_dict["robot_vehicle_orientation"] = self.robot_vehicle_orientation
         global_tensor_dict["robot_vehicle_linvel"] = self.robot_vehicle_linvel
         global_tensor_dict["robot_body_angvel"] = self.robot_body_angvel
         global_tensor_dict["robot_body_linvel"] = self.robot_body_linvel
         global_tensor_dict["robot_euler_angles"] = self.robot_euler_angles
-
         global_tensor_dict["num_robot_actions"] = self.controller_config.num_actions
 
-        self.controller.init_tensors(global_tensor_dict)
-        self.action_tensor = torch.zeros(
-            (self.num_envs, self.controller_config.num_actions),
-            device=self.device,
-            requires_grad=False,
-        )
-
-        # Initialize the robot state
-        # [x, y, z, roll, pitch, yaw, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
+    def _init_state_and_disturbance_tensors(self) -> None:
+        """Allocate init-state bounds and disturbance parameter tensors."""
         self.min_init_state = torch.tensor(
             self.cfg.init_config.min_init_state, device=self.device, requires_grad=False
         ).expand(self.num_envs, -1)
         self.max_init_state = torch.tensor(
             self.cfg.init_config.max_init_state, device=self.device, requires_grad=False
         ).expand(self.num_envs, -1)
-
-        # Disturbance params
-        # [fx, fy, fz, tx, ty, tz]
         self.max_force_and_torque_disturbance = torch.tensor(
             self.cfg.disturbance.max_force_and_torque_disturbance,
             device=self.device,
             requires_grad=False,
         ).expand(self.num_envs, -1)
 
-        # Controller params
+    def _init_controller_and_damping(self, global_tensor_dict: dict[str, object]) -> None:
+        """Initialize controller, action tensor, control allocator, and damping coefficients."""
+        self.controller.init_tensors(global_tensor_dict)
+        self.action_tensor = torch.zeros(
+            (self.num_envs, self.controller_config.num_actions),
+            device=self.device,
+            requires_grad=False,
+        )
         self.controller_input = torch.zeros(
             (self.num_envs, self.num_actions), device=self.device, requires_grad=False
         )
@@ -128,31 +124,29 @@ class BaseMultirotor(BaseRobot):
             config=self.cfg.control_allocator_config,
             device=self.device,
         )
-
         self.body_vel_linear_damping_coefficient = torch.tensor(
             self.cfg.damping.linvel_linear_damping_coefficient,
             device=self.device,
             requires_grad=False,
         )
-
         self.body_vel_quadratic_damping_coefficient = torch.tensor(
             self.cfg.damping.linvel_quadratic_damping_coefficient,
             device=self.device,
             requires_grad=False,
         )
-
         self.angvel_linear_damping_coefficient = torch.tensor(
             self.cfg.damping.angular_linear_damping_coefficient,
             device=self.device,
             requires_grad=False,
         )
-
         self.angvel_quadratic_damping_coefficient = torch.tensor(
             self.cfg.damping.angular_quadratic_damping_coefficient,
             device=self.device,
             requires_grad=False,
         )
 
+    def _init_motor_and_force_tensors(self, global_tensor_dict: dict[str, object]) -> None:
+        """Initialize motor direction, application mask, and output force/torque tensors."""
         if self.force_application_level == "motor_link":
             self.application_mask = torch.tensor(
                 self.cfg.control_allocator_config.application_mask,
@@ -161,13 +155,11 @@ class BaseMultirotor(BaseRobot):
             )
         else:
             self.application_mask = torch.tensor([0], device=self.device, requires_grad=False)
-
         self.motor_directions = torch.tensor(
             self.cfg.control_allocator_config.motor_directions,
             device=self.device,
             requires_grad=False,
         )
-
         self.output_forces = torch.zeros_like(
             global_tensor_dict["robot_force_tensor"], device=self.device
         )

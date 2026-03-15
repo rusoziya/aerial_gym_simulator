@@ -10,7 +10,7 @@ This script shows how to:
 
 import sys
 import os
-sys.path.append('/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator')
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import torch
 import time

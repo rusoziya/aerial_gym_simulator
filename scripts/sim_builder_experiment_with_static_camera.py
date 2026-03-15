@@ -162,10 +162,10 @@ def capture_robot_camera_images(env_manager):
         env_manager.render(render_components="sensors")
         
         # Access camera data through global_tensor_dict (like DCE navigation and other examples)
-        if not hasattr(env_manager, 'global_tensor_dict'):
+        try:
+            global_tensor_dict = env_manager.global_tensor_dict
+        except AttributeError:
             return None, None
-        
-        global_tensor_dict = env_manager.global_tensor_dict
         
         # Get depth and segmentation images from first environment
         depth_img = None
@@ -327,13 +327,16 @@ def run_gate_navigation_with_dual_cameras(env_manager, duration_seconds=180.0):
         # Handle collision detection
         try:
             # Call compute_observations to update collision tensor
-            if hasattr(env_manager, 'compute_observations'):
+            try:
                 env_manager.compute_observations()
-            
-            # Check for collisions using the environment's collision detection system
-            if hasattr(env_manager, 'collision_tensor'):
+            except AttributeError:
+                pass
+
+            try:
                 collision_detected = env_manager.collision_tensor[0].item() > 0
-                if collision_detected:
+            except AttributeError:
+                collision_detected = False
+            if collision_detected:
                     current_time = time.time()
                     if current_time - last_collision_time > collision_cooldown:
                         collision_count += 1
@@ -348,12 +351,14 @@ def run_gate_navigation_with_dual_cameras(env_manager, duration_seconds=180.0):
                         waypoint_reached_time = None
             
             # Call the environment's reset function for terminated environments
-            if hasattr(env_manager, 'reset_terminated_and_truncated_envs'):
+            try:
                 envs_reset = env_manager.reset_terminated_and_truncated_envs()
                 if len(envs_reset) > 0:
-                    logger.info(f"🔄 Environment(s) {envs_reset.tolist()} reset due to collision/termination")
-        
-        except Exception as e:
+                    logger.info(f"Environment(s) {envs_reset.tolist()} reset due to collision/termination")
+            except AttributeError:
+                pass
+
+        except (RuntimeError, ValueError) as e:
             if step_count % 300 == 0:  # Only log errors occasionally
                 logger.debug(f"Collision detection error: {e}")
         
@@ -450,19 +455,19 @@ def main():
         logger.info("🚁 Starting Gate Navigation with X500 D455 Camera and Static D455 Camera using SimBuilder...")
         
         # Build environment using SimBuilder
-        num_envs_requested = getattr(args, 'num_envs', 1)
-        logger.info(f"🔧 Requesting {num_envs_requested} environments")
-        
+        num_envs_requested = args.num_envs if args.num_envs is not None else 1
+        logger.info(f"Requesting {num_envs_requested} environments")
+
         env_manager = SimBuilder().build_env(
             sim_name="base_sim",
-            env_name="gate_env",  # Use gate environment with trees
-            robot_name="x500",    # X500 robot with D455 camera capability
+            env_name="gate_env",
+            robot_name="x500",
             controller_name="lee_position_control",
             args=args,
             device="cuda:0" if torch.cuda.is_available() else "cpu",
             num_envs=num_envs_requested,
-            headless=getattr(args, 'headless', False),
-            use_warp=getattr(args, 'use_warp', False),
+            headless=args.headless if args.headless is not None else False,
+            use_warp=args.use_warp if args.use_warp is not None else False,
         )
         
         logger.info("✅ Environment built successfully using SimBuilder!")
