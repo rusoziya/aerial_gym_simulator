@@ -207,7 +207,7 @@ class BaseMultirotor(BaseRobot):
         random_state = torch_rand_float_tensor(min_init, max_init)
         logger.debug(
             f"[SPAWN_CURRICULUM] Level {level}: "
-            f"X∈[{env_bounds['x_min_m']:.2f},{env_bounds['x_max_m']:.2f}] m"
+            f"X∈[{env_bounds['x_min']:.2f},{env_bounds['x_max']:.2f}] m"
         )
         return random_state
 
