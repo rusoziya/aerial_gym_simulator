@@ -40,6 +40,24 @@ dev = [
 [tool.black]
 line-length = 100
 
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+exclude = [
+    "aerial_gym/sensors/warp/warp_kernels/",
+    "aerial_gym/utils/wandb_custom_plot.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E402"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["aerial_gym"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
