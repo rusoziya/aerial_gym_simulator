@@ -110,16 +110,16 @@ def main() -> None:
         base_task_config.static_camera_yaw_sweep_speed_deg = float(cfg.static_camera_yaw_sweep_speed_deg)
         # Base position overrides
         base_task_config.static_camera_base_y = float(getattr(cfg, "static_camera_base_y", -3.0))
-        base_task_config.static_camera_base_z = getattr(cfg, "static_camera_base_z", "fixed")
+        base_task_config.static_camera_base_z = cfg.static_camera_base_z
         # Orientation randomization toggle
         base_task_config.disable_static_camera_orientation_randomization = bool(cfg.disable_static_camera_orientation_randomization)
         # Dynamic camera following toggles
-        cur = getattr(base_task_config, 'curriculum', None)
+        cur = base_task_config.curriculum
         if cur is not None:
             if hasattr(cfg, 'disable_dynamic_camera_following') and bool(cfg.disable_dynamic_camera_following):
-                setattr(cur, 'enable_dynamic_camera_following', False)
-            if hasattr(cfg, 'enable_dynamic_camera_following') and getattr(cfg, 'enable_dynamic_camera_following') is not None:
-                setattr(cur, 'enable_dynamic_camera_following', bool(getattr(cfg, 'enable_dynamic_camera_following')))
+                cur.enable_dynamic_camera_following = False
+            if cfg.enable_dynamic_camera_following is not None:
+                cur.enable_dynamic_camera_following = bool(cfg.enable_dynamic_camera_following)
         # Arc-follow overrides to env variables
         if bool(args.enable_static_camera_arc_follow):
             os.environ['SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW'] = 'true'
@@ -144,7 +144,7 @@ def main() -> None:
     # Build env (respect CLI seed like training)
     seed_val = None
     try:
-        if hasattr(cfg, "seed") and cfg.seed is not None:
+        if cfg.seed is not None:
             seed_val = int(cfg.seed)
     except (ValueError, TypeError):
         seed_val = None
@@ -158,7 +158,7 @@ def main() -> None:
     parity_dump_steps = int(os.environ.get('OBS_PARITY_STEPS', '0'))
 
     # Set compat attribute on the task
-    setattr(rl_task, "sf_cfg", cfg)
+    rl_task.sf_cfg = cfg
 
     # obs/action dims for gate task
     num_actions = rl_task.task_config.action_space_dim
@@ -223,18 +223,18 @@ def main() -> None:
                 project = (
                     args.wandb_project or
                     _os.environ.get('WANDB_PROJECT', '') or
-                    getattr(cfg, 'wandb_project', '') or
+                    cfg.wandb_project or
                     'gate_eval_runs'
                 )
                 entity = (
                     args.wandb_entity or
                     _os.environ.get('WANDB_ENTITY', '') or
-                    getattr(cfg, 'wandb_user', None)
+                    cfg.wandb_user
                 ) or None
                 # Determine run name: CLI flag > env var > default pattern
                 cli_run_name = args.run_name or ''
                 env_run_name = _os.environ.get('WANDB_RUN_NAME', '')
-                fallback_name = f"eval_{getattr(cfg, 'experiment', getattr(cfg, 'algo', 'sf'))}"
+                fallback_name = f"eval_{getattr(cfg, 'experiment', cfg.algo)}"
                 run_name = cli_run_name if len(cli_run_name) > 0 else (env_run_name if len(env_run_name) > 0 else fallback_name)
                 mode = _os.environ.get("WANDB_MODE", "online")
                 # Optional custom local directory for run files
@@ -460,20 +460,20 @@ def main() -> None:
         reset_result = rl_task.reset()
         obs_dict = reset_result[0] if isinstance(reset_result, tuple) else reset_result
         # Determine the observation key the model expects
-        nn_obs_key = getattr(getattr(nn_model, "cfg", object()), "obs_key", "obs")
+        nn_obs_key = getattr(nn_model.cfg, "obs_key", "obs")
         # One-time evaluation config summary (curriculum/randomization/effective flags)
         try:
             print("=" * 80)
             print("EVAL CONFIG SUMMARY (Gate Navigation)")
             # Curriculum level
             try:
-                lvl = int(getattr(rl_task, 'curriculum_level', -1))
+                lvl = int(rl_task.curriculum_level)
             except (ValueError, TypeError):
                 lvl = -1
             print(f"  Curriculum level: {lvl}")
             # Curriculum-derived camera noise and frame dropout at this level (if available)
             try:
-                cur = getattr(rl_task.task_config, 'curriculum', None)
+                cur = rl_task.task_config.curriculum
                 if cur is not None:
                     cstd, cdrop = cur.get_camera_noise(lvl)
                     print(f"  Camera noise: gaussian_std={float(cstd):.4f}, dropout={float(cdrop):.4f}")
@@ -484,7 +484,7 @@ def main() -> None:
             except (ValueError, TypeError):
                 pass
             # Effective toggles from global tensor dict (authoritative during runtime)
-            gtd = getattr(rl_task, 'sim_env', None)
+            gtd = rl_task.sim_env
             g = gtd.global_tensor_dict if (gtd is not None and hasattr(gtd, 'global_tensor_dict')) else {}
             def _p(key, label=None) -> None:
                 if key in g:
@@ -706,7 +706,7 @@ def main() -> None:
             # Collect GIF frames (env 0 only, noised versions)
             if save_gifs:
                 try:
-                    d = getattr(rl_task, 'obs_dict', {})
+                    d = rl_task.obs_dict
                     if isinstance(d, dict) and 'depth_range_pixels_noised' in d:
                         dd = d['depth_range_pixels_noised']
                         if isinstance(dd, torch.Tensor) and dd.ndim >= 3:
@@ -774,7 +774,7 @@ def main() -> None:
                             _gif_static_clean_frames.append(pil_sclean)
                     # Also collect static segmentation directly from StaticCameraManager (env 0)
                     try:
-                        scm = getattr(rl_task, 'static_camera_manager', None)
+                        scm = rl_task.static_camera_manager
                         if scm is not None and hasattr(scm, 'capture_images'):
                             _d, _seg = scm.capture_images(batched=False)
                             # Save clean static depth from camera manager if available
@@ -857,9 +857,9 @@ def main() -> None:
                         payload = {}
                         payload['frames'] = _frames
                         # Curriculum level/progress (log only under episode namespace)
-                        lvl = float(getattr(rl_task, 'curriculum_level', -1))
+                        lvl = float(rl_task.curriculum_level)
                         payload['episode_extra_stats/curriculum/level'] = lvl
-                        prog = float(getattr(rl_task, 'curriculum_progress_fraction', 0.0))
+                        prog = float(rl_task.curriculum_progress_fraction)
                         payload['episode_extra_stats/curriculum/progress'] = prog
                         # Episode-level metrics provided by env
                         if isinstance(infos, dict):
