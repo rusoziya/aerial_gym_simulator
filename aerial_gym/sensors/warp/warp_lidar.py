@@ -4,7 +4,6 @@ from __future__ import annotations
 import torch
 import math
 
-# import nvtx
 import warp as wp
 
 from aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels import LidarWarpKernels

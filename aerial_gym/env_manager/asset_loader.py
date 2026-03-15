@@ -43,7 +43,7 @@ DETERMINISTIC_GATE_OBJECTS = [
 ]
 
 
-def asset_class_to_AssetOptions(asset_class) -> None:
+def asset_class_to_AssetOptions(asset_class: object) -> gymapi.AssetOptions:
     asset_options = gymapi.AssetOptions()
     asset_options.collapse_fixed_joints = asset_class.collapse_fixed_joints
     asset_options.replace_cylinder_with_capsule = asset_class.replace_cylinder_with_capsule
@@ -59,7 +59,7 @@ def asset_class_to_AssetOptions(asset_class) -> None:
 
 
 class AssetLoader:
-    def __init__(self, global_sim_dict, device):
+    def __init__(self, global_sim_dict: dict[str, object], device: str) -> None:
         self.global_sim_dict = global_sim_dict
         self.gym = self.global_sim_dict["gym"]
         self.sim = self.global_sim_dict["sim"]
@@ -73,11 +73,11 @@ class AssetLoader:
 
         self.max_loaded_semantic_id = 0
 
-    def randomly_pick_assets_from_folder(self, folder, num_assets=0) -> None:
+    def randomly_pick_assets_from_folder(self, folder: str, num_assets: int = 0) -> list[str]:
         # Pick files that are URDF files from the folder
         try:
             folder_files = os.listdir(folder)
-        except Exception:
+        except (FileNotFoundError, PermissionError):
             folder_files = []
 
         available_assets = [file for file in folder_files if file.endswith(".urdf")]
@@ -114,8 +114,8 @@ class AssetLoader:
         return selected_files
 
     def load_selected_file_from_config(
-        self, asset_type, asset_class_config, selected_file, is_robot=False
-    ) -> None:
+        self, asset_type: str, asset_class_config: object, selected_file: str, is_robot: bool = False
+    ) -> dict[str, object]:
 
         asset_options_for_class = asset_class_to_AssetOptions(asset_class_config)
         filepath = os.path.join(asset_class_config.asset_folder, selected_file)
@@ -129,10 +129,6 @@ class AssetLoader:
             f"Loading asset: {selected_file} for the first time. Next use of this asset will be via the asset buffer."
         )
         
-        # Add debugging for gate variants
-        # if "gate_scale_" in selected_file:
-        #     logger.warning(f"[GATE_DEBUG] Loading gate variant: {selected_file} from {filepath}")
-
         asset_class_dict = {
             "asset_type": asset_type,
             "asset_options": asset_options_for_class,
@@ -208,7 +204,7 @@ class AssetLoader:
         self.asset_buffer[filepath] = asset_class_dict
         return asset_class_dict
 
-    def select_and_order_assets(self) -> None:
+    def select_and_order_assets(self) -> tuple[list[dict[str, object]], int]:
         ordered_asset_list = deque()
         keep_in_env_num = 0
         for (
@@ -252,7 +248,7 @@ class AssetLoader:
         final_list = prefix_fixed + obstacle_assets + other_assets
         return final_list, keep_in_env_num
 
-    def select_assets_for_sim(self) -> None:
+    def select_assets_for_sim(self) -> tuple[list[list[dict[str, object]]], int]:
         self.global_env_asset_dicts = []
         for i in range(self.num_envs):
             logger.debug(f"Loading assets for env: {i}")

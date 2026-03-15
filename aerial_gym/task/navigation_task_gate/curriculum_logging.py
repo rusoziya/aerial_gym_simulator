@@ -160,7 +160,7 @@ class CurriculumLogging:
                             s = int(n.replace("gate_scale_", ""))
                             if s >= min_scale:
                                 scales.append(s)
-                        except:
+                        except (ValueError, TypeError):
                             pass
                 # Report unique scales only (avoid duplicates from config classes)
                 scales = sorted(list(set(scales)), reverse=True)

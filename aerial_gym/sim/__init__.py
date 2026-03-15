@@ -15,8 +15,3 @@ sim_config_registry.register("base_sim", BaseSimConfig)
 sim_config_registry.register("base_sim_headless", BaseSimHeadlessConfig)
 sim_config_registry.register("base_sim_2ms", SimCfg2Ms)
 sim_config_registry.register("base_sim_4ms", SimCfg4Ms)
-
-# Uncomment the following lines to register your custom sim config
-
-# from aerial_gym.config.sim_config.custom_sim_config import CustomSimConfig
-# sim_config_registry.register("custom_sim", CustomSimConfig)

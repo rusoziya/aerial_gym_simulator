@@ -203,3 +203,4 @@ class SnakeyCfg:
             use_discrete_approximation = (
                 True  # Setting to false will compute f' based on difference and time constant
             )
+            integration_scheme = "rk4"

@@ -234,6 +234,7 @@ class LMF2Cfg:
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.025
             use_discrete_approximation = True  # use discrete approximation for motor dynamics
+            integration_scheme = "rk4"
             # LMF2 original (commented):
             # motor_thrust_constant_min = 9.26312e-06
             # motor_thrust_constant_max = 1.826312e-05

@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from aerial_gym.utils.math import *
+import torch
+
+from aerial_gym.utils.math import (
+    torch_rand_float_tensor,
+    torch_interpolate_ratio,
+    quat_from_euler_xyz_tensor,
+)
 
 from aerial_gym.utils.logging import CustomLogger
 
@@ -9,10 +15,10 @@ logger.setLevel("DEBUG")
 
 
 class AssetManager:
-    def __init__(self, global_tensor_dict, num_keep_in_env):
+    def __init__(self, global_tensor_dict: dict[str, torch.Tensor], num_keep_in_env: int) -> None:
         self.init_tensors(global_tensor_dict, num_keep_in_env)
 
-    def init_tensors(self, global_tensor_dict, num_keep_in_env) -> None:
+    def init_tensors(self, global_tensor_dict: dict[str, torch.Tensor], num_keep_in_env: int) -> None:
         self.env_asset_state_tensor = global_tensor_dict["env_asset_state_tensor"]
         self.asset_min_state_ratio = global_tensor_dict["asset_min_state_ratio"]
         self.asset_max_state_ratio = global_tensor_dict["asset_max_state_ratio"]
@@ -32,38 +38,25 @@ class AssetManager:
         self.reset(self.num_keep_in_env)
         logger.warning(f"Number of obstacles to be kept in the environment: {self.num_keep_in_env}")
 
-    def pre_physics_step(self, actions) -> None:
+    def pre_physics_step(self, actions: torch.Tensor) -> None:
         pass
 
     def post_physics_step(self) -> None:
         pass
 
-    def step(self, actions) -> None:
+    def step(self, actions: object) -> None:
         pass
-        # Implement this function if needed.
-        # this functionality can do speciic things with the environment assets on stepping.
-        # nothing really needs to be done for static environments.
-        # if force needs to be applied, it should be done in the other classes and it's
-        # better to leave this class to manipulate the state tensors.
 
-    def reset(self, num_obstacles_per_env) -> None:
+    def reset(self, num_obstacles_per_env: int) -> None:
         self.reset_idx(torch.arange(self.env_asset_state_tensor.shape[0]), num_obstacles_per_env)
 
-    def reset_idx(self, env_ids, num_obstacles_per_env=0) -> None:
-        # logger.warning(f"[OBSTACLE_DEBUG] AssetManager.reset_idx called with env_ids={env_ids.tolist() if hasattr(env_ids, 'tolist') else env_ids}, num_obstacles_per_env={num_obstacles_per_env}")
-        # logger.warning(f"[OBSTACLE_DEBUG] num_keep_in_env={self.num_keep_in_env}, total_asset_tensor_shape={self.env_asset_state_tensor.shape}")
-        
+    def reset_idx(self, env_ids: torch.Tensor, num_obstacles_per_env: int = 0) -> None:
         if num_obstacles_per_env < self.num_keep_in_env:
-            # logger.warning(f"[OBSTACLE_DEBUG] Requested obstacles ({num_obstacles_per_env}) < minimum ({self.num_keep_in_env}), using minimum")
             logger.info(
                 "Number of obstacles required in the environment by the \
                   code is lesser than the minimum number of obstacles that the environment configuration specifies."
             )
             num_obstacles_per_env = self.num_keep_in_env
-
-        # logger.warning(f"[OBSTACLE_DEBUG] Final num_obstacles_per_env to keep visible: {num_obstacles_per_env}")
-        # logger.warning(f"[OBSTACLE_DEBUG] Assets that will be VISIBLE: indices 0 to {num_obstacles_per_env-1}")
-        # logger.warning(f"[OBSTACLE_DEBUG] Assets that will be HIDDEN: indices {num_obstacles_per_env} to {self.env_asset_state_tensor.shape[1]-1}")
 
         sampled_asset_state_ratio = torch_rand_float_tensor(
             self.asset_min_state_ratio, self.asset_max_state_ratio
@@ -77,24 +70,6 @@ class AssetManager:
             sampled_asset_state_ratio[env_ids, :, 3:6]
         )
         
-        # put those obstacles not needed in the environment outside
-        # Avoid advanced indexing shape issues on some PyTorch/CUDA combos by iterating per-env
-        # logger.warning(f"[OBSTACLE_DEBUG] Moving assets {num_obstacles_per_env}..end to position (-1000, -1000, -1000)")
-        try:
-            env_list = env_ids.tolist() if hasattr(env_ids, 'tolist') else list(env_ids)
-        except Exception:
-            env_list = [int(env_ids)]
+        env_list: list[int] = env_ids.tolist()
         for eid in env_list:
             self.env_asset_state_tensor[eid, num_obstacles_per_env:, 0:3] = -1000.0
-        
-        # Count visible obstacles per environment for debugging
-        # for env_id in (env_ids.tolist() if hasattr(env_ids, 'tolist') else [env_ids]):
-        #     visible_count = 0
-        #     hidden_count = 0
-        #     for asset_idx in range(self.env_asset_state_tensor.shape[1]):
-        #         pos = self.env_asset_state_tensor[env_id, asset_idx, 0:3]
-        #         if pos[0] > -500:  # Not hidden
-        #             visible_count += 1
-        #         else:
-        #             hidden_count += 1
-        #     logger.warning(f"[OBSTACLE_DEBUG] Env {env_id}: {visible_count} visible assets, {hidden_count} hidden assets")

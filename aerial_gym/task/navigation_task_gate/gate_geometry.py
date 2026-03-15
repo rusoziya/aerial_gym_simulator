@@ -34,7 +34,7 @@ class GateGeometry:
                 try:
                     scale_str = filename.replace("gate_scale_", "").replace(".urdf", "")
                     scale_factor = int(scale_str) / 100.0
-                except:
+                except (ValueError, TypeError):
                     scale_factor = 1.0
 
             # Find left and right post positions to calculate width
@@ -99,18 +99,10 @@ class GateGeometry:
         """
         Update gate dimensions for specified environments based on their selected gate variants.
         """
-        if not hasattr(self.task.sim_env, 'global_tensor_dict'):
-            return
+        gate_variant_names: list[list[str]] = self.task.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])
+        active_gate_array_indices: torch.Tensor = self.task.sim_env.global_tensor_dict.get("active_gate_variant_array_index", torch.zeros(self.task.sim_env.num_envs))
 
-        # Safety check: ensure gate dimension attributes exist
-        if not True or not True:
-            logger.warning("[GATE_ADAPTIVE] Gate dimension attributes not initialized yet, skipping update")
-            return
-
-        gate_variant_names = self.task.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])
-        active_gate_array_indices = self.task.sim_env.global_tensor_dict.get("active_gate_variant_array_index", torch.zeros(self.task.sim_env.num_envs))
-
-        for env_id in (env_ids.tolist() if hasattr(env_ids, 'tolist') else [env_ids]):
+        for env_id in env_ids.tolist():
             if env_id >= len(gate_variant_names):
                 continue
 
@@ -176,7 +168,6 @@ class GateGeometry:
                 self.task.gate_scale_factors[env_id] = 1.0
                 logger.warning(f"[GATE_ADAPTIVE] Env {env_id}: No active gate found (active_idx={active_idx}, num_gates={len(env_gate_names)}), using default gate dimensions")
         # Expose adaptive gate center heights per env to global tensor dict for camera spawning
-        if hasattr(self.task.sim_env, 'global_tensor_dict'):
-            self.task.sim_env.global_tensor_dict['gate/center_height_per_env'] = self.task.gate_center_height.detach().clone()
+        self.task.sim_env.global_tensor_dict['gate/center_height_per_env'] = self.task.gate_center_height.detach().clone()
 
 

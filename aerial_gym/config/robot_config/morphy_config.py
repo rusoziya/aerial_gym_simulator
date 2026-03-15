@@ -73,16 +73,6 @@ class MorphyCfg:
             [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],  # velocity state
         ]
 
-        # # morphy config for arm SysID
-        # init_state_min = [
-        #     [0.29, 0.0, 0.29, 0.0, 0.29, 0.0, 0.29, 0.0], # position state
-        #     [-0.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0] # velocity state
-        # ]
-
-        # init_state_max = [
-        #     [0.29, 0.0, 0.29, 0.0, 0.29, 0.0, 0.29, 0.0], # position state
-        #     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # velocity state
-        # ]
 
         stiffness = [0.2, 1.0, 0.2, 1.0, 0.2, 1.0, 0.2, 1.0]  # Kpv
         damping = [0.025, 0.02, 0.025, 0.02, 0.025, 0.02, 0.025, 0.02]  # Kd
@@ -208,6 +198,7 @@ class MorphyCfg:
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.01
             use_discrete_approximation = True
+            integration_scheme = "rk4"
 
 
 class MorphyFixedBaseCfg(MorphyCfg):

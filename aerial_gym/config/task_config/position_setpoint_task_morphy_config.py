@@ -29,23 +29,12 @@ class task_config:
         "crash_penalty": -100,
     }
 
-    # robot_name = "morphy_stiff"
-    # num_joints = 0
-    # num_motors = 4
-    # action_space_dim = 4
-    # observation_space_dim = 13+action_space_dim+num_joints*2
-    # privileged_observation_space_dim = 0
-    # # # for velocity targets
-    # action_limit_max = [2.0]*num_motors
-    # action_limit_min = [0.0]*num_motors
-
     robot_name = "morphy"
     num_joints = 8
     num_motors = 4
     action_space_dim = 4
     observation_space_dim = 13 + action_space_dim + num_joints * 2
     privileged_observation_space_dim = 0
-    # # for velocity targets
     action_limit_max = [2.0] * num_motors
     action_limit_min = [0.0] * num_motors
 

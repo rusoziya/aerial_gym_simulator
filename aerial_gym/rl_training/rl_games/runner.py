@@ -21,8 +21,6 @@ import torch
 import distutils
 
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-# import warnings
-# warnings.filterwarnings("error")
 
 
 class ExtractObsWrapper(gym.Wrapper):

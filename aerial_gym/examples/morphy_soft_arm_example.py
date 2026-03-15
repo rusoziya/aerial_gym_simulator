@@ -13,10 +13,8 @@ import numpy as np
 try:
     import scienceplots
 
-    # set theme to a scientific theme for matplotlib
     plt.style.use(["science", "vibrant"])
-except:
-    # set plt theme to seaborn colorblind
+except ImportError:
     plt.style.use("seaborn-v0_8-colorblind")
 
 import csv
@@ -31,7 +29,7 @@ def read_csv(filename) -> None:
             try:
                 if float(t) > 0.06 and float(theta) < 15.0:
                     angle_list.append([float(t), float(theta)])
-            except:
+            except ValueError:
                 pass
 
 

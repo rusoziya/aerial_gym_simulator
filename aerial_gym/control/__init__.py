@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# import classes for controllers
 from aerial_gym.control.controllers.acceleration_control import (
     LeeAccelerationController,
 )
@@ -14,7 +13,6 @@ from aerial_gym.control.controllers.rates_control import LeeRatesController
 from aerial_gym.control.controllers.no_control import NoControl
 
 
-# import configs for controllers
 from aerial_gym.config.controller_config.lee_controller_config import (
     control as lee_controller_config,
 )

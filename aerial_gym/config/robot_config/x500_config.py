@@ -200,3 +200,4 @@ class X500Cfg:
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.025
             use_discrete_approximation = False  # use discrete approximation for motor dynamics
+            integration_scheme = "rk4"

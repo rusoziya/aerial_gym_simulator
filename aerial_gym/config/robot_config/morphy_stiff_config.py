@@ -176,3 +176,4 @@ class MorphyStiffCfg:
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.01
             use_discrete_approximation = True
+            integration_scheme = "rk4"
