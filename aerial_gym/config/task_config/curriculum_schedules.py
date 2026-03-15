@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import torch
 
+# Lazy import to avoid circular dependency
+def _get_curriculum_config():
+    from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+    return task_config.curriculum
 
-def update_curriculim_level(self, success_rate, current_level) -> None:
+
+def update_curriculim_level(success_rate, current_level) -> None:
     """
     ENHANCED CURRICULUM UPDATE WITH NO-DECREASE POLICY
     
@@ -12,8 +17,8 @@ def update_curriculim_level(self, success_rate, current_level) -> None:
     and prevents oscillation between difficulty levels.
     """
     # ONLY ALLOW INCREASES (No-decrease policy)
-    if success_rate > self.success_rate_for_increase:
-        new_level = min(current_level + self.increase_step, self.max_level)
+    if success_rate > _get_curriculum_config().success_rate_for_increase:
+        new_level = min(current_level + _get_curriculum_config().increase_step, _get_curriculum_config().max_level)
         return new_level
     else:
         # Maintain current level (never decrease)
@@ -27,17 +32,17 @@ def get_obstacle_count_behind_gate(level) -> None:
     - Level 23: 10 obstacles
     - Linear interpolation in between (rounded to nearest int)
     """
-    min_level = task_config.curriculum.min_level
-    max_level = task_config.curriculum.max_level
+    min_level = _get_curriculum_config().min_level
+    max_level = _get_curriculum_config().max_level
     # Use stretched end level for evaluation if enabled
     effective_max_level = (
-        task_config.curriculum.eval_stretch_end_level
-        if task_config.curriculum.eval_stretch_enabled
+        _get_curriculum_config().eval_stretch_end_level
+        if _get_curriculum_config().eval_stretch_enabled
         else max_level
     )
     start_obstacles = 3
     end_obstacles = 10
-    stretched_end_obstacles = task_config.curriculum.stretched_end_obstacles
+    stretched_end_obstacles = _get_curriculum_config().stretched_end_obstacles
     total_asset_capacity = 30  # Must match gate_object_params.num_assets in gate_env.py
     
     # Piecewise linear progression:
@@ -103,8 +108,8 @@ def get_camera_noise(level) -> None:
         dropout_rate = min_pixel_dropout_rate + progress * (max_pixel_dropout_rate - min_pixel_dropout_rate)
     else:
         # Evaluation stretch: extrapolate beyond training cap using the same slope
-        eval_end = int(task_config.curriculum.eval_stretch_end_level)
-        if not task_config.curriculum.eval_stretch_enabled:
+        eval_end = int(_get_curriculum_config().eval_stretch_end_level)
+        if not _get_curriculum_config().eval_stretch_enabled:
             eval_end = camera_noise_end_train
         lvl_clamped = min(lvl, eval_end)
         extra = float(lvl_clamped - camera_noise_end_train)
@@ -126,14 +131,14 @@ def get_camera_frame_dropout(level) -> None:
       - 'drone_freeze', 'drone_blank', 'static_freeze', 'static_blank'
       - 'drone_total' (freeze+blank), 'static_total' (freeze+blank)
     """
-    start = task_config.curriculum.frame_dropout_start_level  # Level 3
-    end_train = task_config.curriculum.frame_dropout_end_level  # Level 23
+    start = _get_curriculum_config().frame_dropout_start_level  # Level 3
+    end_train = _get_curriculum_config().frame_dropout_end_level  # Level 23
     
     # Define start and end values for linear interpolation
-    max_drone_freeze = task_config.curriculum.max_frame_freeze_prob_drone  # Level 23: 5%
-    max_drone_blank = task_config.curriculum.max_frame_blank_prob_drone    # Level 23: 0.5%
-    max_static_freeze = task_config.curriculum.max_frame_freeze_prob_static # Level 23: 5%
-    max_static_blank = task_config.curriculum.max_frame_blank_prob_static   # Level 23: 0.5%
+    max_drone_freeze = _get_curriculum_config().max_frame_freeze_prob_drone  # Level 23: 5%
+    max_drone_blank = _get_curriculum_config().max_frame_blank_prob_drone    # Level 23: 0.5%
+    max_static_freeze = _get_curriculum_config().max_frame_freeze_prob_static # Level 23: 5%
+    max_static_blank = _get_curriculum_config().max_frame_blank_prob_static   # Level 23: 0.5%
     
     # Level 3 starting values (5% of max)
     min_drone_freeze = max_drone_freeze * 0.05    # Level 3: 0.25% (5% of 5%)
@@ -155,8 +160,8 @@ def get_camera_frame_dropout(level) -> None:
         sf = min_static_freeze + progress * (max_static_freeze - min_static_freeze)
         sb = min_static_blank + progress * (max_static_blank - min_static_blank)
     else:
-        eval_end = int(task_config.curriculum.eval_stretch_end_level)
-        if not task_config.curriculum.eval_stretch_enabled:
+        eval_end = int(_get_curriculum_config().eval_stretch_end_level)
+        if not _get_curriculum_config().eval_stretch_enabled:
             eval_end = end_train
         lvl_clamped = min(lvl, eval_end)
         extra = float(lvl_clamped - end_train)
@@ -188,14 +193,14 @@ def get_state_noise(level) -> None:
       - drone_pos_std_m, drone_orient_std_rad
       - static_pos_std_m, static_orient_std_rad
     """
-    start = task_config.curriculum.state_noise_start_level  # Level 3
-    end_train = task_config.curriculum.state_noise_end_level  # Level 23
+    start = _get_curriculum_config().state_noise_start_level  # Level 3
+    end_train = _get_curriculum_config().state_noise_end_level  # Level 23
     
     # Define start and end values for linear interpolation
-    max_drone_pos_noise = task_config.curriculum.max_drone_pos_noise_m  # Level 23: 0.02m
-    max_drone_orient_noise = task_config.curriculum.max_drone_orient_noise_rad  # Level 23: 0.5°
-    max_static_pos_noise = task_config.curriculum.max_static_pos_noise_m  # Level 23: 0.05m
-    max_static_orient_noise = task_config.curriculum.max_static_orient_noise_rad  # Level 23: 1.0°
+    max_drone_pos_noise = _get_curriculum_config().max_drone_pos_noise_m  # Level 23: 0.02m
+    max_drone_orient_noise = _get_curriculum_config().max_drone_orient_noise_rad  # Level 23: 0.5°
+    max_static_pos_noise = _get_curriculum_config().max_static_pos_noise_m  # Level 23: 0.05m
+    max_static_orient_noise = _get_curriculum_config().max_static_orient_noise_rad  # Level 23: 1.0°
     
     # Level 3 starting values (5% of max)
     min_drone_pos_noise = max_drone_pos_noise * 0.05  # Level 3: 0.001m (5% of 0.02m)
@@ -220,8 +225,8 @@ def get_state_noise(level) -> None:
             "static_orient_std_rad": min_static_orient_noise + progress * (max_static_orient_noise - min_static_orient_noise),
         }
     else:
-        eval_end = int(task_config.curriculum.eval_stretch_end_level)
-        if not task_config.curriculum.eval_stretch_enabled:
+        eval_end = int(_get_curriculum_config().eval_stretch_end_level)
+        if not _get_curriculum_config().eval_stretch_enabled:
             eval_end = end_train
         lvl_clamped = min(lvl, eval_end)
         extra = float(lvl_clamped - end_train)
@@ -242,60 +247,60 @@ def get_spawn_ranges(level) -> None:
       - z_center_m, z_half_span_m
       - yaw_abs_rad
     """
-    s = task_config.curriculum.spawn_start_level
-    e_train = task_config.curriculum.spawn_end_level  # 23
+    s = _get_curriculum_config().spawn_start_level
+    e_train = _get_curriculum_config().spawn_end_level  # 23
     if level <= s:
         return {
-            "x_half_span_m": task_config.curriculum.spawn_easy_x_half_span_m,
-            "y_center_m": task_config.curriculum.spawn_easy_y_center_m,
-            "y_half_span_m": task_config.curriculum.spawn_easy_y_half_span_m,
-            "z_center_m": task_config.curriculum.spawn_easy_z_center_m,
-            "z_half_span_m": task_config.curriculum.spawn_easy_z_half_span_m,
-            "yaw_abs_rad": task_config.curriculum.spawn_easy_yaw_abs_rad,
+            "x_half_span_m": _get_curriculum_config().spawn_easy_x_half_span_m,
+            "y_center_m": _get_curriculum_config().spawn_easy_y_center_m,
+            "y_half_span_m": _get_curriculum_config().spawn_easy_y_half_span_m,
+            "z_center_m": _get_curriculum_config().spawn_easy_z_center_m,
+            "z_half_span_m": _get_curriculum_config().spawn_easy_z_half_span_m,
+            "yaw_abs_rad": _get_curriculum_config().spawn_easy_yaw_abs_rad,
         }
     if level >= e_train:
-        if not task_config.curriculum.eval_stretch_enabled:
+        if not _get_curriculum_config().eval_stretch_enabled:
             return {
-                "x_half_span_m": task_config.curriculum.spawn_hard_x_half_span_m,
-                "y_center_m": task_config.curriculum.spawn_hard_y_center_m,
-                "y_half_span_m": task_config.curriculum.spawn_hard_y_half_span_m,
-                "z_center_m": task_config.curriculum.spawn_hard_z_center_m,
-                "z_half_span_m": task_config.curriculum.spawn_hard_z_half_span_m,
-                "yaw_abs_rad": task_config.curriculum.spawn_hard_yaw_abs_rad,
+                "x_half_span_m": _get_curriculum_config().spawn_hard_x_half_span_m,
+                "y_center_m": _get_curriculum_config().spawn_hard_y_center_m,
+                "y_half_span_m": _get_curriculum_config().spawn_hard_y_half_span_m,
+                "z_center_m": _get_curriculum_config().spawn_hard_z_center_m,
+                "z_half_span_m": _get_curriculum_config().spawn_hard_z_half_span_m,
+                "yaw_abs_rad": _get_curriculum_config().spawn_hard_yaw_abs_rad,
             }
         # Evaluation stretch: extrapolate beyond hard values using training slope
         span_train = float(max(1, e_train - s))
         def lerp(a, b) -> None:
             return a + (e_train - s) / span_train * (b - a)
         slopes = {
-            "x_half_span_m": (task_config.curriculum.spawn_hard_x_half_span_m - task_config.curriculum.spawn_easy_x_half_span_m) / span_train,
-            "y_center_m": (task_config.curriculum.spawn_hard_y_center_m - task_config.curriculum.spawn_easy_y_center_m) / span_train,
-            "y_half_span_m": (task_config.curriculum.spawn_hard_y_half_span_m - task_config.curriculum.spawn_easy_y_half_span_m) / span_train,
-            "z_center_m": (task_config.curriculum.spawn_hard_z_center_m - task_config.curriculum.spawn_easy_z_center_m) / span_train,
-            "z_half_span_m": (task_config.curriculum.spawn_hard_z_half_span_m - task_config.curriculum.spawn_easy_z_half_span_m) / span_train,
-            "yaw_abs_rad": (task_config.curriculum.spawn_hard_yaw_abs_rad - task_config.curriculum.spawn_easy_yaw_abs_rad) / span_train,
+            "x_half_span_m": (_get_curriculum_config().spawn_hard_x_half_span_m - _get_curriculum_config().spawn_easy_x_half_span_m) / span_train,
+            "y_center_m": (_get_curriculum_config().spawn_hard_y_center_m - _get_curriculum_config().spawn_easy_y_center_m) / span_train,
+            "y_half_span_m": (_get_curriculum_config().spawn_hard_y_half_span_m - _get_curriculum_config().spawn_easy_y_half_span_m) / span_train,
+            "z_center_m": (_get_curriculum_config().spawn_hard_z_center_m - _get_curriculum_config().spawn_easy_z_center_m) / span_train,
+            "z_half_span_m": (_get_curriculum_config().spawn_hard_z_half_span_m - _get_curriculum_config().spawn_easy_z_half_span_m) / span_train,
+            "yaw_abs_rad": (_get_curriculum_config().spawn_hard_yaw_abs_rad - _get_curriculum_config().spawn_easy_yaw_abs_rad) / span_train,
         }
-        eval_end = int(task_config.curriculum.eval_stretch_end_level)
+        eval_end = int(_get_curriculum_config().eval_stretch_end_level)
         lvl_clamped = min(level, eval_end)
         extra = float(lvl_clamped - e_train)
         return {
-            "x_half_span_m": task_config.curriculum.spawn_hard_x_half_span_m + slopes["x_half_span_m"] * extra,
-            "y_center_m": task_config.curriculum.spawn_hard_y_center_m + slopes["y_center_m"] * extra,
-            "y_half_span_m": task_config.curriculum.spawn_hard_y_half_span_m + slopes["y_half_span_m"] * extra,
-            "z_center_m": task_config.curriculum.spawn_hard_z_center_m + slopes["z_center_m"] * extra,
-            "z_half_span_m": task_config.curriculum.spawn_hard_z_half_span_m + slopes["z_half_span_m"] * extra,
-            "yaw_abs_rad": task_config.curriculum.spawn_hard_yaw_abs_rad + slopes["yaw_abs_rad"] * extra,
+            "x_half_span_m": _get_curriculum_config().spawn_hard_x_half_span_m + slopes["x_half_span_m"] * extra,
+            "y_center_m": _get_curriculum_config().spawn_hard_y_center_m + slopes["y_center_m"] * extra,
+            "y_half_span_m": _get_curriculum_config().spawn_hard_y_half_span_m + slopes["y_half_span_m"] * extra,
+            "z_center_m": _get_curriculum_config().spawn_hard_z_center_m + slopes["z_center_m"] * extra,
+            "z_half_span_m": _get_curriculum_config().spawn_hard_z_half_span_m + slopes["z_half_span_m"] * extra,
+            "yaw_abs_rad": _get_curriculum_config().spawn_hard_yaw_abs_rad + slopes["yaw_abs_rad"] * extra,
         }
     p = (level - s) / float(e_train - s)
     def lerp(a, b) -> None:
         return a + p * (b - a)
     return {
-        "x_half_span_m": lerp(task_config.curriculum.spawn_easy_x_half_span_m, task_config.curriculum.spawn_hard_x_half_span_m),
-        "y_center_m": lerp(task_config.curriculum.spawn_easy_y_center_m, task_config.curriculum.spawn_hard_y_center_m),
-        "y_half_span_m": lerp(task_config.curriculum.spawn_easy_y_half_span_m, task_config.curriculum.spawn_hard_y_half_span_m),
-        "z_center_m": lerp(task_config.curriculum.spawn_easy_z_center_m, task_config.curriculum.spawn_hard_z_center_m),
-        "z_half_span_m": lerp(task_config.curriculum.spawn_easy_z_half_span_m, task_config.curriculum.spawn_hard_z_half_span_m),
-        "yaw_abs_rad": lerp(task_config.curriculum.spawn_easy_yaw_abs_rad, task_config.curriculum.spawn_hard_yaw_abs_rad),
+        "x_half_span_m": lerp(_get_curriculum_config().spawn_easy_x_half_span_m, _get_curriculum_config().spawn_hard_x_half_span_m),
+        "y_center_m": lerp(_get_curriculum_config().spawn_easy_y_center_m, _get_curriculum_config().spawn_hard_y_center_m),
+        "y_half_span_m": lerp(_get_curriculum_config().spawn_easy_y_half_span_m, _get_curriculum_config().spawn_hard_y_half_span_m),
+        "z_center_m": lerp(_get_curriculum_config().spawn_easy_z_center_m, _get_curriculum_config().spawn_hard_z_center_m),
+        "z_half_span_m": lerp(_get_curriculum_config().spawn_easy_z_half_span_m, _get_curriculum_config().spawn_hard_z_half_span_m),
+        "yaw_abs_rad": lerp(_get_curriculum_config().spawn_easy_yaw_abs_rad, _get_curriculum_config().spawn_hard_yaw_abs_rad),
     }
 
 
@@ -316,8 +321,8 @@ def get_static_camera_difficulty(level) -> None:
     camera_start_level = 3
     # End at level 23 in training; optionally stretch to eval_stretch_end_level during evaluation
     max_level = (
-        task_config.curriculum.eval_stretch_end_level
-        if task_config.curriculum.eval_stretch_enabled
+        _get_curriculum_config().eval_stretch_end_level
+        if _get_curriculum_config().eval_stretch_enabled
         else 23
     )
     max_camera_angle_degrees = 19
@@ -342,9 +347,9 @@ def get_dynamic_camera_follow_offset() -> None:
         tuple: (x_offset, y_offset, z_offset) in meters
     """
     return (
-        task_config.curriculum.dynamic_camera_follow_distance_x,
-        task_config.curriculum.dynamic_camera_follow_distance_y, 
-        task_config.curriculum.dynamic_camera_follow_distance_z
+        _get_curriculum_config().dynamic_camera_follow_distance_x,
+        _get_curriculum_config().dynamic_camera_follow_distance_y, 
+        _get_curriculum_config().dynamic_camera_follow_distance_z
     )
 
 

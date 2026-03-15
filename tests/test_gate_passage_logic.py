@@ -2,7 +2,7 @@
 import isaacgym  # noqa: F401
 import torch
 import pytest
-from aerial_gym.task.navigation_task_gate.navigation_task_gate import compute_gate_reward
+from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
 from aerial_gym.config.task_config.navigation_task_config_gate import task_config
 
 

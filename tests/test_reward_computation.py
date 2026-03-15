@@ -47,7 +47,7 @@ class TestComputeGateReward:
     """Test the JIT-compiled gate reward function."""
 
     def setup_method(self):
-        from aerial_gym.task.navigation_task_gate.navigation_task_gate import compute_gate_reward
+        from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
         self.compute = compute_gate_reward
 
     def test_returns_three_tensors(self, zero_state, reward_params, num_envs):

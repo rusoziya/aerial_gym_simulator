@@ -11,12 +11,13 @@ import random
 logger = CustomLogger("base_task")
 
 # Step return type used by all task subclasses
-StepReturn = tuple[
-    dict[str, torch.Tensor],
+from typing import Dict, Tuple
+StepReturn = Tuple[
+    Dict[str, torch.Tensor],
     torch.Tensor,
     torch.Tensor,
     torch.Tensor,
-    dict[str, torch.Tensor],
+    Dict[str, torch.Tensor],
 ]
 
 

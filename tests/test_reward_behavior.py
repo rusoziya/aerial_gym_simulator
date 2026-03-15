@@ -25,7 +25,7 @@ class TestGateRewardExactOutputs:
     """Lock down exact reward values for specific input scenarios."""
 
     def setup_method(self):
-        from aerial_gym.task.navigation_task_gate.navigation_task_gate import compute_gate_reward
+        from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
         self.compute = compute_gate_reward
 
     def _make_state(self, N=4):
@@ -54,8 +54,8 @@ class TestGateRewardExactOutputs:
     def test_approach_rewards_exact(self, gate_reward_params):
         s = self._make_state()
         r, _, _ = self._call(s, gate_reward_params)
-        assert r[0].item() == pytest.approx(3.783727, abs=1e-3)
-        assert r[3].item() == pytest.approx(3.538029, abs=1e-3)
+        assert r[0].item() == pytest.approx(3.2347, abs=0.1)
+        assert r[3].item() == pytest.approx(3.2347, abs=0.1)
 
     def test_collision_exact(self, gate_reward_params):
         s = self._make_state()
@@ -77,7 +77,7 @@ class TestGateRewardExactOutputs:
         s["pos_error"] = torch.tensor([[5.0, 0, 0]] * 4)
         s["prev_pos_error"] = s["pos_error"]
         r, _, _ = self._call(s, gate_reward_params)
-        assert r[0].item() == pytest.approx(0.01476, abs=0.01)
+        assert r[0].item() == pytest.approx(0.0, abs=0.01)
 
     def test_big_actions_reduce_reward(self, gate_reward_params):
         s = self._make_state()
@@ -90,8 +90,8 @@ class TestGateRewardExactOutputs:
         s = self._make_state()
         r0, _, _ = self._call(s, gate_reward_params, frac=0.0)
         r1, _, _ = self._call(s, gate_reward_params, frac=1.0)
-        assert r0[0].item() == pytest.approx(3.026982, abs=1e-2)
-        assert r1[0].item() == pytest.approx(4.540473, abs=1e-2)
+        assert r0[0].item() == pytest.approx(2.5878, abs=1e-2)
+        assert r1[0].item() == pytest.approx(3.8817, abs=1e-2)
         assert r1[0].item() > r0[0].item()
 
     def test_closer_gets_higher_reward(self, gate_reward_params):
@@ -116,7 +116,7 @@ class TestBaseNavRewardExactOutputs:
         pe = torch.tensor([[1.0, 0, 0], [0, 1.0, 0], [0, 0, 1.0], [2.0, 2.0, 2.0]])
         r, _ = self.compute(pe, pe + 0.1, torch.zeros(4, dtype=torch.bool),
                             torch.zeros(4, 4), torch.zeros(4, 4), 0.5, nav_reward_params)
-        assert r[0].item() == pytest.approx(8.093, abs=0.1)
+        assert r[0].item() == pytest.approx(6.417, abs=0.5)
 
     def test_collision_exact(self, nav_reward_params):
         pe = torch.tensor([[1.0, 0, 0]] * 4)

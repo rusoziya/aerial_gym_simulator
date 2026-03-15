@@ -75,18 +75,22 @@ def quat_axis(q, axis=0):
 
 @torch.jit.script
 def exponential_reward_function(
-    magnitude: float, exponent: float, value: torch.Tensor
+    magnitude: float, base_width: float, value: torch.Tensor
 ) -> torch.Tensor:
-    """Exponential reward function"""
-    return magnitude * torch.exp(-(value * value) * exponent)
+    """Exponential reward function: magnitude * exp(-value^2 / base_width)"""
+    if base_width == 0.0:
+        return magnitude * torch.ones_like(value)
+    return magnitude * torch.exp(-(value * value) / base_width)
 
 
 @torch.jit.script
 def exponential_penalty_function(
-    magnitude: float, exponent: float, value: torch.Tensor
+    magnitude: float, base_width: float, value: torch.Tensor
 ) -> torch.Tensor:
-    """Exponential penalty function"""
-    return magnitude * (torch.exp(-(value * value) * exponent) - 1.0)
+    """Exponential penalty function: magnitude * (exp(-value^2 / base_width) - 1)"""
+    if base_width == 0.0:
+        return torch.zeros_like(value)
+    return magnitude * (torch.exp(-(value * value) / base_width) - 1.0)
 
 
 @torch.jit.script

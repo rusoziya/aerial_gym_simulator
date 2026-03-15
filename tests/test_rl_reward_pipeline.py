@@ -57,7 +57,7 @@ class TestNavRewardDistanceCurve:
     """Lock down the base navigation reward at specific distances."""
 
     @pytest.mark.parametrize("dist,expected", [
-        (0.0, 11.0), (0.5, 8.663), (1.0, 5.384), (2.0, 2.496), (5.0, 0.754), (10.0, 0.5),
+        (0.0, 11.0), (0.5, 7.472), (1.0, 4.134), (2.0, 1.577), (5.0, 0.754), (10.0, 0.5),
     ])
     def test_nav_reward_at_distance(self, nav_rp, dist, expected):
         from aerial_gym.task.navigation_task.navigation_task import compute_reward
@@ -79,8 +79,8 @@ class TestGettingCloserAsymmetryExact:
                                      torch.zeros(1, dtype=torch.bool), torch.zeros(1,4), torch.zeros(1,4), 0.0, nav_rp)
         gain = closer.item() - base.item()
         loss = base.item() - farther.item()
-        assert gain == pytest.approx(12.888, abs=0.1)
-        assert loss == pytest.approx(21.264, abs=0.1)
+        assert gain == pytest.approx(12.557, abs=0.1)
+        assert loss == pytest.approx(20.671, abs=0.1)
         assert loss / gain == pytest.approx(1.65, abs=0.1)
 
 
