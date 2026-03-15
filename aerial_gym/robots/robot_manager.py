@@ -2,20 +2,17 @@ from __future__ import annotations
 
 from isaacgym import gymapi
 from isaacgym import gymtorch
-import os
 
 from aerial_gym.env_manager.base_env_manager import BaseManager
 from aerial_gym.registry.robot_registry import robot_registry
 import torch
 
-# get all the sensor classes
 from aerial_gym.sensors.isaacgym_camera_sensor import IsaacGymCameraSensor
 from aerial_gym.sensors.warp.warp_sensor import WarpSensor
 from aerial_gym.sensors.imu_sensor import IMUSensor
-
+from aerial_gym.robots.inertia_computation import compute_robot_com, compute_composite_inertia
 
 from aerial_gym.utils.logging import CustomLogger
-import pytorch3d.transforms as p3d_transforms
 
 logger = CustomLogger("robot_manager")
 
@@ -283,137 +280,14 @@ class RobotManagerIGE(BaseManager):
     def _compute_robot_inertia(self, env_handle: object, env_id: int) -> None:
         """Compute robot mass and inertia from rigid body properties."""
         if self.robot_inertia is None or self.robot_mass is None:
-            # get robot mass and inertia
             rbp = self.gym.get_actor_rigid_body_properties(env_handle, self.actor_handle)
-            self.robot_mass = 0.0
-            self.robot_inertia = torch.zeros((3, 3), device=self.device)
-            body_inertia = torch.zeros((3, 3), device=self.device)
             state_list = self.gym.get_actor_rigid_body_states(
                 env_handle, self.actor_handle, gymapi.STATE_ALL
             )
-            item_ctr = 0
-
-            quat = torch.zeros((1, 4), dtype=torch.float32, device=self.device)
-            com = torch.zeros((1, 4), device=self.device)
-            transformation_mat = torch.zeros((4, 4), device=self.device)
-
-            robot_com = torch.zeros((1, 4), device=self.device)
-            robot_mass = 0.0
-
-            for item, properties in zip(state_list, rbp):
-                obj_com = torch.zeros((1, 4), device=self.device)
-                obj_mass = properties.mass
-                obj_com[0, 0] = properties.com.x
-                obj_com[0, 1] = properties.com.y
-                obj_com[0, 2] = properties.com.z
-                obj_com[0, 3] = 1.0
-
-                position = item[0][0]
-                rotation = item[0][1]
-
-                quat[0, 0] = float(rotation[0])
-                quat[0, 1] = float(rotation[1])
-                quat[0, 2] = float(rotation[2])
-                quat[0, 3] = float(rotation[3])
-
-                # convert quaternion to rotation matrix
-                rotmat = p3d_transforms.quaternion_to_matrix(quat[:, [3, 0, 1, 2]])[0]
-
-                transformation_mat[0:3, 0:3] = rotmat
-                transformation_mat[0, 3] = float(position[0])
-                transformation_mat[1, 3] = float(position[1])
-                transformation_mat[2, 3] = float(position[2])
-                transformation_mat[3, 3] = float(1.0)
-
-                obj_com_in_root_link_frame = torch.matmul(transformation_mat, obj_com.T).T
-                logger.debug(f"Obj COM: {obj_com_in_root_link_frame}, Robot mass: {obj_mass}")
-
-                robot_com += obj_mass * obj_com_in_root_link_frame
-                robot_mass += obj_mass
-            robot_com /= robot_mass
-            robot_com[0, 3] = 1.0
-
-            logger.debug(f"Robot COM: {robot_com}, Robot mass: {robot_mass}")
-
-            for item, properties in zip(state_list, rbp):
-                position = item[0][0]
-                rotation = item[0][1]
-                logger.debug(f"Item: {item_ctr} position: {position}, rotation: {rotation}")
-
-                com[0, 0] = properties.com.x
-                com[0, 1] = properties.com.y
-                com[0, 2] = properties.com.z
-                com[0, 3] = 1.0
-
-                body_inertia[0, 0] = properties.inertia.x.x
-                body_inertia[0, 1] = properties.inertia.x.y
-                body_inertia[0, 2] = properties.inertia.x.z
-                body_inertia[1, 0] = properties.inertia.y.x
-                body_inertia[1, 1] = properties.inertia.y.y
-                body_inertia[1, 2] = properties.inertia.y.z
-                body_inertia[2, 0] = properties.inertia.z.x
-                body_inertia[2, 1] = properties.inertia.z.y
-                body_inertia[2, 2] = properties.inertia.z.z
-
-                quat[0, 0] = float(rotation[0])
-                quat[0, 1] = float(rotation[1])
-                quat[0, 2] = float(rotation[2])
-                quat[0, 3] = float(rotation[3])
-
-                # convert quaternion to rotation matrix
-                rotmat = p3d_transforms.quaternion_to_matrix(quat[:, [3, 0, 1, 2]])[0]
-
-                transformed_inertia = torch.matmul(rotmat, torch.matmul(body_inertia, rotmat.T))
-                logger.debug(
-                    f"intial inertia: {body_inertia.view(1, 9)} \n transformed_inertia: {transformed_inertia.view(1, 9)}"
-                )
-
-                transformation_mat[0:3, 0:3] = rotmat
-                transformation_mat[0, 3] = float(position[0])
-                transformation_mat[1, 3] = float(position[1])
-                transformation_mat[2, 3] = float(position[2])
-                transformation_mat[3, 3] = float(1.0)
-
-                com_in_root_link_frame = torch.matmul(transformation_mat, com.T).squeeze(1)
-
-                obj_com_in_robot_com_frame = -(
-                    com_in_root_link_frame - robot_com.T.squeeze(1)
-                )  # a- b or b -a
-                obj_com_in_robot_com_frame[3] = 1.0
-
-                logger.debug(f"COM in root link frame: {com_in_root_link_frame}")
-                logger.debug(f"COM in robot COM frame: {obj_com_in_robot_com_frame}")
-
-                # use parallel axis theorem to calculate the inertia in the root link frame
-
-                # print shapes of everything used after this:
-
-                # inertia in the root link frame
-                transformed_inertia[0, 0] += properties.mass * (
-                    obj_com_in_robot_com_frame[1] ** 2 + obj_com_in_robot_com_frame[2] ** 2
-                )
-                transformed_inertia[1, 1] += properties.mass * (
-                    obj_com_in_robot_com_frame[0] ** 2 + obj_com_in_robot_com_frame[2] ** 2
-                )
-                transformed_inertia[2, 2] += properties.mass * (
-                    obj_com_in_robot_com_frame[0] ** 2 + obj_com_in_robot_com_frame[1] ** 2
-                )
-                transformed_inertia[0, 1] += -(
-                    properties.mass * obj_com_in_robot_com_frame[0] * obj_com_in_robot_com_frame[1]
-                )
-                transformed_inertia[0, 2] += -(
-                    properties.mass * obj_com_in_robot_com_frame[0] * obj_com_in_robot_com_frame[2]
-                )
-                transformed_inertia[1, 2] += -(
-                    properties.mass * obj_com_in_robot_com_frame[1] * obj_com_in_robot_com_frame[2]
-                )
-                transformed_inertia[1, 0] = transformed_inertia[0, 1]
-                transformed_inertia[2, 0] = transformed_inertia[0, 2]
-                transformed_inertia[2, 1] = transformed_inertia[1, 2]
-
-                self.robot_mass += properties.mass
-                self.robot_inertia += transformed_inertia
-                item_ctr += 1
+            robot_com, _ = compute_robot_com(state_list, rbp, self.device)
+            self.robot_mass, self.robot_inertia = compute_composite_inertia(
+                state_list, rbp, robot_com, self.device
+            )
             logger.warning(
                 f"\nRobot mass: {self.robot_mass},\nInertia: {self.robot_inertia},\nRobot COM: {robot_com}"
             )
@@ -428,7 +302,12 @@ class RobotManagerIGE(BaseManager):
                 "It's the same robot as before. Not calculating the inertia and mass again. Change this if your robot differs across envs."
             )
 
-        # Set drive mode for the robot for DOF control
+        self._configure_dof_drive_mode(env_handle)
+        self.robot_masses[env_id] = self.robot_mass
+        self.robot_inertias[env_id] = self.robot_inertia
+
+    def _configure_dof_drive_mode(self, env_handle: object) -> None:
+        """Set drive mode for the robot's degrees of freedom."""
         props = self.gym.get_actor_dof_properties(env_handle, self.actor_handle)
         try:
             if len(props["driveMode"]) > 0:
@@ -453,12 +332,10 @@ class RobotManagerIGE(BaseManager):
                 self.gym.set_actor_dof_properties(env_handle, self.actor_handle, props)
         except (AttributeError, IndexError, KeyError, RuntimeError) as e:
             logger.error(
-                f"Something unexpected happened while setting parameters for the DOF modes of the robot. Please check if the correct reconfiguration_config params are set in the robot config file."
+                "Something unexpected happened while setting parameters for the DOF modes of the robot. "
+                "Please check if the correct reconfiguration_config params are set in the robot config file."
             )
             raise e
-
-        self.robot_masses[env_id] = self.robot_mass
-        self.robot_inertias[env_id] = self.robot_inertia
         
 
     def add_robot_to_env(

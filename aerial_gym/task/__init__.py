@@ -99,9 +99,3 @@ task_registry.register_task(
     PositionSetpointTaskMorphy,
     position_setpoint_task_config_morphy,
 )
-
-
-## Uncomment this to use custom tasks
-
-# from aerial_gym.task.custom_task.custom_task import CustomTask
-# task_registry.register_task("custom_task", CustomTask, custom_task.task_config)

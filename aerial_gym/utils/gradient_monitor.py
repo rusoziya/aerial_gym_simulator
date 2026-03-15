@@ -7,7 +7,6 @@ Activation-based monitoring to verify if neural network uses static camera data.
 
 import torch
 import numpy as np
-from typing import Dict, Optional, Tuple
 import logging
 
 logger = logging.getLogger(__name__)
@@ -90,8 +89,8 @@ class CompleteObservationInfluenceTracker:
             except AttributeError as e:
                 logger.warning(f"⚠️ Could not access {target_name}: {e}")
                 continue
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to attach to {target_name}: {e}")
+            except (RuntimeError, TypeError) as e:
+                logger.warning(f"Failed to attach to {target_name}: {e}")
                 continue
                 
         # If all targets failed, try to find any non-ScriptModule components
@@ -108,9 +107,9 @@ class CompleteObservationInfluenceTracker:
             try:
                 handle = module.register_forward_hook(self._activation_hook)
                 self.hook_handles.append(handle)
-                logger.warning(f"✅ Complete observation tracker attached to non-ScriptModule: {name} ({type(module)})")
-                return  # Success
-            except Exception as e:
+                logger.warning(f"Complete observation tracker attached to non-ScriptModule: {name} ({type(module)})")
+                return
+            except (AttributeError, RuntimeError, TypeError):
                 continue
                 
         logger.warning("❌ Failed to attach complete observation tracker - no suitable non-ScriptModule hook points found")
@@ -124,67 +123,55 @@ class CompleteObservationInfluenceTracker:
         if not self.enabled:
             return
 
-        def _extract_obs_tensor(obj) -> None:
-            # Try common wrapper types: tuple(list(dict(...)))
-            try:
-                import torch as _torch
-                # Direct tensor
-                if isinstance(obj, _torch.Tensor):
-                    return obj
-                # Tuple/list: search first tensor or dict field
-                if isinstance(obj, (tuple, list)) and len(obj) > 0:
-                    return _extract_obs_tensor(obj[0])
-                # Dict: typical Sample Factory keys
-                if isinstance(obj, dict):
-                    if 'obs' in obj and isinstance(obj['obs'], _torch.Tensor):
-                        return obj['obs']
-                    if 'observations' in obj and isinstance(obj['observations'], _torch.Tensor):
-                        return obj['observations']
-                    # Fallback: first tensor value
-                    for v in obj.values():
-                        if isinstance(v, _torch.Tensor):
-                            return v
-                return None
-            except Exception:
-                return None
+        observations = self._extract_obs_tensor(input)
+        encoded_features = self._extract_feat_tensor(output)
 
-        def _extract_feat_tensor(obj) -> None:
-            try:
-                import torch as _torch
-                if isinstance(obj, _torch.Tensor):
-                    return obj
-                if isinstance(obj, (tuple, list)) and len(obj) > 0:
-                    return _extract_feat_tensor(obj[0])
-                if isinstance(obj, dict):
-                    for key in ('encoding', 'x', 'h', 'features', 'out'):
-                        if key in obj and isinstance(obj[key], _torch.Tensor):
-                            return obj[key]
-                    for v in obj.values():
-                        if isinstance(v, _torch.Tensor):
-                            return v
-                return None
-            except Exception:
-                return None
+        if not isinstance(observations, torch.Tensor) or observations.dim() != 2:
+            return
+        if not isinstance(encoded_features, torch.Tensor) or encoded_features.dim() != 2:
+            return
+        if observations.shape[1] < 81:
+            return
 
         try:
-            observations = _extract_obs_tensor(input)
-            encoded_features = _extract_feat_tensor(output)
-
-            # Validate
-            if observations is None or not hasattr(observations, 'dim'):
-                return
-            if encoded_features is None or not hasattr(encoded_features, 'dim'):
-                return
-            if observations.dim() != 2 or observations.shape[1] < 81:
-                # Expect at least the standard 81D or the 150D gate observation
-                return
-
-            # Analyze influence for all observation components
             self._analyze_complete_observation_influence(observations, encoded_features)
+        except (RuntimeError, ValueError, IndexError) as e:
+            if self.step_count < 5:
+                logger.warning(f"Hook analysis error: {e}")
 
-        except Exception as e:
-            if self.step_count < 5:  # Only log errors for first few steps
-                logger.warning(f"🔧 Hook analysis error: {e}")
+    @staticmethod
+    def _extract_obs_tensor(obj: object) -> torch.Tensor | None:
+        """Extract observation tensor from hook input (may be tensor, tuple, or dict)."""
+        if isinstance(obj, torch.Tensor):
+            return obj
+        if isinstance(obj, (tuple, list)) and len(obj) > 0:
+            return CompleteObservationInfluenceTracker._extract_obs_tensor(obj[0])
+        if isinstance(obj, dict):
+            for key in ("obs", "observations"):
+                val = obj.get(key)
+                if isinstance(val, torch.Tensor):
+                    return val
+            for v in obj.values():
+                if isinstance(v, torch.Tensor):
+                    return v
+        return None
+
+    @staticmethod
+    def _extract_feat_tensor(obj: object) -> torch.Tensor | None:
+        """Extract feature tensor from hook output (may be tensor, tuple, or dict)."""
+        if isinstance(obj, torch.Tensor):
+            return obj
+        if isinstance(obj, (tuple, list)) and len(obj) > 0:
+            return CompleteObservationInfluenceTracker._extract_feat_tensor(obj[0])
+        if isinstance(obj, dict):
+            for key in ("encoding", "x", "h", "features", "out"):
+                val = obj.get(key)
+                if isinstance(val, torch.Tensor):
+                    return val
+            for v in obj.values():
+                if isinstance(v, torch.Tensor):
+                    return v
+        return None
                 
     def _analyze_complete_observation_influence(self, observations: torch.Tensor, encoded_features: torch.Tensor) -> None:
         """Analyze the influence of all observation components on encoded features."""
@@ -255,48 +242,22 @@ class CompleteObservationInfluenceTracker:
                     if not torch.isnan(torch.tensor(corr_value)):
                         correlations.append(abs(corr_value))
                         
-                except Exception:
+                except (RuntimeError, ValueError):
                     continue
                     
         return np.mean(correlations) if correlations else 0.0
         
-    def _log_step_debug(self, step_data: Dict) -> None:
-        """Log debug information for current step."""
-        
-        # Determine training phase
-        if self.step_count == 0:
-            phase = "📊 DATA COLLECTION PHASE"
-        else:
-            phase = f"🎯 TRAINING PHASE (SF Step {self.step_count})"
-            
-        # logger.warning(f"🔧 COMPLETE OBSERVATION ANALYSIS - {phase}")  # Suppressed verbose periodic debug output
-        # logger.warning(f"   Sample Factory Training Step: {self.step_count} | Forward Pass: {self.forward_pass_count}")  # Suppressed verbose periodic debug output
-        
-        # Sort components by correlation strength
-        sorted_components = sorted(step_data.items(), key=lambda x: x[1]['correlation'], reverse=True)
-        
-        for component_name, data in sorted_components:
-            emoji = data['emoji']
-            corr = data['correlation']
-            mag = data['magnitude']
-            var = data['variance']
-            # logger.warning(f"   {emoji} {component_name:20s}: Corr={corr:.3f}, Mag={mag:.1f}, Var={var:.3f}")  # Suppressed verbose periodic debug output
-        
-        # logger.warning("")  # Add spacing (suppressed)
-        
+    def _log_step_debug(self, step_data: dict[str, dict[str, float]]) -> None:
+        """Log debug information for current step (no-op unless verbose logging enabled)."""
+
     def step(self) -> None:
-        """Update step counter - now synced externally with Sample Factory."""
-        # Note: step_count is now set directly by the training script
-        # to match Sample Factory's actual training step count
-        if self.step_count % 10 == 0:  # Log every 10 training steps
-            # logger.warning(f"📈 Training milestone: Step {self.step_count} reached (Total forward passes: {self.forward_pass_count})")  # Suppressed verbose periodic debug output
-            pass
+        """Update step counter (synced externally with Sample Factory)."""
 
     def should_log(self) -> bool:
         """Determine if metrics should be logged this step."""
         return self.step_count > 0 and self.step_count % self.config.get('log_interval', 100) == 0
         
-    def get_logging_metrics(self) -> Dict[str, float]:
+    def get_logging_metrics(self) -> dict[str, float]:
         """Get metrics for logging to wandb/tensorboard."""
         if not self.activation_history:
             return {}
@@ -479,7 +440,7 @@ class CompleteObservationInfluenceTracker:
         logger.warning("🧹 Complete observation tracker cleaned up")
 
 
-def create_influence_tracker(model, config: dict[str, object]) -> Optional[CompleteObservationInfluenceTracker]:
+def create_influence_tracker(model: object, config: dict[str, object]) -> CompleteObservationInfluenceTracker | None:
     """
     Factory function to create complete observation influence tracker.
     
@@ -498,10 +459,9 @@ def create_influence_tracker(model, config: dict[str, object]) -> Optional[Compl
         else:
             logger.warning("❌ Complete observation influence tracker creation failed")
             return None
-    except Exception as e:
-        logger.warning(f"❌ Error creating complete observation influence tracker: {e}")
+    except (AttributeError, RuntimeError, TypeError) as e:
+        logger.warning(f"Error creating complete observation influence tracker: {e}")
         return None
 
 
-# For backwards compatibility
-INFLUENCE_MONITOR_AVAILABLE = True 
+INFLUENCE_MONITOR_AVAILABLE = True

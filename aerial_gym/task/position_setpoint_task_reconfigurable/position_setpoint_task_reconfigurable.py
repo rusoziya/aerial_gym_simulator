@@ -162,8 +162,6 @@ def compute_reward(
     pos_reward = exp_func(dist, 3.0, 8.0) + exp_func(dist, 0.5, 1.0)
     dist_reward = (20 - dist) / 40.0  # 40
 
-    # ups = quat_axis(robot_quats, 2)
-    # tiltage = torch.abs(1 - ups[..., 2])
     roll, pitch, yaw = get_euler_xyz(robot_quats)
     roll = ssa(roll)
     pitch = ssa(pitch)

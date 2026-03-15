@@ -320,7 +320,7 @@ class EnvManager(BaseManager):
             # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
             fixed_indices = set(range(int(self.keep_in_env or 0)))
             # For each env, keep exactly `fixed_count` candidate obstacles (non-fixed, non-gate)
-            loop_envs = env_ids.tolist() if hasattr(env_ids, 'tolist') else list(env_ids)
+            loop_envs = env_ids.tolist()
             for env_id in loop_envs:
                 gate_indices = set(gate_indices_all[env_id]) if gate_indices_all else set()
                 candidates = [i for i in range(total_assets) if (i not in fixed_indices) and (i not in gate_indices)]
@@ -340,7 +340,7 @@ class EnvManager(BaseManager):
 
     def apply_gate_variant_selection(self, env_ids: torch.Tensor | None) -> None:
         """Select exactly one gate variant per environment, hiding the rest."""
-        ige_prepared = hasattr(self.IGE_env, "num_assets_per_env")
+        ige_prepared = self.IGE_env.num_assets_per_env > 0
         _apply_gate_variant_selection(
             env_ids=env_ids,
             global_tensor_dict=self.global_tensor_dict,

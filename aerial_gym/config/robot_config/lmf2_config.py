@@ -17,34 +17,6 @@ from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuCo
 class LMF2Cfg:
 
     class init_config:
-        # SIMPLIFIED SPAWN CONFIGURATION - NO CURRICULUM DEPENDENCY
-        # Fixed spawn ranges with minimal variation for consistent training
-        # Position: ±0.5m lateral variation around gate center
-        # Orientation: ±45° for reasonable randomization without curriculum complexity
-        # Velocity: Minimal initial velocity for more randomization
-        
-        # Position spawn: ~1.5m behind gate center (Y≈-1.5) in a tight band
-        # X (lateral): from ±0.5 up to ±2.0 → we allow full ±2.0 here (task can narrow)
-        # Z (height): from 0.5m to 1.5m (task can narrow to 0.75–1.25 at easy levels)
-        # Environment bounds: [-4,4] x [-4,4] x [0,4] = 8m × 8m × 4m
-        # Position conversion: ratio = (position + 4) / 8 for X,Y; ratio = position / 4 for Z
-        
-        # Previous spawn ratios (kept for easy rollback):
-        # min_init_state (old) = [
-        #     0.35,   # ratio_x: -1.2m
-        #     0.225,  # ratio_y: -2.2m
-        #     0.35,   # ratio_z: 1.4m
-        #     0, 0, -np.pi/4, 1.0,
-        #     -0.1, -0.1, -0.05, -0.02, -0.02, -0.05
-        # ]
-        # max_init_state (old) = [
-        #     0.65,   # ratio_x: +1.2m
-        #     0.275,  # ratio_y: -1.8m
-        #     0.4,    # ratio_z: 1.6m
-        #     0, 0, np.pi/4, 1.0,
-        #     0.1, 0.1, 0.05, 0.02, 0.02, 0.05
-        # ]
-
         min_init_state = [
             0.25,     # ratio_x: X = -2.0m → ((-2.0)+4)/8 = 0.25 (left bound of ±2.0m)
             0.30625,  # ratio_y: Y = -1.55m → ((-1.55)+4)/8 = 0.30625 (tight band near -1.5m)
@@ -99,30 +71,21 @@ class LMF2Cfg:
 
     class robot_asset:
         asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/robots/x500"
-        # LMF2 original (commented for easy swap):
-        # asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/robots/lmf2"
         file = "model.urdf"
-        name = "base_quadrotor"  # actor name
+        name = "base_quadrotor"
         base_link_name = "base_link"
         disable_gravity = False
-        collapse_fixed_joints = True  # merge bodies connected by fixed joints (preferred with base_link forces)
-        # Alternate for motor-link realism (uncomment if enabling motor_link forces):
-        # collapse_fixed_joints = False  # keep motor links to preserve lever-arm torques
-        fix_base_link = False  # fix the base of the robot
-        collision_mask = 0  # 1 to disable, 0 to enable...bitwise filter
-        replace_cylinder_with_capsule = False  # replace collision cylinders with capsules, leads to faster/more stable simulation
-        flip_visual_attachments = True  # Some .obj meshes must be flipped from y-up to z-up
+        collapse_fixed_joints = True
+        fix_base_link = False
+        collision_mask = 0
+        replace_cylinder_with_capsule = False
+        flip_visual_attachments = True
         density = 0.000001
         angular_damping = 0.02
         linear_damping = 0.02
-        # LMF2 original (commented):
-        # angular_damping = 0.01
-        # linear_damping = 0.01
         max_angular_velocity = 100.0
         max_linear_velocity = 100.0
         armature = 0.00001
-        # LMF2 original (commented):
-        # armature = 0.001
 
         semantic_id = 1
         per_link_semantic = False
@@ -185,15 +148,7 @@ class LMF2Cfg:
 
     class control_allocator_config:
         num_motors = 4
-        # Preferred: apply a single resultant wrench at base for throughput/stability
         force_application_level = "base_link"
-        # Alternate (commented): per-motor forces at link positions for realism
-        # force_application_level = "motor_link"
-
-        # Mask/directions used only when force_application_level == "motor_link"
-        # application_mask = [4, 1, 3, 2]  # X500 URDF mapping: [FR, BR, BL, FL]
-        # motor_directions = [1, 1, -1, -1]  # X500 spin pattern (affects yaw sign)
-        # LMF2 original (commented):
         application_mask = [1 + 4 + i for i in range(0, 4)]
         motor_directions = [1, -1, 1, -1]
 
@@ -201,51 +156,25 @@ class LMF2Cfg:
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 1.0, 1.0, 1.0],
-            [-0.13, 0.13, 0.13, -0.13],  # Mx (roll)
-            [-0.13, 0.13, -0.13, 0.13],  # My (pitch)
-            # [-0.025, 0.025, -0.025, 0.025],  # Mz (yaw) — smaller yaw authority than LMF2        #     [-0.07, 0.07, -0.07, 0.07],  # Mz (stronger yaw authority)
-            [-0.07, 0.07, -0.07, 0.07],  # Mz (stronger yaw authority)
-
+            [-0.13, 0.13, 0.13, -0.13],
+            [-0.13, 0.13, -0.13, 0.13],
+            [-0.07, 0.07, -0.07, 0.07],
         ]
-        # LMF2 original allocation_matrix (commented):
-        # allocation_matrix = [
-        #     [0.0, 0.0, 0.0, 0.0],
-        #     [0.0, 0.0, 0.0, 0.0],
-        #     [1.0, 1.0, 1.0, 1.0],
-        #     [-0.13, -0.13, 0.13, 0.13],  # Mx
-        #     [-0.13, 0.13, 0.13, -0.13],  # My
-        #     [-0.07, 0.07, -0.07, 0.07],  # Mz (stronger yaw authority)
-        # ]
 
         class motor_model_config:
-            # in the .sdf file 
             use_rps = True
             motor_thrust_constant_min = 8.54858e-6
             motor_thrust_constant_max = 8.54858e-6
-            # in the .sdf file 
             motor_time_constant_increasing_min = 0.0125
             motor_time_constant_increasing_max = 0.0125
-            # motor_time_constant_decreasing_min = 0.025
-            # motor_time_constant_decreasing_max = 0.025
             motor_time_constant_decreasing_min = 0.0025
             motor_time_constant_decreasing_max = 0.0025
             max_thrust = 20.0
             min_thrust = 0.1
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.025
-            use_discrete_approximation = True  # use discrete approximation for motor dynamics
+            use_discrete_approximation = True
             integration_scheme = "rk4"
-            # LMF2 original (commented):
-            # motor_thrust_constant_min = 9.26312e-06
-            # motor_thrust_constant_max = 1.826312e-05
-            # motor_time_constant_increasing_min = 0.05
-            # motor_time_constant_increasing_max = 0.08
-            # motor_time_constant_decreasing_min = 0.005
-            # motor_time_constant_decreasing_max = 0.005
-            # max_thrust = 15.0
-            # min_thrust = 0.1
-            # thrust_to_torque_ratio = 0.07
-            # use_discrete_approximation = True
 
 
 # Configuration for Drone 1 (positioned at -2, 0, 1.5)

@@ -9,6 +9,11 @@ from isaacgym import gymutil
 from aerial_gym.env_manager.base_env_manager import BaseManager
 from aerial_gym.env_manager.asset_manager import AssetManager
 from aerial_gym.env_manager.IGE_viewer_control import IGEViewerControl
+from aerial_gym.env_manager.tensor_population import (
+    populate_robot_tensors,
+    populate_obstacle_tensors,
+    populate_force_tensors,
+)
 import torch
 
 import os
@@ -38,6 +43,7 @@ class IsaacGymEnv(BaseManager):
         self.env_handles = []
         self.num_rigid_bodies_robot = None
         self.has_IGE_cameras = has_IGE_cameras
+        self.num_assets_per_env: int | list[int] = 0
         self.sim_has_dof = False
         self.dof_control_mode = "none"
 
@@ -323,34 +329,41 @@ class IsaacGymEnv(BaseManager):
 
         self.global_tensor_dict = global_tensor_dict
 
-        # Populate all common environment tensors
+        self._populate_root_state_tensors()
+        populate_force_tensors(
+            self.global_tensor_dict, self.gym, self.sim,
+            self.num_envs, self.num_rigid_bodies_per_env,
+            self.num_rigid_bodies_robot, self.device,
+        )
+        self._populate_dof_and_contact_tensors()
+        populate_robot_tensors(self.global_tensor_dict)
+        if self.num_assets_per_env > 0:
+            populate_obstacle_tensors(
+                self.global_tensor_dict, self.num_envs,
+                self.num_rigid_bodies_per_env, self.num_rigid_bodies_robot,
+                self.device,
+            )
+        self._populate_env_metadata()
+        if self.viewer is not None:
+            self.viewer.init_tensors(global_tensor_dict)
+        return True
+
+    def _populate_root_state_tensors(self) -> None:
+        """Set up root state, robot state, and environment asset state tensors."""
         self.global_tensor_dict["vec_root_tensor"] = self.vec_root_tensor
-        # In case your simulation has multiple robots, use more than just index 0
         self.global_tensor_dict["robot_state_tensor"] = self.vec_root_tensor[:, 0, :]
         self.global_tensor_dict["env_asset_state_tensor"] = self.vec_root_tensor[:, 1:, :]
         self.global_tensor_dict["unfolded_env_asset_state_tensor"] = self.unfolded_vec_root_tensor
-        self.global_tensor_dict["unfolded_env_asset_state_tensor_const"] = self.global_tensor_dict[
-            "unfolded_env_asset_state_tensor"
-        ].clone()
-
-        self.global_tensor_dict["rigid_body_state_tensor"] = gymtorch.wrap_tensor(
-            self.gym.acquire_rigid_body_state_tensor(self.sim)
-        )
-        self.global_tensor_dict["global_force_tensor"] = torch.zeros(
-            (self.global_tensor_dict["rigid_body_state_tensor"].shape[0], 3),
-            device=self.device,
-            requires_grad=False,
-        )
-        self.global_tensor_dict["global_torque_tensor"] = torch.zeros(
-            (self.global_tensor_dict["rigid_body_state_tensor"].shape[0], 3),
-            device=self.device,
-            requires_grad=False,
+        self.global_tensor_dict["unfolded_env_asset_state_tensor_const"] = (
+            self.global_tensor_dict["unfolded_env_asset_state_tensor"].clone()
         )
 
+    def _populate_dof_and_contact_tensors(self) -> None:
+        """Set up DOF state and contact force tensors."""
         self.global_tensor_dict["unfolded_dof_state_tensor"] = gymtorch.wrap_tensor(
             self.gym.acquire_dof_state_tensor(self.sim)
         )
-        if not self.global_tensor_dict["unfolded_dof_state_tensor"] is None:
+        if self.global_tensor_dict["unfolded_dof_state_tensor"] is not None:
             self.sim_has_dof = True
             self.global_tensor_dict["dof_state_tensor"] = self.global_tensor_dict[
                 "unfolded_dof_state_tensor"
@@ -361,80 +374,14 @@ class IsaacGymEnv(BaseManager):
             :, 0, :
         ]
 
-        # Populate robot tensors
-        self.global_tensor_dict["robot_position"] = self.global_tensor_dict["robot_state_tensor"][
-            :, :3
-        ]
-        self.global_tensor_dict["robot_orientation"] = self.global_tensor_dict[
-            "robot_state_tensor"
-        ][:, 3:7]
-        self.global_tensor_dict["robot_linvel"] = self.global_tensor_dict["robot_state_tensor"][
-            :, 7:10
-        ]
-        self.global_tensor_dict["robot_angvel"] = self.global_tensor_dict["robot_state_tensor"][
-            :, 10:
-        ]
-        self.global_tensor_dict["robot_body_angvel"] = torch.zeros_like(
-            self.global_tensor_dict["robot_state_tensor"][:, 10:13]
-        )
-        self.global_tensor_dict["robot_body_linvel"] = torch.zeros_like(
-            self.global_tensor_dict["robot_state_tensor"][:, 7:10]
-        )
-        self.global_tensor_dict["robot_euler_angles"] = torch.zeros_like(
-            self.global_tensor_dict["robot_state_tensor"][:, 7:10]
-        )
-
-        idx = self.num_rigid_bodies_robot
-        self.global_tensor_dict["robot_force_tensor"] = self.global_tensor_dict[
-            "global_force_tensor"
-        ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, :idx, :]
-
-        self.global_tensor_dict["robot_torque_tensor"] = self.global_tensor_dict[
-            "global_torque_tensor"
-        ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, :idx, :]
-
-        # Populate obstacle tensors
-        if self.num_assets_per_env > 0:
-            self.global_tensor_dict["obstacle_position"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 0:3]
-            self.global_tensor_dict["obstacle_orientation"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 3:7]
-            self.global_tensor_dict["obstacle_linvel"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 7:10]
-            self.global_tensor_dict["obstacle_angvel"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 10:]
-            self.global_tensor_dict["obstacle_body_angvel"] = torch.zeros_like(
-                self.global_tensor_dict["env_asset_state_tensor"][:, :, 10:13]
-            )
-            self.global_tensor_dict["obstacle_body_linvel"] = torch.zeros_like(
-                self.global_tensor_dict["env_asset_state_tensor"][:, :, 7:10]
-            )
-            self.global_tensor_dict["obstacle_euler_angles"] = torch.zeros_like(
-                self.global_tensor_dict["env_asset_state_tensor"][:, :, 7:10]
-            )
-
-            # assume that each obstacle is collapsed to a single base link
-            self.global_tensor_dict["obstacle_force_tensor"] = self.global_tensor_dict[
-                "global_force_tensor"
-            ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, idx:, :]
-
-            self.global_tensor_dict["obstacle_torque_tensor"] = self.global_tensor_dict[
-                "global_torque_tensor"
-            ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, idx:, :]
-
+    def _populate_env_metadata(self) -> None:
+        """Set up environment bounds, gravity, and time step tensors."""
         self.global_tensor_dict["env_bounds_max"] = self.env_upper_bound
         self.global_tensor_dict["env_bounds_min"] = self.env_lower_bound
         self.global_tensor_dict["gravity"] = torch.tensor(
             self.sim_config.sim.gravity, device=self.device, requires_grad=False
         ).expand(self.num_envs, -1)
         self.global_tensor_dict["dt"] = self.sim_config.sim.dt
-        if self.viewer is not None:
-            self.viewer.init_tensors(global_tensor_dict)
-        return True
 
     def create_viewer(self, env_manager: object) -> None:
         self.robot_handles = [ah[0] for ah in self.asset_handles]

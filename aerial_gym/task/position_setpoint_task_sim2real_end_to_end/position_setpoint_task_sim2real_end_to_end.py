@@ -79,7 +79,7 @@ class PositionSetpointTaskSim2RealEndToEnd(BaseTask):
         self.prev_actions = torch.zeros_like(self.actions)
         self.action_history = torch.zeros(
             (self.sim_env.num_envs, self.task_config.action_space_dim*10), device=self.device, requires_grad=False)
-        #self.action_history[:, 2] = 0.344
+
 
         self.counter = 0
 
@@ -107,8 +107,6 @@ class PositionSetpointTaskSim2RealEndToEnd(BaseTask):
             shape=(self.task_config.action_space_dim,),
             dtype=np.float32,
         )
-        # self.action_transformation_function = self.sim_env.robot_manager.robot.action_transformation_function
-
         self.num_envs = self.sim_env.num_envs
 
         # Currently only the "observations" are sent to the actor and critic.

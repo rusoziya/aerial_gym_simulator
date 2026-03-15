@@ -101,8 +101,6 @@ class PositionSetpointTaskSim2Real(BaseTask):
             shape=(self.task_config.action_space_dim,),
             dtype=np.float32,
         )
-        # self.action_transformation_function = self.sim_env.robot_manager.robot.action_transformation_function
-
         self.num_envs = self.sim_env.num_envs
 
         self.counter = 0

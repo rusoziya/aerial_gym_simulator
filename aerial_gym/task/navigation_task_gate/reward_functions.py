@@ -131,16 +131,6 @@ def compute_gate_reward(
     camera_gate_alignment = torch.sum(drone_forward_normalized * drone_to_gate_normalized, dim=1)
     camera_gate_alignment = torch.clamp(camera_gate_alignment, -1.0, 1.0)  # Clamp to [-1, 1]
     
-    # Enhanced Proportional Camera Facing Reward System
-    # alignment = 1.0  → facing directly toward gate (0° angle)
-    # alignment = 0.966 → 15° angle  
-    # alignment = 0.866 → 30° angle
-    # alignment = 0.707 → 45° angle  
-    # alignment = 0.5 → 60° angle
-    # alignment = 0.0  → perpendicular (90° angle)
-    # alignment = -0.707 → 135° angle
-    # alignment = -1.0 → facing directly away (180° angle)
-    
     camera_facing_reward = torch.zeros_like(camera_gate_alignment)
     
     # PERFECT ALIGNMENT: 0-15° (alignment > 0.966) - Maximum reward
