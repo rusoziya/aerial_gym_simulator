@@ -170,7 +170,8 @@ class CurriculumManager:
             else:
                 # Check only at cooldown boundary
                 inc_threshold = float(self.task.task_config.curriculum.success_rate_for_increase)
-                avg3_threshold = float(self.task.task_config.curriculum.avg3_success_for_increase)
+                avg3_raw = self.task.task_config.curriculum.avg3_success_for_increase
+                avg3_threshold = float(avg3_raw) if avg3_raw is not None else inc_threshold
                 if (
                     (len(self.task._success_window_history) >= 3)
                     and (s_t >= inc_threshold)
