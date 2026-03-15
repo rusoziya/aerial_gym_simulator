@@ -37,9 +37,12 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common impor
     clear_sf_cache,
     setup_env_agents,
 )
+from aerial_gym.utils.logging import CustomLogger
 
 # Deterministic mode disabled — incompatible with Isaac Gym CuBLAS operations
 # torch.use_deterministic_algorithms(True)
+logger = CustomLogger(__name__)
+
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
@@ -421,7 +424,7 @@ def register_aerialgym_custom_components() -> None:
     try:
         global_model_factory().register_encoder_factory(make_dual_fusion_encoder)
     except (ValueError, TypeError) as e:
-        print(f"Warning: Could not register DualFusionEncoder: {e}")
+        logger.warning(f"Could not register DualFusionEncoder: {e}")
 
 
 def parse_aerialgym_cfg(evaluation: bool = False) -> Config:
@@ -432,8 +435,8 @@ def parse_aerialgym_cfg(evaluation: bool = False) -> Config:
 
     try:
         bridge_cfg_to_env_vars(final_cfg)
-    except (ValueError, TypeError):
-        pass
+    except (ValueError, TypeError) as e:
+        logger.warning("Failed to bridge config to env vars: %s", e)
 
     return final_cfg
 

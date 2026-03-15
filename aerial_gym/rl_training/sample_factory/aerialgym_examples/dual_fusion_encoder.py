@@ -13,6 +13,10 @@ from sample_factory.model.encoder import (
 )
 from sample_factory.utils.typing import Config
 
+from aerial_gym.utils.logging import CustomLogger
+
+logger = CustomLogger(__name__)
+
 
 class DualFusionEncoder(Encoder):
     """Encoder that supports early concat or gated late fusion.
@@ -64,7 +68,7 @@ class DualFusionEncoder(Encoder):
         self._train_env0_norm_step: int = 0
         self._last_step_logged: int = 0
 
-        print(
+        logger.info(
             f"[FUSION] Using fusion mode: {self.fusion_mode} "
             f"(gate_per_feature={int(self.gate_per_feature)})"
         )
@@ -129,7 +133,7 @@ class DualFusionEncoder(Encoder):
                 f"{name}[{a}:{b}]: bad={bad}/{s.numel()} "
                 f"min={float(safe.min().item()):.3e} max={float(safe.max().item()):.3e}"
             )
-        print(" | ".join(parts))
+        logger.warning(" | ".join(parts))
         if not want_diag:
             self._nan_diag_printed = True
 
@@ -192,7 +196,7 @@ class DualFusionEncoder(Encoder):
             s_norm = float(z_s.norm(dim=1).mean().item())
             cat_norm = float(fused[:, -(D_e + D_s) :].norm(dim=1).mean().item())
             balance = float(s_norm / (e_norm + s_norm + 1e-8))
-            print(
+            logger.info(
                 f"[FUSION] mode=concat B={B} D_e={D_e} D_s={D_s} | "
                 f"L2 norms (mean): ego={e_norm:.3f} static={s_norm:.3f} cat={cat_norm:.3f} | "
                 f"static_balance={balance:.2%}"
@@ -213,7 +217,7 @@ class DualFusionEncoder(Encoder):
         e_norm = float(e.norm(dim=1).mean().item()) if e is not None else 0.0
         s_norm = float(s.norm(dim=1).mean().item()) if s is not None else 0.0
         z_norm = float(z_fused.norm(dim=1).mean().item())
-        print(
+        logger.info(
             f"[FUSION] gated(per_feature={int(self.gate_per_feature)}) "
             f"{label}: true | norms: e={e_norm:.3f} s={s_norm:.3f} z={z_norm:.3f}"
         )
@@ -252,7 +256,7 @@ class DualFusionEncoder(Encoder):
                 "s_norm_mean": s_norm,
                 "z_norm_mean": z_norm,
             }
-            print(
+            logger.info(
                 f"[FUSION] gated(per_feature={int(self.gate_per_feature)}) "
                 f"gate_mean={gate_mean:.3f} gate_std={gate_std:.3f} "
                 f">0.7={frac_high:.2%} <0.3={frac_low:.2%} "

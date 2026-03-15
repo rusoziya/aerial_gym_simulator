@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 import os
 
 from sample_factory.utils.typing import Config
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def bridge_cfg_to_env_vars(cfg: Config) -> None:
@@ -101,21 +104,21 @@ def _bridge_optional_float_env(key: str, value: float | None) -> None:
 
 def _bridge_curriculum_flags(cfg: Config) -> None:
     """Propagate curriculum override flags."""
-    if getattr(cfg, "force_curriculum_level", None) is not None:
-        lvl_str = str(getattr(cfg, "force_curriculum_level", None)).strip().lower()
+    if cfg.force_curriculum_level is not None:
+        lvl_str = str(cfg.force_curriculum_level).strip().lower()
         if lvl_str and lvl_str != "none":
             os.environ["SF_FORCE_CURRICULUM_LEVEL"] = str(int(lvl_str))
         else:
             os.environ.pop("SF_FORCE_CURRICULUM_LEVEL", None)
 
     try:
-        if not getattr(cfg, "evaluation", False):
-            min_lvl_override = getattr(cfg, "min_curriculum_level", None)
+        if not cfg.evaluation:
+            min_lvl_override = cfg.min_curriculum_level
             if min_lvl_override is not None:
                 min_lvl = int(min_lvl_override)
-                max_cap = getattr(cfg, "max_curriculum_level", None)
+                max_cap = cfg.max_curriculum_level
                 if max_cap is not None:
                     os.environ["SF_MAX_CURRICULUM_LEVEL"] = str(int(max_cap))
                 os.environ["SF_MIN_CURRICULUM_LEVEL"] = str(min_lvl)
-    except (ValueError, TypeError):
-        pass
+    except (ValueError, TypeError) as e:
+        logger.warning("Failed to bridge curriculum level flags: %s", e)

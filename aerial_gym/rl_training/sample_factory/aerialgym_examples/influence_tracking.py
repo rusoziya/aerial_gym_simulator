@@ -14,6 +14,9 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_metric_u
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_wandb_logging import (
     build_enhanced_wandb_log,
 )
+from aerial_gym.utils.logging import CustomLogger
+
+logger = CustomLogger(__name__)
 
 
 def run_with_influence_tracking(cfg: Config) -> None:
@@ -28,20 +31,20 @@ def run_with_influence_tracking(cfg: Config) -> None:
             create_influence_tracker,
         )
     except ImportError:
-        print("Influence/gradient trackers not available")
+        logger.warning("Influence/gradient trackers not available")
         INFLUENCE_MONITOR_AVAILABLE = False
         GRAD_ATTR_AVAILABLE = False
 
     if not INFLUENCE_MONITOR_AVAILABLE:
-        print(
+        logger.warning(
             "Complete observation influence tracker not available"
             " - falling back to standard training"
         )
         return run_rl(cfg)
 
-    print("Complete observation influence tracking ENABLED")
-    print(f"  Log interval: {cfg.gradient_log_interval} steps")
-    print(f"  Print interval: {cfg.gradient_print_interval} steps")
+    logger.info("Complete observation influence tracking ENABLED")
+    logger.info(f"  Log interval: {cfg.gradient_log_interval} steps")
+    logger.info(f"  Print interval: {cfg.gradient_print_interval} steps")
 
     original_wandb_log = _get_original_wandb_log(cfg)
 
@@ -93,7 +96,7 @@ def run_with_influence_tracking(cfg: Config) -> None:
         wandb.log = enhanced_log
 
     try:
-        print("Starting enhanced training with observation influence tracking...")
+        logger.info("Starting enhanced training with observation influence tracking...")
         result = run_rl(cfg)
 
         _print_final_summary(tracker_state)
@@ -124,15 +127,15 @@ def _print_final_summary(tracker_state: dict[str, object]) -> None:
     """Print final analysis summaries and clean up trackers."""
     influence_tracker = tracker_state.get("influence")
     if influence_tracker:
-        print(f"Training completed with {influence_tracker.step_count} analysis steps")
+        logger.info(f"Training completed with {influence_tracker.step_count} analysis steps")
         influence_tracker.print_analysis_summary()
         influence_tracker.cleanup()
     else:
-        print("No influence tracker was created - analysis unavailable")
+        logger.info("No influence tracker was created - analysis unavailable")
 
     grad_tracker = tracker_state.get("grad")
     if grad_tracker:
         grad_tracker.print_gradient_summary()
         grad_tracker.cleanup()
     else:
-        print("No gradient attribution tracker was created - analysis unavailable")
+        logger.info("No gradient attribution tracker was created - analysis unavailable")
