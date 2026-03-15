@@ -152,7 +152,7 @@ class WarpSensor(BaseSensor):
         self.reset_idx(env_ids)
 
     def reset_idx(self, env_ids: torch.Tensor) -> None:
-        if self.cfg.randomize_placement == True:
+        if self.cfg.randomize_placement:
             # sample local position from min and max translations
             self.sensor_local_position[env_ids] = torch_rand_float_tensor(
                 self.sensor_min_translation[env_ids],
@@ -195,9 +195,9 @@ class WarpSensor(BaseSensor):
             self.normalize_observation()
 
     def apply_range_limits(self) -> None:
-        if self.cfg.return_pointcloud == True:
+        if self.cfg.return_pointcloud:
             # if pointcloud is in the world frame, the pointcloud range will not be normalized
-            if self.cfg.pointcloud_in_world_frame == False:
+            if not self.cfg.pointcloud_in_world_frame:
                 self.pixels[
                     self.pixels.norm(dim=4, keepdim=True).expand(-1, -1, -1, -1, 3)
                     > self.cfg.max_range
@@ -211,11 +211,11 @@ class WarpSensor(BaseSensor):
             self.pixels[self.pixels < self.cfg.min_range] = self.cfg.near_out_of_range_value
 
     def normalize_observation(self) -> None:
-        if self.cfg.normalize_range and self.cfg.pointcloud_in_world_frame == False:
+        if self.cfg.normalize_range and not self.cfg.pointcloud_in_world_frame:
             self.pixels[:] = self.pixels / self.cfg.max_range
 
     def apply_noise(self) -> None:
-        if self.cfg.sensor_noise.enable_sensor_noise == True:
+        if self.cfg.sensor_noise.enable_sensor_noise:
             sensor_noise_params = self.cfg.sensor_noise
             std_a = sensor_noise_params.std_a
             std_b = sensor_noise_params.std_b

@@ -41,17 +41,15 @@ class BaseDepthCameraConfig(BaseSensorConfig):
 
     # do not change this.
     normalize_range = (
-        False
-        if (return_pointcloud == True and pointcloud_in_world_frame == True)
-        else normalize_range
+        False if (return_pointcloud and pointcloud_in_world_frame) else normalize_range
     )  # divide by max_range. Ignored when pointcloud is in world frame
 
     # what to do with out of range values
     far_out_of_range_value = (
-        max_range if normalize_range == True else -1.0
+        max_range if normalize_range else -1.0
     )  # With normalization, becomes 1.0
     near_out_of_range_value = (
-        0.0 if normalize_range == True else -1.0
+        0.0 if normalize_range else -1.0
     )  # With normalization, becomes 0.0 (no negatives)
 
     # randomize placement of the sensor

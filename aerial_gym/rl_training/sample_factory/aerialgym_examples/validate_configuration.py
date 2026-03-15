@@ -204,7 +204,7 @@ def validate_training_script() -> None:
             # Check if configuration matches original DCE
             if (
                 config.get("action_space_dim") == 3
-                and config.get("adaptive_stddev") == True
+                and config.get("adaptive_stddev")
                 and config.get("batch_size") == 2048
                 and config.get("env_agents") == 16
                 and config.get("num_batches_per_epoch") == 8

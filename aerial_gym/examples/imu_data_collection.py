@@ -24,7 +24,7 @@ if __name__ == "__main__":
         num_envs=2,
         headless=True,
     )
-    if env_manager.robot_manager.robot.cfg.sensor_config.enable_imu == False:
+    if not env_manager.robot_manager.robot.cfg.sensor_config.enable_imu:
         logger.error(
             "The IMU is disabled for this environment. The IMU data collection will not work."
         )

@@ -61,7 +61,7 @@ class RobotManagerIGE(BaseManager):
         self.robot_name_prefix: str = f"robot_{robot_id}_"
         self.env_robot_mapping: dict[int, int] = {}
 
-        if self.use_warp == False:
+        if not self.use_warp:
             if self.cfg.sensor_config.enable_camera:
                 logger.debug("Initializing Isaac Gym camera sensor")
                 self.camera_sensor = IsaacGymCameraSensor(
@@ -76,7 +76,7 @@ class RobotManagerIGE(BaseManager):
                 raise ValueError(
                     "Lidar sensors are not supported using Isaac Gym Rendering. Please enable warp."
                 )
-        elif self.use_warp == True and (
+        elif self.use_warp and (
             self.cfg.sensor_config.enable_camera and self.cfg.sensor_config.enable_lidar
         ):
             logger.warning(
@@ -187,7 +187,7 @@ class RobotManagerIGE(BaseManager):
             if self.warp_sensor_config is not None:
                 logger.debug("Initializing warp sensor")
                 # prepare the tensors for simulation before preparing the tensors for the sensors
-                image_tensor_dims = 3 * (self.warp_sensor_config.return_pointcloud == True)
+                image_tensor_dims = 3 * (self.warp_sensor_config.return_pointcloud)
                 if self.global_tensor_dict.CONST_WARP_MESH_ID_LIST is None:
                     logger.critical(
                         "Warp camera is enabled but there is nothing in the environment. No rendering will take place and the camera tensor will not be populated."
@@ -257,7 +257,7 @@ class RobotManagerIGE(BaseManager):
             self.imu_sensor.init_tensors(global_tensor_dict=self.global_tensor_dict)
             logger.debug("[DONE] Initializing IMU sensor")
 
-        elif self.use_warp == False and self.camera_sensor is not None:
+        elif not self.use_warp and self.camera_sensor is not None:
             self.has_IGE_sensors = True
         return
 

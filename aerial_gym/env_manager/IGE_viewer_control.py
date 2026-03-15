@@ -105,7 +105,7 @@ class IGEViewerControl:
         Create the camera sensor for the viewer. Set the camera properties and attach it to the reference environment.
         """
         logger.debug("Creating viewer")
-        if self.headless == True:
+        if self.headless:
             logger.warn("Headless mode enabled. Not creating viewer.")
             return
         # subscribe to keyboard shortcuts
@@ -266,7 +266,7 @@ class IGEViewerControl:
                 self.local_transform.p,
                 self.lookat,
             )
-        if self.camera_follow == False:
+        if not self.camera_follow:
             target_pos = quat_or_target
             self.lookat = gymapi.Vec3(target_pos[0], target_pos[1], target_pos[2])
             self.gym.viewer_camera_look_at(

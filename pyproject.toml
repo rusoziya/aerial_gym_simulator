@@ -16,7 +16,6 @@ dependencies = [
     "numpy==1.23.0",
     "scipy>=1.10",
     "matplotlib>=3.7",
-    "networkx==2.2",
     "warp-lang==1.0.0",
     "trimesh",
     "urdfpy",
@@ -55,7 +54,7 @@ select = ["E", "F", "I", "UP"]
 ignore = [
     "E402",   # module-level import not at top — required for isaacgym import order
     "E501",   # line too long — ruff-format handles what it can, remainder needs manual work
-    "E712",   # comparison to True/False — pervasive in Isaac Gym config patterns
+    # E712 removed — now auto-fixing == True/False comparisons
     "E721",   # type comparison — needs manual review
     "E731",   # lambda assignment — low priority
     "F403",   # star imports — architectural, used throughout codebase

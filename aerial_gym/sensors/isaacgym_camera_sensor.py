@@ -173,13 +173,13 @@ class IsaacGymCameraSensor(BaseSensor):
         self.pixels[self.pixels < self.cfg.min_range] = self.cfg.near_out_of_range_value
 
     def normalize_observation(self) -> None:
-        if self.cfg.normalize_range and self.cfg.pointcloud_in_world_frame == False:
+        if self.cfg.normalize_range and not self.cfg.pointcloud_in_world_frame:
             self.pixels[:] = self.pixels / self.cfg.max_range
-        if self.cfg.pointcloud_in_world_frame == True:
+        if self.cfg.pointcloud_in_world_frame:
             logger.error("Pointcloud is in world frame. Not supported for this sensor")
 
     def apply_noise(self) -> None:
-        if self.cfg.sensor_noise.enable_sensor_noise == True:
+        if self.cfg.sensor_noise.enable_sensor_noise:
             self.pixels[:] = torch.normal(
                 mean=self.pixels, std=self.cfg.sensor_noise.pixel_std_dev_multiplier * self.pixels
             )

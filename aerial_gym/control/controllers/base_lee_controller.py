@@ -101,7 +101,7 @@ class BaseLeeController(BaseController):
         self.randomize_params(env_ids)
 
     def randomize_params(self, env_ids: torch.Tensor) -> None:
-        if self.cfg.randomize_params == False:
+        if not self.cfg.randomize_params:
             # logger.debug(
             #     "Randomization of controller parameters is disabled based on config setting."
             # )

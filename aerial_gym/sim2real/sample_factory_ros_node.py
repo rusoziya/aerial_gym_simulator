@@ -313,7 +313,7 @@ class RlNavClass:
     def mavros_state_callback(self, data) -> None:
         if self.use_mavros_state:
             if data.mode == "OFFBOARD" or data.mode == "GUIDED":
-                if self.enable == False:
+                if not self.enable:
                     self.RL_net_interface.reset()
                     self.prev_action = np.array([0.0, 0.0, 0.0, 0.0])
                     print("[DONE] Resetting network.")
@@ -336,9 +336,9 @@ class RlNavClass:
         self.current_dir_msg.pose.orientation.w = 1.0
         self.current_direction_body_pub.publish(self.current_dir_msg)
 
-        if self.use_mavros_state == False:
+        if not self.use_mavros_state:
             self.enable = True
-        if self.enable == False:
+        if not self.enable:
             # publish a zero action
             self.publish_action(np.array([-1.0, 0.0, 0.0]))
             return

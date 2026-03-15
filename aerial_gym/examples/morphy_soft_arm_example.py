@@ -64,7 +64,7 @@ if __name__ == "__main__":
         headless=args.headless,
         use_warp=args.use_warp,
     )
-    if env_manager.robot_manager.robot.cfg.robot_asset.fix_base_link == False:
+    if not env_manager.robot_manager.robot.cfg.robot_asset.fix_base_link:
         logger.error(
             "The base link is not fixed for this robot. The base link should be fixed in morphy_config.py for this example to work."
         )

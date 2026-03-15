@@ -70,7 +70,7 @@ class WarpLidar:
         if not debug:
             print("creating render graph")
             wp.capture_begin(device=self.device)
-        if self.cfg.segmentation_camera == True:
+        if self.cfg.segmentation_camera:
             wp.launch(
                 kernel=LidarWarpKernels.draw_optimized_kernel_pointcloud_segmentation,
                 dim=(
@@ -120,7 +120,7 @@ class WarpLidar:
         if not debug:
             print("creating render graph")
             wp.capture_begin(device=self.device)
-        if self.cfg.segmentation_camera == True:
+        if self.cfg.segmentation_camera:
             wp.launch(
                 kernel=LidarWarpKernels.draw_optimized_kernel_range_segmentation,
                 dim=(
@@ -173,7 +173,7 @@ class WarpLidar:
         else:
             self.pixels = wp.from_torch(pixels, dtype=wp.float32)
 
-        if self.cfg.segmentation_camera == True:
+        if self.cfg.segmentation_camera:
             self.segmentation_pixels = wp.from_torch(segmentation_pixels, dtype=wp.int32)
         else:
             self.segmentation_pixels = segmentation_pixels

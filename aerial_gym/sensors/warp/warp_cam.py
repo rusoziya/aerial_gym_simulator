@@ -73,7 +73,7 @@ class WarpCam:
             print("creating render graph")
             wp.capture_begin(device=self.device)
         # with wp.ScopedTimer("render"):
-        if self.cfg.segmentation_camera == True:
+        if self.cfg.segmentation_camera:
             wp.launch(
                 kernel=DepthCameraWarpKernels.draw_optimized_kernel_pointcloud_segmentation,
                 dim=(self.num_envs, self.num_sensors, self.width, self.height),
@@ -117,7 +117,7 @@ class WarpCam:
             print("creating render graph")
             wp.capture_begin(device=self.device)
         # with wp.ScopedTimer("render"):
-        if self.cfg.segmentation_camera == True:
+        if self.cfg.segmentation_camera:
             wp.launch(
                 kernel=DepthCameraWarpKernels.draw_optimized_kernel_depth_range_segmentation,
                 dim=(self.num_envs, self.num_sensors, self.width, self.height),
@@ -166,7 +166,7 @@ class WarpCam:
         else:
             self.pixels = wp.from_torch(pixels, dtype=wp.float32)
 
-        if self.cfg.segmentation_camera == True:
+        if self.cfg.segmentation_camera:
             self.segmentation_pixels = wp.from_torch(segmentation_pixels, dtype=wp.int32)
         else:
             self.segmentation_pixels = segmentation_pixels

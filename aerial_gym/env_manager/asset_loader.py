@@ -175,7 +175,7 @@ class AssetLoader:
             else False
         )
 
-        if is_robot == False:
+        if not is_robot:
             if self.cfg.env.use_warp:
                 warp_asset = WarpAsset(asset_name, filepath, asset_class_dict)
                 asset_class_dict["warp_asset"] = warp_asset
@@ -220,7 +220,7 @@ class AssetLoader:
             num_assets = asset_class_config.num_assets
             if (
                 asset_type in self.env_config.include_asset_type
-                and self.env_config.include_asset_type[asset_type] == False
+                and not self.env_config.include_asset_type[asset_type]
             ):
                 continue
             if num_assets > 0:

@@ -57,7 +57,7 @@ class PositionSetpointTaskReconfigurable(PositionSetpointTask):
         # This is important for the RL agent to get the correct state after the reset.
         self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
 
-        if self.task_config.return_state_before_reset == True:
+        if self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         self.truncations[:] = torch.where(
@@ -67,7 +67,7 @@ class PositionSetpointTaskReconfigurable(PositionSetpointTask):
 
         self.infos = {}  # self.obs_dict["infos"]
 
-        if self.task_config.return_state_before_reset == False:
+        if not self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         return return_tuple

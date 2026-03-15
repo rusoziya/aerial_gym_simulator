@@ -4,7 +4,7 @@ import torch
 
 EVAL = False
 
-if EVAL == False:
+if not EVAL:
 
     class task_config:
         seed = 56  # 16 #26 #36 #46 #56

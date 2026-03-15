@@ -412,10 +412,9 @@ def main() -> None:
         )
 
         if len(out_pickle_list) >= 1000:
-            pickle.dump(
-                out_pickle_list,
-                open(PICKLE_SAVE_FOLDER + "collision_images_" + str(pickle_counter) + ".p", "wb"),
-            )
+            pickle_path = PICKLE_SAVE_FOLDER + "collision_images_" + str(pickle_counter) + ".p"
+            with open(pickle_path, "wb") as fh:
+                pickle.dump(out_pickle_list, fh)
             print("Written out pickle file: ", pickle_counter)
             out_pickle_list = []
             pickle_counter += 1

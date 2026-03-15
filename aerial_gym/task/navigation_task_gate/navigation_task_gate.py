@@ -340,7 +340,7 @@ class NavigationTaskGate(BaseTask):
             # Ensure truncation to reset these envs safely
             self.truncations[invalid_reward_mask] = 1
 
-        if self.task_config.return_state_before_reset == True:
+        if self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         self.truncations[:] = torch.where(
@@ -393,7 +393,7 @@ class NavigationTaskGate(BaseTask):
 
         self._step._process_images_and_finalize()
 
-        if self.task_config.return_state_before_reset == False:
+        if not self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
         return return_tuple
 
