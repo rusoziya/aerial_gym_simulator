@@ -1382,21 +1382,8 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.dual_fusion_encode
 
 
 def register_aerialgym_custom_components() -> None:
-    # Clear cached environment info for single agent mode to prevent mismatch
-    import os
-    import glob
-    cache_files = glob.glob("/tmp/sf2_*/env_info_quad_with_obstacles*")
-    for cache_file in cache_files:
-        try:
-            os.remove(cache_file)
-            print(f"Cleared cache file: {cache_file}")
-        except:
-            pass
-    
-    # Use environment variable from shell script if set, otherwise default to 256 (high parallelization config)
-    # This will be updated based on the actual env_agents parameter when env is created
-    current_env_agents = os.environ.get('SF_ENV_AGENTS', '256')  # Default to high parallelization configuration
-    os.environ['SF_ENV_AGENTS'] = current_env_agents
+    clear_sf_cache()
+    setup_env_agents()
     
     # Set train_dir for curriculum logging
     import os

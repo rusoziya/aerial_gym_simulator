@@ -124,10 +124,11 @@ class NavigationTaskGateGeometryMixin:
                 urdf_filename = f"{active_gate_name}.urdf"
                 
                 # Try multiple possible base directories to find the URDF files
+                from aerial_gym import AERIAL_GYM_DIRECTORY
                 possible_base_dirs = [
-                    os.getcwd(),  # Current working directory
-                    os.path.dirname(os.path.abspath(__file__)),  # Directory of this file
-                    "/home/ziyar/aerialgym/aerialgym_ws/src/aerial_gym_simulator",  # Known project root
+                    AERIAL_GYM_DIRECTORY,
+                    os.getcwd(),
+                    os.path.dirname(os.path.abspath(__file__)),
                 ]
                 
                 # Add parent directories up to 5 levels
