@@ -251,7 +251,7 @@ def test_static_camera_observations():
         try:
             if 'rl_task' in locals():
                 rl_task.close()
-        except:
+        except (AttributeError, RuntimeError):
             pass
 
 def main():
