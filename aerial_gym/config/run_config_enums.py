@@ -90,3 +90,10 @@ class LogLevel(str, Enum):
     debug = "DEBUG"
     info = "INFO"
     warning = "WARNING"
+
+
+class PhysicsBackendType(str, Enum):
+    """Physics simulation backend."""
+
+    isaacgym = "isaacgym"
+    isaaclab = "isaaclab"

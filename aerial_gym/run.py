@@ -207,6 +207,7 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
     _set_curriculum_env_vars(cfg)
     _set_training_env_vars(cfg)
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+    os.environ["AERIAL_GYM_BACKEND"] = cfg.common.backend.value
 
 
 def _get_sf_train_script(cfg: RunConfig) -> str:

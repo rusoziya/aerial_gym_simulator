@@ -21,6 +21,7 @@ from aerial_gym.config.run_config_enums import (
     Mode,
     Nonlinearity,
     ObsKey,
+    PhysicsBackendType,
     PolicyInit,
     RestartBehavior,
     RNNType,
@@ -44,6 +45,10 @@ class CommonConfig(_StrictBase):
     device: str = Field("cuda:0", description="Compute device")
     headless: bool = Field(True, description="Run without viewer")
     use_warp: bool = Field(True, description="Use Warp rendering pipeline")
+    backend: PhysicsBackendType = Field(
+        PhysicsBackendType.isaacgym,
+        description="Physics backend: isaacgym (Python 3.8) or isaaclab (Python 3.10+)",
+    )
 
 
 class TrainingConfig(_StrictBase):

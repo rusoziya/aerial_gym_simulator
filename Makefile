@@ -61,6 +61,15 @@ eval-gate-static:
 eval-all-modalities:
 	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_all_modalities.yaml
 
+# ─── Isaac Lab Backend ───────────────────────────────────────────
+.PHONY: train-gate-lab eval-gate-lab
+
+train-gate-lab:
+	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf.yaml --set common.backend=isaaclab --log
+
+eval-gate-lab:
+	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_drone_only.yaml --set common.backend=isaaclab
+
 # ─── Development ─────────────────────────────────────────────────
 .PHONY: lint format test pre-commit
 
