@@ -1548,68 +1548,8 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
                     logger.warning(f"[NaNGuard] Sanitizing {int(torch.sum(bad).item())} invalid obs entries before return.")
                 obs_tensor[bad] = 0.0
 
-    def compute_rewards_and_crashes(self, obs_dict: dict[str, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Compute rewards with gate-specific components."""
-        robot_position = obs_dict["robot_position"]
-        target_position = self.target_position
-        robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
-        
-        self.pos_error_vehicle_frame_prev[:] = self.pos_error_vehicle_frame
-        self.pos_error_vehicle_frame[:] = quat_rotate_inverse(
-            robot_vehicle_orientation, (target_position - robot_position)
-        )
-        
-        # obs_dict contains direct references to global tensors that get updated simultaneously
-        current_actions = obs_dict["robot_actions"].clone()
-        previous_actions = obs_dict["robot_prev_actions"].clone()
-        
-        # First-step stabilization: align previous error/actions with current for fresh episodes
-        prev_actions_for_reward = previous_actions
-        fresh_mask = self._episode_fresh
-        if isinstance(fresh_mask, torch.Tensor) and fresh_mask.shape[0] == self.num_envs:
-            if torch.any(fresh_mask):
-                # Set previous error equal to current on the first step after reset
-                self.pos_error_vehicle_frame_prev[fresh_mask] = self.pos_error_vehicle_frame[fresh_mask]
-                # Also zero action diff on the first step after reset
-                prev_actions_for_reward = previous_actions.clone()
-                prev_actions_for_reward[fresh_mask] = current_actions[fresh_mask]
-        
-        # Curriculum multiplier ablation: pass effective fraction to scripted reward
-        cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
-        if not cm_disabled:
-            cm_disabled = bool(self.task_config.disable_curriculum_multiplier)
-        try:
-            frac_current = (
-                self.curriculum_level - self.task_config.curriculum.min_level
-            ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
-        except Exception:
-            frac_current = 0.0
-        frac_eff = 0.0 if cm_disabled else float(frac_current)
-        self._curriculum_multiplier_factor = 1.0 + 0.5 * frac_eff
-
-        boundary_violation_one_shot_mask = self._detect_boundary_violation(robot_position)
-
-        # Disable nvFuser optimizations for this scripted block to avoid CUDA fuser fallback warnings
-        # (no change in semantics; prevents noisy warnings from TorchScript fuser)
-        with torch.jit.optimized_execution(False):
-            rewards, crashes, camera_gate_alignment = compute_gate_reward(
-                self.pos_error_vehicle_frame,
-                self.pos_error_vehicle_frame_prev,
-                obs_dict["crashes"],
-                current_actions,
-                prev_actions_for_reward,
-                robot_position,
-                robot_vehicle_orientation,
-                self.gate_position,
-                self.gate_passed,
-                frac_eff,
-                self.task_config.reward_parameters,
-                self.gate_width,
-                self.gate_height,
-                self.gate_center_height,
-                boundary_violation_one_shot_mask,
-            )
-
+    def _apply_time_penalty(self, rewards: torch.Tensor, robot_position: torch.Tensor) -> torch.Tensor:
+        """Compute and apply per-step time penalty scaled by curriculum."""
         # Per-step time cost (scaled like other dense shaping)
         # r_time = -lambda0 * (1 + lambda1 * s^p),  s = step / horizon
         rp = self.task_config.reward_parameters
@@ -1648,6 +1588,10 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
         if torch.sum(non_terminated) > 0:
             self.episode_time_penalty[non_terminated] += time_penalty[non_terminated]
 
+        return rewards
+
+    def _apply_static_fov_reward(self, rewards: torch.Tensor, robot_position: torch.Tensor) -> torch.Tensor:
+        """Apply static camera FOV visibility reward if enabled."""
         # Static camera FOV visibility reward (depth-based frustum check, shaped)
         try:
             try:
@@ -1766,6 +1710,72 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
                         pass
         except (ValueError, TypeError):
             pass
+        return rewards
+
+    def compute_rewards_and_crashes(self, obs_dict: dict[str, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Compute rewards with gate-specific components."""
+        robot_position = obs_dict["robot_position"]
+        target_position = self.target_position
+        robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
+        
+        self.pos_error_vehicle_frame_prev[:] = self.pos_error_vehicle_frame
+        self.pos_error_vehicle_frame[:] = quat_rotate_inverse(
+            robot_vehicle_orientation, (target_position - robot_position)
+        )
+        
+        # obs_dict contains direct references to global tensors that get updated simultaneously
+        current_actions = obs_dict["robot_actions"].clone()
+        previous_actions = obs_dict["robot_prev_actions"].clone()
+        
+        # First-step stabilization: align previous error/actions with current for fresh episodes
+        prev_actions_for_reward = previous_actions
+        fresh_mask = self._episode_fresh
+        if isinstance(fresh_mask, torch.Tensor) and fresh_mask.shape[0] == self.num_envs:
+            if torch.any(fresh_mask):
+                # Set previous error equal to current on the first step after reset
+                self.pos_error_vehicle_frame_prev[fresh_mask] = self.pos_error_vehicle_frame[fresh_mask]
+                # Also zero action diff on the first step after reset
+                prev_actions_for_reward = previous_actions.clone()
+                prev_actions_for_reward[fresh_mask] = current_actions[fresh_mask]
+        
+        # Curriculum multiplier ablation: pass effective fraction to scripted reward
+        cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task_config.disable_curriculum_multiplier)
+        if not cm_disabled:
+            cm_disabled = bool(self.task_config.disable_curriculum_multiplier)
+        try:
+            frac_current = (
+                self.curriculum_level - self.task_config.curriculum.min_level
+            ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
+        except Exception:
+            frac_current = 0.0
+        frac_eff = 0.0 if cm_disabled else float(frac_current)
+        self._curriculum_multiplier_factor = 1.0 + 0.5 * frac_eff
+
+        boundary_violation_one_shot_mask = self._detect_boundary_violation(robot_position)
+
+        # Disable nvFuser optimizations for this scripted block to avoid CUDA fuser fallback warnings
+        # (no change in semantics; prevents noisy warnings from TorchScript fuser)
+        with torch.jit.optimized_execution(False):
+            rewards, crashes, camera_gate_alignment = compute_gate_reward(
+                self.pos_error_vehicle_frame,
+                self.pos_error_vehicle_frame_prev,
+                obs_dict["crashes"],
+                current_actions,
+                prev_actions_for_reward,
+                robot_position,
+                robot_vehicle_orientation,
+                self.gate_position,
+                self.gate_passed,
+                frac_eff,
+                self.task_config.reward_parameters,
+                self.gate_width,
+                self.gate_height,
+                self.gate_center_height,
+                boundary_violation_one_shot_mask,
+            )
+
+        rewards = self._apply_time_penalty(rewards, robot_position)
+        rewards = self._apply_static_fov_reward(rewards, robot_position)
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
         self.update_episode_reward_tracking(obs_dict, rewards, crashes)
         self._log_comprehensive_reward_debug(obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment)
