@@ -2,8 +2,8 @@
 # Usage: make train CONFIG=configs/train_gate_sf.yaml
 
 CONFIG ?= configs/train_gate_sf.yaml
-CONDA_ENV ?= aerialgym
-PYTHON ?= conda run -n $(CONDA_ENV) python
+CONDA_PREFIX ?= $(HOME)/miniforge3/envs/aerialgym
+PYTHON ?= $(CONDA_PREFIX)/bin/python
 
 # ─── Training & Evaluation ───────────────────────────────────────
 .PHONY: train eval play validate-config dry-run
