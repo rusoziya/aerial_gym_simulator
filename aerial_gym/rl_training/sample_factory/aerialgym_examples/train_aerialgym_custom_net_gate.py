@@ -508,32 +508,24 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 level_suffix = ""
             
             # # Save drone camera GIFs (disabled to reduce output volume)
-            # if len(self.drone_depth_frames[env_id]) > 0:
             #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_depth{level_suffix}.gif")
-            #     self.drone_depth_frames[env_id][0].save(
             #         gif_path,
             #         save_all=True,
             #         append_images=self.drone_depth_frames[env_id][1:],
             #         duration=100,
             #         loop=0
             #     )
-            #     print(f"[GIF] Saved drone depth: {gif_path}")
             
-            # if len(self.drone_seg_frames[env_id]) > 0:
             #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_seg{level_suffix}.gif")
-            #     self.drone_seg_frames[env_id][0].save(
             #         gif_path,
             #         save_all=True,
             #         append_images=self.drone_seg_frames[env_id][1:],
             #         duration=100,
             #         loop=0
             #     )
-            #     print(f"[GIF] Saved drone segmentation: {gif_path}")
             
             # Save static camera GIFs (depth only) [DISABLED]
-            # if len(self.static_depth_frames[env_id]) > 0:
             #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_static_depth{level_suffix}.gif")
-            #     self.static_depth_frames[env_id][0].save(
             #         gif_path,
             #         save_all=True,
             #         append_images=self.static_depth_frames[env_id][1:],
@@ -554,16 +546,13 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 if VERBOSE:
                     print(f"[GIF] Saved static segmentation: {gif_path}")
             
-            # if len(self.merged_frames[env_id]) > 0:
             #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_CLEAN{level_suffix}.gif")
-            #     self.merged_frames[env_id][0].save(
             #         gif_path,
             #         save_all=True,
             #         append_images=self.merged_frames[env_id][1:],
             #         duration=100,
             #         loop=0
             #     )
-            #     print(f"[GIF] Saved merged dual camera (CLEAN): {gif_path}")
             
             # === D455 NOISED CAMERA GIFS ===
             # Save drone camera noised GIFs
@@ -593,64 +582,46 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     print(f"[GIF] Saved static depth (D455 NOISED): {gif_path}")
             
             # # Save merged noised GIF (drone + static side by side - NOISED versions)
-            # if len(self.merged_noised_frames[env_id]) > 0:
             #     gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_merged_dual_camera_D455_NOISED{level_suffix}.gif")
-            #     self.merged_noised_frames[env_id][0].save(
             #         gif_path,
             #         save_all=True,
             #         append_images=self.merged_noised_frames[env_id][1:],
             #         duration=100,
             #         loop=0
             #     )
-            #     print(f"[GIF] Saved merged dual camera (D455 NOISED): {gif_path}")
         
         except OSError as e:
             if VERBOSE:
                 print(f"[GIF] Warning: Failed to save GIFs for episode {episode_num}: {e}")
 
         # === OPTIONAL: Save originals vs VAE reconstructions (depth) ===
-        # try:
         #     task = self.env
-        #     import numpy as np
-        #     import torch
-        #     from PIL import Image as PILImage
         #
-        #     def _decode_to_pil(vae, latent_id, target_size_wh):
         #         z = latent_id.detach().unsqueeze(0)  # (1, L)
         #         dec = vae.decode(z)
         #         img = dec[0].clamp(0, 1).cpu().numpy()
         #         img_u8 = (img * 255.0).astype(np.uint8)
         #         pil = PILImage.fromarray(img_u8, mode='L')
-        #         if target_size_wh is not None and pil.size != target_size_wh:
         #             pil = pil.resize(target_size_wh)
-        #         return pil
         #
-        #     def _stack_horiz(pil_left, pil_right):
         #         w, h = pil_left.size
         #         canvas = PILImage.new('L', (w * 2, h))
         #         canvas.paste(pil_left, (0, 0))
         #         canvas.paste(pil_right, (w, 0))
-        #         return canvas
         #
         #     # Drone recon grid
-        #     if hasattr(task, 'shared_vae_model') and hasattr(task, 'image_latents') and self.drone_depth_frames[env_id]:
         #         orig_drone_pil = self.drone_depth_frames[env_id][-1].convert('L')
         #         recon_drone_pil = _decode_to_pil(task.shared_vae_model, task.image_latents[0], orig_drone_pil.size)
         #         grid = _stack_horiz(orig_drone_pil, recon_drone_pil)
         #         out_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_recon_grid_drone{level_suffix}.png")
         #         grid.save(out_path)
-        #         print(f"[GIF] Saved drone recon grid: {out_path}")
         #
         #     # Static recon grid
-        #     if hasattr(task, 'shared_vae_model') and hasattr(task, 'static_image_latents') and self.static_depth_frames[env_id]:
         #         orig_static_pil = self.static_depth_frames[env_id][-1].convert('L')
         #         recon_static_pil = _decode_to_pil(task.shared_vae_model, task.static_image_latents[0], orig_static_pil.size)
         #         grid = _stack_horiz(orig_static_pil, recon_static_pil)
         #         out_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_recon_grid_static{level_suffix}.png")
         #         grid.save(out_path)
-        #         print(f"[GIF] Saved static recon grid: {out_path}")
-        # except Exception as e:
-        #     print(f"[GIF] Warning: Failed to save recon grids: {e}")
 
     def _clear_frames(self, env_id=0) -> None:
         """Clear collected frames for the specified environment (clean + noised versions)."""
@@ -1971,7 +1942,6 @@ class DualFusionEncoder(Encoder):
                     if is_eval:
                         z_e_abs = float(z_e.abs().mean().item()) if hasattr(z_e, 'abs') else float('nan')
                         z_s_abs = float(z_s.abs().mean().item()) if hasattr(z_s, 'abs') else float('nan')
-                        # print(f"[ENC_TAP] preLN abs_mean: drone(22:86)={z_e_abs:.6e} static(86:150)={z_s_abs:.6e}")
                 except (ValueError, TypeError):
                     pass
         # Optional: training-time normalized env0 latents per-frame (one episode)
@@ -2571,9 +2541,6 @@ def run_with_influence_tracking(cfg: Config) -> None:
                         episode_extra[new_key] = float(val)
                 if len(episode_extra) > 0:
                     metrics.update(episode_extra)
-                    # try:
-                    #     print(f"[W&B_DEBUG][obs_grad] mirrored {len([k for k in episode_extra.keys() if k.startswith('episode_extra_stats/obs_grad/')])} obs_grad keys from influence tracker")
-                    # except Exception:
                     #     pass
                 # Derived metrics: camera/state shares and per-slice magnitudes + shares
                 # Collect slice values by suffix (ignore totals/backward_passes)
@@ -2721,10 +2688,7 @@ def run_with_influence_tracking(cfg: Config) -> None:
                             metrics['episode_extra_stats/obs_grad/obs_pct_overall/_residual'] = float(100.0 - sum_pct_o)
                     except (ValueError, TypeError):
                         pass
-                    # try:
                     #     captured = ','.join(sorted(list(slice_values.keys()))[:8])
-                    #     print(f"[W&B_DEBUG][obs_grad] shares computed: camera={camera_share*100.0:.1f}% state={state_share*100.0:.1f}% total_slices={len(slice_values)} captured=[{captured}…]")
-                    # except Exception:
                     #     pass
             except (ValueError, TypeError):
                 pass
