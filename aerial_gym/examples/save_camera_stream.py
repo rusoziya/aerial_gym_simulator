@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import random
+
 import matplotlib.image
 import numpy as np
-import random
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
-from PIL import Image
+
 import matplotlib
 import torch
-import random
+from PIL import Image
+
+from aerial_gym.sim.sim_builder import SimBuilder
 
 if __name__ == "__main__":
     logger.warning("\n\n\nEnvironment to save a depth/range and segmentation image.\n\n\n")

@@ -95,5 +95,3 @@ for SEED in "${SEEDS[@]}"; do
 done
 
 echo "All sweeping-camera inference runs completed."
-
-

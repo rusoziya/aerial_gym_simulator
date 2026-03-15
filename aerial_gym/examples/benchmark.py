@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 import time
+
 import numpy as np
 
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
 
+import torch
+
 from aerial_gym.sim.sim_builder import SimBuilder
-
-import torch
-import numpy as np
-
-from PIL import Image
-import torch
 
 if __name__ == "__main__":
     start = time.time()

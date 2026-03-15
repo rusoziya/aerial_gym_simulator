@@ -4,31 +4,37 @@ import os
 
 import torch
 
-from aerial_gym.task.base_task import BaseTask, StepReturn
-from aerial_gym.task.task_config_protocol import TaskConfig
-from aerial_gym.sim.sim_builder import SimBuilder
-from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.sensors.static_camera_manager import StaticCameraManager
-from aerial_gym.utils.env_flag_utils import (
-    read_env_bool,
-    read_env_int,
-    parse_ablation_flags,
-    apply_ablation_flags_to_tensor_dict,
-)
-from aerial_gym.task.navigation_task_gate.init_helpers import InitHelpers
-from aerial_gym.task.navigation_task_gate.step_helpers import StepHelpers
-from aerial_gym.task.navigation_task_gate.reward_helpers import RewardHelpers
-from aerial_gym.task.navigation_task_gate.gate_geometry import GateGeometry
-from aerial_gym.task.navigation_task_gate.curriculum_management import CurriculumManager
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_task import BaseTask, StepReturn
 from aerial_gym.task.navigation_task_gate.camera_observations import CameraObservations
-from aerial_gym.task.navigation_task_gate.reward_tracking import RewardTracking
 from aerial_gym.task.navigation_task_gate.curriculum_logging import CurriculumLogging
+from aerial_gym.task.navigation_task_gate.curriculum_management import CurriculumManager
+from aerial_gym.task.navigation_task_gate.gate_geometry import GateGeometry
+from aerial_gym.task.navigation_task_gate.init_helpers import InitHelpers
+from aerial_gym.task.navigation_task_gate.obs_reward_helpers import (
+    compute_rewards_and_crashes as _compute_rewards_and_crashes,
+)
 from aerial_gym.task.navigation_task_gate.obs_reward_helpers import (
     logging_sanity_check as _logging_sanity_check,
+)
+from aerial_gym.task.navigation_task_gate.obs_reward_helpers import (
     process_obs_for_task as _process_obs_for_task,
-    compute_rewards_and_crashes as _compute_rewards_and_crashes,
+)
+from aerial_gym.task.navigation_task_gate.obs_reward_helpers import (
     update_camera_modes as _update_camera_modes,
 )
+from aerial_gym.task.navigation_task_gate.reward_helpers import RewardHelpers
+from aerial_gym.task.navigation_task_gate.reward_tracking import RewardTracking
+from aerial_gym.task.navigation_task_gate.step_helpers import StepHelpers
+from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.utils.env_flag_utils import (
+    apply_ablation_flags_to_tensor_dict,
+    parse_ablation_flags,
+    read_env_bool,
+    read_env_int,
+)
+from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("navigation_task_gate")
 
@@ -96,12 +102,7 @@ class NavigationTaskGate(BaseTask):
 
         logger.info("Building environment for gate navigation task.")
         logger.info(
-            "Sim Name: {}, Env Name: {}, Robot Name: {}, Controller Name: {}".format(
-                self.task_config.sim_name,
-                self.task_config.env_name,
-                self.task_config.robot_name,
-                self.task_config.controller_name,
-            )
+            f"Sim Name: {self.task_config.sim_name}, Env Name: {self.task_config.env_name}, Robot Name: {self.task_config.robot_name}, Controller Name: {self.task_config.controller_name}"
         )
 
         self.curriculum_level = self.task_config.curriculum.min_level
@@ -230,13 +231,26 @@ class NavigationTaskGate(BaseTask):
         _logging_sanity_check(self, infos)
 
     # Delegation methods so composed helpers can call through self.task
-    def setup_curriculum_logging(self): self._curriculum.setup_curriculum_logging()
-    def log_curriculum_update(self, msg): self._curriculum.log_curriculum_update(msg)
-    def extract_gate_dimensions_from_urdf(self, p): return self._geometry.extract_gate_dimensions_from_urdf(p)
-    def calculate_gate_dimensions_from_name(self, n): return self._geometry.calculate_gate_dimensions_from_name(n)
-    def update_gate_dimensions_for_environments(self, ids): self._geometry.update_gate_dimensions_for_environments(ids)
-    def process_image_observation(self): self._camera.process_image_observation()
-    def process_static_camera_observation(self): self._camera.process_static_camera_observation()
+    def setup_curriculum_logging(self):
+        self._curriculum.setup_curriculum_logging()
+
+    def log_curriculum_update(self, msg):
+        self._curriculum.log_curriculum_update(msg)
+
+    def extract_gate_dimensions_from_urdf(self, p):
+        return self._geometry.extract_gate_dimensions_from_urdf(p)
+
+    def calculate_gate_dimensions_from_name(self, n):
+        return self._geometry.calculate_gate_dimensions_from_name(n)
+
+    def update_gate_dimensions_for_environments(self, ids):
+        self._geometry.update_gate_dimensions_for_environments(ids)
+
+    def process_image_observation(self):
+        self._camera.process_image_observation()
+
+    def process_static_camera_observation(self):
+        self._camera.process_static_camera_observation()
 
     def close(self) -> None:
         self.sim_env.delete_env()

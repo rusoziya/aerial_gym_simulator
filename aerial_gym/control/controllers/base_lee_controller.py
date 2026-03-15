@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import torch
 
-
-from aerial_gym.utils.math import *
-
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("base_lee_controller")
 
@@ -23,7 +21,9 @@ class BaseLeeController(BaseController):
     It will be inherited by the specific controller classes.
     """
 
-    def __init__(self, control_config: object, num_envs: int, device: str, mode: str = "robot") -> None:
+    def __init__(
+        self, control_config: object, num_envs: int, device: str, mode: str = "robot"
+    ) -> None:
         super().__init__(control_config, num_envs, device, mode)
         self.cfg = control_config
         self.num_envs = num_envs
@@ -111,7 +111,9 @@ class BaseLeeController(BaseController):
             self.K_angvel_tensor_min[env_ids], self.K_angvel_tensor_max[env_ids]
         )
 
-    def compute_acceleration(self, setpoint_position: torch.Tensor, setpoint_velocity: torch.Tensor) -> torch.Tensor:
+    def compute_acceleration(
+        self, setpoint_position: torch.Tensor, setpoint_velocity: torch.Tensor
+    ) -> torch.Tensor:
         position_error_world_frame = setpoint_position - self.robot_position
         # logger.debug(
         #     f"position_error_world_frame: {position_error_world_frame}, setpoint_position: {setpoint_position}, robot_position: {self.robot_position}"
@@ -127,7 +129,9 @@ class BaseLeeController(BaseController):
         )
         return accel_command
 
-    def compute_body_torque(self, setpoint_orientation: torch.Tensor, setpoint_angvel: torch.Tensor) -> torch.Tensor:
+    def compute_body_torque(
+        self, setpoint_orientation: torch.Tensor, setpoint_angvel: torch.Tensor
+    ) -> torch.Tensor:
         setpoint_angvel[:, 2] = torch.clamp(
             setpoint_angvel[:, 2], -self.cfg.max_yaw_rate, self.cfg.max_yaw_rate
         )

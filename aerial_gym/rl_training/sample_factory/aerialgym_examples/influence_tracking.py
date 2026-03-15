@@ -19,13 +19,13 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_wandb_lo
 def run_with_influence_tracking(cfg: Config) -> None:
     """Enhanced training with complete observation influence tracking."""
     try:
-        from aerial_gym.utils.gradient_monitor import (
-            create_influence_tracker,
-            INFLUENCE_MONITOR_AVAILABLE,
-        )
         from aerial_gym.utils.gradient_attribution import (
-            create_gradient_tracker,
             GRAD_ATTR_AVAILABLE,
+            create_gradient_tracker,
+        )
+        from aerial_gym.utils.gradient_monitor import (
+            INFLUENCE_MONITOR_AVAILABLE,
+            create_influence_tracker,
         )
     except ImportError:
         print("Influence/gradient trackers not available")

@@ -22,4 +22,3 @@ class OS_1_64_Config(OS_0_128_Config):
         std_c = 5.30757302e-03
         mean_offset = -0.025
         pixel_dropout_prob = 0.0
-

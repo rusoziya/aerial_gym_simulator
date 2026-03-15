@@ -1,12 +1,14 @@
 """Behavior tests for motor model JIT functions (gate_config_10)."""
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
 
 
 class TestDiscreteMixingFactor:
     def setup_method(self):
         from aerial_gym.control.motor_model import discrete_mixing_factor
+
         self.fn = discrete_mixing_factor
 
     def test_exact_value(self):
@@ -25,6 +27,7 @@ class TestDiscreteMixingFactor:
 class TestMotorModelRate:
     def setup_method(self):
         from aerial_gym.control.motor_model import motor_model_rate
+
         self.fn = motor_model_rate
 
     def test_within_limits(self):
@@ -47,6 +50,7 @@ class TestMotorModelRate:
 class TestThrustComputation:
     def setup_method(self):
         from aerial_gym.control.motor_model import compute_thrust_with_force_time_constant
+
         self.fn = compute_thrust_with_force_time_constant
 
     def test_at_reference_stays(self):
@@ -62,6 +66,6 @@ class TestThrustComputation:
         assert 5.0 < r.item() < 10.0
 
     def test_batch(self):
-        r = self.fn(torch.ones(4), torch.zeros(4), torch.ones(4)*10, torch.ones(4)*100, 0.01)
+        r = self.fn(torch.ones(4), torch.zeros(4), torch.ones(4) * 10, torch.ones(4) * 100, 0.01)
         assert r.shape == (4,)
         assert all(r[i].item() > 0 for i in range(4))

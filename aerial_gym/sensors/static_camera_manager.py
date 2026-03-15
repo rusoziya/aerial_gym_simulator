@@ -23,7 +23,11 @@ from aerial_gym.sensors.static_camera_capture import (
 )
 from aerial_gym.sensors.static_camera_follow_modes import (
     update_arc_follow as _update_arc_follow,
+)
+from aerial_gym.sensors.static_camera_follow_modes import (
     update_dynamic_camera_following as _update_dynamic_following,
+)
+from aerial_gym.sensors.static_camera_follow_modes import (
     update_locked_follow as _update_locked_follow,
 )
 from aerial_gym.task.task_config_protocol import TaskConfig
@@ -166,9 +170,7 @@ class StaticCameraManager:
         gate_center_per_env: torch.Tensor | None,
     ) -> None:
         """Set initial camera transform for each environment."""
-        for i, (env_handle, cam_handle) in enumerate(
-            zip(self.env_handles, self.camera_handles)
-        ):
+        for i, (env_handle, cam_handle) in enumerate(zip(self.env_handles, self.camera_handles)):
             if self.static_cam_randomize:
                 t, e = resample_jitter_for_env(
                     i,
@@ -192,16 +194,18 @@ class StaticCameraManager:
             self.gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
 
             self.last_camera_pos[i] = (
-                float(camera_pos.x), float(camera_pos.y), float(camera_pos.z)
+                float(camera_pos.x),
+                float(camera_pos.y),
+                float(camera_pos.z),
             )
             self.last_camera_target[i] = (
-                float(camera_target.x), float(camera_target.y), float(camera_target.z)
+                float(camera_target.x),
+                float(camera_target.y),
+                float(camera_target.z),
             )
             self.last_angle_deg[i] = 0.0
 
-    def _cache_base_values(
-        self, base_y: float, adaptive_z: bool, base_z_value: float
-    ) -> None:
+    def _cache_base_values(self, base_y: float, adaptive_z: bool, base_z_value: float) -> None:
         """Cache base values into global tensor dict for downstream updates."""
         try:
             gtd = self.env_manager.IGE_env.global_tensor_dict
@@ -224,9 +228,7 @@ class StaticCameraManager:
             self.camera_setup_success = False
             self.use_synthetic_camera = False
 
-    def _update_synthetic_camera_angles(
-        self, curriculum_level: int, env_ids: torch.Tensor
-    ) -> None:
+    def _update_synthetic_camera_angles(self, curriculum_level: int, env_ids: torch.Tensor) -> None:
         """Update camera angles for synthetic camera mode."""
         max_angle_range, _, _ = self.task_config.curriculum.get_static_camera_difficulty(
             curriculum_level
@@ -429,9 +431,7 @@ class StaticCameraManager:
             self.env_manager,
         )
 
-    def capture_images(
-        self, batched: bool = False
-    ) -> tuple[np.ndarray | None, np.ndarray | None]:
+    def capture_images(self, batched: bool = False) -> tuple[np.ndarray | None, np.ndarray | None]:
         """Capture depth and segmentation images from static camera."""
         if self.use_synthetic_camera:
             logger.error("Static camera synthetic mode disabled; no images will be generated.")
@@ -445,9 +445,7 @@ class StaticCameraManager:
                 return capture_images_batched(
                     self.gym, self.sim, self.env_handles, self.camera_handles
                 )
-            return capture_images_single(
-                self.gym, self.sim, self.env_handles, self.camera_handles
-            )
+            return capture_images_single(self.gym, self.sim, self.env_handles, self.camera_handles)
         except RuntimeError as e:
             logger.error(f"Static camera capture error: {e}")
             return None, None

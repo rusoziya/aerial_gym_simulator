@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-
-import warp as wp
 import math
+
 import torch
+import warp as wp
 
 from aerial_gym.sensors.warp.warp_kernels.warp_stereo_camera_kernels import StereoCameraWarpKernels
 
@@ -26,7 +26,6 @@ class WarpStereoCam:
         self.device = device
 
         self.baseline = self.cfg.baseline
-
 
         self.camera_position_array = None
         self.camera_orientation_array = None
@@ -69,10 +68,9 @@ class WarpStereoCam:
         self.c_x = int(u_0)
         self.c_y = int(v_0)
 
-
     def create_render_graph_pointcloud(self, debug: bool = False) -> None:
         if not debug:
-            print(f"creating render graph")
+            print("creating render graph")
             wp.capture_begin(device=self.device)
         # with wp.ScopedTimer("render"):
         if self.cfg.segmentation_camera == True:
@@ -113,12 +111,12 @@ class WarpStereoCam:
                 device=self.device,
             )
         if not debug:
-            print(f"finishing capture of render graph")
+            print("finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
     def create_render_graph_depth_range(self, debug: bool = False) -> None:
         if not debug:
-            print(f"creating render graph")
+            print("creating render graph")
             wp.capture_begin(device=self.device)
         # with wp.ScopedTimer("render"):
         if self.cfg.segmentation_camera == True:
@@ -159,7 +157,7 @@ class WarpStereoCam:
                 device=self.device,
             )
         if not debug:
-            print(f"finishing capture of render graph")
+            print("finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
     def set_image_tensors(
@@ -176,7 +174,6 @@ class WarpStereoCam:
             self.segmentation_pixels = wp.from_torch(segmentation_pixels, dtype=wp.int32)
         else:
             self.segmentation_pixels = segmentation_pixels
-
 
     def set_pose_tensor(self, positions: torch.Tensor, orientations: torch.Tensor) -> None:
         self.camera_position_array = wp.from_torch(positions, dtype=wp.vec3)

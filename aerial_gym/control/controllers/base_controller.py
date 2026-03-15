@@ -3,9 +3,10 @@ from __future__ import annotations
 import torch
 
 
-
 class BaseController:
-    def __init__(self, control_config: object, num_envs: int, device: str, mode: str = "robot") -> None:
+    def __init__(
+        self, control_config: object, num_envs: int, device: str, mode: str = "robot"
+    ) -> None:
         self.cfg = control_config
         self.num_envs = num_envs
         self.device = device

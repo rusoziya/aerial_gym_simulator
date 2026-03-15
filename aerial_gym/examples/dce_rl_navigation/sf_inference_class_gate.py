@@ -1,29 +1,28 @@
 from __future__ import annotations
 
-from typing import Dict, Tuple
+import os
+from typing import Dict
 
 import numpy as np
 import torch
-from torch import Tensor, nn
-import os
-from sample_factory.algo.utils.context import global_model_factory
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.dual_fusion_encoder import (
-    make_dual_fusion_encoder,
-)
-
-from sample_factory.algo.utils.gymnasium_utils import convert_space
+from gymnasium import spaces
 from sample_factory.algo.learning.learner import Learner
 from sample_factory.algo.sampling.batched_sampling import preprocess_actions
 from sample_factory.algo.utils.action_distributions import argmax_actions
+from sample_factory.algo.utils.context import global_model_factory
 from sample_factory.algo.utils.env_info import EnvInfo
+from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.algo.utils.rl_utils import prepare_and_normalize_obs
 from sample_factory.algo.utils.tensor_utils import unsqueeze_tensor
 from sample_factory.cfg.arguments import load_from_checkpoint
 from sample_factory.model.actor_critic import create_actor_critic
 from sample_factory.model.model_utils import get_rnn_size
-from sample_factory.utils.attr_dict import AttrDict
-from sample_factory.utils.typing import Config, StatusCode
-from gymnasium import spaces
+from sample_factory.utils.typing import Config
+from torch import nn
+
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.dual_fusion_encoder import (
+    make_dual_fusion_encoder,
+)
 
 
 class NN_Inference_Class_Gate(nn.Module):
@@ -56,8 +55,10 @@ class NN_Inference_Class_Gate(nn.Module):
         if True and cfg.gate_per_feature is not None:
             self.cfg.gate_per_feature = cfg.gate_per_feature
         # One-time report of evaluation mode for clarity
-        print(f"[EVAL_MODE] eval_deterministic={bool(self.cfg.eval_deterministic)}"
-              f" | deterministic=greedy argmax (no sampling), stochastic=samples from policy distribution")
+        print(
+            f"[EVAL_MODE] eval_deterministic={bool(self.cfg.eval_deterministic)}"
+            f" | deterministic=greedy argmax (no sampling), stochastic=samples from policy distribution"
+        )
         self.cfg.num_envs = num_envs
         self.num_actions = num_actions
         self.num_obs = num_obs
@@ -98,7 +99,8 @@ class NN_Inference_Class_Gate(nn.Module):
                 unexpected = [k for k in ckpt_state.keys() if k not in model_state]
                 shape_mismatch = [
                     (k, tuple(ckpt_state[k].shape), tuple(model_state[k].shape))
-                    for k in model_state.keys() if k in ckpt_state and ckpt_state[k].shape != model_state[k].shape
+                    for k in model_state.keys()
+                    if k in ckpt_state and ckpt_state[k].shape != model_state[k].shape
                 ]
                 if missing or unexpected or shape_mismatch:
                     print("[STRICT_LOAD] State dict mismatch detected:")
@@ -127,7 +129,8 @@ class NN_Inference_Class_Gate(nn.Module):
             unexpected = [k for k in ckpt_state.keys() if k not in model_state]
             shape_mismatch = [
                 (k, tuple(ckpt_state[k].shape), tuple(model_state[k].shape))
-                for k in model_state.keys() if k in ckpt_state and ckpt_state[k].shape != model_state[k].shape
+                for k in model_state.keys()
+                if k in ckpt_state and ckpt_state[k].shape != model_state[k].shape
             ]
             if missing or unexpected or shape_mismatch:
                 print("[STRICT_LOAD] State dict mismatch detected:")
@@ -176,7 +179,9 @@ class NN_Inference_Class_Gate(nn.Module):
                 if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
                     z_e = vec[:, 22:86]
                     z_s = vec[:, 86:150]
-                    print(f"[NORM_TAP] pre abs_mean: drone(22:86)={float(z_e.abs().mean().item()):.6e} static(86:150)={float(z_s.abs().mean().item()):.6e}")
+                    print(
+                        f"[NORM_TAP] pre abs_mean: drone(22:86)={float(z_e.abs().mean().item()):.6e} static(86:150)={float(z_s.abs().mean().item()):.6e}"
+                    )
 
             if disable_norm:
                 processed_obs = obs
@@ -189,7 +194,9 @@ class NN_Inference_Class_Gate(nn.Module):
                     if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[1] >= 150:
                         z_e2 = pvec[:, 22:86]
                         z_s2 = pvec[:, 86:150]
-                        print(f"[NORM_TAP] post abs_mean: drone(22:86)={float(z_e2.abs().mean().item()):.6e} static(86:150)={float(z_s2.abs().mean().item()):.6e}")
+                        print(
+                            f"[NORM_TAP] post abs_mean: drone(22:86)={float(z_e2.abs().mean().item()):.6e} static(86:150)={float(z_s2.abs().mean().item()):.6e}"
+                        )
             policy_outputs = self.actor_critic(processed_obs, self.rnn_states)
             actions = policy_outputs["actions"]
             if self.cfg.eval_deterministic:
@@ -207,5 +214,3 @@ class NN_Inference_Class_Gate(nn.Module):
         if get_np:
             return actions.cpu().numpy()
         return actions
-
-

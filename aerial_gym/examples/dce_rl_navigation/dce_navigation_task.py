@@ -5,8 +5,9 @@ from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
 
-from aerial_gym.utils.math import quat_rotate_inverse, get_euler_xyz_tensor, ssa
 import torch
+
+from aerial_gym.utils.math import get_euler_xyz_tensor, quat_rotate_inverse, ssa
 
 
 class DCE_RL_Navigation_Task(NavigationTask):
@@ -14,39 +15,46 @@ class DCE_RL_Navigation_Task(NavigationTask):
         task_config.action_space_dim = 3
         task_config.curriculum.min_level = 30  # DCE curriculum starts from level 30
         task_config.curriculum.max_level = 50
-        
+
         # Handle headless setting from Sample Factory command line parameters
         # Check if Sample Factory passed headless setting via environment or direct config
         import os
-        sf_headless = os.environ.get('SF_HEADLESS', None)
+
+        sf_headless = os.environ.get("SF_HEADLESS", None)
         if sf_headless is not None:
-            task_config.headless = sf_headless.lower() == 'true'
-            logger.info(f"DCE Navigation Task - Using SF_HEADLESS environment variable: {task_config.headless}")
+            task_config.headless = sf_headless.lower() == "true"
+            logger.info(
+                f"DCE Navigation Task - Using SF_HEADLESS environment variable: {task_config.headless}"
+            )
         elif task_config.headless is None:
             task_config.headless = False
             logger.info("DCE Navigation Task - Using default headless=False for visualization")
         else:
-            logger.info(f"DCE Navigation Task - Using pre-configured headless: {task_config.headless}")
-        
+            logger.info(
+                f"DCE Navigation Task - Using pre-configured headless: {task_config.headless}"
+            )
+
         logger.info(f"DCE Navigation Task - Final headless mode: {task_config.headless}")
-        
-        # Check for Sample Factory env_agents parameter to force specific environment count  
+
+        # Check for Sample Factory env_agents parameter to force specific environment count
         # This handles rollout worker subprocesses that don't go through registration
         env_agents_override = None
         try:
-            if 'SF_ENV_AGENTS' in os.environ:
-                env_agents_override = int(os.environ['SF_ENV_AGENTS'])
+            if "SF_ENV_AGENTS" in os.environ:
+                env_agents_override = int(os.environ["SF_ENV_AGENTS"])
                 logger.info(f"Found SF_ENV_AGENTS environment variable: {env_agents_override}")
         except (ValueError, TypeError):
             pass
-        
+
         # Force specific environment count if env_agents is specified
         if env_agents_override is not None and env_agents_override > 0:
-            logger.info(f"Detected env_agents={env_agents_override} from environment - setting environment count.")
+            logger.info(
+                f"Detected env_agents={env_agents_override} from environment - setting environment count."
+            )
             task_config.num_envs = env_agents_override
         else:
             logger.info(f"Using {task_config.num_envs} environments as configured.")
-            
+
         super().__init__(task_config=task_config, **kwargs)
 
     # just changing how the observations are returned for the code to work

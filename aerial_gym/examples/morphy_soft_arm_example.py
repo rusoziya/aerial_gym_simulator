@@ -3,12 +3,12 @@ from __future__ import annotations
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
-from aerial_gym.utils.helpers import get_args
-
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
+
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.utils.helpers import get_args
 
 try:
     import scienceplots
@@ -23,7 +23,7 @@ angle_list = []
 
 
 def read_csv(filename) -> None:
-    with open(filename, "r") as file:
+    with open(filename) as file:
         reader = csv.reader(file)
         for t, theta in reader:
             try:

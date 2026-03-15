@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from aerial_gym.task.base_task import BaseTask
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
 import numpy as np
+import torch
+from gym.spaces import Box, Dict
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_task import BaseTask
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("position_setpoint_task")
 
@@ -44,19 +41,10 @@ class PositionSetpointTaskSim2Real(BaseTask):
             )
         logger.info("Building environment for position setpoint task.")
         logger.info(
-            "\nSim Name: {},\nEnv Name: {},\nRobot Name: {}, \nController Name: {}".format(
-                self.task_config.sim_name,
-                self.task_config.env_name,
-                self.task_config.robot_name,
-                self.task_config.controller_name,
-            )
+            f"\nSim Name: {self.task_config.sim_name},\nEnv Name: {self.task_config.env_name},\nRobot Name: {self.task_config.robot_name}, \nController Name: {self.task_config.controller_name}"
         )
         logger.info(
-            "\nNum Envs: {},\nUse Warp: {},\nHeadless: {}".format(
-                self.task_config.num_envs,
-                self.task_config.use_warp,
-                self.task_config.headless,
-            )
+            f"\nNum Envs: {self.task_config.num_envs},\nUse Warp: {self.task_config.use_warp},\nHeadless: {self.task_config.headless}"
         )
 
         self.sim_env = SimBuilder().build_env(

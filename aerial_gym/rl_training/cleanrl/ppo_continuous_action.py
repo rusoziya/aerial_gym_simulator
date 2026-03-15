@@ -27,7 +27,6 @@ from __future__ import annotations
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 # docs and experiment results can be found at https://docs.cleanrl.dev/rl-algorithms/ppo/#ppo_continuous_action_isaacgympy
 import random
 import time
@@ -42,8 +41,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.rl_training.cleanrl.ppo_utils import (
-    get_args,
     RecordEpisodeStatisticsTorch,
+    get_args,
     layer_init,
 )
 

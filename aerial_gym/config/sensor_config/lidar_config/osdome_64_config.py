@@ -32,4 +32,3 @@ class OSDome_64_Config(BaseLidarConfig):
         std_c = 0.01553284
         mean_offset = -0.025
         pixel_dropout_prob = 0.0
-

@@ -47,15 +47,15 @@ class GradientAttributionTracker:
         # Observation component mapping must match the runtime observation layout (150D)
         # name -> (start, end, emoji, description)
         self.obs_components: Dict[str, Tuple[int, int, str, str]] = {
-            'drone_position': (0, 3, "🎯", "Drone absolute position in world coordinates"),
-            'static_camera_pos': (3, 6, "📍", "Static camera position relative to drone"),
-            'static_camera_orient': (6, 9, "🧭", "Static camera orientation relative to drone"),
-            'drone_orientation': (9, 12, "✈️", "Drone full orientation (roll, pitch, yaw)"),
-            'drone_linear_vel': (12, 15, "⚡", "Drone linear velocity in body frame"),
-            'drone_angular_vel': (15, 18, "🌀", "Drone angular velocity in body frame"),
-            'drone_actions': (18, 22, "🎮", "Previous drone actions (action history)"),
-            'drone_camera_vae': (22, 86, "📷", "Drone camera VAE encoded features"),
-            'static_camera_vae': (86, 150, "📹", "Static camera VAE encoded features"),
+            "drone_position": (0, 3, "🎯", "Drone absolute position in world coordinates"),
+            "static_camera_pos": (3, 6, "📍", "Static camera position relative to drone"),
+            "static_camera_orient": (6, 9, "🧭", "Static camera orientation relative to drone"),
+            "drone_orientation": (9, 12, "✈️", "Drone full orientation (roll, pitch, yaw)"),
+            "drone_linear_vel": (12, 15, "⚡", "Drone linear velocity in body frame"),
+            "drone_angular_vel": (15, 18, "🌀", "Drone angular velocity in body frame"),
+            "drone_actions": (18, 22, "🎮", "Previous drone actions (action history)"),
+            "drone_camera_vae": (22, 86, "📷", "Drone camera VAE encoded features"),
+            "static_camera_vae": (86, 150, "📹", "Static camera VAE encoded features"),
         }
 
         # Storage for aggregated gradient magnitudes
@@ -67,10 +67,10 @@ class GradientAttributionTracker:
     def _attach_hooks(self) -> None:
         """Attach forward+backward hooks to capture grads wrt observation tensor."""
         hook_targets = [
-            ('encoder.encoders.obs', 'Obs Encoder (non-compiled)'),
-            ('obs_normalizer', 'Observation Normalizer'),
-            ('encoder', 'Multi Input Encoder'),
-            ('core', 'RNN Core'),
+            ("encoder.encoders.obs", "Obs Encoder (non-compiled)"),
+            ("obs_normalizer", "Observation Normalizer"),
+            ("encoder", "Multi Input Encoder"),
+            ("core", "RNN Core"),
         ]
 
         for target_path, target_name in hook_targets:
@@ -95,9 +95,13 @@ class GradientAttributionTracker:
                 logger.warning(f"Failed to attach gradient hooks to {target_name}: {e}")
                 continue
 
-        logger.warning("❌ Failed to attach gradient attribution hooks - no suitable non-ScriptModule target found; falling back to model pre-hook")
+        logger.warning(
+            "❌ Failed to attach gradient attribution hooks - no suitable non-ScriptModule target found; falling back to model pre-hook"
+        )
         try:
-            self.module_hook_handle = self.model.register_forward_pre_hook(self._forward_pre_hook_model)
+            self.module_hook_handle = self.model.register_forward_pre_hook(
+                self._forward_pre_hook_model
+            )
             self.backward_hook_handle = self.model.register_full_backward_hook(self._backward_hook)
             logger.warning("✅ Gradient attribution fallback hooks attached at model level")
         except RuntimeError as e:
@@ -108,6 +112,7 @@ class GradientAttributionTracker:
         """Enable grad on observation tensor and register a tensor-level grad hook.
         Robust to dict/tuple/list inputs; extracts 'obs'/'observations' if present.
         """
+
         def _extract_obs_tensor(obj) -> None:
             try:
                 if torch.is_tensor(obj):
@@ -115,7 +120,7 @@ class GradientAttributionTracker:
                 if isinstance(obj, (tuple, list)) and len(obj) > 0:
                     return _extract_obs_tensor(obj[0])
                 if isinstance(obj, dict):
-                    for k in ('obs', 'observations'):
+                    for k in ("obs", "observations"):
                         t = obj.get(k, None)
                         if torch.is_tensor(t):
                             return t
@@ -125,6 +130,7 @@ class GradientAttributionTracker:
                 return None
             except (RuntimeError, IndexError, KeyError):
                 return None
+
         try:
             if not input:
                 return
@@ -136,6 +142,7 @@ class GradientAttributionTracker:
             # Ensure gradients will be computed wrt inputs
             if not x.requires_grad:
                 x.requires_grad_(True)
+
             # Register a one-time hook to capture its gradient on backward
             # Note: this hook runs every backward for this forward pass
             def _tensor_grad_hook(grad: torch.Tensor) -> None:
@@ -147,6 +154,7 @@ class GradientAttributionTracker:
                     g_slice = grad[:, start:end]
                     slice_norm = torch.norm(g_slice, dim=1).mean().item()
                     self.grad_history[name].append(slice_norm)
+
             x.register_hook(_tensor_grad_hook)
         except RuntimeError as e:
             if self.backward_pass_count < 2:
@@ -158,6 +166,7 @@ class GradientAttributionTracker:
             if not input:
                 return None
             arg = input[0] if isinstance(input, tuple) and len(input) > 0 else input
+
             def _wrap(obj) -> None:
                 if torch.is_tensor(obj) and obj.dim() == 2 and obj.shape[1] >= 81:
                     if not obj.requires_grad:
@@ -166,8 +175,13 @@ class GradientAttributionTracker:
                     return obj
                 if isinstance(obj, dict):
                     out = dict(obj)
-                    for k in ('obs', 'observations'):
-                        if k in out and torch.is_tensor(out[k]) and out[k].dim() == 2 and out[k].shape[1] >= 81:
+                    for k in ("obs", "observations"):
+                        if (
+                            k in out
+                            and torch.is_tensor(out[k])
+                            and out[k].dim() == 2
+                            and out[k].shape[1] >= 81
+                        ):
                             t = out[k]
                             if not t.requires_grad:
                                 t = t.detach().requires_grad_(True)
@@ -180,6 +194,7 @@ class GradientAttributionTracker:
                     seq[0] = _wrap(seq[0])
                     return type(obj)(seq)
                 return obj
+
             wrapped = _wrap(arg)
             if wrapped is arg:
                 return None
@@ -216,20 +231,22 @@ class GradientAttributionTracker:
         pass
 
     def should_log(self) -> bool:
-        return self.step_count > 0 and self.step_count % int(self.config.get('log_interval', 100)) == 0
+        return (
+            self.step_count > 0 and self.step_count % int(self.config.get("log_interval", 100)) == 0
+        )
 
     def get_logging_metrics(self) -> Dict[str, float]:
         metrics: Dict[str, float] = {}
         for name, values in self.grad_history.items():
             if values:
-                metrics[f'obs_grad/{name}_mean_norm_recent'] = float(np.mean(values[-10:]))
-                metrics[f'obs_grad/{name}_mean_norm_overall'] = float(np.mean(values))
+                metrics[f"obs_grad/{name}_mean_norm_recent"] = float(np.mean(values[-10:]))
+                metrics[f"obs_grad/{name}_mean_norm_overall"] = float(np.mean(values))
         # Aggregate totals
-        recent_total = sum(metrics[k] for k in metrics.keys() if k.endswith('_mean_norm_recent'))
-        overall_total = sum(metrics[k] for k in metrics.keys() if k.endswith('_mean_norm_overall'))
-        metrics['obs_grad/total_recent'] = float(recent_total)
-        metrics['obs_grad/total_overall'] = float(overall_total)
-        metrics['obs_grad/backward_passes'] = float(self.backward_pass_count)
+        recent_total = sum(metrics[k] for k in metrics.keys() if k.endswith("_mean_norm_recent"))
+        overall_total = sum(metrics[k] for k in metrics.keys() if k.endswith("_mean_norm_overall"))
+        metrics["obs_grad/total_recent"] = float(recent_total)
+        metrics["obs_grad/total_overall"] = float(overall_total)
+        metrics["obs_grad/backward_passes"] = float(self.backward_pass_count)
         return metrics
 
     def print_gradient_summary(self) -> None:
@@ -238,9 +255,13 @@ class GradientAttributionTracker:
             logger.warning("📉 No gradient attribution data collected yet")
             return
 
-        logger.warning("================================================================================")
+        logger.warning(
+            "================================================================================"
+        )
         logger.warning("🧮 GRADIENT-BASED ATTRIBUTION (loss-aligned sensitivity)")
-        logger.warning("================================================================================")
+        logger.warning(
+            "================================================================================"
+        )
         logger.warning(f"   Backward passes observed (tensor hooks): {self.backward_pass_count}")
 
         sorted_items = sorted(comp_avgs.items(), key=lambda kv: kv[1], reverse=True)
@@ -250,24 +271,40 @@ class GradientAttributionTracker:
             start, end, emoji, desc = self.obs_components[name]
             dims = end - start
             importance = (
-                "🔥 CRITICAL" if value > 1e-1 else
-                ("📊 SIGNIFICANT" if value > 5e-2 else ("⚡ MODERATE" if value > 1e-2 else "❌ MINIMAL"))
+                "🔥 CRITICAL"
+                if value > 1e-1
+                else (
+                    "📊 SIGNIFICANT"
+                    if value > 5e-2
+                    else ("⚡ MODERATE" if value > 1e-2 else "❌ MINIMAL")
+                )
             )
-            logger.warning(f"{rank:2d}. {emoji} {name.upper():<20s} | GradNorm: {value:.4e} ({pct:5.1f}%) | Dims: {dims}")
+            logger.warning(
+                f"{rank:2d}. {emoji} {name.upper():<20s} | GradNorm: {value:.4e} ({pct:5.1f}%) | Dims: {dims}"
+            )
             logger.warning(f"     {importance} | Description: {desc}")
 
-        visual = comp_avgs.get('drone_camera_vae', 0.0) + comp_avgs.get('static_camera_vae', 0.0)
-        kine = (comp_avgs.get('drone_linear_vel', 0.0) + comp_avgs.get('drone_angular_vel', 0.0) +
-                comp_avgs.get('drone_actions', 0.0))
-        spatial = (comp_avgs.get('drone_position', 0.0) + comp_avgs.get('static_camera_pos', 0.0) +
-                   comp_avgs.get('static_camera_orient', 0.0) + comp_avgs.get('drone_orientation', 0.0))
+        visual = comp_avgs.get("drone_camera_vae", 0.0) + comp_avgs.get("static_camera_vae", 0.0)
+        kine = (
+            comp_avgs.get("drone_linear_vel", 0.0)
+            + comp_avgs.get("drone_angular_vel", 0.0)
+            + comp_avgs.get("drone_actions", 0.0)
+        )
+        spatial = (
+            comp_avgs.get("drone_position", 0.0)
+            + comp_avgs.get("static_camera_pos", 0.0)
+            + comp_avgs.get("static_camera_orient", 0.0)
+            + comp_avgs.get("drone_orientation", 0.0)
+        )
         total = visual + kine + spatial
         if total > 0:
             logger.warning("")
-            logger.warning(f"   📹 Visual:   {100.0*visual/total:5.1f}%")
-            logger.warning(f"   ⚡ Kinematic:{100.0*kine/total:5.1f}%")
-            logger.warning(f"   🧭 Spatial:  {100.0*spatial/total:5.1f}%")
-        logger.warning("================================================================================")
+            logger.warning(f"   📹 Visual:   {100.0 * visual / total:5.1f}%")
+            logger.warning(f"   ⚡ Kinematic:{100.0 * kine / total:5.1f}%")
+            logger.warning(f"   🧭 Spatial:  {100.0 * spatial / total:5.1f}%")
+        logger.warning(
+            "================================================================================"
+        )
 
     def cleanup(self) -> None:
         if self.module_hook_handle is not None:
@@ -291,7 +328,9 @@ class GradientAttributionTracker:
             pass
 
 
-def create_gradient_tracker(model: torch.nn.Module, config: dict[str, object]) -> Optional[GradientAttributionTracker]:
+def create_gradient_tracker(
+    model: torch.nn.Module, config: dict[str, object]
+) -> Optional[GradientAttributionTracker]:
     try:
         tracker = GradientAttributionTracker(model, config)
         if tracker.enabled:
@@ -305,4 +344,4 @@ def create_gradient_tracker(model: torch.nn.Module, config: dict[str, object]) -
         return None
 
 
-GRAD_ATTR_AVAILABLE = True 
+GRAD_ATTR_AVAILABLE = True

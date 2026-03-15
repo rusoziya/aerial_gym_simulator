@@ -3,19 +3,16 @@ from __future__ import annotations
 import numpy as np
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
-
 from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
     BaseDepthCameraConfig,
 )
+from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 from aerial_gym.config.sensor_config.lidar_config.base_lidar_config import (
     BaseLidarConfig,
 )
-from aerial_gym.config.sensor_config.lidar_config.osdome_64_config import OSDome_64_Config
-from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 
 
 class LMF1Cfg:
-
     class init_config:
         # init_state tensor is of the format [ratio_x, ratio_y, ratio_z, roll_radians, pitch_radians, yaw_radians, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
         min_init_state = [
@@ -151,7 +148,7 @@ class LMF1Cfg:
         num_motors = 4
         force_application_level = "motor_link"  # "motor_link" or "root_link" decides to apply combined forces acting on the robot at the root link or at the individual motor links
 
-        application_mask = [4, 1, 3, 2] # front right, back_left, front_left, back_right
+        application_mask = [4, 1, 3, 2]  # front right, back_left, front_left, back_right
         motor_directions = [1, 1, -1, -1]
 
         allocation_matrix = [
@@ -165,8 +162,8 @@ class LMF1Cfg:
 
         class motor_model_config:
             use_rps = True
-            motor_thrust_constant_min = 5.487e-6 #0.00000926312
-            motor_thrust_constant_max = 5.487e-6 #0.00001826312
+            motor_thrust_constant_min = 5.487e-6  # 0.00000926312
+            motor_thrust_constant_max = 5.487e-6  # 0.00001826312
             motor_time_constant_increasing_min = 0.025
             motor_time_constant_increasing_max = 0.025
             motor_time_constant_decreasing_min = 0.025

@@ -279,5 +279,3 @@ Sanity checklist before running:
 - Verify checkpoint path (`DCE_MODEL`) or that `--train_dir/--experiment` contains saved checkpoints.
 - Keep curriculum forcing and randomization flags aligned with your experimental design.
 - If using ablations, double‑check slice indices against the 150D layout.
-
-

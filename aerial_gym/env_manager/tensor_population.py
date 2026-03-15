@@ -41,12 +41,8 @@ def populate_obstacle_tensors(
     global_tensor_dict["obstacle_orientation"] = global_tensor_dict["env_asset_state_tensor"][
         :, :, 3:7
     ]
-    global_tensor_dict["obstacle_linvel"] = global_tensor_dict["env_asset_state_tensor"][
-        :, :, 7:10
-    ]
-    global_tensor_dict["obstacle_angvel"] = global_tensor_dict["env_asset_state_tensor"][
-        :, :, 10:
-    ]
+    global_tensor_dict["obstacle_linvel"] = global_tensor_dict["env_asset_state_tensor"][:, :, 7:10]
+    global_tensor_dict["obstacle_angvel"] = global_tensor_dict["env_asset_state_tensor"][:, :, 10:]
     global_tensor_dict["obstacle_body_angvel"] = torch.zeros_like(
         global_tensor_dict["env_asset_state_tensor"][:, :, 10:13]
     )

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import os
+
 import torch
 
-from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.task.navigation_task_gate.curriculum_infos import CurriculumInfos
+from aerial_gym.utils.env_flag_utils import read_env_bool
+from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("navigation_task_gate_curriculum_logging")
 

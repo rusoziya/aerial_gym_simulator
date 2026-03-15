@@ -1,4 +1,5 @@
 """Tests for gate environment configuration."""
+
 import isaacgym  # noqa: F401
 import pytest
 
@@ -6,6 +7,7 @@ import pytest
 class TestGateEnvConfig:
     def setup_method(self):
         from aerial_gym.config.env_config.gate_env import GateEnvCfg
+
         self.cfg = GateEnvCfg
 
     def test_env_class_exists(self):
@@ -28,9 +30,16 @@ class TestGateEnvConfig:
 class TestEnvAssetConfig:
     def setup_method(self):
         from aerial_gym.config.asset_config.env_asset_config import (
-            left_wall, right_wall, top_wall, bottom_wall, front_wall, back_wall,
-            WALL_SEMANTIC_ID, OBJECT_SEMANTIC_ID,
+            OBJECT_SEMANTIC_ID,
+            WALL_SEMANTIC_ID,
+            back_wall,
+            bottom_wall,
+            front_wall,
+            left_wall,
+            right_wall,
+            top_wall,
         )
+
         self.walls = [left_wall, right_wall, top_wall, bottom_wall, front_wall, back_wall]
         self.WALL_SEMANTIC_ID = WALL_SEMANTIC_ID
         self.OBJECT_SEMANTIC_ID = OBJECT_SEMANTIC_ID
@@ -44,8 +53,8 @@ class TestEnvAssetConfig:
 
     def test_all_walls_have_state_ratios(self):
         for wall in self.walls:
-            assert hasattr(wall, 'min_state_ratio')
-            assert hasattr(wall, 'max_state_ratio')
+            assert hasattr(wall, "min_state_ratio")
+            assert hasattr(wall, "max_state_ratio")
             assert len(wall.min_state_ratio) == 13
             assert len(wall.max_state_ratio) == 13
 
@@ -57,7 +66,6 @@ class TestEnvAssetConfig:
         assert self.WALL_SEMANTIC_ID == 8
         assert self.OBJECT_SEMANTIC_ID == 3
 
-
         from aerial_gym.control.control_allocation import ControlAllocator
-        self.CA = ControlAllocator
 
+        self.CA = ControlAllocator

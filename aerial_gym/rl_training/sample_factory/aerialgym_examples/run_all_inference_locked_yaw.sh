@@ -95,5 +95,3 @@ for SEED in "${SEEDS[@]}"; do
 done
 
 echo "All static locked-yaw camera inference runs completed."
-
-

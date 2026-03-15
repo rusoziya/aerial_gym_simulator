@@ -3,14 +3,16 @@
 The gate task uses a 4D velocity controller: actions in [-1,1] are scaled
 to velocity commands with dimension-specific scaling factors.
 """
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
 
 
 @pytest.fixture(scope="module")
 def transform():
     from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
     return task_config.action_transformation_function
 
 

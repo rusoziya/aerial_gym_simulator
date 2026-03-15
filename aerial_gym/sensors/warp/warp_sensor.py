@@ -1,26 +1,22 @@
 from __future__ import annotations
 
-
-import warp as wp
-from aerial_gym.sensors.base_sensor import BaseSensor
-
-from aerial_gym.utils.math import (
-    quat_from_euler_xyz,
-    quat_mul,
-    tf_apply,
-    torch_rand_float_tensor,
-    quat_from_euler_xyz_tensor,
-)
-
 import torch
+import warp as wp
 
+from aerial_gym.sensors.base_sensor import BaseSensor
 from aerial_gym.sensors.warp.warp_cam import WarpCam
-from aerial_gym.sensors.warp.warp_stereo_cam import WarpStereoCam
 from aerial_gym.sensors.warp.warp_lidar import WarpLidar
 from aerial_gym.sensors.warp.warp_normal_faceID_cam import WarpNormalFaceIDCam
 from aerial_gym.sensors.warp.warp_normal_faceID_lidar import WarpNormalFaceIDLidar
-
+from aerial_gym.sensors.warp.warp_stereo_cam import WarpStereoCam
 from aerial_gym.utils.logging import CustomLogger, logging
+from aerial_gym.utils.math import (
+    quat_from_euler_xyz,
+    quat_from_euler_xyz_tensor,
+    quat_mul,
+    tf_apply,
+    torch_rand_float_tensor,
+)
 
 logger = CustomLogger("WarpSensor")
 logger.setLoggerLevel(logging.INFO)
@@ -87,7 +83,7 @@ class WarpSensor(BaseSensor):
 
     def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
         super().init_tensors(global_tensor_dict)
-        logger.debug(f"Initializing sensor tensors")
+        logger.debug("Initializing sensor tensors")
         # here a new view of robot position and orienentation is created since the robot has multiple sensors
         self.robot_position = self.robot_position.unsqueeze(1).expand(-1, self.num_sensors, -1)
         self.robot_orientation = self.robot_orientation.unsqueeze(1).expand(
@@ -149,7 +145,7 @@ class WarpSensor(BaseSensor):
         )
         self.reset()
 
-        logger.debug(f"[DONE] Initializing sensor tensors")
+        logger.debug("[DONE] Initializing sensor tensors")
 
     def reset(self) -> None:
         env_ids = torch.arange(self.num_envs, device=self.device)
@@ -226,10 +222,7 @@ class WarpSensor(BaseSensor):
             std_c = sensor_noise_params.std_c
             mean_offset = sensor_noise_params.mean_offset
             std_val = std_a * self.pixels**2 + std_b * self.pixels + std_c
-            self.pixels[:] = torch.normal(
-                mean= (self.pixels - mean_offset),
-                std=std_val
-            )
+            self.pixels[:] = torch.normal(mean=(self.pixels - mean_offset), std=std_val)
             self.pixels[
                 torch.bernoulli(
                     torch.ones_like(self.pixels) * self.cfg.sensor_noise.pixel_dropout_prob

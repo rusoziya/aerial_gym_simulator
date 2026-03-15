@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from collections.abc import KeysView
 
-from aerial_gym.registry.controller_registry import controller_registry
-
 
 class RobotRegistry:
     """Registry mapping robot names to robot classes and configs."""
@@ -25,7 +23,9 @@ class RobotRegistry:
     def get_robot_names(self) -> KeysView[str]:
         return self.robot_classes.keys()
 
-    def make_robot(self, robot_name: str, controller_name: str, env_config: object, device: str) -> tuple[object, type]:
+    def make_robot(
+        self, robot_name: str, controller_name: str, env_config: object, device: str
+    ) -> tuple[object, type]:
         if robot_name not in self.robot_classes:
             raise ValueError(f"Robot {robot_name} not found in robot registry")
         return (

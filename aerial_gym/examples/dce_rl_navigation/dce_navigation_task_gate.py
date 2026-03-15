@@ -2,11 +2,8 @@ from __future__ import annotations
 
 import os
 
-import torch
-
 from aerial_gym.task.navigation_task_gate.navigation_task_gate import NavigationTaskGate
 from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.math import quat_rotate_inverse
 
 logger = CustomLogger(__name__)
 

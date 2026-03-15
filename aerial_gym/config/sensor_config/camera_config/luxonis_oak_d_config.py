@@ -3,7 +3,6 @@ from __future__ import annotations
 from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
     BaseDepthCameraConfig,
 )
-import numpy as np
 
 
 class LuxonisOakDConfig(BaseDepthCameraConfig):

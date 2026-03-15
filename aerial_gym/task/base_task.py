@@ -1,17 +1,21 @@
 from __future__ import annotations
 
+import os
+import random
+import time
 from abc import ABC, abstractmethod
 
-import time, torch, os, numpy as np
+import numpy as np
+import torch
 
 from aerial_gym.task.task_config_protocol import TaskConfig
 from aerial_gym.utils.logging import CustomLogger
-import random
 
 logger = CustomLogger("base_task")
 
 # Step return type used by all task subclasses
 from typing import Dict, Tuple
+
 StepReturn = Tuple[
     Dict[str, torch.Tensor],
     torch.Tensor,
@@ -41,7 +45,7 @@ class BaseTask(ABC):
 
     def seed(self, seed: int | None) -> None:
         if seed is None or seed < 0:
-            logger.info(f"Seed is not valid. Will be sampled from system time.")
+            logger.info("Seed is not valid. Will be sampled from system time.")
             seed = time.time_ns() % (2**32)
         np.random.seed(seed)
         torch.manual_seed(seed)
@@ -49,7 +53,7 @@ class BaseTask(ABC):
         os.environ["PYTHONHASHSEED"] = str(seed)
         random.seed(seed)
 
-        logger.info("Setting seed: {}".format(seed))
+        logger.info(f"Setting seed: {seed}")
 
     @abstractmethod
     def reset(self) -> StepReturn:

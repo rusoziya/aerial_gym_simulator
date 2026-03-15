@@ -1,8 +1,10 @@
 """Parametrized tests for reward function scaling behavior across input ranges."""
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
-from aerial_gym.utils.math import exponential_reward_function, exponential_penalty_function
+import torch
+
+from aerial_gym.utils.math import exponential_penalty_function, exponential_reward_function
 
 
 @pytest.mark.parametrize("magnitude", [0.5, 1.0, 2.5, 5.0, 100.0])

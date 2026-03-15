@@ -3,13 +3,14 @@
 Verifies that all expected tasks, robots, controllers, envs, and sims
 are registered with the correct names and classes.
 """
+
 import isaacgym  # noqa: F401
-import pytest
 
 
 class TestTaskRegistry:
     def setup_method(self):
         from aerial_gym.registry.task_registry import task_registry
+
         self.registry = task_registry
 
     def test_navigation_task_registered(self):
@@ -36,6 +37,7 @@ class TestTaskRegistry:
 class TestRobotRegistry:
     def setup_method(self):
         from aerial_gym.registry.robot_registry import robot_registry
+
         self.registry = robot_registry
 
     def test_lmf2_registered(self):
@@ -50,6 +52,7 @@ class TestRobotRegistry:
 class TestControllerRegistry:
     def setup_method(self):
         from aerial_gym.registry.controller_registry import controller_registry
+
         self.registry = controller_registry
 
     def test_lmf2_velocity_control_registered(self):
@@ -60,6 +63,7 @@ class TestControllerRegistry:
 class TestEnvRegistry:
     def setup_method(self):
         from aerial_gym.registry.env_registry import env_config_registry
+
         self.registry = env_config_registry
 
     def test_gate_env_registered(self):
@@ -74,6 +78,7 @@ class TestEnvRegistry:
 class TestSimRegistry:
     def setup_method(self):
         from aerial_gym.registry.sim_registry import sim_config_registry
+
         self.registry = sim_config_registry
 
     def test_base_sim_registered(self):

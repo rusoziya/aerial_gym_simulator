@@ -1,28 +1,23 @@
 from __future__ import annotations
 
-# this is here just to guarantee that isaacgym is imported before PyTorch
-# isort: off
-# noinspection PyUnresolvedReferences
-
-# isort: on
-
-from aerial_gym.registry.task_registry import task_registry
 import sys
 from typing import Dict, Optional, Tuple
 
-
 import gymnasium as gym
 import torch
-
-
-from torch import Tensor
-
 from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
 from sample_factory.envs.env_utils import register_env
 from sample_factory.train import run_rl
 from sample_factory.utils.typing import Config, Env
 from sample_factory.utils.utils import str2bool
+from torch import Tensor
+
+# this is here just to guarantee that isaacgym is imported before PyTorch
+# isort: off
+# noinspection PyUnresolvedReferences
+# isort: on
+from aerial_gym.registry.task_registry import task_registry
 
 
 class AerialGymVecEnv(gym.Env):
@@ -62,7 +57,6 @@ def make_aerialgym_env(
     _env_config=None,
     render_mode: Optional[str] = None,
 ) -> Env:
-
     return AerialGymVecEnv(task_registry.make_task(task_name=full_task_name), "obs")
 
 

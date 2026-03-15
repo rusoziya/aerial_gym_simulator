@@ -3,49 +3,46 @@ from __future__ import annotations
 import numpy as np
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
-
 from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
     BaseDepthCameraConfig,
 )
+from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 from aerial_gym.config.sensor_config.lidar_config.base_lidar_config import (
     BaseLidarConfig,
 )
-from aerial_gym.config.sensor_config.lidar_config.osdome_64_config import OSDome_64_Config
-from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 
 
 class LMF2Cfg:
-
     class init_config:
         min_init_state = [
-            0.25,     # ratio_x: X = -2.0m → ((-2.0)+4)/8 = 0.25 (left bound of ±2.0m)
+            0.25,  # ratio_x: X = -2.0m → ((-2.0)+4)/8 = 0.25 (left bound of ±2.0m)
             0.30625,  # ratio_y: Y = -1.55m → ((-1.55)+4)/8 = 0.30625 (tight band near -1.5m)
-            0.125,    # ratio_z: Z = 0.5m  → 0.5/4 = 0.125 (lower height bound)
-            0,      # no roll variation
-            0,      # no pitch variation
-            -np.pi/4, # yaw: -45° for orientation randomization
+            0.125,  # ratio_z: Z = 0.5m  → 0.5/4 = 0.125 (lower height bound)
+            0,  # no roll variation
+            0,  # no pitch variation
+            -np.pi / 4,  # yaw: -45° for orientation randomization
             1.0,
-            -0.1,   # minimal initial X velocity variation
-            -0.1,   # minimal initial Y velocity variation
+            -0.1,  # minimal initial X velocity variation
+            -0.1,  # minimal initial Y velocity variation
             -0.05,  # minimal initial Z velocity variation
             -0.02,  # minimal initial roll rate
             -0.02,  # minimal initial pitch rate
             -0.05,  # minimal initial yaw rate
         ]
         max_init_state = [
-            0.75,     # ratio_x: X = +2.0m → ((+2.0)+4)/8 = 0.75 (right bound of ±2.0m)
+            0.75,  # ratio_x: X = +2.0m → ((+2.0)+4)/8 = 0.75 (right bound of ±2.0m)
             0.31875,  # ratio_y: Y = -1.45m → ((-1.45)+4)/8 = 0.31875 (tight band near -1.5m)
-            0.375,    # ratio_z: Z = 1.5m → 1.5/4 = 0.375 (upper height bound)
-            0,      # no roll variation
-            0,      # no pitch variation
-            np.pi/4, # yaw: +45° for orientation randomization
+            0.375,  # ratio_z: Z = 1.5m → 1.5/4 = 0.375 (upper height bound)
+            0,  # no roll variation
+            0,  # no pitch variation
+            np.pi / 4,  # yaw: +45° for orientation randomization
             1.0,
-            0.1,    # minimal initial X velocity variation
-            0.1,    # minimal initial Y velocity variation
-            0.05,   # minimal initial Z velocity variation
-            0.02,   # minimal initial roll rate
-            0.02,   # minimal initial pitch rate
-            0.05,   # minimal initial yaw rate
+            0.1,  # minimal initial X velocity variation
+            0.1,  # minimal initial Y velocity variation
+            0.05,  # minimal initial Z velocity variation
+            0.02,  # minimal initial roll rate
+            0.02,  # minimal initial pitch rate
+            0.05,  # minimal initial yaw rate
         ]
 
     class sensor_config:
@@ -91,31 +88,31 @@ class LMF2Cfg:
         per_link_semantic = False
 
         min_state_ratio = [
-            0.4625, # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
-            0.1,    # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
-            0.35,   # ratio_z: Z = 1.4 → ratio = 1.4 / 4 = 0.35 (AT GATE LEVEL - INCREASED from 0.2)
-            0,      # no roll
-            0,      # no pitch
-            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+            0.4625,  # ratio_x: X = -0.3 → ratio = ((-0.3) + 4) / 8 = 0.4625 (slight left of camera)
+            0.1,  # ratio_y: Y = -3.2 → ratio = ((-3.2) + 4) / 8 = 0.1 (slightly behind camera)
+            0.35,  # ratio_z: Z = 1.4 → ratio = 1.4 / 4 = 0.35 (AT GATE LEVEL - INCREASED from 0.2)
+            0,  # no roll
+            0,  # no pitch
+            np.pi / 2,  # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
-            0,      # no initial velocity
+            0,  # no initial velocity
             0,
-            0,      # no initial velocity
+            0,  # no initial velocity
             0,
             0,
             0,
         ]  # [ratio_x, ratio_y, ratio_z, roll_rad, pitch_rad, yaw_rad, 1.0, vx, vy, vz, wx, wy, wz]
         max_state_ratio = [
-            0.5375, # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
-            0.15,   # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
-            0.4,    # ratio_z: Z = 1.6 → ratio = 1.6 / 4 = 0.4 (OPTIMAL GATE HEIGHT - INCREASED from 0.3)
-            0,      # no roll
-            0,      # no pitch
-            np.pi/2, # yaw: face directly towards gate opening (+X direction, 90°)
+            0.5375,  # ratio_x: X = +0.3 → ratio = ((+0.3) + 4) / 8 = 0.5375 (slight right of camera)
+            0.15,  # ratio_y: Y = -2.8 → ratio = ((-2.8) + 4) / 8 = 0.15 (slightly in front of camera)
+            0.4,  # ratio_z: Z = 1.6 → ratio = 1.6 / 4 = 0.4 (OPTIMAL GATE HEIGHT - INCREASED from 0.3)
+            0,  # no roll
+            0,  # no pitch
+            np.pi / 2,  # yaw: face directly towards gate opening (+X direction, 90°)
             1.0,
-            0,      # no initial velocity
+            0,  # no initial velocity
             0,
-            0,      # no initial velocity
+            0,  # no initial velocity
             0,
             0,
             0,
@@ -183,10 +180,10 @@ class LMF2Drone1Cfg(LMF2Cfg):
         # Position drone 1 at (-2, 0, 1.5) - left side of center
         min_init_state = [
             0.3,  # ratio_x: -2.0 in [-5, 5] range = ((-2 + 5) / 10) = 0.3
-            0.5,  # ratio_y: 0.0 in [-5, 5] range = ((0 + 5) / 10) = 0.5 
+            0.5,  # ratio_y: 0.0 in [-5, 5] range = ((0 + 5) / 10) = 0.5
             0.625,  # ratio_z: 1.5 in [-1, 3] range = ((1.5 + 1) / 4) = 0.625
             0,  # no rotation
-            0,  # no rotation 
+            0,  # no rotation
             0,  # no rotation
             1.0,
             0,  # no velocity
@@ -211,10 +208,7 @@ class LMF2Drone1Cfg(LMF2Cfg):
             0,  # no angular velocity
             0,  # no angular velocity
         ]
-    
+
     class robot_asset(LMF2Cfg.robot_asset):
         name = "drone_1"  # unique name for first drone
         semantic_id = 1  # different semantic ID for identification
-
-
-

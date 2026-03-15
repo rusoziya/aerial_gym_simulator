@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import math
+from abc import ABC, abstractmethod
 
 import torch
 

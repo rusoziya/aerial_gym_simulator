@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import torch
 
-
 from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.control.control_allocation import ControlAllocator
 
 logger = CustomLogger("no_control")
 

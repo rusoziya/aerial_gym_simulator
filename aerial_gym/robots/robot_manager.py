@@ -1,24 +1,28 @@
 from __future__ import annotations
 
-from isaacgym import gymapi
-from isaacgym import gymtorch
+import torch
+from isaacgym import gymapi, gymtorch
 
 from aerial_gym.env_manager.base_env_manager import BaseManager
 from aerial_gym.registry.robot_registry import robot_registry
-import torch
-
+from aerial_gym.robots.inertia_computation import compute_composite_inertia, compute_robot_com
+from aerial_gym.sensors.imu_sensor import IMUSensor
 from aerial_gym.sensors.isaacgym_camera_sensor import IsaacGymCameraSensor
 from aerial_gym.sensors.warp.warp_sensor import WarpSensor
-from aerial_gym.sensors.imu_sensor import IMUSensor
-from aerial_gym.robots.inertia_computation import compute_robot_com, compute_composite_inertia
-
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("robot_manager")
 
 
 class RobotManagerIGE(BaseManager):
-    def __init__(self, global_sim_dict: dict[str, object], robot_name: str, controller_name: str, device: str, robot_id: int = 0) -> None:
+    def __init__(
+        self,
+        global_sim_dict: dict[str, object],
+        robot_name: str,
+        controller_name: str,
+        device: str,
+        robot_id: int = 0,
+    ) -> None:
         logger.debug("Initializing RobotManagerIGE")
         self.gym = global_sim_dict["gym"]
         self.sim = global_sim_dict["sim"]
@@ -253,7 +257,6 @@ class RobotManagerIGE(BaseManager):
         return
 
     def prepare_for_sim(self, global_tensor_dict: dict[str, object]) -> None:
-
         self.global_tensor_dict = global_tensor_dict
 
         self.global_tensor_dict["robot_mass"] = self.robot_masses
@@ -275,7 +278,6 @@ class RobotManagerIGE(BaseManager):
         self.robot.init_tensors(self.global_tensor_dict)
 
         self._init_sensors()
-
 
     def _compute_robot_inertia(self, env_handle: object, env_id: int) -> None:
         """Compute robot mass and inertia from rigid body properties."""
@@ -317,9 +319,7 @@ class RobotManagerIGE(BaseManager):
                         props["stiffness"][j_index] = self.cfg.reconfiguration_config.stiffness[
                             j_index
                         ]
-                        props["damping"][j_index] = self.cfg.reconfiguration_config.damping[
-                            j_index
-                        ]
+                        props["damping"][j_index] = self.cfg.reconfiguration_config.damping[j_index]
                 elif self.cfg.reconfiguration_config.dof_mode == "velocity":
                     props["driveMode"].fill(gymapi.DOF_MODE_VEL)
                     for j_index in range(len(props["damping"])):
@@ -336,7 +336,6 @@ class RobotManagerIGE(BaseManager):
                 "Please check if the correct reconfiguration_config params are set in the robot config file."
             )
             raise e
-        
 
     def add_robot_to_env(
         self,
@@ -349,10 +348,10 @@ class RobotManagerIGE(BaseManager):
     ) -> int:
         if robot_idx_in_env is None:
             robot_idx_in_env = self.robot_id
-            
+
         # Create unique robot name
         robot_name = f"{self.robot_name_prefix}env_{env_id}"
-        
+
         self.actor_handle, _ = simulation_env_class.add_asset_to_env(
             self.robot_asset_dict,
             env_handle,
@@ -369,7 +368,7 @@ class RobotManagerIGE(BaseManager):
         self._compute_robot_inertia(env_handle, env_id)
         # Store mapping of environment to robot index within that environment
         self.env_robot_mapping[env_id] = robot_idx_in_env
-        
+
         return segmentation_counter + 1
 
     def reset(self) -> None:
@@ -387,7 +386,7 @@ class RobotManagerIGE(BaseManager):
     def pre_physics_step(self, actions: torch.Tensor) -> None:
         # FIXED: Action tracking now works correctly with tensor cloning in reward computation
         self.prev_actions[:] = self.actions[:]  # Save current actions as previous
-        self.actions[:] = actions  # Set new actions  
+        self.actions[:] = actions  # Set new actions
         self.robot.step(self.actions)
 
     def post_physics_step(self) -> None:
@@ -407,26 +406,26 @@ class RobotManagerIGE(BaseManager):
         Get observations with robot ID information
         """
         observations = super().get_observations()  # Get base observations
-        
+
         # Add robot ID to observations for identification
         observations["robot_id"] = self.robot_id
         observations["robot_position"] = self.get_robot_positions()
         observations["robot_velocity"] = self.get_robot_velocities()
-        
+
         return observations
-        
+
     def get_robot_positions(self) -> torch.Tensor | None:
         """Get current robot positions across all environments"""
         # Implementation depends on existing robot state access
         # This should return tensor of shape (num_envs, 3)
         pass
-        
+
     def get_robot_velocities(self) -> torch.Tensor | None:
         """Get current robot velocities across all environments"""
         # Implementation depends on existing robot state access
         # This should return tensor of shape (num_envs, 3)
         pass
-        
+
     def set_robot_positions(self, positions: torch.Tensor) -> None:
         """Set robot positions for reset"""
         # Implementation depends on existing robot control interface

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 class BaseSimConfig:
     # viewer camera:
     class viewer:

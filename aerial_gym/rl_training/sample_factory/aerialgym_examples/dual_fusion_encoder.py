@@ -4,8 +4,13 @@ import os
 
 import torch
 import torch.nn as nn
-
-from sample_factory.model.encoder import Encoder, ObsSpace, create_mlp, calc_num_elements, nonlinearity
+from sample_factory.model.encoder import (
+    Encoder,
+    ObsSpace,
+    calc_num_elements,
+    create_mlp,
+    nonlinearity,
+)
 from sample_factory.utils.typing import Config
 
 
@@ -128,9 +133,7 @@ class DualFusionEncoder(Encoder):
         if not want_diag:
             self._nan_diag_printed = True
 
-    def _fuse_gated(
-        self, z_e: torch.Tensor, z_s: torch.Tensor, rest: torch.Tensor
-    ) -> torch.Tensor:
+    def _fuse_gated(self, z_e: torch.Tensor, z_s: torch.Tensor, rest: torch.Tensor) -> torch.Tensor:
         """Apply gated fusion with ablation support."""
         if self._ablate_drone_zero:
             z_e = (z_e * 0.0).detach()

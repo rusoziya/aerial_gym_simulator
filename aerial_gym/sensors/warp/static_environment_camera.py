@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-
-import warp as wp
-import torch
 import math
+
+import torch
+
 from aerial_gym.sensors.warp.warp_cam import WarpCam
-from aerial_gym.utils.math import quat_from_euler_xyz_tensor
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import quat_from_euler_xyz_tensor
 
 logger = CustomLogger("StaticEnvironmentCamera")
+
 
 class StaticEnvironmentCamera:
     """
@@ -27,14 +28,10 @@ class StaticEnvironmentCamera:
 
         # Initialize static camera positions and orientations
         self.static_positions = torch.zeros(
-            (self.num_envs, self.num_cameras, 3),
-            device=self.device,
-            requires_grad=False
+            (self.num_envs, self.num_cameras, 3), device=self.device, requires_grad=False
         )
         self.static_orientations = torch.zeros(
-            (self.num_envs, self.num_cameras, 4),
-            device=self.device,
-            requires_grad=False
+            (self.num_envs, self.num_cameras, 4), device=self.device, requires_grad=False
         )
         self.static_orientations[..., 3] = 1.0  # Initialize quaternions to identity
 
@@ -43,10 +40,12 @@ class StaticEnvironmentCamera:
             num_envs=self.num_envs,
             config=self.cfg,
             mesh_ids_array=self.mesh_ids_array,
-            device=self.device
+            device=self.device,
         )
 
-        logger.info(f"Static environment camera initialized with {self.num_cameras} cameras per environment")
+        logger.info(
+            f"Static environment camera initialized with {self.num_cameras} cameras per environment"
+        )
 
     def set_camera_poses(
         self, positions: torch.Tensor, orientations: torch.Tensor | None = None
@@ -73,7 +72,9 @@ class StaticEnvironmentCamera:
         # Update the Warp camera with static poses
         self.warp_camera.set_pose_tensor(self.static_positions, self.static_orientations)
 
-        logger.debug(f"Updated static camera poses: positions={positions[0, 0]}, orientations={self.static_orientations[0, 0]}")
+        logger.debug(
+            f"Updated static camera poses: positions={positions[0, 0]}, orientations={self.static_orientations[0, 0]}"
+        )
 
     def set_overhead_view(
         self, height: float = 10.0, center_positions: torch.Tensor | None = None
@@ -117,7 +118,9 @@ class StaticEnvironmentCamera:
         positions[..., 2] = height  # Z position
 
         # Orient cameras to look toward center
-        euler_angles = torch.tensor([0.0, -math.pi/6, angle_rad + math.pi], device=self.device)  # Slight downward tilt
+        euler_angles = torch.tensor(
+            [0.0, -math.pi / 6, angle_rad + math.pi], device=self.device
+        )  # Slight downward tilt
         orientations = quat_from_euler_xyz_tensor(euler_angles)
         orientations = orientations.expand(self.num_envs, self.num_cameras, -1)
 
@@ -220,9 +223,9 @@ class MultiAngleCameraConfig(StaticEnvironmentCameraConfig):
         self.num_cameras = 4  # Four cameras around the environment
         self.num_sensors = 4  # Required by WarpCam - same as num_cameras
         self.camera_positions = [
-            [15.0, 0.0, 8.0],    # East view
-            [0.0, 15.0, 8.0],    # North view
-            [-15.0, 0.0, 8.0],   # West view
-            [0.0, -15.0, 8.0],   # South view
+            [15.0, 0.0, 8.0],  # East view
+            [0.0, 15.0, 8.0],  # North view
+            [-15.0, 0.0, 8.0],  # West view
+            [0.0, -15.0, 8.0],  # South view
         ]
         self.horizontal_fov_deg = 90.0

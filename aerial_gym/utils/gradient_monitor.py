@@ -5,9 +5,10 @@ Static Camera Influence Tracker for RL Training
 Activation-based monitoring to verify if neural network uses static camera data.
 """
 
-import torch
-import numpy as np
 import logging
+
+import numpy as np
+import torch
 
 logger = logging.getLogger(__name__)
 
@@ -29,19 +30,19 @@ def _is_script_module(module: torch.nn.Module) -> bool:
 class CompleteObservationInfluenceTracker:
     """
     Enhanced tracker that analyzes the influence of ALL observation components on the neural network's encoded features.
-    
+
     Extends the previous camera-only analysis to cover the complete 150D observation space:
     - Drone position (3D)
-    - Static camera pose (6D) 
+    - Static camera pose (6D)
     - Drone orientation (3D)
     - Kinematic state (6D)
     - Action history (4D)
     - Drone camera VAE (64D)
     - Static camera VAE (64D)
-    
+
     Provides correlation, magnitude, and variance analysis for each component.
     """
-    
+
     def __init__(self, model, config: dict[str, object]):
         self.model = model
         self.config = config
@@ -49,41 +50,38 @@ class CompleteObservationInfluenceTracker:
         self.step_count = 0
         self.forward_pass_count = 0  # Track forward passes separately
         self.hook_handles = []
-        
+
         # Complete observation component mapping (150D total)
         self.obs_components = {
-            'drone_position': (0, 3, "🎯", "Drone absolute position in world coordinates"),
-            'static_camera_pos': (3, 6, "📍", "Static camera position relative to drone"),
-            'static_camera_orient': (6, 9, "🧭", "Static camera orientation relative to drone"),
-            'drone_orientation': (9, 12, "✈️", "Drone full orientation (roll, pitch, yaw)"),
-            'drone_linear_vel': (12, 15, "⚡", "Drone linear velocity in body frame"),
-            'drone_angular_vel': (15, 18, "🌀", "Drone angular velocity in body frame"),
-            'drone_actions': (18, 22, "🎮", "Previous drone actions (action history)"),
-            'drone_camera_vae': (22, 86, "📷", "Drone camera VAE encoded features"),
-            'static_camera_vae': (86, 150, "📹", "Static camera VAE encoded features"),
+            "drone_position": (0, 3, "🎯", "Drone absolute position in world coordinates"),
+            "static_camera_pos": (3, 6, "📍", "Static camera position relative to drone"),
+            "static_camera_orient": (6, 9, "🧭", "Static camera orientation relative to drone"),
+            "drone_orientation": (9, 12, "✈️", "Drone full orientation (roll, pitch, yaw)"),
+            "drone_linear_vel": (12, 15, "⚡", "Drone linear velocity in body frame"),
+            "drone_angular_vel": (15, 18, "🌀", "Drone angular velocity in body frame"),
+            "drone_actions": (18, 22, "🎮", "Previous drone actions (action history)"),
+            "drone_camera_vae": (22, 86, "📷", "Drone camera VAE encoded features"),
+            "static_camera_vae": (86, 150, "📹", "Static camera VAE encoded features"),
         }
-        
+
         # Storage for analysis data
         self.activation_history = {
-            component: {
-                'correlations': [],
-                'magnitudes': [],
-                'variances': []
-            } for component in self.obs_components.keys()
+            component: {"correlations": [], "magnitudes": [], "variances": []}
+            for component in self.obs_components.keys()
         }
-        
+
         # Try to attach hooks in order of preference
         self._attach_hooks()
-        
+
     def _attach_hooks(self) -> None:
         """Attach forward hooks to capture activations at the encoder output."""
         hook_targets = [
-            ('encoder.encoders.obs', 'Obs Encoder (non-compiled)'),
-            ('obs_normalizer', 'Observation Normalizer'),
-            ('encoder', 'Multi Input Encoder'),
-            ('core', 'RNN Core'),
+            ("encoder.encoders.obs", "Obs Encoder (non-compiled)"),
+            ("obs_normalizer", "Observation Normalizer"),
+            ("encoder", "Multi Input Encoder"),
+            ("core", "RNN Core"),
         ]
-        
+
         for target_path, target_name in hook_targets:
             try:
                 target_module = _resolve_module_path(self.model, target_path)
@@ -91,41 +89,47 @@ class CompleteObservationInfluenceTracker:
                 if _is_script_module(target_module):
                     logger.warning(f"Skipping {target_name} - ScriptModule doesn't support hooks")
                     continue
-                
+
                 # Try to attach hook
                 handle = target_module.register_forward_hook(self._activation_hook)
                 self.hook_handles.append(handle)
                 logger.warning(f"✅ Complete observation tracker attached to {target_name}")
                 return  # Success - only need one hook
-                
+
             except AttributeError as e:
                 logger.warning(f"⚠️ Could not access {target_name}: {e}")
                 continue
             except (RuntimeError, TypeError) as e:
                 logger.warning(f"Failed to attach to {target_name}: {e}")
                 continue
-                
+
         logger.warning("Searching for non-ScriptModule components...")
         for name, module in self.model.named_modules():
             if _is_script_module(module):
                 continue
-                
+
             # Skip modules that are too basic
-            if any(skip_type in str(type(module)) for skip_type in ['Linear', 'ELU', 'Identity', 'GRU']):
+            if any(
+                skip_type in str(type(module)) for skip_type in ["Linear", "ELU", "Identity", "GRU"]
+            ):
                 continue
-                
+
             try:
                 handle = module.register_forward_hook(self._activation_hook)
                 self.hook_handles.append(handle)
-                logger.warning(f"Complete observation tracker attached to non-ScriptModule: {name} ({type(module)})")
+                logger.warning(
+                    f"Complete observation tracker attached to non-ScriptModule: {name} ({type(module)})"
+                )
                 return
             except (AttributeError, RuntimeError, TypeError):
                 continue
-                
-        logger.warning("❌ Failed to attach complete observation tracker - no suitable non-ScriptModule hook points found")
+
+        logger.warning(
+            "❌ Failed to attach complete observation tracker - no suitable non-ScriptModule hook points found"
+        )
         logger.warning("💡 ScriptModules don't support hooks - this is a PyTorch limitation")
         self.enabled = False
-        
+
     def _activation_hook(self, module, input, output) -> None:
         """Hook that captures activations and analyzes complete observation influence.
         Robust to modules that accept/return dicts or tuples (SF encoders, custom fusion encoders).
@@ -182,81 +186,85 @@ class CompleteObservationInfluenceTracker:
                 if isinstance(v, torch.Tensor):
                     return v
         return None
-                
-    def _analyze_complete_observation_influence(self, observations: torch.Tensor, encoded_features: torch.Tensor) -> None:
+
+    def _analyze_complete_observation_influence(
+        self, observations: torch.Tensor, encoded_features: torch.Tensor
+    ) -> None:
         """Analyze the influence of all observation components on encoded features."""
         batch_size = observations.shape[0]
-        
+
         if batch_size < 2:  # Need at least 2 samples for correlation
             return
-            
+
         # Increment forward pass counter
         self.forward_pass_count += 1
-        
+
         step_data = {}
-        
+
         # Analyze each observation component
         for component_name, (start, end, emoji, description) in self.obs_components.items():
             component_data = observations[:, start:end]
-            
+
             # Calculate metrics for this component
             magnitude = torch.norm(component_data, dim=1).mean().item()
             variance = torch.var(component_data).item()
-            
+
             # Calculate correlation with encoded features
             correlation = self._calculate_component_correlation(component_data, encoded_features)
-            
+
             # Store metrics
             step_data[component_name] = {
-                'correlation': correlation,
-                'magnitude': magnitude,
-                'variance': variance,
-                'emoji': emoji,
-                'description': description
+                "correlation": correlation,
+                "magnitude": magnitude,
+                "variance": variance,
+                "emoji": emoji,
+                "description": description,
             }
-            
+
             # Add to history
-            self.activation_history[component_name]['correlations'].append(correlation)
-            self.activation_history[component_name]['magnitudes'].append(magnitude)
-            self.activation_history[component_name]['variances'].append(variance)
-            
+            self.activation_history[component_name]["correlations"].append(correlation)
+            self.activation_history[component_name]["magnitudes"].append(magnitude)
+            self.activation_history[component_name]["variances"].append(variance)
+
         # Debug output (reduced frequency) - only every 50 forward passes
         if self.forward_pass_count <= 3 or self.forward_pass_count % 50 == 0:
             self._log_step_debug(step_data)
-            
-    def _calculate_component_correlation(self, component_data: torch.Tensor, encoded_features: torch.Tensor) -> float:
+
+    def _calculate_component_correlation(
+        self, component_data: torch.Tensor, encoded_features: torch.Tensor
+    ) -> float:
         """Calculate correlation between component data and encoded features."""
         if encoded_features.shape[0] < 2:
             return 0.0
-            
+
         correlations = []
-        
+
         # Average component features across dimensions for correlation calculation
         if component_data.shape[1] > 1:
             component_avg = component_data.mean(dim=1)
         else:
             component_avg = component_data.squeeze(1)
-            
+
         # Sample subset of encoded features for efficiency
         max_features_to_check = min(encoded_features.shape[1], 32)
-        
+
         for i in range(max_features_to_check):
             encoded_feature_i = encoded_features[:, i]
-            
+
             # Check for sufficient variance
             if torch.var(component_avg) > 1e-6 and torch.var(encoded_feature_i) > 1e-6:
                 try:
                     corr_matrix = torch.corrcoef(torch.stack([component_avg, encoded_feature_i]))
                     corr_value = corr_matrix[0, 1].item()
-                    
+
                     if not torch.isnan(torch.tensor(corr_value)):
                         correlations.append(abs(corr_value))
-                        
+
                 except (RuntimeError, ValueError):
                     continue
-                    
+
         return np.mean(correlations) if correlations else 0.0
-        
+
     def _log_step_debug(self, step_data: dict[str, dict[str, float]]) -> None:
         """Log debug information for current step (no-op unless verbose logging enabled)."""
 
@@ -265,85 +273,97 @@ class CompleteObservationInfluenceTracker:
 
     def should_log(self) -> bool:
         """Determine if metrics should be logged this step."""
-        return self.step_count > 0 and self.step_count % self.config.get('log_interval', 100) == 0
-        
+        return self.step_count > 0 and self.step_count % self.config.get("log_interval", 100) == 0
+
     def get_logging_metrics(self) -> dict[str, float]:
         """Get metrics for logging to wandb/tensorboard."""
         if not self.activation_history:
             return {}
-            
+
         metrics = {}
-        
+
         for component_name in self.obs_components.keys():
             history = self.activation_history[component_name]
-            
-            if history['correlations']:
+
+            if history["correlations"]:
                 # Recent average (last 10 samples)
-                recent_corr = np.mean(history['correlations'][-10:])
-                recent_mag = np.mean(history['magnitudes'][-10:])
-                recent_var = np.mean(history['variances'][-10:])
-                
-                metrics[f'obs_influence/{component_name}_correlation'] = recent_corr
-                metrics[f'obs_influence/{component_name}_magnitude'] = recent_mag
-                metrics[f'obs_influence/{component_name}_variance'] = recent_var
-                
+                recent_corr = np.mean(history["correlations"][-10:])
+                recent_mag = np.mean(history["magnitudes"][-10:])
+                recent_var = np.mean(history["variances"][-10:])
+
+                metrics[f"obs_influence/{component_name}_correlation"] = recent_corr
+                metrics[f"obs_influence/{component_name}_magnitude"] = recent_mag
+                metrics[f"obs_influence/{component_name}_variance"] = recent_var
+
         return metrics
-        
+
     def print_analysis_summary(self) -> None:
         """Print comprehensive analysis summary."""
-        if not any(self.activation_history[comp]['correlations'] for comp in self.obs_components.keys()):
+        if not any(
+            self.activation_history[comp]["correlations"] for comp in self.obs_components.keys()
+        ):
             logger.warning("📊 No analysis data available yet")
             return
-            
-        logger.warning("================================================================================")
+
+        logger.warning(
+            "================================================================================"
+        )
         logger.warning("📊 COMPLETE OBSERVATION INFLUENCE ANALYSIS")
-        logger.warning("================================================================================")
-        logger.warning(f"📊 Analysis based on {self.step_count} Sample Factory training steps and {self.forward_pass_count} forward passes")
-        logger.warning("    (Note: Sample Factory processes multiple rollout steps per training step)")
+        logger.warning(
+            "================================================================================"
+        )
+        logger.warning(
+            f"📊 Analysis based on {self.step_count} Sample Factory training steps and {self.forward_pass_count} forward passes"
+        )
+        logger.warning(
+            "    (Note: Sample Factory processes multiple rollout steps per training step)"
+        )
         logger.warning("")
-        
+
         # Calculate averages for all components
         component_stats = {}
         for component_name, (start, end, emoji, description) in self.obs_components.items():
             history = self.activation_history[component_name]
-            
-            if history['correlations']:
-                avg_correlation = np.mean(history['correlations'])
-                avg_magnitude = np.mean(history['magnitudes'])
-                avg_variance = np.mean(history['variances'])
-                sample_count = len(history['correlations'])
-                
+
+            if history["correlations"]:
+                avg_correlation = np.mean(history["correlations"])
+                avg_magnitude = np.mean(history["magnitudes"])
+                avg_variance = np.mean(history["variances"])
+                sample_count = len(history["correlations"])
+
                 component_stats[component_name] = {
-                    'correlation': avg_correlation,
-                    'magnitude': avg_magnitude,
-                    'variance': avg_variance,
-                    'samples': sample_count,
-                    'emoji': emoji,
-                    'description': description,
-                    'dimensions': end - start
+                    "correlation": avg_correlation,
+                    "magnitude": avg_magnitude,
+                    "variance": avg_variance,
+                    "samples": sample_count,
+                    "emoji": emoji,
+                    "description": description,
+                    "dimensions": end - start,
                 }
-                
+
         # Sort by correlation strength
-        sorted_stats = sorted(component_stats.items(), key=lambda x: x[1]['correlation'], reverse=True)
-        
+        sorted_stats = sorted(
+            component_stats.items(), key=lambda x: x[1]["correlation"], reverse=True
+        )
+
         logger.warning("📊 INDIVIDUAL OBSERVATION COMPONENT INFLUENCE:")
         logger.warning("")
-        
+
         # Display each component individually with clear formatting
-        total_correlation = sum(stats['correlation'] for _, stats in component_stats.items())
-        
+        total_correlation = sum(stats["correlation"] for _, stats in component_stats.items())
+
         for rank, (component_name, stats) in enumerate(sorted_stats, 1):
-            corr = stats['correlation']
-            mag = stats['magnitude']
-            var = stats['variance']
-            samples = stats['samples']
-            emoji = stats['emoji']
-            desc = stats['description']
-            dims = stats['dimensions']
-            
+            corr = stats["correlation"]
+            mag = stats["magnitude"]
+            var = stats["variance"]
+            samples = stats["samples"]
+            emoji = stats["emoji"]
+            desc = stats["description"]
+            dims = stats["dimensions"]
+
             # Calculate percentage of total influence
             influence_pct = (corr / total_correlation * 100) if total_correlation > 0 else 0
-            
+
             # Determine importance level
             if corr > 0.2:
                 importance = "🔥 CRITICAL"
@@ -357,91 +377,145 @@ class CompleteObservationInfluenceTracker:
             else:
                 importance = "❌ MINIMAL"
                 bar = "██░░░░░░░░░░"
-                
-            logger.warning(f"{rank:2d}. {emoji} {component_name.upper():<20s} | Correlation: {corr:.4f} ({influence_pct:5.1f}%)")
+
+            logger.warning(
+                f"{rank:2d}. {emoji} {component_name.upper():<20s} | Correlation: {corr:.4f} ({influence_pct:5.1f}%)"
+            )
             logger.warning(f"     {importance} | {bar} | Dimensions: {dims}D | Samples: {samples}")
             logger.warning(f"     Magnitude: {mag:8.1f} | Variance: {var:8.3f}")
             logger.warning(f"     Description: {desc}")
             logger.warning("")
-            
+
         # Summary section with individual breakdowns
         logger.warning("🎯 DETAILED BREAKDOWN BY COMPONENT:")
         logger.warning("")
-        
+
         # Individual component breakdown
         for component_name, stats in sorted_stats:
-            corr = stats['correlation']
-            emoji = stats['emoji']
+            corr = stats["correlation"]
+            emoji = stats["emoji"]
             influence_pct = (corr / total_correlation * 100) if total_correlation > 0 else 0
-            logger.warning(f"   {emoji} {component_name:<20s}: {corr:.4f} correlation ({influence_pct:5.1f}% of total influence)")
-            
+            logger.warning(
+                f"   {emoji} {component_name:<20s}: {corr:.4f} correlation ({influence_pct:5.1f}% of total influence)"
+            )
+
         logger.warning("")
         logger.warning("📊 MODALITY GROUPINGS (for reference):")
-        
+
         # Calculate grouped statistics for reference
-        visual_components = ['drone_camera_vae', 'static_camera_vae']
-        kinematic_components = ['drone_linear_vel', 'drone_angular_vel', 'drone_actions']
-        spatial_components = ['drone_position', 'static_camera_pos', 'static_camera_orient', 'drone_orientation']
-        
-        visual_corr = sum(component_stats.get(comp, {}).get('correlation', 0) for comp in visual_components)
-        kinematic_corr = sum(component_stats.get(comp, {}).get('correlation', 0) for comp in kinematic_components)
-        spatial_corr = sum(component_stats.get(comp, {}).get('correlation', 0) for comp in spatial_components)
-        
+        visual_components = ["drone_camera_vae", "static_camera_vae"]
+        kinematic_components = ["drone_linear_vel", "drone_angular_vel", "drone_actions"]
+        spatial_components = [
+            "drone_position",
+            "static_camera_pos",
+            "static_camera_orient",
+            "drone_orientation",
+        ]
+
+        visual_corr = sum(
+            component_stats.get(comp, {}).get("correlation", 0) for comp in visual_components
+        )
+        kinematic_corr = sum(
+            component_stats.get(comp, {}).get("correlation", 0) for comp in kinematic_components
+        )
+        spatial_corr = sum(
+            component_stats.get(comp, {}).get("correlation", 0) for comp in spatial_components
+        )
+
         if total_correlation > 0:
             visual_pct = (visual_corr / total_correlation) * 100
             kinematic_pct = (kinematic_corr / total_correlation) * 100
             spatial_pct = (spatial_corr / total_correlation) * 100
-            
-            logger.warning(f"   📹 Visual Information:   {visual_pct:5.1f}% ({visual_corr:.3f} total correlation)")
-            logger.warning(f"      └─ 📷 Drone Camera:    {component_stats.get('drone_camera_vae', {}).get('correlation', 0):.4f}")
-            logger.warning(f"      └─ 📹 Static Camera:   {component_stats.get('static_camera_vae', {}).get('correlation', 0):.4f}")
+
+            logger.warning(
+                f"   📹 Visual Information:   {visual_pct:5.1f}% ({visual_corr:.3f} total correlation)"
+            )
+            logger.warning(
+                f"      └─ 📷 Drone Camera:    {component_stats.get('drone_camera_vae', {}).get('correlation', 0):.4f}"
+            )
+            logger.warning(
+                f"      └─ 📹 Static Camera:   {component_stats.get('static_camera_vae', {}).get('correlation', 0):.4f}"
+            )
             logger.warning("")
-            logger.warning(f"   ⚡ Kinematic State:      {kinematic_pct:5.1f}% ({kinematic_corr:.3f} total correlation)")
-            logger.warning(f"      └─ ⚡ Linear Velocity:  {component_stats.get('drone_linear_vel', {}).get('correlation', 0):.4f}")
-            logger.warning(f"      └─ 🌀 Angular Velocity: {component_stats.get('drone_angular_vel', {}).get('correlation', 0):.4f}")
-            logger.warning(f"      └─ 🎮 Action History:   {component_stats.get('drone_actions', {}).get('correlation', 0):.4f}")
+            logger.warning(
+                f"   ⚡ Kinematic State:      {kinematic_pct:5.1f}% ({kinematic_corr:.3f} total correlation)"
+            )
+            logger.warning(
+                f"      └─ ⚡ Linear Velocity:  {component_stats.get('drone_linear_vel', {}).get('correlation', 0):.4f}"
+            )
+            logger.warning(
+                f"      └─ 🌀 Angular Velocity: {component_stats.get('drone_angular_vel', {}).get('correlation', 0):.4f}"
+            )
+            logger.warning(
+                f"      └─ 🎮 Action History:   {component_stats.get('drone_actions', {}).get('correlation', 0):.4f}"
+            )
             logger.warning("")
-            logger.warning(f"   🧭 Spatial Awareness:    {spatial_pct:5.1f}% ({spatial_corr:.3f} total correlation)")
-            logger.warning(f"      └─ 🎯 Drone Position:   {component_stats.get('drone_position', {}).get('correlation', 0):.4f}")
-            logger.warning(f"      └─ 📍 Static Cam Pos:   {component_stats.get('static_camera_pos', {}).get('correlation', 0):.4f}")
-            logger.warning(f"      └─ 🧭 Static Cam Orient:{component_stats.get('static_camera_orient', {}).get('correlation', 0):.4f}")
-            logger.warning(f"      └─ ✈️ Drone Orientation:{component_stats.get('drone_orientation', {}).get('correlation', 0):.4f}")
-            
+            logger.warning(
+                f"   🧭 Spatial Awareness:    {spatial_pct:5.1f}% ({spatial_corr:.3f} total correlation)"
+            )
+            logger.warning(
+                f"      └─ 🎯 Drone Position:   {component_stats.get('drone_position', {}).get('correlation', 0):.4f}"
+            )
+            logger.warning(
+                f"      └─ 📍 Static Cam Pos:   {component_stats.get('static_camera_pos', {}).get('correlation', 0):.4f}"
+            )
+            logger.warning(
+                f"      └─ 🧭 Static Cam Orient:{component_stats.get('static_camera_orient', {}).get('correlation', 0):.4f}"
+            )
+            logger.warning(
+                f"      └─ ✈️ Drone Orientation:{component_stats.get('drone_orientation', {}).get('correlation', 0):.4f}"
+            )
+
         logger.warning("")
         logger.warning("💡 OPTIMIZATION INSIGHTS:")
-        
+
         # Find highest and lowest influence components
         highest = sorted_stats[0] if sorted_stats else None
         lowest = sorted_stats[-1] if sorted_stats else None
-        
+
         if highest:
             h_name, h_stats = highest
-            logger.warning(f"   🏆 Most influential: {h_stats['emoji']} {h_name} ({h_stats['correlation']:.4f} correlation)")
-            
+            logger.warning(
+                f"   🏆 Most influential: {h_stats['emoji']} {h_name} ({h_stats['correlation']:.4f} correlation)"
+            )
+
         if lowest:
             l_name, l_stats = lowest
-            if l_stats['correlation'] < 0.05:
-                logger.warning(f"   ⚠️  Least influential: {l_stats['emoji']} {l_name} ({l_stats['correlation']:.4f} correlation)")
-                logger.warning(f"      💡 Consider removing low-influence components for efficiency")
-        
+            if l_stats["correlation"] < 0.05:
+                logger.warning(
+                    f"   ⚠️  Least influential: {l_stats['emoji']} {l_name} ({l_stats['correlation']:.4f} correlation)"
+                )
+                logger.warning("      💡 Consider removing low-influence components for efficiency")
+
         # Efficiency recommendations
-        unused_components = [name for name, stats in component_stats.items() 
-                           if stats['correlation'] < 0.05]
-        
+        unused_components = [
+            name for name, stats in component_stats.items() if stats["correlation"] < 0.05
+        ]
+
         if unused_components:
-            logger.warning(f"   🚫 Minimal influence components ({len(unused_components)}): {', '.join(unused_components)}")
-            total_unused_dims = sum(self.obs_components[comp][1] - self.obs_components[comp][0] for comp in unused_components)
+            logger.warning(
+                f"   🚫 Minimal influence components ({len(unused_components)}): {', '.join(unused_components)}"
+            )
+            total_unused_dims = sum(
+                self.obs_components[comp][1] - self.obs_components[comp][0]
+                for comp in unused_components
+            )
             logger.warning(f"      💡 Could remove {total_unused_dims}D from observation space")
-            
-        critical_components = [name for name, stats in component_stats.items() 
-                             if stats['correlation'] > 0.2]
-        
+
+        critical_components = [
+            name for name, stats in component_stats.items() if stats["correlation"] > 0.2
+        ]
+
         if critical_components:
-            logger.warning(f"   🔥 Critical components ({len(critical_components)}): {', '.join(critical_components)}")
-            logger.warning(f"      ✅ These are essential for decision-making")
-            
-        logger.warning("================================================================================")
-        
+            logger.warning(
+                f"   🔥 Critical components ({len(critical_components)}): {', '.join(critical_components)}"
+            )
+            logger.warning("      ✅ These are essential for decision-making")
+
+        logger.warning(
+            "================================================================================"
+        )
+
     def cleanup(self) -> None:
         """Remove hooks and cleanup resources."""
         for handle in self.hook_handles:
@@ -450,14 +524,16 @@ class CompleteObservationInfluenceTracker:
         logger.warning("🧹 Complete observation tracker cleaned up")
 
 
-def create_influence_tracker(model: object, config: dict[str, object]) -> CompleteObservationInfluenceTracker | None:
+def create_influence_tracker(
+    model: object, config: dict[str, object]
+) -> CompleteObservationInfluenceTracker | None:
     """
     Factory function to create complete observation influence tracker.
-    
+
     Args:
         model: The neural network model to monitor
         config: Configuration dictionary with tracking parameters
-        
+
     Returns:
         CompleteObservationInfluenceTracker instance or None if creation fails
     """

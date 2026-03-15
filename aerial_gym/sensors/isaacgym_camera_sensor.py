@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-
-from aerial_gym.sensors.base_sensor import BaseSensor
-
-from isaacgym import gymutil, gymtorch, gymapi
+from isaacgym import gymapi, gymtorch
 from isaacgym.torch_utils import *
 
+from aerial_gym.sensors.base_sensor import BaseSensor
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("IsaacGymCameraSensor")
@@ -75,9 +73,7 @@ class IsaacGymCameraSensor(BaseSensor):
             angle_quat[0], angle_quat[1], angle_quat[2], angle_quat[3]
         )
 
-    def add_sensor_to_env(
-        self, env_id: int, env_handle: object, actor_handle: object
-    ) -> None:
+    def add_sensor_to_env(self, env_id: int, env_handle: object, actor_handle: object) -> None:
         """
         Add the camera sensor to the environment. Set each camera sensor with appriopriate properties, and attach it to the actor.\
         The camera sensor is attached to the actor using the pose_handle, which is the handle of the actor's pose in the environment.
@@ -188,7 +184,10 @@ class IsaacGymCameraSensor(BaseSensor):
                 mean=self.pixels, std=self.cfg.sensor_noise.pixel_std_dev_multiplier * self.pixels
             )
             self.pixels[
-                torch.bernoulli(torch.ones_like(self.pixels) * self.cfg.sensor_noise.pixel_dropout_prob) > 0
+                torch.bernoulli(
+                    torch.ones_like(self.pixels) * self.cfg.sensor_noise.pixel_dropout_prob
+                )
+                > 0
             ] = self.cfg.near_out_of_range_value
 
     def reset_idx(self, env_ids: torch.Tensor) -> None:

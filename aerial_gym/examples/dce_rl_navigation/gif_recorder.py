@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from aerial_gym.examples.dce_rl_navigation.inference_utils import to_pil_gray, save_gif
+from aerial_gym.examples.dce_rl_navigation.inference_utils import save_gif, to_pil_gray
 
 
 class GifRecorder:

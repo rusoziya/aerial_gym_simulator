@@ -4,17 +4,16 @@ import argparse
 import csv
 import json
 import math
-import os
+
+# Import VAE directly from local file to avoid pulling aerial_gym/isaacgym
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
+from pathlib import Path as _PathLocal
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from PIL import Image
-
-# Import VAE directly from local file to avoid pulling aerial_gym/isaacgym
-from importlib.util import spec_from_file_location, module_from_spec
-from pathlib import Path as _PathLocal
 
 _vae_path = _PathLocal(__file__).with_name("VAE.py")
 _spec = spec_from_file_location("VAE_local", str(_vae_path))
@@ -37,7 +36,7 @@ def clean_state_dict(state_dict) -> None:
 
 def load_index(index_csv, split) -> None:
     rows = []
-    with open(index_csv, "r") as f:
+    with open(index_csv) as f:
         reader = csv.DictReader(f)
         for r in reader:
             if r["split"] != split:
@@ -72,7 +71,7 @@ def psnr_masked(x, y, mask, max_val=1.0) -> None:
     return 20.0 * math.log10(max_val) - 10.0 * math.log10(mse)
 
 
-def ssim_torch(x, y, C1=0.01 ** 2, C2=0.03 ** 2) -> None:
+def ssim_torch(x, y, C1=0.01**2, C2=0.03**2) -> None:
     # x,y: [1,H,W] in [0,1]; simple global SSIM (not windowed)
     mu_x = x.mean()
     mu_y = y.mean()
@@ -80,7 +79,7 @@ def ssim_torch(x, y, C1=0.01 ** 2, C2=0.03 ** 2) -> None:
     sigma_y = y.var(unbiased=False)
     sigma_xy = ((x - mu_x) * (y - mu_y)).mean()
     num = (2 * mu_x * mu_y + C1) * (2 * sigma_xy + C2)
-    den = (mu_x ** 2 + mu_y ** 2 + C1) * (sigma_x + sigma_y + C2)
+    den = (mu_x**2 + mu_y**2 + C1) * (sigma_x + sigma_y + C2)
     return (num / (den + 1e-12)).item()
 
 
@@ -110,10 +109,12 @@ def save_grid(samples, out_path, ncols=8) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Validate/test VAE on static-camera depth frames.")
-    p.add_argument("--index_csv", type=str, required=True, help="CSV built by extract_static_vae_frames.py")
+    p.add_argument(
+        "--index_csv", type=str, required=True, help="CSV built by extract_static_vae_frames.py"
+    )
     p.add_argument("--weights", type=str, required=True, help="Path to VAE checkpoint .pth")
     p.add_argument("--latent_dims", type=int, default=64)
-    p.add_argument("--split", type=str, default="val", choices=["train", "val", "test"]) 
+    p.add_argument("--split", type=str, default="val", choices=["train", "val", "test"])
     p.add_argument("--device", type=str, default="cuda:0")
     p.add_argument("--image_w", type=int, default=480)
     p.add_argument("--image_h", type=int, default=270)
@@ -121,7 +122,11 @@ def main() -> None:
     p.add_argument("--out_dir", type=str, default="aerial_gym/utils/vae/val_reports")
     p.add_argument("--save_grid", action="store_true")
     # Collision-image evaluation (match training target)
-    p.add_argument("--eval_collision", action="store_true", help="Compute collision target and evaluate recon vs. it")
+    p.add_argument(
+        "--eval_collision",
+        action="store_true",
+        help="Compute collision target and evaluate recon vs. it",
+    )
     p.add_argument("--near", type=float, default=0.4)
     p.add_argument("--far", type=float, default=20.0)
     p.add_argument("--hfov_deg", type=float, default=87.0)
@@ -171,7 +176,9 @@ def main() -> None:
             kw_b = int(min(max(int(math.ceil(args.robot_width_m / max(px_w, 1e-6))), 3), 51) | 1)
             kh_b = int(min(max(int(math.ceil(args.robot_height_m / max(px_h, 1e-6))), 3), 51) | 1)
             d = z_m
-            pooled_b = -F.max_pool2d(-d, kernel_size=(kh_b, kw_b), stride=1, padding=(kh_b // 2, kw_b // 2))
+            pooled_b = -F.max_pool2d(
+                -d, kernel_size=(kh_b, kw_b), stride=1, padding=(kh_b // 2, kw_b // 2)
+            )
             out = torch.where(mask_b, to_norm(pooled_b), out)
         return out
 
@@ -211,7 +218,12 @@ def main() -> None:
             # Metrics per frame
             if args.eval_collision and args.pixel_dropout > 0.0:
                 psnrs.append(psnr_masked(target, recon, mask))
-                l1s.append((F.l1_loss(target * mask, recon * mask, reduction="sum") / (mask.sum() + 1e-12)).item())
+                l1s.append(
+                    (
+                        F.l1_loss(target * mask, recon * mask, reduction="sum")
+                        / (mask.sum() + 1e-12)
+                    ).item()
+                )
             else:
                 psnrs.append(psnr(target, recon))
                 l1s.append(F.l1_loss(target, recon).item())
@@ -247,5 +259,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-

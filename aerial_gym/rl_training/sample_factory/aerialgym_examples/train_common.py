@@ -7,26 +7,18 @@ and the gate navigation trainer.
 
 from __future__ import annotations
 
-import sys
-import os
 import glob
+import os
 from typing import Callable
 
-import isaacgym  # noqa: F401 — must import before torch
 import gymnasium as gym
-import torch
+import isaacgym  # noqa: F401 — must import before torch
 import numpy as np
-
-from torch import Tensor
+import torch
 from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
-from sample_factory.envs.env_utils import register_env
-from sample_factory.train import run_rl
-from sample_factory.utils.typing import Config, Env
-from sample_factory.utils.utils import str2bool
-
-from aerial_gym.registry.task_registry import task_registry
-
+from sample_factory.utils.typing import Config
+from torch import Tensor
 
 # Base environment wrapper
 
@@ -59,18 +51,14 @@ class AerialGymVecEnv(gym.Env):
         self.observation_space = gym.spaces.Dict(
             {
                 "obs": convert_space(
-                    gym.spaces.Box(
-                        low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32
-                    )
+                    gym.spaces.Box(low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32)
                 )
             }
         )
 
         self._truncated: Tensor = torch.zeros(self.num_agents, dtype=torch.bool)
 
-    def _transform_obs(
-        self, obs: dict[str, Tensor]
-    ) -> dict[str, Tensor]:
+    def _transform_obs(self, obs: dict[str, Tensor]) -> dict[str, Tensor]:
         """Transform task observations to Sample Factory format."""
         return {"obs": obs["observations"]}
 

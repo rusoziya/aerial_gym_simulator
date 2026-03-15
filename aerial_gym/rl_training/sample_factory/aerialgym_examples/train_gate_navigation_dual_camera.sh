@@ -17,7 +17,7 @@
 #
 # Examples:
 #   ./train_gate_navigation_dual_camera.sh                           # Headless training
-#   ./train_gate_navigation_dual_camera.sh --view                    # Training with visualization  
+#   ./train_gate_navigation_dual_camera.sh --view                    # Training with visualization
 #   ./train_gate_navigation_dual_camera.sh --gifs                    # Headless training with GIF saving
 #   ./train_gate_navigation_dual_camera.sh --view --gifs             # Training with visualization and GIF saving
 #   ./train_gate_navigation_dual_camera.sh my_experiment             # Headless with custom name
@@ -325,7 +325,7 @@ else
   PAR_LABEL="ORIGINAL DCE CONFIG - standard"
 fi
 echo -e "${GREEN}Environments: ${ENV_AGENTS} (${PAR_LABEL})${NC}"
- 
+
 # Dynamic batch adjustment to maintain effective batch size
 EFFECTIVE_BATCH_ACTUAL=$(( BATCH_SIZE * NUM_BATCHES_TO_ACCUMULATE ))
 if [ "$EFFECTIVE_BATCH_ACTUAL" -ne "$EFFECTIVE_BATCH" ]; then
@@ -404,7 +404,7 @@ echo ""
 echo -e "${YELLOW}Using fresh experiment name: ${EXPERIMENT_NAME}${NC}"
 echo -e "${YELLOW}This ensures no configuration conflicts with previous runs${NC}"
 echo ""
- 
+
 
 # Function to cleanup background processes
 cleanup() {

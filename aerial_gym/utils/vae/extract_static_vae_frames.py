@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import argparse
 import csv
-import os
 import random
 from pathlib import Path
 
 from PIL import Image, ImageSequence
-
 
 DEFAULT_SRC_GLOBS = [
     # Primary: static D455 depth GIFs produced during gate-navigation runs (clean depth only)
@@ -48,8 +46,9 @@ def find_gifs(src_globs, include_docs=False) -> None:
     return filtered
 
 
-def extract_frames_from_gif(gif_path: Path, out_dir: Path, resize_wh=(480, 270),
-                            every_k=1, prefix=None, max_frames=None) -> None:
+def extract_frames_from_gif(
+    gif_path: Path, out_dir: Path, resize_wh=(480, 270), every_k=1, prefix=None, max_frames=None
+) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     prefix = prefix or gif_path.stem
     saved = []
@@ -82,8 +81,8 @@ def split_by_gif(gif_paths, ratios=(0.8, 0.1, 0.1), seed=17) -> None:
     n_train = int(ratios[0] * n)
     n_val = int(ratios[1] * n)
     train = gifs[:n_train]
-    val = gifs[n_train:n_train + n_val]
-    test = gifs[n_train + n_val:]
+    val = gifs[n_train : n_train + n_val]
+    test = gifs[n_train + n_val :]
     return {"train": train, "val": val, "test": test}
 
 
@@ -97,19 +96,37 @@ def write_index(index_rows, out_csv) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Extract static-camera depth frames from GIFs for VAE training.")
-    parser.add_argument("--out_dir", type=str, default="aerial_gym/utils/vae/datasets/static_frames",
-                        help="Output directory for extracted PNG frames (train/val/test subdirs will be created)")
-    parser.add_argument("--include_docs", action="store_true", help="Also include docs/gifs sources")
-    parser.add_argument("--src_glob", action="append", default=None,
-                        help="Additional glob(s) for GIFs, e.g., 'aerial_gym/utils/vae/combined/*.gif'. Can be passed multiple times.")
-    parser.add_argument("--every_k", type=int, default=1, help="Keep 1 of every K frames from each GIF")
+    parser = argparse.ArgumentParser(
+        description="Extract static-camera depth frames from GIFs for VAE training."
+    )
+    parser.add_argument(
+        "--out_dir",
+        type=str,
+        default="aerial_gym/utils/vae/datasets/static_frames",
+        help="Output directory for extracted PNG frames (train/val/test subdirs will be created)",
+    )
+    parser.add_argument(
+        "--include_docs", action="store_true", help="Also include docs/gifs sources"
+    )
+    parser.add_argument(
+        "--src_glob",
+        action="append",
+        default=None,
+        help="Additional glob(s) for GIFs, e.g., 'aerial_gym/utils/vae/combined/*.gif'. Can be passed multiple times.",
+    )
+    parser.add_argument(
+        "--every_k", type=int, default=1, help="Keep 1 of every K frames from each GIF"
+    )
     parser.add_argument("--width", type=int, default=480, help="Resize width for saved frames")
     parser.add_argument("--height", type=int, default=270, help="Resize height for saved frames")
     parser.add_argument("--max_frames_per_gif", type=int, default=None, help="Optional cap per GIF")
     parser.add_argument("--seed", type=int, default=17, help="Split seed")
-    parser.add_argument("--near", type=float, default=0.4, help="Near depth used for normalization metadata")
-    parser.add_argument("--far", type=float, default=20.0, help="Far depth used for normalization metadata")
+    parser.add_argument(
+        "--near", type=float, default=0.4, help="Near depth used for normalization metadata"
+    )
+    parser.add_argument(
+        "--far", type=float, default=20.0, help="Far depth used for normalization metadata"
+    )
 
     args = parser.parse_args()
     out_root = Path(args.out_dir)
@@ -148,5 +165,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-

@@ -1,4 +1,5 @@
 """Parametrized tests covering ALL curriculum levels 3-23."""
+
 import isaacgym  # noqa: F401
 import pytest
 
@@ -6,6 +7,7 @@ import pytest
 @pytest.fixture(scope="module")
 def curriculum():
     from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
     return task_config.curriculum
 
 

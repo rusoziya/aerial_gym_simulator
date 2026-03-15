@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+import os
+
+import torch
 
 from aerial_gym.task.base_navigation_task import BaseNavigationTask
 from aerial_gym.task.base_task import StepReturn
 from aerial_gym.task.task_config_protocol import TaskConfig
-import torch
-import os
-
-from aerial_gym.utils.math import *  # noqa: F401,F403
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import *  # noqa: F401,F403
 
 logger = CustomLogger("navigation_task")
 
@@ -73,9 +73,7 @@ class NavigationTask(BaseNavigationTask):
         self.infos["crashes"] = self.terminations
 
         self.infos.setdefault("episode_extra_stats", {})
-        self.infos["episode_extra_stats"]["curriculum/current_level"] = float(
-            self.curriculum_level
-        )
+        self.infos["episode_extra_stats"]["curriculum/current_level"] = float(self.curriculum_level)
         self.infos["episode_extra_stats"]["curriculum/current_progress"] = float(
             self.curriculum_progress_fraction
         )
@@ -130,7 +128,9 @@ class NavigationTask(BaseNavigationTask):
         self.task_obs["truncations"] = self.truncations
         self.task_obs["image_obs"] = self.obs_dict["depth_range_pixels"]
 
-    def compute_rewards_and_crashes(self, obs_dict: dict[str, torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
+    def compute_rewards_and_crashes(
+        self, obs_dict: dict[str, torch.Tensor]
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
         robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]
@@ -153,7 +153,9 @@ class NavigationTask(BaseNavigationTask):
             self.task_config.reward_parameters,
         )
 
-    def check_and_update_curriculum_level(self, successes: torch.Tensor, crashes: torch.Tensor, timeouts: torch.Tensor) -> None:
+    def check_and_update_curriculum_level(
+        self, successes: torch.Tensor, crashes: torch.Tensor, timeouts: torch.Tensor
+    ) -> None:
         self.success_aggregate += torch.sum(successes)
         self.crashes_aggregate += torch.sum(crashes)
         self.timeouts_aggregate += torch.sum(timeouts)
@@ -184,9 +186,7 @@ class NavigationTask(BaseNavigationTask):
                 f"Curriculum Level: {self.curriculum_level}, "
                 f"Progress: {self.curriculum_progress_fraction}"
             )
-            logger.warning(
-                f"SR: {success_rate}, CR: {crash_rate}, TR: {timeout_rate}"
-            )
+            logger.warning(f"SR: {success_rate}, CR: {crash_rate}, TR: {timeout_rate}")
 
             self.infos["curriculum/level"] = torch.tensor(
                 self.curriculum_level, dtype=torch.float32
@@ -194,15 +194,9 @@ class NavigationTask(BaseNavigationTask):
             self.infos["curriculum/progress"] = torch.tensor(
                 self.curriculum_progress_fraction, dtype=torch.float32
             )
-            self.infos["curriculum/success_rate"] = torch.tensor(
-                success_rate, dtype=torch.float32
-            )
-            self.infos["curriculum/crash_rate"] = torch.tensor(
-                crash_rate, dtype=torch.float32
-            )
-            self.infos["curriculum/timeout_rate"] = torch.tensor(
-                timeout_rate, dtype=torch.float32
-            )
+            self.infos["curriculum/success_rate"] = torch.tensor(success_rate, dtype=torch.float32)
+            self.infos["curriculum/crash_rate"] = torch.tensor(crash_rate, dtype=torch.float32)
+            self.infos["curriculum/timeout_rate"] = torch.tensor(timeout_rate, dtype=torch.float32)
 
             self.success_aggregate = 0
             self.crashes_aggregate = 0

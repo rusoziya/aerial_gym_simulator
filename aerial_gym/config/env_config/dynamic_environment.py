@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from aerial_gym.config.asset_config.dynamic_env_object_config import *
 
-import numpy as np
-
 
 class DynamicEnvironmentCfg:
     class env:

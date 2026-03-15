@@ -3,69 +3,63 @@ from __future__ import annotations
 import numpy as np
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
-
-from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
-    BaseDepthCameraConfig,
-)
 from aerial_gym.config.sensor_config.camera_config.d455_depth_config import (
     RsD455Config,
 )
+from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 from aerial_gym.config.sensor_config.lidar_config.base_lidar_config import (
     BaseLidarConfig,
 )
-from aerial_gym.config.sensor_config.lidar_config.osdome_64_config import OSDome_64_Config
-from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 
 
 class X500Cfg:
-
     class init_config:
         # CHALLENGING SPAWN POSITIONS for gate navigation task
         # Gate is at center (0,0,0) = ratio (0.5, 0.5, 0.1875) in environment bounds [-8,8] x [-8,8] x [0,8]
         # Target is in front of gate: ratio (0.85-0.94, 0.1-0.3, 0.3-0.7)
-        # 
+        #
         # SPAWN STRATEGY: Force drone to start in difficult positions requiring navigation:
         # - Behind gate (wrong side) at various distances and angles
-        # - Side positions (left/right of gate) requiring lateral navigation  
+        # - Side positions (left/right of gate) requiring lateral navigation
         # - Different altitudes requiring 3D navigation
         # - Random orientations (not facing gate) requiring exploration
         # - Near environment edges requiring long-distance navigation
-        
+
         # Environment bounds: x∈[-8,8], y∈[-8,8], z∈[0,8]
         # Gate center: (0, 0, 0) → ratios (0.5, 0.5, 0.0)
         # Target area: front of gate → ratios (0.85-0.94, 0.1-0.3, 0.3-0.7)
-        
+
         min_init_state = [
             # CHALLENGING SPAWN AREA: Behind gate + sides + edges
-            0.1,      # ratio_x: spawn from x=-6.4 (far left/behind)
-            0.6,      # ratio_y: spawn from y=-1.6 (behind gate, wrong side)  
-            0.1,      # ratio_z: spawn from z=0.8 (near ground)
-            -np.pi/4, # roll: slight rotation
-            -np.pi/6, # pitch: slight tilt
-            -np.pi,   # yaw: facing random directions (not towards gate)
+            0.1,  # ratio_x: spawn from x=-6.4 (far left/behind)
+            0.6,  # ratio_y: spawn from y=-1.6 (behind gate, wrong side)
+            0.1,  # ratio_z: spawn from z=0.8 (near ground)
+            -np.pi / 4,  # roll: slight rotation
+            -np.pi / 6,  # pitch: slight tilt
+            -np.pi,  # yaw: facing random directions (not towards gate)
             1.0,
-            0,        # vx: no initial velocity
-            0,        # vy: no initial velocity
-            0,        # vz: no initial velocity
-            0,        # wx: no angular velocity
-            0,        # wy: no angular velocity
-            0,        # wz: no angular velocity
+            0,  # vx: no initial velocity
+            0,  # vy: no initial velocity
+            0,  # vz: no initial velocity
+            0,  # wx: no angular velocity
+            0,  # wy: no angular velocity
+            0,  # wz: no angular velocity
         ]
         max_init_state = [
             # DIVERSE CHALLENGING POSITIONS
-            0.9,      # ratio_x: spawn up to x=6.4 (far right/sides)
-            0.95,     # ratio_y: spawn up to y=6.4 (far behind gate - VERY CHALLENGING)
-            0.8,      # ratio_z: spawn up to z=6.4 (high altitude)
-            np.pi/4,  # roll: rotation range
-            np.pi/6,  # pitch: tilt range
-            np.pi,    # yaw: full rotation range (often facing away from gate)
+            0.9,  # ratio_x: spawn up to x=6.4 (far right/sides)
+            0.95,  # ratio_y: spawn up to y=6.4 (far behind gate - VERY CHALLENGING)
+            0.8,  # ratio_z: spawn up to z=6.4 (high altitude)
+            np.pi / 4,  # roll: rotation range
+            np.pi / 6,  # pitch: tilt range
+            np.pi,  # yaw: full rotation range (often facing away from gate)
             1.0,
-            0,        # vx: no initial velocity
-            0,        # vy: no initial velocity
-            0,        # vz: no initial velocity
-            0,        # wx: no angular velocity
-            0,        # wy: no angular velocity
-            0,        # wz: no angular velocity
+            0,  # vx: no initial velocity
+            0,  # vy: no initial velocity
+            0,  # vz: no initial velocity
+            0,  # wx: no angular velocity
+            0,  # wy: no angular velocity
+            0,  # wz: no angular velocity
         ]
 
     class sensor_config:
@@ -170,7 +164,7 @@ class X500Cfg:
         num_motors = 4
         force_application_level = "motor_link"  # "motor_link" or "root_link" decides to apply combined forces acting on the robot at the root link or at the individual motor links
 
-        application_mask = [4, 1, 3, 2] # front right, back_left, front_left, back_right
+        application_mask = [4, 1, 3, 2]  # front right, back_left, front_left, back_right
         motor_directions = [1, 1, -1, -1]
 
         allocation_matrix = [
@@ -184,8 +178,8 @@ class X500Cfg:
 
         class motor_model_config:
             use_rps = True
-            motor_thrust_constant_min = 8.54858e-6 #0.00000926312
-            motor_thrust_constant_max = 8.54858e-6 #0.00001826312
+            motor_thrust_constant_min = 8.54858e-6  # 0.00000926312
+            motor_thrust_constant_max = 8.54858e-6  # 0.00001826312
             motor_time_constant_increasing_min = 0.0125
             motor_time_constant_increasing_max = 0.0125
             motor_time_constant_decreasing_min = 0.025

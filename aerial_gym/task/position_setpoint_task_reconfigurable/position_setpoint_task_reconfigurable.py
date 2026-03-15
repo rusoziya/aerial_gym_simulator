@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-from aerial_gym.task.position_setpoint_task.position_setpoint_task import PositionSetpointTask
-from aerial_gym.sim.sim_builder import SimBuilder
 import torch
-import numpy as np
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.task.position_setpoint_task.position_setpoint_task import PositionSetpointTask
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("position_setpoint_task")
 
@@ -88,8 +82,7 @@ class PositionSetpointTaskReconfigurable(PositionSetpointTask):
         self.task_obs["observations"][:, 13 : 13 + self.task_config.action_space_dim] = self.actions
         self.task_obs["observations"][
             :,
-            13
-            + self.task_config.action_space_dim : 13
+            13 + self.task_config.action_space_dim : 13
             + self.task_config.action_space_dim
             + self.task_config.num_joints,
         ] = self.obs_dict["dof_state_tensor"][..., 0].reshape(-1, self.task_config.num_joints)

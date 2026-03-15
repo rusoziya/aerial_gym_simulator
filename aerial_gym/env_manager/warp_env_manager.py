@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from aerial_gym.env_manager.base_env_manager import BaseManager
-
-import warp as wp
 import numpy as np
 import torch
-
 import trimesh as tm
+import warp as wp
 
+from aerial_gym.env_manager.base_env_manager import BaseManager
 from aerial_gym.utils.math import tf_apply
 
 # intialize warp
@@ -68,7 +66,9 @@ class WarpEnv(BaseManager):
         else:
             raise ValueError("Environment already exists")
 
-    def add_asset_to_env(self, asset_info_dict, env_id, global_asset_counter, segmentation_counter) -> None:
+    def add_asset_to_env(
+        self, asset_info_dict, env_id, global_asset_counter, segmentation_counter
+    ) -> None:
         warp_asset = asset_info_dict["warp_asset"]
         # use the variable segmentation mask to set the segmentation id for each vertex
         updated_vertex_segmentation = (

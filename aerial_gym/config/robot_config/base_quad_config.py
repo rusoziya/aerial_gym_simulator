@@ -3,30 +3,22 @@ from __future__ import annotations
 import numpy as np
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
-
 from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
     BaseDepthCameraConfig,
 )
+from aerial_gym.config.sensor_config.camera_config.base_normal_faceID_camera_config import (
+    BaseNormalFaceIDCameraConfig,
+)
+from aerial_gym.config.sensor_config.camera_config.stereo_camera_config import (
+    StereoCameraConfig,
+)
+from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 from aerial_gym.config.sensor_config.lidar_config.base_lidar_config import (
     BaseLidarConfig,
 )
 
-from aerial_gym.config.sensor_config.camera_config.base_normal_faceID_camera_config import (
-    BaseNormalFaceIDCameraConfig,
-)
-
-
-from aerial_gym.config.sensor_config.camera_config.stereo_camera_config import (
-    StereoCameraConfig,
-)
-
-
-from aerial_gym.config.sensor_config.lidar_config.osdome_64_config import OSDome_64_Config
-from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
-
 
 class BaseQuadCfg:
-
     class init_config:
         # init_state tensor is of the format [ratio_x, ratio_y, ratio_z, roll_radians, pitch_radians, yaw_radians, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
         min_init_state = [
@@ -196,6 +188,7 @@ class BaseQuadCfg:
             )
             integration_scheme = "rk4"
 
+
 class BaseQuadWithImuCfg(BaseQuadCfg):
     class sensor_config(BaseQuadCfg.sensor_config):
         enable_imu = True
@@ -207,6 +200,7 @@ class BaseQuadWithCameraCfg(BaseQuadCfg):
         enable_camera = True
         camera_config = BaseDepthCameraConfig
 
+
 class BaseQuadWithCameraImuCfg(BaseQuadCfg):
     class sensor_config(BaseQuadCfg.sensor_config):
         enable_camera = True
@@ -215,18 +209,20 @@ class BaseQuadWithCameraImuCfg(BaseQuadCfg):
         enable_imu = True
         imu_config = BaseImuConfig
 
+
 class BaseQuadWithLidarCfg(BaseQuadCfg):
     class sensor_config(BaseQuadCfg.sensor_config):
         enable_lidar = True
         lidar_config = BaseLidarConfig
+
 
 class BaseQuadWithFaceIDNormalCameraCfg(BaseQuadCfg):
     class sensor_config(BaseQuadCfg.sensor_config):
         enable_camera = True
         camera_config = BaseNormalFaceIDCameraConfig
 
+
 class BaseQuadWithStereoCameraCfg(BaseQuadCfg):
     class sensor_config(BaseQuadCfg.sensor_config):
         enable_camera = True
         camera_config = StereoCameraConfig
-

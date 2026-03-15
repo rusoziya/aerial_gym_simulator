@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-from urdfpy import URDF
-import numpy as np
-
-import trimesh as tm
-
 from isaacgym import gymapi
 
 from aerial_gym.assets.base_asset import BaseAsset

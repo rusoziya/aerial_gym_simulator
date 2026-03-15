@@ -4,17 +4,17 @@ import argparse
 import csv
 import json
 import math
+
+# Import VAE directly from the local file to avoid importing the top-level
+# aerial_gym package (which pulls isaacgym and enforces torch import order).
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
-
-# Import VAE directly from the local file to avoid importing the top-level
-# aerial_gym package (which pulls isaacgym and enforces torch import order).
-from importlib.util import spec_from_file_location, module_from_spec
+from torch.utils.data import DataLoader, Dataset
 
 _vae_path = Path(__file__).with_name("VAE.py")
 _spec = spec_from_file_location("VAE_local", str(_vae_path))
@@ -26,7 +26,7 @@ VAE = _mod.VAE
 
 def load_index(index_csv, split) -> None:
     rows = []
-    with open(index_csv, "r") as f:
+    with open(index_csv) as f:
         reader = csv.DictReader(f)
         for r in reader:
             if r["split"] == split:
@@ -71,7 +71,9 @@ class StaticDepthDataset(Dataset):
             t = torch.zeros_like(t)
         if self.rng.rand() < 0.02:
             # Frame freeze (slight blur approximation)
-            t = torch.clamp(torch.nn.functional.avg_pool2d(t, kernel_size=3, stride=1, padding=1), 0.0, 1.0)
+            t = torch.clamp(
+                torch.nn.functional.avg_pool2d(t, kernel_size=3, stride=1, padding=1), 0.0, 1.0
+            )
         return t
 
     def __getitem__(self, idx):
@@ -96,23 +98,56 @@ def main() -> None:
     p.add_argument("--batch_size", type=int, default=256)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--beta", type=float, default=1.0, help="Final KL weight (beta) after warmup")
-    p.add_argument("--beta_warmup_epochs", type=int, default=10, help="Epochs to warm up KL from 0 to beta")
-    p.add_argument("--lambda_ssim", type=float, default=0.0, help="Weight for SSIM loss term (1-SSIM)")
+    p.add_argument(
+        "--beta_warmup_epochs", type=int, default=10, help="Epochs to warm up KL from 0 to beta"
+    )
+    p.add_argument(
+        "--lambda_ssim", type=float, default=0.0, help="Weight for SSIM loss term (1-SSIM)"
+    )
     p.add_argument("--lambda_edge", type=float, default=0.0, help="Weight for Sobel edge L1 loss")
     # Collision-image training per paper (remap depth to collision image and use masked MSE)
-    p.add_argument("--collision_image", action="store_true", help="Train to reconstruct collision image instead of raw depth")
+    p.add_argument(
+        "--collision_image",
+        action="store_true",
+        help="Train to reconstruct collision image instead of raw depth",
+    )
     p.add_argument("--near", type=float, default=0.4, help="Near plane in meters")
     p.add_argument("--far", type=float, default=20.0, help="Far plane in meters")
     p.add_argument("--hfov_deg", type=float, default=87.0)
     p.add_argument("--vfov_deg", type=float, default=56.2)
-    p.add_argument("--robot_width_m", type=float, default=0.5, help="Robot width (meters) for inflation")
-    p.add_argument("--robot_height_m", type=float, default=0.25, help="Robot height (meters) for inflation")
-    p.add_argument("--ref_dist_m", type=float, default=2.0, help="Reference distance for inflation kernel computation")
-    p.add_argument("--depth_bins", type=int, default=6, help="Depth bins for variable inflation (>=1). 1 = fixed kernel at ref_dist_m")
-    p.add_argument("--dilate3d", action="store_true", help="Use full 3D camera-space dilation (uvz) for collision image target")
-    p.add_argument("--z_bins", type=int, default=64, help="Number of depth voxels for 3D dilation mode")
+    p.add_argument(
+        "--robot_width_m", type=float, default=0.5, help="Robot width (meters) for inflation"
+    )
+    p.add_argument(
+        "--robot_height_m", type=float, default=0.25, help="Robot height (meters) for inflation"
+    )
+    p.add_argument(
+        "--ref_dist_m",
+        type=float,
+        default=2.0,
+        help="Reference distance for inflation kernel computation",
+    )
+    p.add_argument(
+        "--depth_bins",
+        type=int,
+        default=6,
+        help="Depth bins for variable inflation (>=1). 1 = fixed kernel at ref_dist_m",
+    )
+    p.add_argument(
+        "--dilate3d",
+        action="store_true",
+        help="Use full 3D camera-space dilation (uvz) for collision image target",
+    )
+    p.add_argument(
+        "--z_bins", type=int, default=64, help="Number of depth voxels for 3D dilation mode"
+    )
     p.add_argument("--pixel_dropout", type=float, default=0.02, help="Bernoulli pixel dropout prob")
-    p.add_argument("--depth_noise_sigma", type=float, default=0.01, help="Depth-dependent noise multiplier (on [0,1] normalized depth)")
+    p.add_argument(
+        "--depth_noise_sigma",
+        type=float,
+        default=0.01,
+        help="Depth-dependent noise multiplier (on [0,1] normalized depth)",
+    )
     p.add_argument("--image_w", type=int, default=480)
     p.add_argument("--image_h", type=int, default=270)
     p.add_argument("--augment", action="store_true")
@@ -120,10 +155,30 @@ def main() -> None:
     p.add_argument("--num_workers", type=int, default=4)
     p.add_argument("--val_every", type=int, default=1)
     # KL stabilization options
-    p.add_argument("--kl_free_bits", type=float, default=0.0, help="Minimum KL per-dimension in nats (free-bits). Set >0 to enable")
-    p.add_argument("--capacity_C_final", type=float, default=0.0, help="Target KL capacity C (nats). If >0, use capacity schedule instead of beta")
-    p.add_argument("--capacity_warmup_epochs", type=int, default=0, help="Epochs to increase capacity from 0 to C_final")
-    p.add_argument("--capacity_gamma", type=float, default=0.0, help="Gamma weight for capacity loss |KL-C| (recommend 50-200)")
+    p.add_argument(
+        "--kl_free_bits",
+        type=float,
+        default=0.0,
+        help="Minimum KL per-dimension in nats (free-bits). Set >0 to enable",
+    )
+    p.add_argument(
+        "--capacity_C_final",
+        type=float,
+        default=0.0,
+        help="Target KL capacity C (nats). If >0, use capacity schedule instead of beta",
+    )
+    p.add_argument(
+        "--capacity_warmup_epochs",
+        type=int,
+        default=0,
+        help="Epochs to increase capacity from 0 to C_final",
+    )
+    p.add_argument(
+        "--capacity_gamma",
+        type=float,
+        default=0.0,
+        help="Gamma weight for capacity loss |KL-C| (recommend 50-200)",
+    )
     args = p.parse_args()
 
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
@@ -138,9 +193,27 @@ def main() -> None:
     val_ds = StaticDepthDataset(val_rows, image_wh=(W, H), augment=False)
     test_ds = StaticDepthDataset(test_rows, image_wh=(W, H), augment=False)
 
-    train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    test_loader = DataLoader(test_ds, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=args.num_workers,
+        pin_memory=True,
+    )
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+        pin_memory=True,
+    )
+    test_loader = DataLoader(
+        test_ds,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+        pin_memory=True,
+    )
 
     # Model
     vae = VAE(input_dim=1, latent_dim=args.latent_dims).to(device)
@@ -182,20 +255,34 @@ def main() -> None:
             # Memory-aware per-sample 3D dilation in camera space
             B, C, H, W = d.shape
             out_coll = []
-            z_edges_global = torch.linspace(args.near, args.far, steps=args.z_bins + 1, device=d.device, dtype=d.dtype)
+            z_edges_global = torch.linspace(
+                args.near, args.far, steps=args.z_bins + 1, device=d.device, dtype=d.dtype
+            )
             z_centers_global = 0.5 * (z_edges_global[:-1] + z_edges_global[1:])
             # precompute 2D kernel sizes per z
             kw_z = []
             kh_z = []
             for zc in z_centers_global:
-                px_w = (2.0 * float(zc)) * math.tan(math.radians(args.hfov_deg) / 2.0) / float(args.image_w)
-                px_h = (2.0 * float(zc)) * math.tan(math.radians(args.vfov_deg) / 2.0) / float(args.image_h)
-                kw_b = int(min(max(int(math.ceil(args.robot_width_m / max(px_w, 1e-6))), 3), 51) | 1)
-                kh_b = int(min(max(int(math.ceil(args.robot_height_m / max(px_h, 1e-6))), 3), 51) | 1)
+                px_w = (
+                    (2.0 * float(zc))
+                    * math.tan(math.radians(args.hfov_deg) / 2.0)
+                    / float(args.image_w)
+                )
+                px_h = (
+                    (2.0 * float(zc))
+                    * math.tan(math.radians(args.vfov_deg) / 2.0)
+                    / float(args.image_h)
+                )
+                kw_b = int(
+                    min(max(int(math.ceil(args.robot_width_m / max(px_w, 1e-6))), 3), 51) | 1
+                )
+                kh_b = int(
+                    min(max(int(math.ceil(args.robot_height_m / max(px_h, 1e-6))), 3), 51) | 1
+                )
                 kw_z.append(kw_b)
                 kh_z.append(kh_b)
             for bi in range(B):
-                d_b = d[bi:bi+1]  # [1,1,H,W]
+                d_b = d[bi : bi + 1]  # [1,1,H,W]
                 z_edges = z_edges_global
                 z_centers = z_centers_global
                 # bin index per pixel
@@ -215,8 +302,10 @@ def main() -> None:
                     kh_b = kh_z[zi]
                     kw_b = kw_z[zi]
                     slice_in = occ[zi].float().unsqueeze(0).unsqueeze(0)  # [1,1,H,W]
-                    slice_out = F.max_pool2d(slice_in, kernel_size=(kh_b, kw_b), stride=1, padding=(kh_b//2, kw_b//2))
-                    dil[zi] = (slice_out.squeeze(0).squeeze(0) > 0.5)
+                    slice_out = F.max_pool2d(
+                        slice_in, kernel_size=(kh_b, kw_b), stride=1, padding=(kh_b // 2, kw_b // 2)
+                    )
+                    dil[zi] = slice_out.squeeze(0).squeeze(0) > 0.5
                 # 1D dilation along z (neighbor bins)
                 dil_shift_up = torch.zeros_like(dil)
                 dil_shift_down = torch.zeros_like(dil)
@@ -224,8 +313,10 @@ def main() -> None:
                 dil_shift_down[:-1] = dil[1:]
                 dil = dil | dil_shift_up | dil_shift_down
                 # nearest occupied depth per pixel
-                inf = torch.full((args.z_bins, H, W), float('inf'), device=d.device)
-                idx_vals = torch.arange(args.z_bins, device=d.device, dtype=torch.float32).view(args.z_bins, 1, 1)
+                inf = torch.full((args.z_bins, H, W), float("inf"), device=d.device)
+                idx_vals = torch.arange(args.z_bins, device=d.device, dtype=torch.float32).view(
+                    args.z_bins, 1, 1
+                )
                 masked = torch.where(dil, idx_vals, inf)
                 min_idx_vals, _ = torch.min(masked, dim=0)  # [H,W]
                 valid = torch.isfinite(min_idx_vals)
@@ -236,10 +327,17 @@ def main() -> None:
             return torch.cat(out_coll, dim=0)
         if args.depth_bins <= 1:
             d_neg = -d
-            pooled = -F.max_pool2d(d_neg, kernel_size=(kh_const, kw_const), stride=1, padding=(kh_const//2, kw_const//2))
+            pooled = -F.max_pool2d(
+                d_neg,
+                kernel_size=(kh_const, kw_const),
+                stride=1,
+                padding=(kh_const // 2, kw_const // 2),
+            )
             return to_norm(pooled)
         # multi-bin variable kernel
-        z_edges = torch.linspace(args.near, args.far, steps=args.depth_bins + 1, device=d.device, dtype=d.dtype)
+        z_edges = torch.linspace(
+            args.near, args.far, steps=args.depth_bins + 1, device=d.device, dtype=d.dtype
+        )
         pooled_all = torch.zeros_like(d)
         for b in range(args.depth_bins):
             z0, z1 = z_edges[b], z_edges[b + 1]
@@ -250,13 +348,15 @@ def main() -> None:
             kw_b = int(min(max(int(math.ceil(args.robot_width_m / max(px_w_m, 1e-6))), 3), 51) | 1)
             kh_b = int(min(max(int(math.ceil(args.robot_height_m / max(px_h_m, 1e-6))), 3), 51) | 1)
             d_neg = -d
-            pooled_b = -F.max_pool2d(d_neg, kernel_size=(kh_b, kw_b), stride=1, padding=(kh_b//2, kw_b//2))
+            pooled_b = -F.max_pool2d(
+                d_neg, kernel_size=(kh_b, kw_b), stride=1, padding=(kh_b // 2, kw_b // 2)
+            )
             mask_b = (d >= z0) & (d < z1)
             pooled_all = torch.where(mask_b, pooled_b, pooled_all)
         return to_norm(pooled_all)
 
     # --- Loss helpers: local SSIM and Sobel edge ---
-    def ssim_local(x, y, window=7, C1=0.01 ** 2, C2=0.03 ** 2) -> None:
+    def ssim_local(x, y, window=7, C1=0.01**2, C2=0.03**2) -> None:
         # x,y: [B,1,H,W] in [0,1]
         pad = window // 2
         mu_x = F.avg_pool2d(x, kernel_size=window, stride=1, padding=pad)
@@ -274,8 +374,12 @@ def main() -> None:
 
     def sobel_edges(t) -> None:
         # t: [B,1,H,W]
-        gx = torch.tensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=t.dtype, device=t.device).view(1, 1, 3, 3)
-        gy = torch.tensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=t.dtype, device=t.device).view(1, 1, 3, 3)
+        gx = torch.tensor(
+            [[1, 0, -1], [2, 0, -2], [1, 0, -1]], dtype=t.dtype, device=t.device
+        ).view(1, 1, 3, 3)
+        gy = torch.tensor(
+            [[1, 2, 1], [0, 0, 0], [-1, -2, -1]], dtype=t.dtype, device=t.device
+        ).view(1, 1, 3, 3)
         ex = F.conv2d(t, gx, padding=1)
         ey = F.conv2d(t, gy, padding=1)
         return ex, ey
@@ -294,7 +398,9 @@ def main() -> None:
         # Capacity schedule
         if args.capacity_C_final > 0.0 and args.capacity_gamma > 0.0:
             if args.capacity_warmup_epochs > 0:
-                C_t = float(args.capacity_C_final) * min(1.0, max(0.0, epoch_idx / float(args.capacity_warmup_epochs)))
+                C_t = float(args.capacity_C_final) * min(
+                    1.0, max(0.0, epoch_idx / float(args.capacity_warmup_epochs))
+                )
             else:
                 C_t = float(args.capacity_C_final)
         else:
@@ -311,13 +417,16 @@ def main() -> None:
                     drop = torch.zeros_like(batch)
                 if args.depth_noise_sigma > 0.0:
                     sigma = args.depth_noise_sigma * batch
-                    noise = torch.normal(mean=0.0, std=1.0, size=batch.shape, device=batch.device) * sigma
+                    noise = (
+                        torch.normal(mean=0.0, std=1.0, size=batch.shape, device=batch.device)
+                        * sigma
+                    )
                 else:
                     noise = torch.zeros_like(batch)
                 noisy = torch.clamp(batch + noise, 0.0, 1.0)
                 # collision target and mask
                 target = collision_image(noisy)
-                mask = (1.0 - drop)
+                mask = 1.0 - drop
             else:
                 target = batch
                 mask = torch.ones_like(batch)
@@ -335,8 +444,10 @@ def main() -> None:
             l_ssim = 1.0 - ssim_val
             rx, ry = sobel_edges(recon)
             bx, by = sobel_edges(target)
-            l_edge = (F.l1_loss(rx, bx, reduction="none").mean(dim=[1, 2, 3]) +
-                      F.l1_loss(ry, by, reduction="none").mean(dim=[1, 2, 3])) * 0.5
+            l_edge = (
+                F.l1_loss(rx, bx, reduction="none").mean(dim=[1, 2, 3])
+                + F.l1_loss(ry, by, reduction="none").mean(dim=[1, 2, 3])
+            ) * 0.5
             # KL per sample (sum over dims)
             # Option A: Capacity schedule -> gamma * |KL - C_t|
             # Option B: Free-bits -> clamp per-dim KL before summation
@@ -419,7 +530,12 @@ def main() -> None:
 
     # Quick test loss
     test_loss, test_comps = run_epoch(test_loader, train=False, epoch_idx=args.epochs)
-    report = {"best_val": best_val, "test_loss": test_loss, "epochs": args.epochs, "test_components": test_comps}
+    report = {
+        "best_val": best_val,
+        "test_loss": test_loss,
+        "epochs": args.epochs,
+        "test_components": test_comps,
+    }
     with open(out_dir / f"train_report_L{args.latent_dims}_beta{args.beta}.json", "w") as f:
         json.dump(report, f, indent=2)
     print(json.dumps(report, indent=2))
@@ -427,5 +543,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-

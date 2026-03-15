@@ -9,7 +9,9 @@ from __future__ import annotations
 import torch
 
 
-def sanitize_tensor(t: torch.Tensor, nan: float = 0.0, posinf: float = 0.0, neginf: float = 0.0) -> torch.Tensor:
+def sanitize_tensor(
+    t: torch.Tensor, nan: float = 0.0, posinf: float = 0.0, neginf: float = 0.0
+) -> torch.Tensor:
     """Replace NaN/Inf values in a tensor. Returns a new tensor."""
     return torch.nan_to_num(t, nan=nan, posinf=posinf, neginf=neginf)
 

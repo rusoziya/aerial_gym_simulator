@@ -1,35 +1,54 @@
 """Behavior tests for math transform functions (gate_config_10)."""
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
+
 from aerial_gym.utils.math import *
 
 
 class TestTorchInterpolateRatio:
     def test_midpoint(self):
-        r = torch_interpolate_ratio(torch.tensor([[0.0]]), torch.tensor([[10.0]]), torch.tensor([[0.5]]))
-        assert r[0,0].item() == pytest.approx(5.0, abs=1e-5)
+        r = torch_interpolate_ratio(
+            torch.tensor([[0.0]]), torch.tensor([[10.0]]), torch.tensor([[0.5]])
+        )
+        assert r[0, 0].item() == pytest.approx(5.0, abs=1e-5)
 
     def test_endpoints(self):
         mn, mx = torch.tensor([[0.0, 0.0]]), torch.tensor([[10.0, 20.0]])
-        assert torch_interpolate_ratio(mn, mx, torch.tensor([[0.0, 0.0]]))[0,0].item() == pytest.approx(0.0)
-        assert torch_interpolate_ratio(mn, mx, torch.tensor([[1.0, 1.0]]))[0,0].item() == pytest.approx(10.0)
+        assert torch_interpolate_ratio(mn, mx, torch.tensor([[0.0, 0.0]]))[
+            0, 0
+        ].item() == pytest.approx(0.0)
+        assert torch_interpolate_ratio(mn, mx, torch.tensor([[1.0, 1.0]]))[
+            0, 0
+        ].item() == pytest.approx(10.0)
 
     def test_batch(self):
-        r = torch_interpolate_ratio(torch.zeros(4,3), torch.ones(4,3)*10, torch.ones(4,3)*0.5)
+        r = torch_interpolate_ratio(
+            torch.zeros(4, 3), torch.ones(4, 3) * 10, torch.ones(4, 3) * 0.5
+        )
         assert r.shape == (4, 3)
-        assert torch.allclose(r, torch.ones(4,3)*5, atol=1e-5)
+        assert torch.allclose(r, torch.ones(4, 3) * 5, atol=1e-5)
 
 
 class TestTensorClamp:
     def test_clamps_below(self):
-        assert tensor_clamp(torch.tensor([-5.0]), torch.tensor([-1.0]), torch.tensor([1.0]))[0].item() == -1.0
+        assert (
+            tensor_clamp(torch.tensor([-5.0]), torch.tensor([-1.0]), torch.tensor([1.0]))[0].item()
+            == -1.0
+        )
 
     def test_clamps_above(self):
-        assert tensor_clamp(torch.tensor([5.0]), torch.tensor([-1.0]), torch.tensor([1.0]))[0].item() == 1.0
+        assert (
+            tensor_clamp(torch.tensor([5.0]), torch.tensor([-1.0]), torch.tensor([1.0]))[0].item()
+            == 1.0
+        )
 
     def test_passthrough(self):
-        assert tensor_clamp(torch.tensor([0.5]), torch.tensor([-1.0]), torch.tensor([1.0]))[0].item() == 0.5
+        assert (
+            tensor_clamp(torch.tensor([0.5]), torch.tensor([-1.0]), torch.tensor([1.0]))[0].item()
+            == 0.5
+        )
 
     def test_exact_values(self):
         t = torch.tensor([-2.0, 0.5, 3.0])
@@ -39,20 +58,22 @@ class TestTensorClamp:
 
 class TestScaleUnscale:
     def test_scale_endpoints(self):
-        r = scale(torch.tensor([-1.0, 0.0, 1.0]), torch.tensor([0.0]*3), torch.tensor([10.0]*3))
+        r = scale(torch.tensor([-1.0, 0.0, 1.0]), torch.tensor([0.0] * 3), torch.tensor([10.0] * 3))
         assert r[0].item() == pytest.approx(0.0, abs=1e-5)
         assert r[1].item() == pytest.approx(5.0, abs=1e-5)
         assert r[2].item() == pytest.approx(10.0, abs=1e-5)
 
     def test_unscale_endpoints(self):
-        r = unscale(torch.tensor([0.0, 5.0, 10.0]), torch.tensor([0.0]*3), torch.tensor([10.0]*3))
+        r = unscale(
+            torch.tensor([0.0, 5.0, 10.0]), torch.tensor([0.0] * 3), torch.tensor([10.0] * 3)
+        )
         assert r[0].item() == pytest.approx(-1.0, abs=1e-5)
         assert r[1].item() == pytest.approx(0.0, abs=1e-5)
         assert r[2].item() == pytest.approx(1.0, abs=1e-5)
 
     def test_roundtrip(self):
         x = torch.tensor([-0.7, 0.3, 0.9])
-        lo, hi = torch.tensor([2.0]*3), torch.tensor([8.0]*3)
+        lo, hi = torch.tensor([2.0] * 3), torch.tensor([8.0] * 3)
         assert torch.allclose(unscale(scale(x, lo, hi), lo, hi), x, atol=1e-5)
 
 
@@ -106,15 +127,24 @@ class TestNormalize:
 
 class TestPDControl:
     def test_proportional_only(self):
-        r = pd_control(torch.tensor([1.0]), torch.tensor([0.0]), torch.tensor([10.0]), torch.tensor([0.0]))
+        r = pd_control(
+            torch.tensor([1.0]), torch.tensor([0.0]), torch.tensor([10.0]), torch.tensor([0.0])
+        )
         assert r[0].item() == pytest.approx(10.0, abs=1e-4)
 
     def test_derivative_only(self):
-        r = pd_control(torch.tensor([0.0]), torch.tensor([1.0]), torch.tensor([0.0]), torch.tensor([5.0]))
+        r = pd_control(
+            torch.tensor([0.0]), torch.tensor([1.0]), torch.tensor([0.0]), torch.tensor([5.0])
+        )
         assert r[0].item() == pytest.approx(5.0, abs=1e-4)
 
     def test_combined(self):
-        r = pd_control(torch.tensor([1.0, 2.0]), torch.tensor([0.1, 0.2]), torch.tensor([10.0, 10.0]), torch.tensor([1.0, 1.0]))
+        r = pd_control(
+            torch.tensor([1.0, 2.0]),
+            torch.tensor([0.1, 0.2]),
+            torch.tensor([10.0, 10.0]),
+            torch.tensor([1.0, 1.0]),
+        )
         assert r[0].item() == pytest.approx(10.1, abs=1e-3)
         assert r[1].item() == pytest.approx(20.2, abs=1e-3)
 

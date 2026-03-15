@@ -3,9 +3,10 @@
 The gate task uses a 4D velocity controller action transformation
 that maps [-1,1] actions to velocity commands.
 """
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
 
 
 class TestActionTransformation:
@@ -13,6 +14,7 @@ class TestActionTransformation:
 
     def setup_method(self):
         from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
         self.transform = task_config.action_transformation_function
 
     def test_returns_same_shape(self):
@@ -50,6 +52,7 @@ class TestBaseNavigationConfig:
 
     def setup_method(self):
         from aerial_gym.config.task_config.navigation_task_config import task_config
+
         self.cfg = task_config
 
     def test_sim_name(self):

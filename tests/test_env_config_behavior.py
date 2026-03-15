@@ -2,6 +2,7 @@
 
 Locks down exact env config values that affect simulation behavior.
 """
+
 import isaacgym  # noqa: F401
 import pytest
 
@@ -9,6 +10,7 @@ import pytest
 class TestGateEnvPhysics:
     def setup_method(self):
         from aerial_gym.config.env_config.gate_env import GateEnvCfg
+
         self.env = GateEnvCfg.env
 
     def test_env_spacing(self):
@@ -47,6 +49,7 @@ class TestGateAssetConfig:
 
     def setup_method(self):
         from aerial_gym.config.asset_config.gate_asset_config import gate_asset_params
+
         self.gate = gate_asset_params
 
     def test_gate_exists(self):

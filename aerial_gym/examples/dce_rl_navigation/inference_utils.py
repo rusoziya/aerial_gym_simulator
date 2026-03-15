@@ -72,6 +72,7 @@ def wilson_ci(successes: int, total: int, z: float = 1.96) -> tuple[float, float
 def sanitize_obs(obs_tensor: torch.Tensor) -> torch.Tensor:
     """Replace NaN/Inf values in observation tensor with zeros."""
     from aerial_gym.utils.tensor_utils import sanitize_tensor
+
     return sanitize_tensor(obs_tensor)
 
 

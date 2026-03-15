@@ -2,24 +2,32 @@ from __future__ import annotations
 
 import torch
 
-
-from aerial_gym.utils.math import torch_rand_float_tensor, tensor_clamp
+from aerial_gym.utils.math import tensor_clamp, torch_rand_float_tensor
 
 
 class MotorModel:
-    def __init__(self, num_envs: int, motors_per_robot: int, dt: float, config: object, device: str = "cuda:0") -> None:
+    def __init__(
+        self,
+        num_envs: int,
+        motors_per_robot: int,
+        dt: float,
+        config: object,
+        device: str = "cuda:0",
+    ) -> None:
         self.num_envs = num_envs
         self.dt = dt
         self.cfg = config
         self.device = device
         self.num_motors_per_robot = motors_per_robot
-        self.integration_scheme: str = config.integration_scheme if config.integration_scheme in ("euler", "rk4") else "rk4"
-        self.max_thrust = torch.tensor(self.cfg.max_thrust, device=self.device, dtype=torch.float32).expand(
-            self.num_envs, self.num_motors_per_robot
+        self.integration_scheme: str = (
+            config.integration_scheme if config.integration_scheme in ("euler", "rk4") else "rk4"
         )
-        self.min_thrust = torch.tensor(self.cfg.min_thrust, device=self.device, dtype=torch.float32).expand(
-            self.num_envs, self.num_motors_per_robot
-        )
+        self.max_thrust = torch.tensor(
+            self.cfg.max_thrust, device=self.device, dtype=torch.float32
+        ).expand(self.num_envs, self.num_motors_per_robot)
+        self.min_thrust = torch.tensor(
+            self.cfg.min_thrust, device=self.device, dtype=torch.float32
+        ).expand(self.num_envs, self.num_motors_per_robot)
         self.motor_time_constant_increasing_min = torch.tensor(
             self.cfg.motor_time_constant_increasing_min, device=self.device
         ).expand(self.num_envs, self.num_motors_per_robot)
@@ -168,6 +176,7 @@ def rk4_integration(error, mixing_factor, max_rate, dt):
     k4 = motor_model_rate(error + dt * k3, mixing_factor, max_rate)
     return (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
 
+
 @torch.jit.script
 def discrete_mixing_factor(dt, time_constant):
     # type: (float, Tensor) -> Tensor
@@ -200,6 +209,7 @@ def compute_thrust_with_force_time_constant(
     thrust_error = ref_thrust - current_thrust
     current_thrust[:] += motor_model_rate(thrust_error, mixing_factor, max_rate) * dt
     return current_thrust
+
 
 @torch.jit.script
 def compute_thrust_with_rpm_time_constant_rk4(

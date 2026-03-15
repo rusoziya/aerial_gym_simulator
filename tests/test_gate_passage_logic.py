@@ -1,9 +1,11 @@
 """Tests for gate passage detection within compute_gate_reward."""
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
-from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
+import torch
+
 from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
 
 
 @pytest.fixture(scope="module")
@@ -14,14 +16,22 @@ def rp():
 def _reward(rp, robot_y, robot_x=0.0, robot_z=1.2, gate_passed=False):
     N = 1
     r, _, _ = compute_gate_reward(
-        torch.tensor([[0.1, 0, 0]]), torch.tensor([[0.5, 0, 0]]),
-        torch.zeros(N, dtype=torch.bool), torch.zeros(N, 4), torch.zeros(N, 4),
+        torch.tensor([[0.1, 0, 0]]),
+        torch.tensor([[0.5, 0, 0]]),
+        torch.zeros(N, dtype=torch.bool),
+        torch.zeros(N, 4),
+        torch.zeros(N, 4),
         torch.tensor([[robot_x, robot_y, robot_z]]),
         torch.tensor([[0, 0, 0, 1.0]]),
-        torch.zeros(N, 3), torch.tensor([gate_passed]),
-        0.0, rp,
-        torch.full((N,), 2.5), torch.full((N,), 2.4),
-        torch.full((N,), 1.2), torch.zeros(N, dtype=torch.bool))
+        torch.zeros(N, 3),
+        torch.tensor([gate_passed]),
+        0.0,
+        rp,
+        torch.full((N,), 2.5),
+        torch.full((N,), 2.4),
+        torch.full((N,), 1.2),
+        torch.zeros(N, dtype=torch.bool),
+    )
     return r[0].item()
 
 

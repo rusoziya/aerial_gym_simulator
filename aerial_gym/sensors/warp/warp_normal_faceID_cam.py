@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-
-import warp as wp
 import math
+
 import torch
+import warp as wp
 
 from aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels import (
     DepthCameraWarpKernels,
@@ -76,7 +76,7 @@ class WarpNormalFaceIDCam:
 
     def create_render_graph(self, debug: bool = False) -> None:
         if not debug:
-            print(f"creating render graph")
+            print("creating render graph")
             wp.capture_begin(device=self.device)
         # with wp.ScopedTimer("render"):
         wp.launch(
@@ -97,7 +97,7 @@ class WarpNormalFaceIDCam:
             device=self.device,
         )
         if not debug:
-            print(f"finishing capture of render graph")
+            print("finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
     def set_image_tensors(

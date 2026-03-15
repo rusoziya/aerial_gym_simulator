@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+
 import torch
 
 from aerial_gym.utils.logging import CustomLogger
@@ -21,7 +22,9 @@ class GateGeometry:
 
         try:
             if not os.path.exists(urdf_path):
-                logger.warning(f"[GATE_ADAPTIVE] URDF file not found: {urdf_path}, using default dimensions")
+                logger.warning(
+                    f"[GATE_ADAPTIVE] URDF file not found: {urdf_path}, using default dimensions"
+                )
                 return 2.5, 2.4, 1.2, 1.0  # Default 100% scale gate
 
             tree = ET.parse(urdf_path)
@@ -43,18 +46,18 @@ class GateGeometry:
             center_height = 1.2 * scale_factor  # Default scaled center height
 
             # Parse joint positions for more accurate dimensions
-            for joint in root.iter('joint'):
-                if joint.get('name') == 'base_to_left_post':
-                    origin = joint.find('origin')
+            for joint in root.iter("joint"):
+                if joint.get("name") == "base_to_left_post":
+                    origin = joint.find("origin")
                     if origin is not None:
-                        xyz = origin.get('xyz', '0 0 0').split()
+                        xyz = origin.get("xyz", "0 0 0").split()
                         left_y = abs(float(xyz[1]))
                         width = left_y * 2  # Total width = 2 * distance from center
 
-                elif joint.get('name') == 'base_to_top_bar':
-                    origin = joint.find('origin')
+                elif joint.get("name") == "base_to_top_bar":
+                    origin = joint.find("origin")
                     if origin is not None:
-                        xyz = origin.get('xyz', '0 0 0').split()
+                        xyz = origin.get("xyz", "0 0 0").split()
                         top_z = float(xyz[2])
                         height = top_z  # Height to top bar
                         center_height = top_z / 2  # Center height
@@ -62,7 +65,9 @@ class GateGeometry:
             return width, height, center_height, scale_factor
 
         except (ValueError, TypeError) as e:
-            logger.warning(f"[GATE_ADAPTIVE] Error parsing URDF {urdf_path}: {e}, using default dimensions")
+            logger.warning(
+                f"[GATE_ADAPTIVE] Error parsing URDF {urdf_path}: {e}, using default dimensions"
+            )
             return 2.5, 2.4, 1.2, 1.0
 
     def calculate_gate_dimensions_from_name(self, gate_name: str) -> tuple[float, float, float]:
@@ -88,19 +93,27 @@ class GateGeometry:
             height = base_height * scale_factor
             center_height = base_center_height * scale_factor
 
-            logger.warning(f"[GATE_ADAPTIVE] Calculated dimensions from name '{gate_name}': width={width:.3f}m, height={height:.3f}m, center_height={center_height:.3f}m, scale={scale_factor:.2f}")
+            logger.warning(
+                f"[GATE_ADAPTIVE] Calculated dimensions from name '{gate_name}': width={width:.3f}m, height={height:.3f}m, center_height={center_height:.3f}m, scale={scale_factor:.2f}"
+            )
             return width, height, center_height, scale_factor
 
         except (ValueError, TypeError) as e:
-            logger.warning(f"[GATE_ADAPTIVE] Error calculating dimensions from name '{gate_name}': {e}, using default")
+            logger.warning(
+                f"[GATE_ADAPTIVE] Error calculating dimensions from name '{gate_name}': {e}, using default"
+            )
             return 2.5, 2.4, 1.2, 1.0
 
     def update_gate_dimensions_for_environments(self, env_ids: torch.Tensor) -> None:
         """
         Update gate dimensions for specified environments based on their selected gate variants.
         """
-        gate_variant_names: list[list[str]] = self.task.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])
-        active_gate_array_indices: torch.Tensor = self.task.sim_env.global_tensor_dict.get("active_gate_variant_array_index", torch.zeros(self.task.sim_env.num_envs))
+        gate_variant_names: list[list[str]] = self.task.sim_env.global_tensor_dict.get(
+            "gate_variant_names_per_env", []
+        )
+        active_gate_array_indices: torch.Tensor = self.task.sim_env.global_tensor_dict.get(
+            "active_gate_variant_array_index", torch.zeros(self.task.sim_env.num_envs)
+        )
 
         for env_id in env_ids.tolist():
             if env_id >= len(gate_variant_names):
@@ -111,13 +124,16 @@ class GateGeometry:
 
             if active_idx >= 0 and active_idx < len(env_gate_names):
                 # Get the active gate variant name
-                active_gate_name = env_gate_names[active_idx] if env_gate_names else "gate_scale_100"
+                active_gate_name = (
+                    env_gate_names[active_idx] if env_gate_names else "gate_scale_100"
+                )
 
                 # Construct URDF path - find the correct base directory
                 urdf_filename = f"{active_gate_name}.urdf"
 
                 # Try multiple possible base directories to find the URDF files
                 from aerial_gym import AERIAL_GYM_DIRECTORY
+
                 possible_base_dirs = [
                     AERIAL_GYM_DIRECTORY,
                     os.getcwd(),
@@ -145,14 +161,22 @@ class GateGeometry:
 
                 if urdf_path is None:
                     # Fallback: construct path anyway for the error message
-                    urdf_path = os.path.join(possible_base_dirs[0], "resources/models/environment_assets/gates", urdf_filename)
+                    urdf_path = os.path.join(
+                        possible_base_dirs[0],
+                        "resources/models/environment_assets/gates",
+                        urdf_filename,
+                    )
 
                 # Extract dimensions from URDF or calculate from filename
                 if urdf_path and os.path.exists(urdf_path):
-                    width, height, center_height, scale_factor = self.task.extract_gate_dimensions_from_urdf(urdf_path)
+                    width, height, center_height, scale_factor = (
+                        self.task.extract_gate_dimensions_from_urdf(urdf_path)
+                    )
                 else:
                     # Fallback: calculate dimensions from scale factor in filename
-                    width, height, center_height, scale_factor = self.task.calculate_gate_dimensions_from_name(active_gate_name)
+                    width, height, center_height, scale_factor = (
+                        self.task.calculate_gate_dimensions_from_name(active_gate_name)
+                    )
 
                 # Update environment-specific dimensions
                 self.task.gate_width[env_id] = width
@@ -166,8 +190,10 @@ class GateGeometry:
                 self.task.gate_height[env_id] = 2.4
                 self.task.gate_center_height[env_id] = 1.2
                 self.task.gate_scale_factors[env_id] = 1.0
-                logger.warning(f"[GATE_ADAPTIVE] Env {env_id}: No active gate found (active_idx={active_idx}, num_gates={len(env_gate_names)}), using default gate dimensions")
+                logger.warning(
+                    f"[GATE_ADAPTIVE] Env {env_id}: No active gate found (active_idx={active_idx}, num_gates={len(env_gate_names)}), using default gate dimensions"
+                )
         # Expose adaptive gate center heights per env to global tensor dict for camera spawning
-        self.task.sim_env.global_tensor_dict['gate/center_height_per_env'] = self.task.gate_center_height.detach().clone()
-
-
+        self.task.sim_env.global_tensor_dict["gate/center_height_per_env"] = (
+            self.task.gate_center_height.detach().clone()
+        )

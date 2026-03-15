@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import torch
+
 from aerial_gym.utils.math import torch_interpolate_ratio
 
 

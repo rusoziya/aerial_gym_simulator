@@ -1,28 +1,24 @@
 from __future__ import annotations
 
-
-from aerial_gym.env_manager.IGE_env_manager import IsaacGymEnv
-
-from aerial_gym.env_manager.base_env_manager import BaseManager
-from aerial_gym.env_manager.asset_manager import AssetManager
-from aerial_gym.env_manager.warp_env_manager import WarpEnv
-from aerial_gym.env_manager.asset_loader import AssetLoader
-from aerial_gym.robots.robot_manager import RobotManagerIGE
-from aerial_gym.env_manager.obstacle_manager import ObstacleManager
-from aerial_gym.env_manager.gate_variant_selection import (
-    apply_gate_variant_selection as _apply_gate_variant_selection,
-)
-
-
-from aerial_gym.registry.env_registry import env_config_registry
-from aerial_gym.registry.sim_registry import sim_config_registry
-from aerial_gym.registry.robot_registry import robot_registry
+import math
+import random
 
 import torch
 
+from aerial_gym.env_manager.asset_loader import AssetLoader
+from aerial_gym.env_manager.asset_manager import AssetManager
+from aerial_gym.env_manager.base_env_manager import BaseManager
+from aerial_gym.env_manager.gate_variant_selection import (
+    apply_gate_variant_selection as _apply_gate_variant_selection,
+)
+from aerial_gym.env_manager.IGE_env_manager import IsaacGymEnv
+from aerial_gym.env_manager.obstacle_manager import ObstacleManager
+from aerial_gym.env_manager.warp_env_manager import WarpEnv
+from aerial_gym.registry.env_registry import env_config_registry
+from aerial_gym.registry.robot_registry import robot_registry
+from aerial_gym.registry.sim_registry import sim_config_registry
+from aerial_gym.robots.robot_manager import RobotManagerIGE
 from aerial_gym.utils.logging import CustomLogger
-
-import math, random
 
 logger = CustomLogger("env_manager")
 
@@ -231,9 +227,9 @@ class EnvManager(BaseManager):
             segmentation_ctr += max(ige_seg_ctr, warp_segmentation_ctr)
             self._accumulate_state_ratios(asset_info_dict)
 
-        self.global_tensor_dict["gate_variant_indices_per_env"][
-            env_idx
-        ] = local_gate_variant_indices
+        self.global_tensor_dict["gate_variant_indices_per_env"][env_idx] = (
+            local_gate_variant_indices
+        )
         self.global_tensor_dict["gate_variant_names_per_env"][env_idx] = local_gate_variant_names
         return segmentation_ctr
 

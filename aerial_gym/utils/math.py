@@ -27,8 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import torch
-from torch import Tensor
-from pytorch3d.transforms import matrix_to_quaternion
 
 
 @torch.jit.script

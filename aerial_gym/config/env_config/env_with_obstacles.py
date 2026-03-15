@@ -1,22 +1,18 @@
 from __future__ import annotations
 
 from aerial_gym.config.asset_config.env_object_config import (
-    panel_asset_params,
-    thin_asset_params,
-    tree_asset_params,
-    object_asset_params,
-    tile_asset_params,
-)
-from aerial_gym.config.asset_config.env_object_config import (
-    left_wall,
-    right_wall,
     back_wall,
-    front_wall,
     bottom_wall,
+    front_wall,
+    left_wall,
+    object_asset_params,
+    panel_asset_params,
+    right_wall,
+    thin_asset_params,
+    tile_asset_params,
     top_wall,
+    tree_asset_params,
 )
-
-import numpy as np
 
 
 class EnvWithObstaclesCfg:

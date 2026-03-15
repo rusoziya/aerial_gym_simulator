@@ -1,11 +1,12 @@
 """Behavior tests for robot configuration values."""
+
 import isaacgym  # noqa: F401
-import pytest
 
 
 class TestLMF2Config:
     def setup_method(self):
         from aerial_gym.config.robot_config.lmf2_config import LMF2Cfg as LMF2RobotCfg
+
         self.cfg = LMF2RobotCfg
 
     def test_has_init_config(self):
@@ -33,6 +34,7 @@ class TestLMF2Config:
 class TestBaseQuadConfig:
     def setup_method(self):
         from aerial_gym.config.robot_config.base_quad_config import BaseQuadCfg
+
         self.cfg = BaseQuadCfg
 
     def test_has_init_config(self):

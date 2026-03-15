@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import torch
 
-from aerial_gym.utils.math import (
-    torch_rand_float_tensor,
-    torch_interpolate_ratio,
-    quat_from_euler_xyz_tensor,
-)
-
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import (
+    quat_from_euler_xyz_tensor,
+    torch_interpolate_ratio,
+    torch_rand_float_tensor,
+)
 
 logger = CustomLogger("asset_manager")
 logger.setLevel("DEBUG")
@@ -18,7 +17,9 @@ class AssetManager:
     def __init__(self, global_tensor_dict: dict[str, torch.Tensor], num_keep_in_env: int) -> None:
         self.init_tensors(global_tensor_dict, num_keep_in_env)
 
-    def init_tensors(self, global_tensor_dict: dict[str, torch.Tensor], num_keep_in_env: int) -> None:
+    def init_tensors(
+        self, global_tensor_dict: dict[str, torch.Tensor], num_keep_in_env: int
+    ) -> None:
         self.env_asset_state_tensor = global_tensor_dict["env_asset_state_tensor"]
         self.asset_min_state_ratio = global_tensor_dict["asset_min_state_ratio"]
         self.asset_max_state_ratio = global_tensor_dict["asset_max_state_ratio"]
@@ -69,7 +70,7 @@ class AssetManager:
         self.env_asset_state_tensor[env_ids, :, 3:7] = quat_from_euler_xyz_tensor(
             sampled_asset_state_ratio[env_ids, :, 3:6]
         )
-        
+
         env_list: list[int] = env_ids.tolist()
         for eid in env_list:
             self.env_asset_state_tensor[eid, num_obstacles_per_env:, 0:3] = -1000.0

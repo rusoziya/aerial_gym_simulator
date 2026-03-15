@@ -16,7 +16,9 @@ from aerial_gym.task.task_config_protocol import TaskConfig
 from aerial_gym.utils.logging import CustomLogger
 
 
-def read_env_bool(env_var: str, config_value: bool | int | float | None = None, default: bool = False) -> bool:
+def read_env_bool(
+    env_var: str, config_value: bool | int | float | None = None, default: bool = False
+) -> bool:
     """Read a boolean flag from an environment variable with config fallback.
 
     Args:
@@ -34,7 +36,9 @@ def read_env_bool(env_var: str, config_value: bool | int | float | None = None, 
     return default
 
 
-def read_env_int(env_var: str, config_value: bool | int | float | None = None, default: int = 0) -> int:
+def read_env_int(
+    env_var: str, config_value: bool | int | float | None = None, default: int = 0
+) -> int:
     """Read an integer from an environment variable with config fallback."""
     val = os.getenv(env_var)
     if val is not None:
@@ -47,7 +51,9 @@ def read_env_int(env_var: str, config_value: bool | int | float | None = None, d
     return default
 
 
-def read_env_float(env_var: str, config_value: bool | int | float | None = None, default: float = 0.0) -> float:
+def read_env_float(
+    env_var: str, config_value: bool | int | float | None = None, default: float = 0.0
+) -> float:
     """Read a float from an environment variable with config fallback."""
     val = os.getenv(env_var)
     if val is not None:
@@ -107,12 +113,8 @@ def parse_ablation_flags(task_config: TaskConfig) -> dict[str, bool | int | floa
         "SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION",
         tc.disable_camera_frame_dropout_randomization,
     )
-    flags["drone_frame_dropout_disabled"] = read_env_bool(
-        "SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT"
-    )
-    flags["static_frame_dropout_disabled"] = read_env_bool(
-        "SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT"
-    )
+    flags["drone_frame_dropout_disabled"] = read_env_bool("SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT")
+    flags["static_frame_dropout_disabled"] = read_env_bool("SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT")
 
     # Spawn randomisation
     flags["spawn_position_disabled"] = read_env_bool(
@@ -143,9 +145,7 @@ def parse_ablation_flags(task_config: TaskConfig) -> dict[str, bool | int | floa
     # Locked follow & arc follow
     flags["locked_follow"] = read_env_bool("SF_STATIC_CAMERA_LOCKED_FOLLOW")
     flags["arc_follow_enabled"] = read_env_bool("SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW")
-    flags["arc_follow_radius_m"] = read_env_float(
-        "SF_STATIC_CAMERA_ARC_RADIUS_M", default=2.0
-    )
+    flags["arc_follow_radius_m"] = read_env_float("SF_STATIC_CAMERA_ARC_RADIUS_M", default=2.0)
 
     # Dynamic follow tuning
     flags["dynamic_follow_offset_y"] = read_env_float(

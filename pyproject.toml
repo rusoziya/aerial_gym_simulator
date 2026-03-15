@@ -63,7 +63,7 @@ ignore = [
     "UP007",  # use X | Y for union — needs `from __future__ import annotations`
     "UP008",  # use super() — auto-fixable, deferred to follow-up
     "UP031",  # use format specifiers — deferred to follow-up
-    "UP045",  # use X | None — needs `from __future__ import annotations`
+    "UP045",  # use X | None (ruff >=0.8) — needs `from __future__ import annotations`
     "F811",   # redefined unused — needs manual review (duplicate methods)
     "F821",   # undefined name — needs manual review (missing imports)
 ]

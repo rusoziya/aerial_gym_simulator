@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import os
 import datetime
+import os
+
 import torch
 
 from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.env_flag_utils import read_env_bool
 
 logger = CustomLogger("navigation_task_gate_curriculum")
 
@@ -338,7 +338,7 @@ class CurriculumManager:
             )
 
             self.task.log_curriculum_update(
-                f"[CURRICULUM UPDATE] RESETTING counters for next evaluation period"
+                "[CURRICULUM UPDATE] RESETTING counters for next evaluation period"
             )
             self.task.success_aggregate = 0
             self.task.crashes_aggregate = 0

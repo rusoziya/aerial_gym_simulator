@@ -1,24 +1,17 @@
 from __future__ import annotations
 
-import numpy as np
+import distutils
 import os
+
+import gym
+import numpy as np
+import torch
 import yaml
-
-
-import isaacgym
-
+from gym import spaces
+from rl_games.common import env_configurations, vecenv
 
 from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.utils.helpers import parse_arguments
-
-import gym
-from gym import spaces
-from argparse import Namespace
-
-from rl_games.common import env_configurations, vecenv
-
-import torch
-import distutils
 
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
@@ -152,8 +145,6 @@ vecenv.register(
 
 
 def get_args() -> None:
-    from isaacgym import gymutil
-
     custom_parameters = [
         {
             "name": "--seed",
@@ -271,7 +262,6 @@ def get_args() -> None:
 
 
 def update_config(config, args) -> None:
-
     if args["task"] is not None:
         config["params"]["config"]["env_name"] = args["task"]
     if args["experiment_name"] is not None:
@@ -300,7 +290,7 @@ if __name__ == "__main__":
     config_name = args["file"]
 
     print("Loading config: ", config_name)
-    with open(config_name, "r") as stream:
+    with open(config_name) as stream:
         config = yaml.safe_load(stream)
 
         config = update_config(config, args)

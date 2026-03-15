@@ -11,18 +11,17 @@ from __future__ import annotations
 
 from typing import Callable
 
+import numpy as np
+import torch
+from gym.spaces import Box, Dict
+
+from aerial_gym.env_manager.env_manager import EnvManager
+from aerial_gym.sim.sim_builder import SimBuilder
 from aerial_gym.task.base_task import BaseTask, StepReturn
 from aerial_gym.task.task_config_protocol import TaskConfig
-from aerial_gym.sim.sim_builder import SimBuilder
-from aerial_gym.env_manager.env_manager import EnvManager
-import torch
-import numpy as np
-
-from aerial_gym.utils.math import *  # noqa: F401,F403
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import *  # noqa: F401,F403
 from aerial_gym.utils.vae.vae_image_encoder import VAEImageEncoder
-
-from gym.spaces import Dict, Box
 
 logger = CustomLogger("base_navigation_task")
 
@@ -99,12 +98,8 @@ class BaseNavigationTask(BaseTask):
         self.timeouts_aggregate = 0
 
         # Position error tensors (vehicle frame)
-        self.pos_error_vehicle_frame = torch.zeros(
-            self.num_envs, 3, device=self.device
-        )
-        self.pos_error_vehicle_frame_prev = torch.zeros(
-            self.num_envs, 3, device=self.device
-        )
+        self.pos_error_vehicle_frame = torch.zeros(self.num_envs, 3, device=self.device)
+        self.pos_error_vehicle_frame_prev = torch.zeros(self.num_envs, 3, device=self.device)
 
         # VAE model (shared or identity)
         self._init_vae()
@@ -122,14 +117,11 @@ class BaseNavigationTask(BaseTask):
             self.curriculum_level - self.task_config.curriculum.min_level
         ) / max(
             1,
-            self.task_config.curriculum.max_level
-            - self.task_config.curriculum.min_level,
+            self.task_config.curriculum.max_level - self.task_config.curriculum.min_level,
         )
 
         # Termination / truncation / reward tensors
-        self.terminations = self.obs_dict.get(
-            "terminations", self.obs_dict["crashes"]
-        )
+        self.terminations = self.obs_dict.get("terminations", self.obs_dict["crashes"])
         self.truncations = self.obs_dict["truncations"]
         self.rewards = torch.zeros(self.num_envs, device=self.device)
 
@@ -150,9 +142,7 @@ class BaseNavigationTask(BaseTask):
     def _init_vae(self) -> None:
         """Set up VAE encoder (or identity fallback) and latent buffers."""
         if self.task_config.vae_config.use_vae:
-            self.vae_model = VAEImageEncoder(
-                config=self.task_config.vae_config, device=self.device
-            )
+            self.vae_model = VAEImageEncoder(config=self.task_config.vae_config, device=self.device)
             latent_dims = self.task_config.vae_config.latent_dims
         else:
             self.vae_model = lambda x: x
@@ -183,9 +173,7 @@ class BaseNavigationTask(BaseTask):
             }
         )
         self.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
-        self.action_transformation_function = (
-            self.task_config.action_transformation_function
-        )
+        self.action_transformation_function = self.task_config.action_transformation_function
 
     def _init_task_obs(self) -> None:
         """Allocate task observation tensor buffers."""
@@ -200,12 +188,8 @@ class BaseNavigationTask(BaseTask):
                 device=self.device,
                 requires_grad=False,
             ),
-            "collisions": torch.zeros(
-                (self.num_envs, 1), device=self.device, requires_grad=False
-            ),
-            "rewards": torch.zeros(
-                (self.num_envs, 1), device=self.device, requires_grad=False
-            ),
+            "collisions": torch.zeros((self.num_envs, 1), device=self.device, requires_grad=False),
+            "rewards": torch.zeros((self.num_envs, 1), device=self.device, requires_grad=False),
         }
 
     # Common methods

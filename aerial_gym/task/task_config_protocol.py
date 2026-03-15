@@ -7,7 +7,7 @@ without requiring config classes to explicitly inherit from a base.
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable, Callable
+from typing import Callable, Protocol, runtime_checkable
 
 import torch
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from aerial_gym.config.sensor_config.base_sensor_config import BaseSensorConfig
-import numpy as np
 
 
 class BaseDepthCameraConfig(BaseSensorConfig):

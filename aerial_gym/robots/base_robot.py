@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-
 from aerial_gym.registry.controller_registry import controller_registry
 from aerial_gym.utils.logging import CustomLogger
 
@@ -15,7 +14,9 @@ class BaseRobot(ABC):
 
     """
 
-    def __init__(self, robot_config: object, controller_name: str, env_config: object, device: str) -> None:
+    def __init__(
+        self, robot_config: object, controller_name: str, env_config: object, device: str
+    ) -> None:
         self.cfg = robot_config
         self.num_envs: int = env_config.env.num_envs
         self.device: str = device
@@ -66,4 +67,3 @@ class BaseRobot(ABC):
     @abstractmethod
     def step(self) -> None:
         pass
-

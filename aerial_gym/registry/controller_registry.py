@@ -10,7 +10,9 @@ class ControllerRegistry:
         self.controller_classes: dict[str, type] = {}
         self.controller_configs: dict[str, type] = {}
 
-    def register_controller(self, controller_name: str, controller_class: type, controller_config: type) -> None:
+    def register_controller(
+        self, controller_name: str, controller_class: type, controller_config: type
+    ) -> None:
         self.controller_classes[controller_name] = controller_class
         self.controller_configs[controller_name] = controller_config
 
@@ -23,7 +25,9 @@ class ControllerRegistry:
     def get_controller_config(self, controller_name: str) -> type:
         return self.controller_configs[controller_name]
 
-    def make_controller(self, controller_name: str, num_envs: int, device: str, mode: str = "robot") -> tuple[object, type]:
+    def make_controller(
+        self, controller_name: str, num_envs: int, device: str, mode: str = "robot"
+    ) -> tuple[object, type]:
         if controller_name not in self.controller_classes:
             raise ValueError(
                 f"Controller {controller_name} not found in controller registry. Available controllers are {self.controller_classes.keys()}"

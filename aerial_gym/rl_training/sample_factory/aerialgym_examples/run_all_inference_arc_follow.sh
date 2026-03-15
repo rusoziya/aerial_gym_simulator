@@ -96,6 +96,3 @@ for SEED in "${SEEDS[@]}"; do
 done
 
 echo "All arc-follow camera inference runs completed."
-
-
-

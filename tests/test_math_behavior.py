@@ -2,14 +2,16 @@
 
 Locks down precise outputs for specific inputs to detect any formula changes.
 """
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
 
 
 class TestQuatRotateExactOutputs:
     def setup_method(self):
         from aerial_gym.utils.math import quat_rotate, quat_rotate_inverse
+
         self.rot = quat_rotate
         self.inv = quat_rotate_inverse
 
@@ -45,6 +47,7 @@ class TestQuatRotateExactOutputs:
 class TestEulerConversionExactOutputs:
     def setup_method(self):
         from aerial_gym.utils.math import get_euler_xyz_tensor
+
         self.euler = get_euler_xyz_tensor
 
     def test_identity_quaternion(self):
@@ -66,14 +69,18 @@ class TestEulerConversionExactOutputs:
 class TestSSAExactOutputs:
     def setup_method(self):
         from aerial_gym.utils.math import ssa
+
         self.ssa = ssa
 
-    @pytest.mark.parametrize("input_val,expected", [
-        (0.0, 0.0),
-        (1.0, 1.0),
-        (-1.0, -1.0),
-        (7.0, 0.7168),
-    ])
+    @pytest.mark.parametrize(
+        "input_val,expected",
+        [
+            (0.0, 0.0),
+            (1.0, 1.0),
+            (-1.0, -1.0),
+            (7.0, 0.7168),
+        ],
+    )
     def test_exact_values(self, input_val, expected):
         r = self.ssa(torch.tensor([input_val]))
         assert r.item() == pytest.approx(expected, abs=1e-3)
@@ -81,16 +88,20 @@ class TestSSAExactOutputs:
 
 class TestRewardFunctionExactOutputs:
     def setup_method(self):
-        from aerial_gym.utils.math import exponential_reward_function, exponential_penalty_function
+        from aerial_gym.utils.math import exponential_penalty_function, exponential_reward_function
+
         self.reward = exponential_reward_function
         self.penalty = exponential_penalty_function
 
-    @pytest.mark.parametrize("val,expected_reward,expected_penalty", [
-        (0.0, 1.0, 0.0),
-        (0.5, 0.77880079, -0.22119921),
-        (1.0, 0.36787945, -0.63212055),
-        (2.0, 0.01831564, -0.98168439),
-    ])
+    @pytest.mark.parametrize(
+        "val,expected_reward,expected_penalty",
+        [
+            (0.0, 1.0, 0.0),
+            (0.5, 0.77880079, -0.22119921),
+            (1.0, 0.36787945, -0.63212055),
+            (2.0, 0.01831564, -0.98168439),
+        ],
+    )
     def test_exact_values_bw1(self, val, expected_reward, expected_penalty):
         r = self.reward(1.0, 1.0, torch.tensor([val]))
         p = self.penalty(1.0, 1.0, torch.tensor([val]))

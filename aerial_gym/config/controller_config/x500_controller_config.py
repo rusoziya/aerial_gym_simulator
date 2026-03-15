@@ -11,7 +11,7 @@ class control:
     - Max thrust per motor: 20.0N (total 80N)
     - Standard X-configuration quadrotor
     - Larger frame than LMF2, requires different gains
-    
+
     controller:
         lee_position_control: command_actions = [x, y, z, yaw] in environment frame scaled between -1 and 1
         lee_velocity_control: command_actions = [vx, vy, vz, yaw_rate] in vehicle frame scaled between -1 and 1
@@ -40,18 +40,18 @@ class control:
 
     # X500-specific rotation gains (adjusted for different inertia characteristics)
     K_rot_tensor_max = [
-        2.2,   # Increased from LMF2's 1.85 (larger frame, more inertia)
-        2.2,   # Increased from LMF2's 1.85
-        0.6,   # Increased from LMF2's 0.4 (yaw inertia)
+        2.2,  # Increased from LMF2's 1.85 (larger frame, more inertia)
+        2.2,  # Increased from LMF2's 1.85
+        0.6,  # Increased from LMF2's 0.4 (yaw inertia)
     ]
     K_rot_tensor_min = [1.8, 1.8, 0.4]  # Increased from LMF2's [1.6, 1.6, 0.25]
 
     # X500-specific angular velocity gains (higher due to larger inertia)
     K_angvel_tensor_max = [
-        0.8,   # Increased from LMF2's 0.5 (more angular damping needed)
-        0.8,   # Increased from LMF2's 0.5
+        0.8,  # Increased from LMF2's 0.5 (more angular damping needed)
+        0.8,  # Increased from LMF2's 0.5
         0.15,  # Increased from LMF2's 0.09 (yaw damping)
     ]
     K_angvel_tensor_min = [0.6, 0.6, 0.12]  # Increased from LMF2's [0.4, 0.4, 0.075]
 
-    randomize_params = True  # Enable parameter randomization for robust training 
+    randomize_params = True  # Enable parameter randomization for robust training

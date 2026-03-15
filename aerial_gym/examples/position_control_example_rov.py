@@ -3,13 +3,12 @@ from __future__ import annotations
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
 import torch
-
-from aerial_gym.utils.math import quat_from_euler_xyz_tensor
 
 from aerial_gym.config.sim_config.base_sim_no_gravity_config import BaseSimNoGravityConfig
 from aerial_gym.registry.sim_registry import sim_config_registry
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.utils.math import quat_from_euler_xyz_tensor
 
 if __name__ == "__main__":
     sim_config_registry.register("base_sim_no_gravity", BaseSimNoGravityConfig)

@@ -1,26 +1,23 @@
 from __future__ import annotations
 
-import rospy
-
-from sensor_msgs.msg import Image
-from geometry_msgs.msg import Twist, PoseStamped, Vector3, TwistStamped
-from nav_msgs.msg import Odometry
-from std_msgs.msg import Float32MultiArray, Empty
-from visualization_msgs.msg import Marker
-
-from mavros_msgs.msg import State
-import cv2
-import numpy as np
-import math
-import time
-import torch
-from scipy.spatial.transform import Rotation as R
-from config import *
 import argparse
+import math
 import struct
+import time
 
+import numpy as np
+import rospy
+import torch
+from config import *
+from geometry_msgs.msg import PoseStamped, Twist, TwistStamped, Vector3
+from mavros_msgs.msg import State
+from nav_msgs.msg import Odometry
 from sample_factory_inference import RL_Nav_Interface
+from scipy.spatial.transform import Rotation as R
+from sensor_msgs.msg import Image
+from std_msgs.msg import Empty, Float32MultiArray
 from vae_image_encoder import VAEImageEncoder
+from visualization_msgs.msg import Marker
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
 

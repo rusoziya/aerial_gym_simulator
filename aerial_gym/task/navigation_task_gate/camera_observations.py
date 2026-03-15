@@ -3,8 +3,8 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.task.navigation_task_gate.camera_pose_and_visibility import CameraPoseAndVisibility
+from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("navigation_task_gate_camera")
 

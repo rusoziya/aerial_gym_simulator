@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-
 import rospy
 from mavros_msgs.msg import PositionTarget
 

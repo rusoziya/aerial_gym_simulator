@@ -289,5 +289,3 @@ Scalar summaries are printed to stdout; checkpoints/configs live in `train_dir/<
 ## Reproducibility
 - Set `--seed`, fix `--train_steps`, and keep env/flags in your run script.
 - W&B captures config + code snapshots; keep `./train_dir/<EXPERIMENT_NAME>` for re‑runs.
-
-

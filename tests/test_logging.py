@@ -1,12 +1,14 @@
 """Tests for aerial_gym.utils.logging — CustomLogger."""
-import isaacgym  # noqa: F401
-import pytest
+
 import logging
+
+import isaacgym  # noqa: F401
 
 
 class TestCustomLogger:
     def setup_method(self):
         from aerial_gym.utils.logging import CustomLogger
+
         self.Logger = CustomLogger
 
     def test_creates_logger(self):

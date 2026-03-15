@@ -8,13 +8,9 @@ import gymnasium as gym
 import numpy as np
 import torch
 import torch.nn as nn
+from sample_factory.algo.utils.gymnasium_utils import convert_space
 from torch import Tensor
 
-from sample_factory.algo.utils.gymnasium_utils import convert_space
-
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import (
-    AerialGymVecEnv as AerialGymVecEnvBase,
-)
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.episode_stats import (
     CurriculumCounters,
     TrajectoryAggregator,
@@ -27,6 +23,9 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.gif_recorder impor
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.obs_ablation import (
     OBS_SLICES,
     ObsAblation,
+)
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import (
+    AerialGymVecEnv as AerialGymVecEnvBase,
 )
 
 VERBOSE = os.environ.get("TRAIN_VERBOSE", "false").lower() == "true"

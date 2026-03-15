@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import BASE_ENV_CONFIGS
-
-
 # custom default configuration parameters for specific envs
 # add more envs here analogously (env names should match config file names in IGE)
 env_configs = dict(
@@ -48,7 +45,6 @@ env_configs = dict(
         # The inference script expects 3D actions, so train with 3D to avoid shape mismatch
         adaptive_stddev=True,  # Can use adaptive_stddev with 3D actions
         action_space_dim=3,  # FORCE 3D action space for inference compatibility
-        
         # MODIFIED CONFIGURATION - Single input processing to match old 1333 model
         train_for_env_steps=100000000,  # 100M steps to match original config
         encoder_mlp_layers=[512, 256, 64],  # Match original config
@@ -97,7 +93,7 @@ env_configs = dict(
         obs_scale=1.0,  # Match original config
         decorrelate_experience_max_seconds=0,  # Match original config
         decorrelate_envs_on_one_worker=True,  # Match original config
-        max_policy_lag=1000,  # Match original config  
+        max_policy_lag=1000,  # Match original config
         vtrace_rho=1.0,  # Match original config
         vtrace_c=1.0,  # Match original config
         lr_adaptive_min=1e-06,  # Match original config
@@ -158,7 +154,7 @@ env_configs = dict(
         pbt_perturb_min=1.1,  # Match original config
         pbt_perturb_max=1.5,  # Match original config
         help=False,  # Match original config
-        algo="APPO",  # Match original config  
+        algo="APPO",  # Match original config
         device="gpu",  # Match original config
         seed=None,  # Match original config
         num_policies=1,  # Match original config
@@ -175,7 +171,6 @@ env_configs = dict(
         # X500 robot with D455 camera flying through static gate with static camera
         adaptive_stddev=True,  # Can use adaptive_stddev with 4D actions
         action_space_dim=4,  # 4D action space for VELOCITY CONTROLLER (x_vel, y_vel, z_vel, yaw_rate)
-        
         # Gate Navigation Training Configuration
         train_for_env_steps=200000000,  # 200M steps for comprehensive gate navigation learning
         encoder_mlp_layers=[512, 256, 128],  # Larger network for 145D observation space
@@ -191,7 +186,6 @@ env_configs = dict(
         learning_rate=0.0003,
         lr_schedule="kl_adaptive_epoch",
         lr_schedule_kl_threshold=0.016,
-        
         # Optimized for 128 environments with dual camera processing
         batch_size=8192,  # Reduced batch size for 145D observations and dual cameras
         num_batches_to_accumulate=2,  # Accumulate for effective batch size 16384
@@ -208,7 +202,6 @@ env_configs = dict(
         batched_sampling=True,
         num_workers=1,
         num_envs_per_worker=1,
-        
         # Gate Navigation Environment Configuration
         env_agents=16,  # Default to 16 environments; can still be overridden via CLI/env
         worker_num_splits=1,
@@ -230,7 +223,6 @@ env_configs = dict(
         vtrace_c=1.0,
         lr_adaptive_min=1e-06,
         lr_adaptive_max=0.01,
-        
         # Checkpoint and logging
         save_every_sec=1800,  # Save every 30 minutes
         keep_checkpoints=5,
@@ -238,7 +230,6 @@ env_configs = dict(
         save_best_every_sec=300,
         save_best_metric="reward",
         save_best_after=100000,  # Save best models after 100K steps
-        
         # Model configuration
         policy_initialization="torch_default",
         policy_init_gain=1.0,
@@ -252,7 +243,6 @@ env_configs = dict(
         adam_beta2=0.999,
         exploration_loss="entropy",
         decoder_mlp_layers=[],
-        
         # Environment settings
         env_frameskip=1,
         env_framestack=1,
@@ -262,7 +252,6 @@ env_configs = dict(
         set_workers_cpu_affinity=True,
         force_envs_single_thread=False,
         default_niceness=0,
-        
         # Logging and monitoring
         log_to_file=True,
         experiment_summaries_interval=10,
@@ -274,7 +263,6 @@ env_configs = dict(
         train_for_seconds=10000000000,
         load_checkpoint_kind="latest",
         benchmark=False,
-        
         # Weights & Biases logging
         with_wandb=True,
         wandb_project="gate_navigation_dual_camera",  # New project for gate navigation
@@ -282,7 +270,6 @@ env_configs = dict(
         wandb_group="gate_navigation_training",
         wandb_tags=["aerial_gym", "gate_navigation", "dual_camera", "x500", "sample_factory"],
         wandb_job_type="SF",
-        
         # Population Based Training (disabled for now)
         with_pbt=False,
         pbt_mix_policies_in_one_env=True,
@@ -296,7 +283,6 @@ env_configs = dict(
         pbt_target_objective="true_objective",
         pbt_perturb_min=1.1,
         pbt_perturb_max=1.5,
-        
         # Sample Factory specific
         help=False,
         algo="APPO",
@@ -310,4 +296,3 @@ env_configs = dict(
         eval_stats=False,
     ),
 )
-

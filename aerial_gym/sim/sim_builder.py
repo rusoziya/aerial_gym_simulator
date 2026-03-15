@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from aerial_gym.env_manager.env_manager import EnvManager
-
 import torch
+
+from aerial_gym.env_manager.env_manager import EnvManager
 
 
 class SimBuilder:

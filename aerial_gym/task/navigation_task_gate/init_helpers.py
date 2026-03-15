@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import os
-import torch
+
 import numpy as np
+import torch
+from gym.spaces import Box, Dict
 
-from gym.spaces import Dict, Box
-
+from aerial_gym.task.schemas import EpisodeRewardAccumulators, EpisodeTrajectoryState
+from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.vae.vae_image_encoder import VAEImageEncoder
-from aerial_gym.utils.env_flag_utils import read_env_bool
-from aerial_gym.task.schemas import EpisodeRewardAccumulators, EpisodeTrajectoryState
 
 logger = CustomLogger("navigation_task_gate_init")
 
@@ -292,8 +292,8 @@ class InitHelpers:
                 )
             logger.info(
                 f"   2. SPAWN: X∈[{(-sr_use['x_half_span_m']):.1f}, {(+sr_use['x_half_span_m']):.1f}] m, "
-                f"Y∈[{(sr_use['y_center_m']-sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m']+sr_use['y_half_span_m']):.1f}] m, "
-                f"Z∈[{(sr_use['z_center_m']-sr_use['z_half_span_m']):.1f}, {(sr_use['z_center_m']+sr_use['z_half_span_m']):.1f}] m; yaw ±{(sr_use['yaw_abs_rad']*57.2958):.1f}°"
+                f"Y∈[{(sr_use['y_center_m'] - sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m'] + sr_use['y_half_span_m']):.1f}] m, "
+                f"Z∈[{(sr_use['z_center_m'] - sr_use['z_half_span_m']):.1f}, {(sr_use['z_center_m'] + sr_use['z_half_span_m']):.1f}] m; yaw ±{(sr_use['yaw_abs_rad'] * 57.2958):.1f}°"
             )
         except (ValueError, TypeError) as e:
             logger.info(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
@@ -357,13 +357,13 @@ class InitHelpers:
             self.task.task_config.curriculum.get_camera_noise(self.task.curriculum_level)
         )
         logger.info(
-            f"   5. CAMERA NOISE: Gaussian STD={initial_camera_gaussian_std:.4f}, Dropout={initial_camera_dropout_rate*100:.1f}% (both drone & static)"
+            f"   5. CAMERA NOISE: Gaussian STD={initial_camera_gaussian_std:.4f}, Dropout={initial_camera_dropout_rate * 100:.1f}% (both drone & static)"
         )
 
         # 6. CAMERA FRAME DROPOUT (entire-frame)
         fd = self.task.task_config.curriculum.get_camera_frame_dropout(self.task.curriculum_level)
         logger.info(
-            f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total']*100:.1f}% (freeze {fd['drone_freeze']*100:.1f}%, blank {fd['drone_blank']*100:.1f}%), static_total={fd['static_total']*100:.1f}% (freeze {fd['static_freeze']*100:.1f}%, blank {fd['static_blank']*100:.1f}%)"
+            f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total'] * 100:.1f}% (freeze {fd['drone_freeze'] * 100:.1f}%, blank {fd['drone_blank'] * 100:.1f}%), static_total={fd['static_total'] * 100:.1f}% (freeze {fd['static_freeze'] * 100:.1f}%, blank {fd['static_blank'] * 100:.1f}%)"
         )
 
         # 7. STATE NOISE (pose) — new
@@ -379,8 +379,8 @@ class InitHelpers:
         if self.task.task_config.curriculum.enable_state_noise and not state_noise_disabled:
             sn = self.task.task_config.curriculum.get_state_noise(self.task.curriculum_level)
             logger.info(
-                f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad']*57.2958:.3f} deg, "
-                f"static_pos_std={sn['static_pos_std_m']:.4f} m, static_orient_std={sn['static_orient_std_rad']*57.2958:.3f} deg"
+                f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad'] * 57.2958:.3f} deg, "
+                f"static_pos_std={sn['static_pos_std_m']:.4f} m, static_orient_std={sn['static_orient_std_rad'] * 57.2958:.3f} deg"
             )
         else:
             logger.info("   7. STATE NOISE: disabled")

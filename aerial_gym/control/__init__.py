@@ -1,43 +1,35 @@
 from __future__ import annotations
 
-from aerial_gym.control.controllers.acceleration_control import (
-    LeeAccelerationController,
+from aerial_gym.config.controller_config.fully_actuated_controller_rov import (
+    control as fully_actuated_controller_config,
 )
-from aerial_gym.control.controllers.attitude_control import LeeAttitudeController
-from aerial_gym.control.controllers.velocity_control import LeeVelocityController
-from aerial_gym.control.controllers.position_control import LeePositionController
-from aerial_gym.control.controllers.velocity_steeing_angle_controller import (
-    LeeVelocitySteeringAngleController,
-)
-from aerial_gym.control.controllers.rates_control import LeeRatesController
-from aerial_gym.control.controllers.no_control import NoControl
-
-
 from aerial_gym.config.controller_config.lee_controller_config import (
     control as lee_controller_config,
+)
+from aerial_gym.config.controller_config.lee_controller_config_octarotor import (
+    control as lee_controller_config_octarotor,
+)
+from aerial_gym.config.controller_config.lmf2_controller_config import (
+    control as lmf2_controller_config,
 )
 from aerial_gym.config.controller_config.no_control_config import (
     control as no_control_config,
 )
-
-from aerial_gym.config.controller_config.lee_controller_config_octarotor import (
-    control as lee_controller_config_octarotor,
-)
-
-from aerial_gym.control.controllers.fully_actuated_control import FullyActuatedController
-from aerial_gym.config.controller_config.fully_actuated_controller_rov import (
-    control as fully_actuated_controller_config,
-)
-
-from aerial_gym.config.controller_config.lmf2_controller_config import (
-    control as lmf2_controller_config,
-)
-
 from aerial_gym.config.controller_config.x500_controller_config import (
     control as x500_controller_config,
 )
-
-
+from aerial_gym.control.controllers.acceleration_control import (
+    LeeAccelerationController,
+)
+from aerial_gym.control.controllers.attitude_control import LeeAttitudeController
+from aerial_gym.control.controllers.fully_actuated_control import FullyActuatedController
+from aerial_gym.control.controllers.no_control import NoControl
+from aerial_gym.control.controllers.position_control import LeePositionController
+from aerial_gym.control.controllers.rates_control import LeeRatesController
+from aerial_gym.control.controllers.velocity_control import LeeVelocityController
+from aerial_gym.control.controllers.velocity_steeing_angle_controller import (
+    LeeVelocitySteeringAngleController,
+)
 from aerial_gym.registry.controller_registry import controller_registry
 
 controller_registry.register_controller("no_control", NoControl, no_control_config)

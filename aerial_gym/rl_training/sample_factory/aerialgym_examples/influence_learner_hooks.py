@@ -5,7 +5,6 @@ import os
 from typing import Callable
 
 import torch
-
 from sample_factory.utils.typing import Config
 
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_metric_utils import (
@@ -223,8 +222,6 @@ def create_enhanced_train(
         current_step = self.train_step  # type: ignore[attr-defined]
 
         try:
-            import wandb
-
             frames = int(current_step)
             try:
                 latest: dict[str, object] | None = self.last_episodic_stats  # type: ignore[attr-defined]

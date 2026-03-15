@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from aerial_gym.robots.base_multirotor import BaseMultirotor
 import torch
 
-from aerial_gym.utils.math import torch_rand_float_tensor, pd_control
-
+from aerial_gym.robots.base_multirotor import BaseMultirotor
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import pd_control, torch_rand_float_tensor
 
 logger = CustomLogger("reconfigurable_robot_class")
 

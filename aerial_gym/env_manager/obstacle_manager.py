@@ -1,11 +1,8 @@
 from __future__ import annotations
 
 from aerial_gym.env_manager.base_env_manager import BaseManager
-
-from aerial_gym.utils.math import *
-
-
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("obstacle_manager")
 

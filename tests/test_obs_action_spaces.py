@@ -1,12 +1,14 @@
 """Behavior tests for observation and action space definitions."""
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
 
 
 class TestGateObservationSpace:
     def setup_method(self):
         from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
         self.cfg = task_config
 
     def test_obs_dim_150(self):
@@ -52,6 +54,7 @@ class TestActionTransformScaling:
 
     def setup_method(self):
         from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
         self.tf = task_config.action_transformation_function
 
     @pytest.mark.parametrize("axis,scale", [(0, 0.6), (1, 0.6), (2, 0.4), (3, 0.5)])
@@ -82,6 +85,7 @@ class TestActionTransformScaling:
 class TestBaseNavObsSpace:
     def setup_method(self):
         from aerial_gym.config.task_config.navigation_task_config import task_config
+
         self.cfg = task_config
 
     def test_obs_dim_81(self):

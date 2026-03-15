@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import os
-import random
 import os.path
-
-from isaacgym import gymapi
-from aerial_gym.assets.warp_asset import WarpAsset
-from aerial_gym.assets.isaacgym_asset import IsaacGymAsset
-
+import random
 from collections import deque
 
+from isaacgym import gymapi
 
+from aerial_gym.assets.isaacgym_asset import IsaacGymAsset
+from aerial_gym.assets.warp_asset import WarpAsset
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("asset_loader")
@@ -92,7 +90,12 @@ class AssetLoader:
         elif folder_basename.lower() == "smaller gates":
             # Only load smaller gates (<= 58%, down to 50%) during eval stretch
             import os as _os
-            stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+
+            stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in (
+                "1",
+                "true",
+                "True",
+            )
             if not stretch_enabled:
                 return []
             # Deterministic ordering and filter to expected names gate_scale_050..gate_scale_058
@@ -114,9 +117,12 @@ class AssetLoader:
         return selected_files
 
     def load_selected_file_from_config(
-        self, asset_type: str, asset_class_config: object, selected_file: str, is_robot: bool = False
+        self,
+        asset_type: str,
+        asset_class_config: object,
+        selected_file: str,
+        is_robot: bool = False,
     ) -> dict[str, object]:
-
         asset_options_for_class = asset_class_to_AssetOptions(asset_class_config)
         filepath = os.path.join(asset_class_config.asset_folder, selected_file)
 
@@ -128,7 +134,7 @@ class AssetLoader:
         logger.info(
             f"Loading asset: {selected_file} for the first time. Next use of this asset will be via the asset buffer."
         )
-        
+
         asset_class_dict = {
             "asset_type": asset_type,
             "asset_options": asset_options_for_class,
@@ -148,7 +154,9 @@ class AssetLoader:
             "use_collision_mesh_instead_of_visual": asset_class_config.use_collision_mesh_instead_of_visual,
             # Gate variant marking for random selection
             "is_gate_variant": "gate_scale_" in selected_file,
-            "gate_variant_name": os.path.splitext(selected_file)[0] if "gate_scale_" in selected_file else None,
+            "gate_variant_name": os.path.splitext(selected_file)[0]
+            if "gate_scale_" in selected_file
+            else None,
             # do stuff with position, randomization, etc
         }
         max_list_vals = 0

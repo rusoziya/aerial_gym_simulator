@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import torch
-
 
 class CurriculumManager:
     def __init__(

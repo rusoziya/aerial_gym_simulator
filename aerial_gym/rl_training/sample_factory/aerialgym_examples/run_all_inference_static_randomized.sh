@@ -94,6 +94,4 @@ for SEED in "${SEEDS[@]}"; do
   done
 done
 
-echo "All static-randomized camera inference runs completed." 
-
-
+echo "All static-randomized camera inference runs completed."

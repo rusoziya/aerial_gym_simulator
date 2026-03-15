@@ -1,7 +1,9 @@
 """Advanced behavior tests for transform and quaternion functions."""
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
+
 from aerial_gym.utils.math import *
 
 
@@ -86,9 +88,16 @@ class TestQuatUnit:
 
 
 class TestNormalizeAngle:
-    @pytest.mark.parametrize("inp,expected", [
-        (0.0, 0.0), (3.5, -2.7832), (-3.5, 2.7832), (7.0, 0.7168), (-7.0, -0.7168),
-    ])
+    @pytest.mark.parametrize(
+        "inp,expected",
+        [
+            (0.0, 0.0),
+            (3.5, -2.7832),
+            (-3.5, 2.7832),
+            (7.0, 0.7168),
+            (-7.0, -0.7168),
+        ],
+    )
     def test_exact_values(self, inp, expected):
         r = normalize_angle(torch.tensor([inp]))
         assert r.item() == pytest.approx(expected, abs=1e-3)

@@ -96,5 +96,3 @@ for SEED in "${SEEDS[@]}"; do
 done
 
 echo "All dynamic-follow camera inference runs completed."
-
-

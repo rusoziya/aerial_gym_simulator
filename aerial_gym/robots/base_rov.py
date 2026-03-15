@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-from aerial_gym.robots.base_robot import BaseRobot
+import torch
 
 from aerial_gym.control.control_allocation import ControlAllocator
-from aerial_gym.registry.controller_registry import controller_registry
-
-import torch
-import numpy as np
-
-from aerial_gym.utils.math import *
-
+from aerial_gym.robots.base_robot import BaseRobot
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("base_rov")
 

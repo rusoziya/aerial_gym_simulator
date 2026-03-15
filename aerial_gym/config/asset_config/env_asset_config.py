@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from aerial_gym.config.asset_config.base_asset import *
-
 import numpy as np
+
+from aerial_gym.config.asset_config.base_asset import *
 
 THIN_SEMANTIC_ID = 1
 TREE_SEMANTIC_ID = 2
@@ -224,12 +224,19 @@ class EnvObjectConfig:
         # color = [80,255,100]
 
     left_wall = _make_wall_class("left_wall", "left_wall.urdf", [0.5, 1.0, 0.5])
-    right_wall = _make_wall_class("right_wall", "right_wall.urdf", [0.5, 0.0, 0.5], has_collision_mask=False, has_per_link_semantic=False)
+    right_wall = _make_wall_class(
+        "right_wall",
+        "right_wall.urdf",
+        [0.5, 0.0, 0.5],
+        has_collision_mask=False,
+        has_per_link_semantic=False,
+    )
     top_wall = _make_wall_class("top_wall", "top_wall.urdf", [0.5, 0.5, 1.0])
     bottom_wall = _make_wall_class("bottom_wall", "bottom_wall.urdf", [0.5, 0.5, 0.0])
     front_wall = _make_wall_class("front_wall", "front_wall.urdf", [1.0, 0.5, 0.5])
-    back_wall = _make_wall_class("back_wall", "back_wall.urdf", [0.0, 0.5, 0.5], has_per_link_semantic=False)
-
+    back_wall = _make_wall_class(
+        "back_wall", "back_wall.urdf", [0.0, 0.5, 0.5], has_per_link_semantic=False
+    )
 
 
 # Create module-level exports for easier importing

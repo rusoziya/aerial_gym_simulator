@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import os
 
 import torch
-import os
+
 from aerial_gym.utils.vae.VAE import VAE
 
 
@@ -51,11 +52,15 @@ class VAEImageEncoder:
             elif len(original_shape) == 4:
                 pass
             else:
-                raise ValueError(f"Unexpected tensor shape: {original_shape}. Expected 2D, 3D, or 4D tensor.")
+                raise ValueError(
+                    f"Unexpected tensor shape: {original_shape}. Expected 2D, 3D, or 4D tensor."
+                )
 
             # Ensure we have the expected dimensions: [batch, channels, height, width]
             if len(image_tensors.shape) != 4:
-                raise ValueError(f"After processing, expected 4D tensor, got shape: {image_tensors.shape}")
+                raise ValueError(
+                    f"After processing, expected 4D tensor, got shape: {image_tensors.shape}"
+                )
 
             # Enforce device/dtype/contiguity for cuDNN
             model_device = next(self.vae_model.parameters()).device
@@ -76,6 +81,7 @@ class VAEImageEncoder:
 
             # Try cuDNN first, then gracefully fall back to native conv if no algorithm available
             import torch.backends.cudnn as cudnn
+
             prev_enabled = cudnn.enabled
             prev_bench = cudnn.benchmark
             prev_det = cudnn.deterministic
@@ -85,7 +91,7 @@ class VAEImageEncoder:
                 cudnn.benchmark = True
                 cudnn.deterministic = False
                 z_sampled, means, *_ = self.vae_model.encode(interpolated_image)
-            except RuntimeError as e:
+            except RuntimeError:
                 # Fallback: disable cuDNN for this call only
                 try:
                     cudnn.enabled = False

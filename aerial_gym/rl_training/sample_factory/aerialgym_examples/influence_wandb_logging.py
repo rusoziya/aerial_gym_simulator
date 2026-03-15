@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import math
 from typing import Callable
 
+from sample_factory.utils.typing import Config
+
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_metric_utils import (
-    OBS_GRAD_PREFIXES,
     compute_obs_grad_shares,
     compute_obs_pct_by_window,
     drop_nonfinite_episode_stats,
@@ -12,8 +12,6 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_metric_u
     metrics_to_float,
     sanitize_metrics,
 )
-
-from sample_factory.utils.typing import Config
 
 
 def build_enhanced_wandb_log(

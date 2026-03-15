@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import torch
-from aerial_gym.utils.tensor_utils import invalid_mask_per_env, has_invalid, sanitize_tensor
 
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import *  # noqa: F401,F403
+from aerial_gym.utils.tensor_utils import invalid_mask_per_env
 
 logger = CustomLogger("navigation_task_gate_step")
 
@@ -24,11 +24,17 @@ class StepHelpers:
                 nan_trunc_mask = invalid_action_mask.clone()
                 if self.task.task_config.guard_debug_enabled:
                     _ids = torch.nonzero(invalid_action_mask, as_tuple=False).squeeze(-1).tolist()
-                    logger.warning(f"[NaNGuard] Invalid ACTION in envs {_ids}; zeroed and will truncate")
+                    logger.warning(
+                        f"[NaNGuard] Invalid ACTION in envs {_ids}; zeroed and will truncate"
+                    )
             else:
-                nan_trunc_mask = torch.zeros(self.task.num_envs, dtype=torch.bool, device=self.task.device)
+                nan_trunc_mask = torch.zeros(
+                    self.task.num_envs, dtype=torch.bool, device=self.task.device
+                )
         except RuntimeError:
-            nan_trunc_mask = torch.zeros(self.task.num_envs, dtype=torch.bool, device=self.task.device)
+            nan_trunc_mask = torch.zeros(
+                self.task.num_envs, dtype=torch.bool, device=self.task.device
+            )
 
         self.task.sim_env.step(actions=transformed_action)
 
@@ -41,7 +47,9 @@ class StepHelpers:
                     logger.warning(f"[NaNGuard] Invalid OBS '{k}' in envs {_ids}")
                 nan_trunc_mask |= bad
         if torch.any(nan_trunc_mask):
-            if "robot_position" in self.task.obs_dict and isinstance(self.task.obs_dict["robot_position"], torch.Tensor):
+            if "robot_position" in self.task.obs_dict and isinstance(
+                self.task.obs_dict["robot_position"], torch.Tensor
+            ):
                 self.task.obs_dict["robot_position"][nan_trunc_mask] = 0.0
 
         return transformed_action, nan_trunc_mask
@@ -65,7 +73,10 @@ class StepHelpers:
 
         gate_passage_success = (
             (robot_position[:, 1] > self.task.gate_position[:, 1])
-            & (torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0]) < gate_success_width_tolerance)
+            & (
+                torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0])
+                < gate_success_width_tolerance
+            )
             & (robot_position[:, 2] > gate_success_min_height)
             & (robot_position[:, 2] < gate_success_max_height)
         )
@@ -73,7 +84,9 @@ class StepHelpers:
         # Immediate success termination and reset
         # Target window: within 10% of gate width (X) and 10% of gate height (Z) around ADAPTIVE gate center
         x_off_imm = torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0])
-        z_off_imm = torch.abs(robot_position[:, 2] - (self.task.gate_position[:, 2] + self.task.gate_center_height))
+        z_off_imm = torch.abs(
+            robot_position[:, 2] - (self.task.gate_position[:, 2] + self.task.gate_center_height)
+        )
         x_ok_imm = x_off_imm <= (self.task.gate_width * 0.10)
         z_ok_imm = z_off_imm <= (self.task.gate_height * 0.10)
         target_success_immediate = x_ok_imm & z_ok_imm
@@ -83,26 +96,38 @@ class StepHelpers:
             # Mark terminations immediately so the environment will reset at post_reward_calculation_step
             self.task.terminations[immediate_success_mask] = 1
             # Record per-episode target success flags where 10% tolerance is also met
-            self.task._ep_target_success_flag[immediate_success_mask] |= target_success_immediate[immediate_success_mask]
+            self.task._ep_target_success_flag[immediate_success_mask] |= target_success_immediate[
+                immediate_success_mask
+            ]
             try:
-                success_envs = torch.nonzero(immediate_success_mask, as_tuple=False).squeeze(-1).tolist()
+                success_envs = (
+                    torch.nonzero(immediate_success_mask, as_tuple=False).squeeze(-1).tolist()
+                )
             except RuntimeError:
                 success_envs = []
-            logger.debug(f"[SUCCESS_RESET] Immediate success achieved in envs: {success_envs}. Terminating and resetting.")
+            logger.debug(
+                f"[SUCCESS_RESET] Immediate success achieved in envs: {success_envs}. Terminating and resetting."
+            )
 
         # Success when episode TERMINATES (not crashes) and gate passage achieved
-        crash_mask = (self.task.obs_dict["crashes"] > 0)
+        crash_mask = self.task.obs_dict["crashes"] > 0
         successes = (self.task.terminations > 0) & gate_passage_success & (~crash_mask)
 
         # Target success at truncation: same 10% width/height window around adaptive gate center
         x_off = torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0])
-        z_off = torch.abs(robot_position[:, 2] - (self.task.gate_position[:, 2] + self.task.gate_center_height))
+        z_off = torch.abs(
+            robot_position[:, 2] - (self.task.gate_position[:, 2] + self.task.gate_center_height)
+        )
         x_ok = x_off <= (self.task.gate_width * 0.10)
         z_ok = z_off <= (self.task.gate_height * 0.10)
         target_success = x_ok & z_ok
-        target_successes = (self.task.terminations > 0) & (target_success & gate_passage_success) & (~crash_mask)
+        target_successes = (
+            (self.task.terminations > 0) & (target_success & gate_passage_success) & (~crash_mask)
+        )
         # Also accumulate per-episode target success flag when truncated at step end
-        end_success_mask = (self.task.terminations > 0) & (target_success & gate_passage_success) & (~crash_mask)
+        end_success_mask = (
+            (self.task.terminations > 0) & (target_success & gate_passage_success) & (~crash_mask)
+        )
         self.task._ep_target_success_flag[end_success_mask] = True
 
         return successes, target_successes, gate_passage_success
@@ -126,7 +151,9 @@ class StepHelpers:
 
         # One-off timeout penalty: discourage hover-to-horizon strategies
         try:
-            timeout_penalty = float(self.task.task_config.reward_parameters.get('timeout_penalty', 70.0))
+            timeout_penalty = float(
+                self.task.task_config.reward_parameters.get("timeout_penalty", 70.0)
+            )
         except (ValueError, TypeError):
             timeout_penalty = 75.0
         if torch.any(timeouts):
@@ -152,26 +179,40 @@ class StepHelpers:
 
         # Check if robot has passed gate (crossed Y = 0 plane with proper alignment) - ADAPTIVE
         gate_tracking_width_tolerance = self.task.gate_width * 0.6  # 60% of gate width for tracking
-        gate_tracking_min_height = self.task.gate_position[:, 2] + self.task.gate_height * 0.08  # 8% above ground
-        gate_tracking_max_height = self.task.gate_position[:, 2] + self.task.gate_height * 0.92  # 92% of gate height
+        gate_tracking_min_height = (
+            self.task.gate_position[:, 2] + self.task.gate_height * 0.08
+        )  # 8% above ground
+        gate_tracking_max_height = (
+            self.task.gate_position[:, 2] + self.task.gate_height * 0.92
+        )  # 92% of gate height
 
         gate_passed_current = (
             (robot_position[:, 1] > self.task.gate_position[:, 1])
-            & (torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0]) < gate_tracking_width_tolerance)
+            & (
+                torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0])
+                < gate_tracking_width_tolerance
+            )
             & (robot_position[:, 2] > gate_tracking_min_height)
             & (robot_position[:, 2] < gate_tracking_max_height)
         )
 
         # Gate alignment: check if robot is roughly aligned with gate opening - ADAPTIVE
-        gate_alignment = torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0]) < gate_tracking_width_tolerance
+        gate_alignment = (
+            torch.abs(robot_position[:, 0] - self.task.gate_position[:, 0])
+            < gate_tracking_width_tolerance
+        )
 
         # Camera alignment angle in degrees (convert from dot product)
-        alignment_angle_deg = torch.acos(torch.clamp(camera_gate_alignment, -1.0, 1.0)) * 180.0 / 3.14159
+        alignment_angle_deg = (
+            torch.acos(torch.clamp(camera_gate_alignment, -1.0, 1.0)) * 180.0 / 3.14159
+        )
 
         # Camera alignment category based on angle
         alignment_category = torch.zeros_like(alignment_angle_deg)
         alignment_category[alignment_angle_deg <= 15] = 5  # Perfect
-        alignment_category[(alignment_angle_deg > 15) & (alignment_angle_deg <= 30)] = 4  # Excellent
+        alignment_category[(alignment_angle_deg > 15) & (alignment_angle_deg <= 30)] = (
+            4  # Excellent
+        )
         alignment_category[(alignment_angle_deg > 30) & (alignment_angle_deg <= 60)] = 3  # Good
         alignment_category[(alignment_angle_deg > 60) & (alignment_angle_deg <= 90)] = 2  # Moderate
         alignment_category[(alignment_angle_deg > 90) & (alignment_angle_deg <= 135)] = 1  # Poor
@@ -187,7 +228,10 @@ class StepHelpers:
         return gate_center_position, gate_passed_current
 
     def _update_trajectory_state(
-        self, robot_position: torch.Tensor, gate_center_position: torch.Tensor, gate_passed_current: torch.Tensor
+        self,
+        robot_position: torch.Tensor,
+        gate_center_position: torch.Tensor,
+        gate_passed_current: torch.Tensor,
     ) -> None:
         """Update per-env episode trajectory tracking: spawn capture, path length, gate crossing."""
         fresh_mask = self.task._episode_fresh
@@ -211,10 +255,14 @@ class StepHelpers:
         newly_crossed = (~self.task._ep_gate_crossed) & gate_passed_current
         if torch.any(newly_crossed):
             self.task._ep_gate_crossed[newly_crossed] = True
-            self.task._ep_time_to_gate[newly_crossed] = self.task._ep_steps[newly_crossed].to(torch.float32)
+            self.task._ep_time_to_gate[newly_crossed] = self.task._ep_steps[newly_crossed].to(
+                torch.float32
+            )
             dx_cross = robot_position[newly_crossed, 0] - gate_center_position[newly_crossed, 0]
             dz_cross = robot_position[newly_crossed, 2] - gate_center_position[newly_crossed, 2]
-            self.task._ep_center_offset_cross[newly_crossed] = torch.sqrt(dx_cross * dx_cross + dz_cross * dz_cross)
+            self.task._ep_center_offset_cross[newly_crossed] = torch.sqrt(
+                dx_cross * dx_cross + dz_cross * dz_cross
+            )
             self.task._ep_height_offset_cross[newly_crossed] = torch.abs(dz_cross)
 
     def _handle_post_reward_reset(
@@ -228,15 +276,22 @@ class StepHelpers:
     ) -> None:
         """Compute episode-end trajectory metrics, stash infos, and reset completed envs."""
         try:
-            env_ids = reset_envs if torch.is_tensor(reset_envs) else torch.tensor(reset_envs, device=self.task.device, dtype=torch.long)
+            env_ids = (
+                reset_envs
+                if torch.is_tensor(reset_envs)
+                else torch.tensor(reset_envs, device=self.task.device, dtype=torch.long)
+            )
             # Path efficiency = path length / straight-line distance from spawn to gate center at spawn
-            denom = torch.norm(self.task._ep_spawn_pos[env_ids] - self.task._ep_gate_center_at_spawn[env_ids], dim=1)
+            denom = torch.norm(
+                self.task._ep_spawn_pos[env_ids] - self.task._ep_gate_center_at_spawn[env_ids],
+                dim=1,
+            )
             denom = torch.clamp(denom, min=1e-6)
             # Fallback for rare cases where incremental path stayed ~0 (e.g., immediate reset)
             disp = torch.norm((robot_position[env_ids] - self.task._ep_spawn_pos[env_ids]), dim=1)
             path_len = self.task._ep_path_len[env_ids]
             path_len = torch.where(path_len <= 1e-6, disp, path_len)
-            path_eff = torch.full((self.task.num_envs,), float('nan'), device=self.task.device)
+            path_eff = torch.full((self.task.num_envs,), float("nan"), device=self.task.device)
             path_eff[env_ids] = (path_len / denom).clamp(max=1000.0)
             # Time to gate in steps (already NaN for non-crossers)
             time_to_gate = self.task._ep_time_to_gate.clone()
@@ -275,18 +330,38 @@ class StepHelpers:
                 # Target success (10% width/height AND gate passage) among resetting envs
                 target_success_rate = torch.mean((target_successes[env_ids] > 0).float())
             except (ValueError, TypeError):
-                overall_success_rate = torch.tensor(float('nan'), device=self.task.device)
-                target_success_rate = torch.tensor(float('nan'), device=self.task.device)
+                overall_success_rate = torch.tensor(float("nan"), device=self.task.device)
+                target_success_rate = torch.tensor(float("nan"), device=self.task.device)
             # Stash per-env episode metrics for worker-side running aggregation
             self.task._stash_per_env_trajectory_metrics(
-                env_ids, path_eff, time_to_gate, min_gate_dist, center_offset, height_offset,
-                last_pos_x, last_pos_y, last_pos_z, last_center_offset_vals, last_height_offset_vals,
+                env_ids,
+                path_eff,
+                time_to_gate,
+                min_gate_dist,
+                center_offset,
+                height_offset,
+                last_pos_x,
+                last_pos_y,
+                last_pos_z,
+                last_center_offset_vals,
+                last_height_offset_vals,
             )
             # Stash the averaged trajectory metrics for logging
             self.task._stash_averaged_trajectory_metrics(
-                env_ids, pe_avg, ttg_avg, mgd_avg, co_avg, ho_avg,
-                lpx_avg, lpy_avg, lpz_avg, lco_avg, lho_avg,
-                overall_success_rate, target_success_rate, time_to_gate,
+                env_ids,
+                pe_avg,
+                ttg_avg,
+                mgd_avg,
+                co_avg,
+                ho_avg,
+                lpx_avg,
+                lpy_avg,
+                lpz_avg,
+                lco_avg,
+                lho_avg,
+                overall_success_rate,
+                target_success_rate,
+                time_to_gate,
             )
             # Provide averaged metrics to infos['episode_extra_stats'] so learner can push to W&B as a backup
             self.task._populate_episode_extra_stats()
@@ -314,24 +389,38 @@ class StepHelpers:
         """Stash per-env episode trajectory metrics for worker-side running aggregation."""
         try:
             self.task._last_traj_metrics_per_env = {
-                'path_efficiency': path_eff.detach().clone(),
-                'time_to_gate_steps': time_to_gate.detach().clone(),
-                'min_gate_distance': min_gate_dist.detach().clone(),
-                'center_offset_success': center_offset.detach().clone(),
-                'height_offset_success': height_offset.detach().clone(),
-                'target_success_flag': self.task._ep_target_success_flag.detach().clone(),
-                'last_position_x': torch.full((self.task.num_envs,), float('nan'), device=self.task.device),
-                'last_position_y': torch.full((self.task.num_envs,), float('nan'), device=self.task.device),
-                'last_position_z': torch.full((self.task.num_envs,), float('nan'), device=self.task.device),
-                'last_center_offset': torch.full((self.task.num_envs,), float('nan'), device=self.task.device),
-                'last_height_offset': torch.full((self.task.num_envs,), float('nan'), device=self.task.device),
-                'crossed': self.task._ep_gate_crossed.detach().clone(),
+                "path_efficiency": path_eff.detach().clone(),
+                "time_to_gate_steps": time_to_gate.detach().clone(),
+                "min_gate_distance": min_gate_dist.detach().clone(),
+                "center_offset_success": center_offset.detach().clone(),
+                "height_offset_success": height_offset.detach().clone(),
+                "target_success_flag": self.task._ep_target_success_flag.detach().clone(),
+                "last_position_x": torch.full(
+                    (self.task.num_envs,), float("nan"), device=self.task.device
+                ),
+                "last_position_y": torch.full(
+                    (self.task.num_envs,), float("nan"), device=self.task.device
+                ),
+                "last_position_z": torch.full(
+                    (self.task.num_envs,), float("nan"), device=self.task.device
+                ),
+                "last_center_offset": torch.full(
+                    (self.task.num_envs,), float("nan"), device=self.task.device
+                ),
+                "last_height_offset": torch.full(
+                    (self.task.num_envs,), float("nan"), device=self.task.device
+                ),
+                "crossed": self.task._ep_gate_crossed.detach().clone(),
             }
-            self.task._last_traj_metrics_per_env['last_position_x'][env_ids] = last_pos_x
-            self.task._last_traj_metrics_per_env['last_position_y'][env_ids] = last_pos_y
-            self.task._last_traj_metrics_per_env['last_position_z'][env_ids] = last_pos_z
-            self.task._last_traj_metrics_per_env['last_center_offset'][env_ids] = last_center_offset_vals
-            self.task._last_traj_metrics_per_env['last_height_offset'][env_ids] = last_height_offset_vals
+            self.task._last_traj_metrics_per_env["last_position_x"][env_ids] = last_pos_x
+            self.task._last_traj_metrics_per_env["last_position_y"][env_ids] = last_pos_y
+            self.task._last_traj_metrics_per_env["last_position_z"][env_ids] = last_pos_z
+            self.task._last_traj_metrics_per_env["last_center_offset"][env_ids] = (
+                last_center_offset_vals
+            )
+            self.task._last_traj_metrics_per_env["last_height_offset"][env_ids] = (
+                last_height_offset_vals
+            )
         except (ValueError, TypeError):
             self.task._last_traj_metrics_per_env = None
 
@@ -369,20 +458,20 @@ class StepHelpers:
                 ho_val = lho_avg
             # Build metrics dict while avoiding undefined time-to-gate when no crossing occurred
             _metrics_avg = {
-                'path_efficiency': float(pe_avg.item()),
-                'min_gate_distance': float(mgd_avg.item()),
-                'center_offset_success': float(co_val.item()),
-                'height_offset_success': float(ho_val.item()),
+                "path_efficiency": float(pe_avg.item()),
+                "min_gate_distance": float(mgd_avg.item()),
+                "center_offset_success": float(co_val.item()),
+                "height_offset_success": float(ho_val.item()),
                 # Duplicate keys to match existing dashboards
-                'center_offset': float(co_val.item()),
-                'height_offset': float(ho_val.item()),
-                'success_rate': float(overall_success_rate.item()),
-                'target_success_rate': float(target_success_rate.item()),
-                'last_position_x': float(lpx_avg.item()),
-                'last_position_y': float(lpy_avg.item()),
-                'last_position_z': float(lpz_avg.item()),
-                'last_center_offset': float(lco_avg.item()),
-                'last_height_offset': float(lho_avg.item()),
+                "center_offset": float(co_val.item()),
+                "height_offset": float(ho_val.item()),
+                "success_rate": float(overall_success_rate.item()),
+                "target_success_rate": float(target_success_rate.item()),
+                "last_position_x": float(lpx_avg.item()),
+                "last_position_y": float(lpy_avg.item()),
+                "last_position_z": float(lpz_avg.item()),
+                "last_center_offset": float(lco_avg.item()),
+                "last_height_offset": float(lho_avg.item()),
             }
             # Only include time-to-gate (steps/seconds) if any env in this reset batch actually crossed
             try:
@@ -390,31 +479,47 @@ class StepHelpers:
             except (ValueError, TypeError):
                 num_crossed = 0
             if num_crossed > 0 and not torch.isnan(ttg_avg):
-                _metrics_avg['time_to_gate_steps'] = float(ttg_avg.item())
-                _metrics_avg['time_to_gate'] = float(ttg_avg.item())
+                _metrics_avg["time_to_gate_steps"] = float(ttg_avg.item())
+                _metrics_avg["time_to_gate"] = float(ttg_avg.item())
             self.task._last_traj_metrics_avg = _metrics_avg
         except (ValueError, TypeError):
             self.task._last_traj_metrics_avg = None
 
     def _populate_episode_extra_stats(self) -> None:
         """Populate infos['episode_extra_stats'] with trajectory metrics and camera ablation flags."""
-        extra = self.task.infos.get('episode_extra_stats', {})
+        extra = self.task.infos.get("episode_extra_stats", {})
         if not isinstance(extra, dict):
             extra = {}
         extra.update(self.task._last_traj_metrics_avg or {})
         # Expose per-camera noise/frame-drop overrides to W&B, mirroring prior style
         gtd = self.task.sim_env.global_tensor_dict
-        cam_noise_global = bool(gtd.get('camera_randomization/noise_disabled', False))
-        cam_fd_global = bool(gtd.get('camera_randomization/frame_dropout_disabled', False))
-        drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if 'camera_randomization/drone_noise_disabled' in gtd else cam_noise_global
-        static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False)) if 'camera_randomization/static_noise_disabled' in gtd else cam_noise_global
-        drone_fd_dis = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if 'camera_randomization/drone_frame_dropout_disabled' in gtd else cam_fd_global
-        static_fd_dis = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False)) if 'camera_randomization/static_frame_dropout_disabled' in gtd else cam_fd_global
-        extra['episode_extra_stats/camera_noise_disabled_drone'] = float(drone_noise_dis)
-        extra['episode_extra_stats/camera_noise_disabled_static'] = float(static_noise_dis)
-        extra['episode_extra_stats/camera_frame_dropout_disabled_drone'] = float(drone_fd_dis)
-        extra['episode_extra_stats/camera_frame_dropout_disabled_static'] = float(static_fd_dis)
-        self.task.infos['episode_extra_stats'] = extra
+        cam_noise_global = bool(gtd.get("camera_randomization/noise_disabled", False))
+        cam_fd_global = bool(gtd.get("camera_randomization/frame_dropout_disabled", False))
+        drone_noise_dis = (
+            bool(gtd.get("camera_randomization/drone_noise_disabled", False))
+            if "camera_randomization/drone_noise_disabled" in gtd
+            else cam_noise_global
+        )
+        static_noise_dis = (
+            bool(gtd.get("camera_randomization/static_noise_disabled", False))
+            if "camera_randomization/static_noise_disabled" in gtd
+            else cam_noise_global
+        )
+        drone_fd_dis = (
+            bool(gtd.get("camera_randomization/drone_frame_dropout_disabled", False))
+            if "camera_randomization/drone_frame_dropout_disabled" in gtd
+            else cam_fd_global
+        )
+        static_fd_dis = (
+            bool(gtd.get("camera_randomization/static_frame_dropout_disabled", False))
+            if "camera_randomization/static_frame_dropout_disabled" in gtd
+            else cam_fd_global
+        )
+        extra["episode_extra_stats/camera_noise_disabled_drone"] = float(drone_noise_dis)
+        extra["episode_extra_stats/camera_noise_disabled_static"] = float(static_noise_dis)
+        extra["episode_extra_stats/camera_frame_dropout_disabled_drone"] = float(drone_fd_dis)
+        extra["episode_extra_stats/camera_frame_dropout_disabled_static"] = float(static_fd_dis)
+        self.task.infos["episode_extra_stats"] = extra
 
     def _process_images_and_finalize(self) -> None:
         """Run image processing, static camera updates, and one-shot final verification."""
@@ -430,7 +535,7 @@ class StepHelpers:
             # Process observations to get final state
             self.task.process_obs_for_task()
 
-            if 'observations' in self.task.task_obs:
+            if "observations" in self.task.task_obs:
                 obs_sample = self.task.task_obs["observations"][0]
 
                 static_pos = obs_sample[3:6]
@@ -439,11 +544,15 @@ class StepHelpers:
 
                 logger.warning(f"  Final static pos: {static_pos.cpu().numpy()}")
                 logger.warning(f"  Final static orient: {static_orient.cpu().numpy()}")
-                logger.warning(f"  Final static VAE: range=[{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]")
+                logger.warning(
+                    f"  Final static VAE: range=[{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]"
+                )
 
                 # Check final state
                 pos_ok = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
-                orient_ok = not torch.allclose(static_orient, torch.zeros_like(static_orient), atol=1e-6)
+                orient_ok = not torch.allclose(
+                    static_orient, torch.zeros_like(static_orient), atol=1e-6
+                )
                 vae_ok = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
 
                 logger.warning(f"  FINAL RESULTS: pos={pos_ok}, orient={orient_ok}, vae={vae_ok}")
@@ -453,15 +562,23 @@ class StepHelpers:
 
                     # CRITICAL: Add verification that observations reach RL training
                     logger.warning("RL TRAINING USAGE VERIFICATION:")
-                    logger.warning("  IMPORTANT: This verifies DATA PIPELINE, not RL training usage!")
+                    logger.warning(
+                        "  IMPORTANT: This verifies DATA PIPELINE, not RL training usage!"
+                    )
                     logger.warning("  To verify RL training usage, check:")
                     logger.warning("     1. Neural network receives 150D input (not 128D or other)")
                     logger.warning("     2. Policy network architecture matches observation space")
-                    logger.warning("     3. Static camera indices [3:6] and [86:150] affect policy decisions")
-                    logger.warning("     4. Ablation test: performance difference with vs without static camera")
-                    logger.warning("  Current verification: Environment correctly provides 150D observations")
-                    logger.warning("  Next step needed: Verify Sample Factory & neural network usage")
+                    logger.warning(
+                        "     3. Static camera indices [3:6] and [86:150] affect policy decisions"
+                    )
+                    logger.warning(
+                        "     4. Ablation test: performance difference with vs without static camera"
+                    )
+                    logger.warning(
+                        "  Current verification: Environment correctly provides 150D observations"
+                    )
+                    logger.warning(
+                        "  Next step needed: Verify Sample Factory & neural network usage"
+                    )
                 else:
                     logger.error("Some static camera data still missing after processing!")
-
-

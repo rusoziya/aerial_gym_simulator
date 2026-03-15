@@ -33,10 +33,10 @@ def register_gate_task_in_subprocess(
 
 
 def _register_gate_variant(cfg: Config) -> None:
+    from aerial_gym.config.task_config.navigation_task_config_gate import task_config
     from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import (
         DCE_RL_Navigation_Task_Gate,
     )
-    from aerial_gym.config.task_config.navigation_task_config_gate import task_config
 
     gate_config = task_config()
     _apply_ablation_flags(gate_config, cfg)
@@ -110,11 +110,11 @@ def _register_main_standard_task() -> None:
 
 def _register_main_gate_task() -> None:
     try:
-        from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import (
-            DCE_RL_Navigation_Task_Gate,
-        )
         from aerial_gym.config.task_config.navigation_task_config_gate import (
             task_config as gate_task_config,
+        )
+        from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import (
+            DCE_RL_Navigation_Task_Gate,
         )
 
         gate_config = gate_task_config()

@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from aerial_gym.task.base_task import BaseTask
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
 import numpy as np
+import torch
+from gym.spaces import Box, Dict
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_task import BaseTask
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("position_setpoint_task")
 
@@ -44,19 +41,10 @@ class PositionSetpointTask(BaseTask):
             )
         logger.info("Building environment for position setpoint task.")
         logger.info(
-            "\nSim Name: {},\nEnv Name: {},\nRobot Name: {}, \nController Name: {}".format(
-                self.task_config.sim_name,
-                self.task_config.env_name,
-                self.task_config.robot_name,
-                self.task_config.controller_name,
-            )
+            f"\nSim Name: {self.task_config.sim_name},\nEnv Name: {self.task_config.env_name},\nRobot Name: {self.task_config.robot_name}, \nController Name: {self.task_config.controller_name}"
         )
         logger.info(
-            "\nNum Envs: {},\nUse Warp: {},\nHeadless: {}".format(
-                self.task_config.num_envs,
-                self.task_config.use_warp,
-                self.task_config.headless,
-            )
+            f"\nNum Envs: {self.task_config.num_envs},\nUse Warp: {self.task_config.use_warp},\nHeadless: {self.task_config.headless}"
         )
 
         self.sim_env = SimBuilder().build_env(
@@ -254,12 +242,12 @@ def compute_reward(
     parameter_dict,
 ):
     # type: (Tensor, Tensor, Tensor, Tensor, Tensor, float, Tensor, Tensor, Dict[str, Tensor]) -> Tuple[Tensor, Tensor]
-    
+
     dist = torch.norm(pos_error, dim=1)
 
     pos_reward = exp_func(dist, 3.0, 8.0) + exp_func(dist, 2.0, 4.0)
 
-    dist_reward = (20 - dist) / 40.0  
+    dist_reward = (20 - dist) / 40.0
 
     ups = quat_axis(robot_quats, 2)
     tiltage = torch.abs(1 - ups[..., 2])
@@ -268,15 +256,11 @@ def compute_reward(
     spinnage = torch.norm(robot_angvels, dim=1)
     ang_vel_reward = (1.0 / (1.0 + spinnage * spinnage)) * 3
 
-    total_reward = (
-        pos_reward + dist_reward + pos_reward * (up_reward + ang_vel_reward)
-    )
+    total_reward = pos_reward + dist_reward + pos_reward * (up_reward + ang_vel_reward)
     total_reward[:] = curriculum_level_multiplier * total_reward
 
     crashes[:] = torch.where(dist > 8.0, torch.ones_like(crashes), crashes)
 
     total_reward[:] = torch.where(crashes > 0.0, -20 * torch.ones_like(total_reward), total_reward)
-    
-    
 
     return total_reward, crashes

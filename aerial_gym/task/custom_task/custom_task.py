@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-from aerial_gym.task.base_task import BaseTask
-from aerial_gym.sim.sim_builder import SimBuilder
 import torch
-import numpy as np
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_task import BaseTask
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("custom_task")
 

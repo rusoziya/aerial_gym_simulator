@@ -1,4 +1,5 @@
 """Tests for curriculum update state machine."""
+
 import isaacgym  # noqa: F401
 import pytest
 
@@ -6,6 +7,7 @@ import pytest
 @pytest.fixture(scope="module")
 def curriculum():
     from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
     cur = task_config.curriculum
     # May be a class (needs instantiation) or already an instance
     if isinstance(cur, type):

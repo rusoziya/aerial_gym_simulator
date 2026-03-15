@@ -1,23 +1,17 @@
 from __future__ import annotations
 
 import time
-import isaacgym
 
 # isort: on
 import torch
+
+from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
+from aerial_gym.examples.dce_rl_navigation.sf_inference_class import NN_Inference_Class
+from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net import (
     parse_aerialgym_cfg,
 )
 from aerial_gym.utils import get_args
-from aerial_gym.registry.task_registry import task_registry
-
-
-from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
-from aerial_gym.examples.dce_rl_navigation.sf_inference_class import NN_Inference_Class
-
-import matplotlib
-import numpy as np
-from PIL import Image
 
 
 def sample_command(args) -> None:

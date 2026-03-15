@@ -1,18 +1,12 @@
 from __future__ import annotations
 
+import torch
+
 from aerial_gym.task.position_setpoint_task_reconfigurable.position_setpoint_task_reconfigurable import (
     PositionSetpointTaskReconfigurable,
 )
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
-import numpy as np
-
-from aerial_gym.utils.math import *
-
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("position_setpoint_task")
 

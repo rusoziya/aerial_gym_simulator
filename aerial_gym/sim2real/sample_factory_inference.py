@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .nn_inference_class import Sim2RealInferenceClass
 import torch
 
+from .nn_inference_class import Sim2RealInferenceClass
 
 SAMPLE_FROM_LATENT = False
 device = "cuda:0"

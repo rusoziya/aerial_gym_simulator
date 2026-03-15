@@ -1,15 +1,14 @@
 from __future__ import annotations
 
+import torch
 
 from aerial_gym.sensors.base_sensor import BaseSensor
-import torch
 from aerial_gym.utils.math import (
-    quat_from_euler_xyz,
-    tensor_clamp,
-    quat_rotate_inverse,
-    quat_mul,
-    torch_rand_float_tensor,
     quat_from_euler_xyz_tensor,
+    quat_mul,
+    quat_rotate_inverse,
+    tensor_clamp,
+    torch_rand_float_tensor,
 )
 
 

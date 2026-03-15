@@ -4,20 +4,23 @@ These tests lock down the EXACT numerical outputs of reward functions
 for specific inputs. Any refactoring that changes these values indicates
 behavioral drift.
 """
+
 import isaacgym  # noqa: F401
-import torch
 import pytest
+import torch
 
 
 @pytest.fixture(scope="module")
 def gate_reward_params():
     from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
     return {k: torch.tensor(v) for k, v in task_config.reward_parameters.items()}
 
 
 @pytest.fixture(scope="module")
 def nav_reward_params():
     from aerial_gym.config.task_config.navigation_task_config import task_config
+
     return {k: torch.tensor(v) for k, v in task_config.reward_parameters.items()}
 
 
@@ -26,6 +29,7 @@ class TestGateRewardExactOutputs:
 
     def setup_method(self):
         from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
+
         self.compute = compute_gate_reward
 
     def _make_state(self, N=4):
@@ -47,9 +51,22 @@ class TestGateRewardExactOutputs:
 
     def _call(self, s, rp, frac=0.5):
         return self.compute(
-            s["pos_error"], s["prev_pos_error"], s["crashes"], s["action"], s["prev_action"],
-            s["robot_pos"], s["robot_orient"], s["gate_pos"], s["gate_passed"],
-            frac, rp, s["gate_width"], s["gate_height"], s["gate_center"], s["bv"])
+            s["pos_error"],
+            s["prev_pos_error"],
+            s["crashes"],
+            s["action"],
+            s["prev_action"],
+            s["robot_pos"],
+            s["robot_orient"],
+            s["gate_pos"],
+            s["gate_passed"],
+            frac,
+            rp,
+            s["gate_width"],
+            s["gate_height"],
+            s["gate_center"],
+            s["bv"],
+        )
 
     def test_approach_rewards_exact(self, gate_reward_params):
         s = self._make_state()
@@ -110,22 +127,43 @@ class TestBaseNavRewardExactOutputs:
 
     def setup_method(self):
         from aerial_gym.task.navigation_task.navigation_task import compute_reward
+
         self.compute = compute_reward
 
     def test_approach_exact(self, nav_reward_params):
         pe = torch.tensor([[1.0, 0, 0], [0, 1.0, 0], [0, 0, 1.0], [2.0, 2.0, 2.0]])
-        r, _ = self.compute(pe, pe + 0.1, torch.zeros(4, dtype=torch.bool),
-                            torch.zeros(4, 4), torch.zeros(4, 4), 0.5, nav_reward_params)
+        r, _ = self.compute(
+            pe,
+            pe + 0.1,
+            torch.zeros(4, dtype=torch.bool),
+            torch.zeros(4, 4),
+            torch.zeros(4, 4),
+            0.5,
+            nav_reward_params,
+        )
         assert r[0].item() == pytest.approx(6.417, abs=0.5)
 
     def test_collision_exact(self, nav_reward_params):
         pe = torch.tensor([[1.0, 0, 0]] * 4)
-        r, _ = self.compute(pe, pe, torch.ones(4, dtype=torch.bool),
-                            torch.zeros(4, 4), torch.zeros(4, 4), 0.5, nav_reward_params)
+        r, _ = self.compute(
+            pe,
+            pe,
+            torch.ones(4, dtype=torch.bool),
+            torch.zeros(4, 4),
+            torch.zeros(4, 4),
+            0.5,
+            nav_reward_params,
+        )
         assert all(r[i].item() == pytest.approx(-100.0) for i in range(4))
 
     def test_at_target_high_reward(self, nav_reward_params):
-        r, _ = self.compute(torch.zeros(4, 3), torch.ones(4, 3) * 0.1,
-                            torch.zeros(4, dtype=torch.bool),
-                            torch.zeros(4, 4), torch.zeros(4, 4), 0.5, nav_reward_params)
+        r, _ = self.compute(
+            torch.zeros(4, 3),
+            torch.ones(4, 3) * 0.1,
+            torch.zeros(4, dtype=torch.bool),
+            torch.zeros(4, 4),
+            torch.zeros(4, 4),
+            0.5,
+            nav_reward_params,
+        )
         assert r[0].item() == pytest.approx(15.915, abs=0.1)

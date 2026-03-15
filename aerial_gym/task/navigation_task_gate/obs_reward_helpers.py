@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import torch
 
-from aerial_gym.task.schemas import GATE_OBS_LAYOUT
-from aerial_gym.utils.math import quat_rotate_inverse, ssa, get_euler_xyz_tensor
-from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.task.navigation_task_gate.reward_functions import compute_gate_reward
+from aerial_gym.task.schemas import GATE_OBS_LAYOUT
+from aerial_gym.utils.env_flag_utils import read_env_bool
+from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import get_euler_xyz_tensor, quat_rotate_inverse, ssa
 
 logger = CustomLogger("navigation_task_gate_obs_reward")
 

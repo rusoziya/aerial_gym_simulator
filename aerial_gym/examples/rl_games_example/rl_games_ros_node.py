@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import time
 
 import rospy
-import numpy as np
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped, TwistStamped, Twist
-from mavros_msgs.msg import PositionTarget
-
-from rl_games_inference import MLP
 import torch
-import time
+from geometry_msgs.msg import PoseStamped, TwistStamped
+from mavros_msgs.msg import PositionTarget
+from nav_msgs.msg import Odometry
+from rl_games_inference import MLP
 
 # WEIGHTS_PATH = "gen_ppo.pth"
 # WEIGHTS_PATH = "vel_control_lmf2.pth"

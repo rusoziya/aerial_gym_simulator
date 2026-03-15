@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import torch
 import pytorch3d.transforms as p3d_transforms
+import torch
 
 from aerial_gym.utils.logging import CustomLogger
 
@@ -108,7 +108,9 @@ def compute_composite_inertia(
         logger.debug(f"COM in root link frame: {com_in_root_link_frame}")
         logger.debug(f"COM in robot COM frame: {obj_com_in_robot_com_frame}")
 
-        _apply_parallel_axis_theorem(transformed_inertia, properties.mass, obj_com_in_robot_com_frame)
+        _apply_parallel_axis_theorem(
+            transformed_inertia, properties.mass, obj_com_in_robot_com_frame
+        )
 
         total_mass += properties.mass
         total_inertia += transformed_inertia

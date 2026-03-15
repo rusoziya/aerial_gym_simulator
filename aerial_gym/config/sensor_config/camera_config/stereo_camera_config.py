@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import BaseDepthCameraConfig
+from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
+    BaseDepthCameraConfig,
+)
 
 
 class StereoCameraConfig(BaseDepthCameraConfig):
@@ -8,5 +10,4 @@ class StereoCameraConfig(BaseDepthCameraConfig):
     height = 270
     width = 480
 
-    baseline = -0.095 # baseline. Distance from the left to right camera in metres. +y is positive
-
+    baseline = -0.095  # baseline. Distance from the left to right camera in metres. +y is positive

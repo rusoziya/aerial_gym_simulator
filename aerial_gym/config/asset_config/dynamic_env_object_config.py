@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from aerial_gym import AERIAL_GYM_DIRECTORY
-
 import numpy as np
+
+from aerial_gym import AERIAL_GYM_DIRECTORY
 
 THIN_SEMANTIC_ID = 1
 TREE_SEMANTIC_ID = 2
@@ -250,17 +250,3 @@ class object_asset_params(asset_state_params):
 
 
 # Re-export wall configs so existing imports from this module continue to work
-from aerial_gym.config.asset_config.dynamic_wall_config import (  # noqa: E402, F811
-    FRONT_WALL_SEMANTIC_ID,
-    BACK_WALL_SEMANTIC_ID,
-    LEFT_WALL_SEMANTIC_ID,
-    RIGHT_WALL_SEMANTIC_ID,
-    BOTTOM_WALL_SEMANTIC_ID,
-    TOP_WALL_SEMANTIC_ID,
-    left_wall,
-    right_wall,
-    top_wall,
-    bottom_wall,
-    front_wall,
-    back_wall,
-)

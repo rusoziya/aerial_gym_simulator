@@ -1,40 +1,32 @@
 from __future__ import annotations
 
-
-from isaacgym import gymapi
-from isaacgym import gymtorch
-
-from isaacgym import gymutil
+import numpy as np
+import torch
+from isaacgym import gymapi, gymtorch, gymutil
 
 from aerial_gym.env_manager.base_env_manager import BaseManager
-from aerial_gym.env_manager.asset_manager import AssetManager
 from aerial_gym.env_manager.IGE_viewer_control import IGEViewerControl
 from aerial_gym.env_manager.tensor_population import (
-    populate_robot_tensors,
-    populate_obstacle_tensors,
     populate_force_tensors,
+    populate_obstacle_tensors,
+    populate_robot_tensors,
 )
-import torch
-
-import os
-
-
-from aerial_gym.utils.math import torch_rand_float_tensor
-
 from aerial_gym.utils.helpers import (
-    get_args,
-    update_cfg_from_args,
     class_to_dict,
+    get_args,
     parse_sim_params,
+    update_cfg_from_args,
 )
-import numpy as np
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import torch_rand_float_tensor
 
 logger = CustomLogger("IsaacGymEnvManager")
 
 
 class IsaacGymEnv(BaseManager):
-    def __init__(self, config: object, sim_config: object, has_IGE_cameras: bool, device: str) -> None:
+    def __init__(
+        self, config: object, sim_config: object, has_IGE_cameras: bool, device: str
+    ) -> None:
         super().__init__(config, device)
         self.sim_config = sim_config
         self.env_tensor_bounds_min = None
@@ -108,22 +100,19 @@ class IsaacGymEnv(BaseManager):
                 "The use_gpu_pipeline is set to False, this will result in slower simulation times"
             )
         else:
-            logger.info(
-                "Using GPU pipeline for simulation."
-            )
-        logger.info(
-            "Sim Device type: {}, Sim Device ID: {}".format(
-                self.sim_device_type, self.sim_device_id
-            )
-        )
+            logger.info("Using GPU pipeline for simulation.")
+        logger.info(f"Sim Device type: {self.sim_device_type}, Sim Device ID: {self.sim_device_id}")
         # In headless runs we still need a graphics device for Isaac Gym camera sensors (EGL).
         # Honor env override SF_HEADLESS_USE_GRAPHICS (default: true).
         try:
             import os as _os
-            _use_graphics_env = _os.getenv('SF_HEADLESS_USE_GRAPHICS')
+
+            _use_graphics_env = _os.getenv("SF_HEADLESS_USE_GRAPHICS")
             _use_graphics = (
-                str(_use_graphics_env).lower() == 'true'
-            ) if _use_graphics_env is not None else True
+                (str(_use_graphics_env).lower() == "true")
+                if _use_graphics_env is not None
+                else True
+            )
         except (ValueError, TypeError):
             _use_graphics = True
         if self.sim_config.viewer.headless:
@@ -139,7 +128,7 @@ class IsaacGymEnv(BaseManager):
                 )
         else:
             self.graphics_device_id = self.sim_device_id
-        logger.info("Graphics Device ID: {}".format(self.graphics_device_id))
+        logger.info(f"Graphics Device ID: {self.graphics_device_id}")
         logger.info("Creating Isaac Gym Simulation Object")
         warn_msg1 = (
             "If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it\n"
@@ -203,7 +192,6 @@ class IsaacGymEnv(BaseManager):
         global_asset_counter: int,
         segmentation_counter: int,
     ) -> tuple[object, int]:
-
         local_segmentation_ctr_for_isaacgym_asset = segmentation_counter
         if asset_info_dict["semantic_id"] < 0:
             asset_segmentation_id = local_segmentation_ctr_for_isaacgym_asset
@@ -238,7 +226,6 @@ class IsaacGymEnv(BaseManager):
                 links_to_label = rigid_body_names_all
 
             for name in rigid_body_names_all:
-
                 # Skip the values that are already in the dictionary which are predefined for objects of interest
                 while (
                     local_segmentation_ctr_for_isaacgym_asset
@@ -282,7 +269,9 @@ class IsaacGymEnv(BaseManager):
             local_segmentation_ctr_for_isaacgym_asset - segmentation_counter,
         )
 
-    def prepare_for_simulation(self, env_manager: object, global_tensor_dict: dict[str, object]) -> bool:
+    def prepare_for_simulation(
+        self, env_manager: object, global_tensor_dict: dict[str, object]
+    ) -> bool:
         if not self.gym.prepare_sim(self.sim):
             raise RuntimeError("Failed to prepare Isaac Gym Environment")
 
@@ -331,16 +320,22 @@ class IsaacGymEnv(BaseManager):
 
         self._populate_root_state_tensors()
         populate_force_tensors(
-            self.global_tensor_dict, self.gym, self.sim,
-            self.num_envs, self.num_rigid_bodies_per_env,
-            self.num_rigid_bodies_robot, self.device,
+            self.global_tensor_dict,
+            self.gym,
+            self.sim,
+            self.num_envs,
+            self.num_rigid_bodies_per_env,
+            self.num_rigid_bodies_robot,
+            self.device,
         )
         self._populate_dof_and_contact_tensors()
         populate_robot_tensors(self.global_tensor_dict)
         if self.num_assets_per_env > 0:
             populate_obstacle_tensors(
-                self.global_tensor_dict, self.num_envs,
-                self.num_rigid_bodies_per_env, self.num_rigid_bodies_robot,
+                self.global_tensor_dict,
+                self.num_envs,
+                self.num_rigid_bodies_per_env,
+                self.num_rigid_bodies_robot,
                 self.device,
             )
         self._populate_env_metadata()
@@ -354,9 +349,9 @@ class IsaacGymEnv(BaseManager):
         self.global_tensor_dict["robot_state_tensor"] = self.vec_root_tensor[:, 0, :]
         self.global_tensor_dict["env_asset_state_tensor"] = self.vec_root_tensor[:, 1:, :]
         self.global_tensor_dict["unfolded_env_asset_state_tensor"] = self.unfolded_vec_root_tensor
-        self.global_tensor_dict["unfolded_env_asset_state_tensor_const"] = (
-            self.global_tensor_dict["unfolded_env_asset_state_tensor"].clone()
-        )
+        self.global_tensor_dict["unfolded_env_asset_state_tensor_const"] = self.global_tensor_dict[
+            "unfolded_env_asset_state_tensor"
+        ].clone()
 
     def _populate_dof_and_contact_tensors(self) -> None:
         """Set up DOF state and contact force tensors."""

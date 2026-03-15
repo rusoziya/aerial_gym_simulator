@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from isaacgym import gymapi
-import numpy as np
-
-from aerial_gym.utils.math import quat_from_euler_xyz
-
 import sys
-import torch
 import time
 
+import torch
+from isaacgym import gymapi
+
 from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.math import quat_rotate_inverse, quat_rotate
+from aerial_gym.utils.math import quat_from_euler_xyz, quat_rotate
 
 logger = CustomLogger("IGE_viewer_control")
 
@@ -188,7 +185,7 @@ class IGEViewerControl:
         Toggle the sync frame time.
         """
         self.sync_frame_time = not self.sync_frame_time
-        logger.warning("Sync frame time: {}".format(self.sync_frame_time))
+        logger.warning(f"Sync frame time: {self.sync_frame_time}")
 
     def get_viewer_image(self) -> None:
         """
@@ -201,7 +198,7 @@ class IGEViewerControl:
         Toggle the viewer sync.
         """
         self.enable_viewer_sync = not self.enable_viewer_sync
-        logger.warning("Viewer sync: {}".format(self.enable_viewer_sync))
+        logger.warning(f"Viewer sync: {self.enable_viewer_sync}")
 
     def toggle_camera_follow_type(self) -> None:
         """
@@ -212,21 +209,21 @@ class IGEViewerControl:
             if self.camera_follow_type == gymapi.FOLLOW_POSITION
             else gymapi.FOLLOW_POSITION
         )
-        logger.warning("Camera follow type: {}".format(self.camera_follow_type))
+        logger.warning(f"Camera follow type: {self.camera_follow_type}")
 
     def toggle_camera_follow(self) -> None:
         self.camera_follow = not self.camera_follow
-        logger.warning("Camera follow: {}".format(self.camera_follow))
+        logger.warning(f"Camera follow: {self.camera_follow}")
         self.set_camera_lookat()
 
     def switch_target_env_up(self) -> None:
         self.current_target_env = (self.current_target_env + 1) % len(self.actor_handles)
-        logger.warning("Switching target environment to: {}".format(self.current_target_env))
+        logger.warning(f"Switching target environment to: {self.current_target_env}")
         self.set_camera_lookat()
 
     def switch_target_env_down(self) -> None:
         self.current_target_env = (self.current_target_env - 1) % len(self.actor_handles)
-        logger.warning("Switching target environment to: {}".format(self.current_target_env))
+        logger.warning(f"Switching target environment to: {self.current_target_env}")
         self.set_camera_lookat()
 
     def pause_simulation(self) -> None:

@@ -313,12 +313,18 @@ def _get_window_values(
     """Return (camera, state, visual, kinematic, spatial) values for the given window."""
     if window == "recent":
         return (
-            acc.camera_recent, acc.state_recent,
-            acc.visual_recent, acc.kinematic_recent, acc.spatial_recent,
+            acc.camera_recent,
+            acc.state_recent,
+            acc.visual_recent,
+            acc.kinematic_recent,
+            acc.spatial_recent,
         )
     return (
-        acc.camera_overall, acc.state_overall,
-        acc.visual_overall, acc.kinematic_overall, acc.spatial_overall,
+        acc.camera_overall,
+        acc.state_overall,
+        acc.visual_overall,
+        acc.kinematic_overall,
+        acc.spatial_overall,
     )
 
 

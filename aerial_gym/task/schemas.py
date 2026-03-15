@@ -11,8 +11,8 @@ from dataclasses import dataclass, field
 
 import torch
 
-
 # Observation Layout — describes the 150D gate navigation observation vector
+
 
 @dataclass(frozen=True)
 class ObservationLayout:
@@ -24,15 +24,15 @@ class ObservationLayout:
         latents = obs[:, layout.drone_vae_latents]
     """
 
-    drone_position: slice = slice(0, 3)           # 3D absolute position
-    static_camera_position: slice = slice(3, 6)    # 3D relative to drone
+    drone_position: slice = slice(0, 3)  # 3D absolute position
+    static_camera_position: slice = slice(3, 6)  # 3D relative to drone
     static_camera_orientation: slice = slice(6, 9)  # 3D (roll, pitch, yaw) relative
-    drone_orientation: slice = slice(9, 12)         # 3D (roll, pitch, yaw) in world
-    body_linear_velocity: slice = slice(12, 15)     # 3D
-    body_angular_velocity: slice = slice(15, 18)    # 3D
-    actions: slice = slice(18, 22)                  # 4D (x_vel, y_vel, z_vel, yaw_rate)
-    drone_vae_latents: slice = slice(22, 86)        # 64D
-    static_vae_latents: slice = slice(86, 150)      # 64D
+    drone_orientation: slice = slice(9, 12)  # 3D (roll, pitch, yaw) in world
+    body_linear_velocity: slice = slice(12, 15)  # 3D
+    body_angular_velocity: slice = slice(15, 18)  # 3D
+    actions: slice = slice(18, 22)  # 4D (x_vel, y_vel, z_vel, yaw_rate)
+    drone_vae_latents: slice = slice(22, 86)  # 64D
+    static_vae_latents: slice = slice(86, 150)  # 64D
 
     total_dim: int = 150
 
@@ -42,6 +42,7 @@ GATE_OBS_LAYOUT = ObservationLayout()
 
 
 # Episode Reward Tracking — replaces 12+ separate self.episode_* tensors
+
 
 @dataclass
 class EpisodeRewardAccumulators:
@@ -108,6 +109,7 @@ class EpisodeRewardAccumulators:
 
 
 # Episode Trajectory State — replaces scattered _ep_* tensors
+
 
 @dataclass
 class EpisodeTrajectoryState:

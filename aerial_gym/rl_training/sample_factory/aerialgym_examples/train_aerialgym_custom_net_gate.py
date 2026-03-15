@@ -1,43 +1,41 @@
 from __future__ import annotations
 
-import sys
 import os
+import sys
 from typing import Optional
 
-import isaacgym  # noqa: F401 — must import before PyTorch
 import gymnasium as gym
-import torch
+import isaacgym  # noqa: F401 — must import before PyTorch
 import numpy as np
-
-from sample_factory.algo.utils.gymnasium_utils import convert_space
+import torch
 from sample_factory.algo.utils.context import global_model_factory
+from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
 from sample_factory.envs.env_utils import register_env
 from sample_factory.utils.typing import Config, Env
 from sample_factory.utils.utils import str2bool
 
 from aerial_gym.registry.task_registry import task_registry
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import (
-    clear_sf_cache,
-    setup_env_agents,
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.cfg_env_bridge import (
+    bridge_cfg_to_env_vars,
+)
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.dual_fusion_encoder import (
+    make_dual_fusion_encoder,
 )
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.env_wrapper_gate import (
     AerialGymVecEnvGate,
 )
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.gate_env_configs import env_configs
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.dual_fusion_encoder import (
-    DualFusionEncoder,
-    make_dual_fusion_encoder,
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_tracking import (
+    run_with_influence_tracking,
 )
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.task_registration import (
     register_gate_task_in_subprocess,
     register_main_process_tasks,
 )
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.cfg_env_bridge import (
-    bridge_cfg_to_env_vars,
-)
-from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_tracking import (
-    run_with_influence_tracking,
+from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import (
+    clear_sf_cache,
+    setup_env_agents,
 )
 
 # Deterministic mode disabled — incompatible with Isaac Gym CuBLAS operations

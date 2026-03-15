@@ -1,30 +1,29 @@
 from __future__ import annotations
 
-import isaacgym  # noqa: F401 (ensures gym is loaded)
-
-import torch
 import os
-import time
+
+import isaacgym  # noqa: F401 (ensures gym is loaded)
 import numpy as np
-from aerial_gym.utils import get_args
-from aerial_gym.registry.task_registry import task_registry
+import torch
 
 from aerial_gym.examples.dce_rl_navigation.dce_navigation_task_gate import (
     DCE_RL_Navigation_Task_Gate,
 )
-from aerial_gym.examples.dce_rl_navigation.sf_inference_class_gate import (
-    NN_Inference_Class_Gate,
-)
-from aerial_gym.examples.dce_rl_navigation.inference_utils import apply_obs_ablation
-from aerial_gym.examples.dce_rl_navigation.wandb_setup import init_wandb
-from aerial_gym.examples.dce_rl_navigation.gif_recorder import GifRecorder
 from aerial_gym.examples.dce_rl_navigation.episode_metrics import (
     EpisodeMetrics,
     VisibilityTracker,
 )
+from aerial_gym.examples.dce_rl_navigation.gif_recorder import GifRecorder
+from aerial_gym.examples.dce_rl_navigation.inference_utils import apply_obs_ablation
+from aerial_gym.examples.dce_rl_navigation.sf_inference_class_gate import (
+    NN_Inference_Class_Gate,
+)
+from aerial_gym.examples.dce_rl_navigation.wandb_setup import init_wandb
+from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net_gate import (
     parse_aerialgym_cfg,
 )
+from aerial_gym.utils import get_args
 
 _ADDITIONAL_CLI_PARAMS: list[dict[str, object]] = [
     {"name": "--run_name", "type": str, "default": "", "help": "W&B run name."},

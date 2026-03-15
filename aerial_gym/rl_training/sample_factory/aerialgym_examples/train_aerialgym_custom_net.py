@@ -6,30 +6,24 @@ DCE navigation tasks. Compatible with existing inference scripts.
 
 from __future__ import annotations
 
-import sys
 import os
+import sys
 
 import isaacgym  # noqa: F401 — must import before torch
-import gymnasium as gym
-import torch
-import numpy as np
-
 from sample_factory.envs.env_utils import register_env
 from sample_factory.train import run_rl
 from sample_factory.utils.typing import Config, Env
 from sample_factory.utils.utils import str2bool
 
 from aerial_gym.registry.task_registry import task_registry
-
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import (
-    AerialGymVecEnv,
     BASE_ENV_CONFIGS,
-    override_default_params,
+    AerialGymVecEnv,
     clear_sf_cache,
-    setup_env_agents,
+    override_default_params,
     parse_cfg,
+    setup_env_agents,
 )
-
 
 # Environment factory
 
@@ -51,8 +45,10 @@ def make_aerialgym_env(
     task = task_registry.make_task(task_name, num_envs=env_agents)
     env = AerialGymVecEnv(task, obs_key="obs", action_dim=3, obs_dim=81)
 
-    print(f"[make_aerialgym_env] Created env: {task_name}, agents={env_agents}, "
-          f"obs={env.observation_space}, act={env.action_space}")
+    print(
+        f"[make_aerialgym_env] Created env: {task_name}, agents={env_agents}, "
+        f"obs={env.observation_space}, act={env.action_space}"
+    )
     return env
 
 
@@ -62,12 +58,13 @@ def make_aerialgym_env(
 def add_extra_params_func(parser: object) -> None:
     """Register custom CLI arguments for DCE navigation training."""
     p = parser
-    p.add_argument("--env_agents", default=16, type=int,
-                   help="Number of environments (agents) to create")
-    p.add_argument("--headless", default=True, type=str2bool,
-                   help="Run in headless mode (no visualization)")
-    p.add_argument("--use_rnn", default=False, type=str2bool,
-                   help="Use RNN-based policy")
+    p.add_argument(
+        "--env_agents", default=16, type=int, help="Number of environments (agents) to create"
+    )
+    p.add_argument(
+        "--headless", default=True, type=str2bool, help="Run in headless mode (no visualization)"
+    )
+    p.add_argument("--use_rnn", default=False, type=str2bool, help="Use RNN-based policy")
 
 
 def override_default_params_func(env: str, parser: object) -> None:
@@ -108,19 +105,14 @@ def register_aerialgym_custom_components() -> None:
         from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import (
             DCE_RL_Navigation_Task,
         )
-        from aerial_gym.config.task_config.navigation_task_config import task_config
 
         base_config = task_registry.get_task_config("navigation_task")
         dce_config = base_config()
         dce_config.action_space_dim = 3
         dce_config.curriculum.min_level = 36
 
-        task_registry.register_task(
-            "quad_with_obstacles", DCE_RL_Navigation_Task, dce_config
-        )
-        task_registry.register_task(
-            "dce_navigation_task", DCE_RL_Navigation_Task, dce_config
-        )
+        task_registry.register_task("quad_with_obstacles", DCE_RL_Navigation_Task, dce_config)
+        task_registry.register_task("dce_navigation_task", DCE_RL_Navigation_Task, dce_config)
         print("Registered quad_with_obstacles + dce_navigation_task")
     except RuntimeError as e:
         print(f"Warning: Could not register quad_with_obstacles: {e}")

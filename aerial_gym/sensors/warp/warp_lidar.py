@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-
-import torch
 import math
 
+import torch
 import warp as wp
 
 from aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels import LidarWarpKernels
@@ -69,7 +68,7 @@ class WarpLidar:
 
     def create_render_graph_pointcloud(self, debug: bool = False) -> None:
         if not debug:
-            print(f"creating render graph")
+            print("creating render graph")
             wp.capture_begin(device=self.device)
         if self.cfg.segmentation_camera == True:
             wp.launch(
@@ -114,12 +113,12 @@ class WarpLidar:
                 device=self.device,
             )
         if not debug:
-            print(f"finishing capture of render graph")
+            print("finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
     def create_render_graph_range(self, debug: bool = False) -> None:
         if not debug:
-            print(f"creating render graph")
+            print("creating render graph")
             wp.capture_begin(device=self.device)
         if self.cfg.segmentation_camera == True:
             wp.launch(
@@ -161,7 +160,7 @@ class WarpLidar:
                 device=self.device,
             )
         if not debug:
-            print(f"finishing capture of render graph")
+            print("finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
     def set_image_tensors(

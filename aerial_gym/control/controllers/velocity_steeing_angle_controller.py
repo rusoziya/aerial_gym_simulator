@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import torch
-import pytorch3d.transforms as p3d_transforms
-from aerial_gym.utils.math import *
-
 
 from aerial_gym.control.controllers.base_lee_controller import *
+from aerial_gym.utils.math import *
 
 
 class LeeVelocitySteeringAngleController(BaseLeeController):

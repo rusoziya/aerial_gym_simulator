@@ -34,17 +34,13 @@ def apply_gate_variant_selection(
         if disable_rand:
             chosen_idx = _select_fixed_gate(gate_names, global_tensor_dict)
         else:
-            chosen_idx = _select_curriculum_gate(
-                gate_names, global_tensor_dict, env_id, device
-            )
+            chosen_idx = _select_curriculum_gate(gate_names, global_tensor_dict, env_id, device)
 
         chosen_local_index = gate_indices[chosen_idx]
         global_tensor_dict["active_gate_variant_index"][env_id] = chosen_local_index
         global_tensor_dict["active_gate_variant_array_index"][env_id] = chosen_idx
 
-        _place_gate_variants(
-            env_asset_state, env_id, gate_indices, chosen_idx, device
-        )
+        _place_gate_variants(env_asset_state, env_id, gate_indices, chosen_idx, device)
 
     global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
 
@@ -133,14 +129,10 @@ def _select_curriculum_gate(
     unique_scales = sorted({scale for (_, scale) in allowed_pairs}, reverse=True)
 
     global_tensor_dict["gate_variant_counter"][env_id] += 1
-    scale_idx = int(
-        torch.randint(low=0, high=len(unique_scales), size=(1,), device=device).item()
-    )
+    scale_idx = int(torch.randint(low=0, high=len(unique_scales), size=(1,), device=device).item())
     chosen_scale = unique_scales[scale_idx]
     candidates = [j for (j, scale) in allowed_pairs if scale == chosen_scale]
-    cand_idx = int(
-        torch.randint(low=0, high=len(candidates), size=(1,), device=device).item()
-    )
+    cand_idx = int(torch.randint(low=0, high=len(candidates), size=(1,), device=device).item())
     return candidates[cand_idx]
 
 
@@ -157,9 +149,7 @@ def _place_gate_variants(
         if local_index < 0 or local_index >= num_assets:
             continue
         if j == chosen_idx:
-            env_asset_state[env_id, local_index, 0:3] = torch.tensor(
-                [0.0, 0.0, 0.0], device=device
-            )
+            env_asset_state[env_id, local_index, 0:3] = torch.tensor([0.0, 0.0, 0.0], device=device)
         else:
             env_asset_state[env_id, local_index, 0:3] = torch.tensor(
                 [-1000.0, -1000.0, -1000.0], device=device

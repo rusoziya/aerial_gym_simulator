@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import torch
 import numpy as np
+import torch
+
 from aerial_gym.task.base_task import BaseTask
 from aerial_gym.utils.math import *
 

@@ -72,9 +72,7 @@ def capture_images_single(
     env_handle = env_handles[0]
     cam_handle = camera_handles[0]
 
-    depth_tensor = gym.get_camera_image_gpu_tensor(
-        sim, env_handle, cam_handle, gymapi.IMAGE_DEPTH
-    )
+    depth_tensor = gym.get_camera_image_gpu_tensor(sim, env_handle, cam_handle, gymapi.IMAGE_DEPTH)
     depth_img = gymtorch.wrap_tensor(depth_tensor).cpu().numpy()
 
     seg_tensor = gym.get_camera_image_gpu_tensor(
@@ -125,12 +123,8 @@ def generate_synthetic_camera_data() -> tuple[np.ndarray, np.ndarray]:
         gate_y_end : gate_y_end + frame_thickness,
         gate_x_start - frame_thickness : gate_x_end + frame_thickness,
     ] = 0.2
-    depth_img[
-        gate_y_start:gate_y_end, gate_x_start - frame_thickness : gate_x_start
-    ] = 0.2
-    depth_img[
-        gate_y_start:gate_y_end, gate_x_end : gate_x_end + frame_thickness
-    ] = 0.2
+    depth_img[gate_y_start:gate_y_end, gate_x_start - frame_thickness : gate_x_start] = 0.2
+    depth_img[gate_y_start:gate_y_end, gate_x_end : gate_x_end + frame_thickness] = 0.2
 
     noise = np.random.normal(0, 0.02, (height, width)).astype(np.float32)
     depth_img = np.clip(depth_img + noise, 0.0, 1.0)

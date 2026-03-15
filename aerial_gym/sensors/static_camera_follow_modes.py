@@ -52,9 +52,7 @@ def update_dynamic_camera_following(
 
             gate = gate_positions[env_idx]
             gate_cz = float(gate_center_heights[env_idx].item())
-            yaw_d = math.degrees(
-                math.atan2(target_drone.x - cam_x, target_drone.y - cam_y)
-            )
+            yaw_d = math.degrees(math.atan2(target_drone.x - cam_x, target_drone.y - cam_y))
             yaw_g = math.degrees(
                 math.atan2(float(gate[0].item()) - cam_x, float(gate[1].item()) - cam_y)
             )
@@ -88,10 +86,14 @@ def update_dynamic_camera_following(
             gym.set_camera_location(cam_handle, env_handle, camera_pos, camera_target)
 
             last_camera_pos[env_idx] = (
-                float(camera_pos.x), float(camera_pos.y), float(camera_pos.z)
+                float(camera_pos.x),
+                float(camera_pos.y),
+                float(camera_pos.z),
             )
             last_camera_target[env_idx] = (
-                float(camera_target.x), float(camera_target.y), float(camera_target.z)
+                float(camera_target.x),
+                float(camera_target.y),
+                float(camera_target.z),
             )
             last_angle_deg[env_idx] = 0.0
 
