@@ -110,28 +110,8 @@ class RobotManagerIGE(BaseManager):
 
         return
 
-    def prepare_for_sim(self, global_tensor_dict: dict[str, object]) -> None:
-
-        self.global_tensor_dict = global_tensor_dict
-
-        self.global_tensor_dict["robot_mass"] = self.robot_masses
-        self.global_tensor_dict["robot_inertia"] = self.robot_inertias
-
-        self.global_tensor_dict["robot_actions"] = torch.zeros(
-            (self.num_envs, self.robot.num_actions), device=self.device
-        )
-
-        self.global_tensor_dict["robot_prev_actions"] = torch.zeros_like(
-            self.global_tensor_dict["robot_actions"]
-        )
-
-        self.actions = self.global_tensor_dict["robot_actions"]
-        self.prev_actions = self.global_tensor_dict["robot_prev_actions"]
-
-        self.global_tensor_dict["dof_control_mode"] = self.dof_control_mode
-
-        self.robot.init_tensors(self.global_tensor_dict)
-
+    def _init_sensors(self) -> None:
+        """Initialize camera/lidar sensors (warp or Isaac Gym native)."""
         if not self.use_warp:
             logger.error("Not using warp. Initializing sensors")
             if self.cfg.sensor_config.enable_lidar:
@@ -276,34 +256,33 @@ class RobotManagerIGE(BaseManager):
             self.has_IGE_sensors = True
         return
 
-    def add_robot_to_env(
-        self,
-        simulation_env_class: object,
-        env_handle: object,
-        global_asset_counter: int,
-        env_id: int,
-        segmentation_counter: int,
-        robot_idx_in_env: int | None = None,
-    ) -> int:
-        if robot_idx_in_env is None:
-            robot_idx_in_env = self.robot_id
-            
-        # Create unique robot name
-        robot_name = f"{self.robot_name_prefix}env_{env_id}"
-        
-        self.actor_handle, _ = simulation_env_class.add_asset_to_env(
-            self.robot_asset_dict,
-            env_handle,
-            env_id,
-            global_asset_counter,
-            segmentation_counter,
-        )
-        self.robot_handles.append(self.actor_handle)
-        # currently the robot is not having segmentation IDs. Can change if needed.
-        if self.camera_sensor is not None:
-            for i in range(self.camera_sensor.cfg.num_sensors):
-                self.camera_sensor.add_sensor_to_env(env_id, env_handle, self.actor_handle)
+    def prepare_for_sim(self, global_tensor_dict: dict[str, object]) -> None:
 
+        self.global_tensor_dict = global_tensor_dict
+
+        self.global_tensor_dict["robot_mass"] = self.robot_masses
+        self.global_tensor_dict["robot_inertia"] = self.robot_inertias
+
+        self.global_tensor_dict["robot_actions"] = torch.zeros(
+            (self.num_envs, self.robot.num_actions), device=self.device
+        )
+
+        self.global_tensor_dict["robot_prev_actions"] = torch.zeros_like(
+            self.global_tensor_dict["robot_actions"]
+        )
+
+        self.actions = self.global_tensor_dict["robot_actions"]
+        self.prev_actions = self.global_tensor_dict["robot_prev_actions"]
+
+        self.global_tensor_dict["dof_control_mode"] = self.dof_control_mode
+
+        self.robot.init_tensors(self.global_tensor_dict)
+
+        self._init_sensors()
+
+
+    def _compute_robot_inertia(self, env_handle: object, env_id: int) -> None:
+        """Compute robot mass and inertia from rigid body properties."""
         if self.robot_inertia is None or self.robot_mass is None:
             # get robot mass and inertia
             rbp = self.gym.get_actor_rigid_body_properties(env_handle, self.actor_handle)
@@ -482,6 +461,36 @@ class RobotManagerIGE(BaseManager):
         self.robot_masses[env_id] = self.robot_mass
         self.robot_inertias[env_id] = self.robot_inertia
         
+
+    def add_robot_to_env(
+        self,
+        simulation_env_class: object,
+        env_handle: object,
+        global_asset_counter: int,
+        env_id: int,
+        segmentation_counter: int,
+        robot_idx_in_env: int | None = None,
+    ) -> int:
+        if robot_idx_in_env is None:
+            robot_idx_in_env = self.robot_id
+            
+        # Create unique robot name
+        robot_name = f"{self.robot_name_prefix}env_{env_id}"
+        
+        self.actor_handle, _ = simulation_env_class.add_asset_to_env(
+            self.robot_asset_dict,
+            env_handle,
+            env_id,
+            global_asset_counter,
+            segmentation_counter,
+        )
+        self.robot_handles.append(self.actor_handle)
+        # currently the robot is not having segmentation IDs. Can change if needed.
+        if self.camera_sensor is not None:
+            for i in range(self.camera_sensor.cfg.num_sensors):
+                self.camera_sensor.add_sensor_to_env(env_id, env_handle, self.actor_handle)
+
+        self._compute_robot_inertia(env_handle, env_id)
         # Store mapping of environment to robot index within that environment
         if not hasattr(self, 'env_robot_mapping'):
             self.env_robot_mapping = {}
