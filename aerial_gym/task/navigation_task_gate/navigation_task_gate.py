@@ -275,6 +275,51 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
         
         logger.warning("="*80)
         
+        self._init_curriculum()
+
+        # Use dedicated terminations tensor if provided by env_manager; fallback to crashes
+        try:
+            self.terminations = self.obs_dict["terminations"]
+        except (KeyError, TypeError):
+            self.terminations = self.obs_dict["crashes"]
+        self.truncations = self.obs_dict["truncations"]
+        self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
+
+        self._init_observation_action_spaces()
+        self._init_task_observations()
+
+        self.num_task_steps = 0
+        
+        # Curriculum logging already initialized earlier in __init__
+
+        self.pos_error_vehicle_frame = torch.zeros(
+            self.num_envs, 3, device=self.device
+        )
+        self.pos_error_vehicle_frame_prev = torch.zeros(
+            self.num_envs, 3, device=self.device
+        )
+        self.gate_passed = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        # Episode-level tracking flags
+        self._ep_target_success_flag = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        self.camera_alignment_debug = torch.zeros(self.num_envs, device=self.device)
+        self.num_task_steps = 0
+        self.curriculum_progress_fraction = 0.0
+        
+        self._init_episode_reward_tracking()
+        self._init_episode_trajectory_state()
+        self._init_debug_flags()
+
+        # Initialize gate dimensions for all environments after full initialization
+        logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
+        self.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
+
+        # Ensure infos survive resets for logging back to the learner
+        self._infos_to_return = None
+
+    # Private init helpers (extracted from __init__ for readability)
+
+    def _init_curriculum(self) -> None:
+        """Initialize curriculum level, obstacle counts, camera difficulty, and logging."""
         # Use the curriculum level that was already set during pre-initialization
         # Force curriculum level if requested via env/task config
         forced = os.environ.get('SF_FORCE_CURRICULUM_LEVEL', None)
@@ -450,46 +495,6 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
         
         self.log_curriculum_update(f"[INIT] Multi-aspect curriculum initialized at level {self.curriculum_level}")
 
-        # Use dedicated terminations tensor if provided by env_manager; fallback to crashes
-        try:
-            self.terminations = self.obs_dict["terminations"]
-        except (KeyError, TypeError):
-            self.terminations = self.obs_dict["crashes"]
-        self.truncations = self.obs_dict["truncations"]
-        self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
-
-        self._init_observation_action_spaces()
-        self._init_task_observations()
-
-        self.num_task_steps = 0
-        
-        # Curriculum logging already initialized earlier in __init__
-
-        self.pos_error_vehicle_frame = torch.zeros(
-            self.num_envs, 3, device=self.device
-        )
-        self.pos_error_vehicle_frame_prev = torch.zeros(
-            self.num_envs, 3, device=self.device
-        )
-        self.gate_passed = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
-        # Episode-level tracking flags
-        self._ep_target_success_flag = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
-        self.camera_alignment_debug = torch.zeros(self.num_envs, device=self.device)
-        self.num_task_steps = 0
-        self.curriculum_progress_fraction = 0.0
-        
-        self._init_episode_reward_tracking()
-        self._init_episode_trajectory_state()
-        self._init_debug_flags()
-
-        # Initialize gate dimensions for all environments after full initialization
-        logger.warning("[GATE_ADAPTIVE] Initializing gate dimensions for all environments")
-        self.update_gate_dimensions_for_environments(torch.arange(self.sim_env.num_envs, device=self.device))
-
-        # Ensure infos survive resets for logging back to the learner
-        self._infos_to_return = None
-
-    # Private init helpers (extracted from __init__ for readability)
 
     def _init_gate_tracking_tensors(self) -> None:
         """Initialise gate-specific tracking tensors and adaptive dimensions."""
