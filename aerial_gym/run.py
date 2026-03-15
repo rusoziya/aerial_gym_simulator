@@ -197,6 +197,19 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
     os.environ["SF_TRAIN_DIR"] = sf.train_dir
     os.environ["SF_EXPERIMENT_NAME"] = sf.experiment_name
 
+    # Log level propagation (read by CustomLogger.__init__)
+    os.environ["SF_LOG_LEVEL"] = cfg.logging.log_level.value
+
+    # Wandb co-location: artifacts go inside experiment dir
+    if cfg.logging.wandb_dir_override is not None:
+        wandb_dir = cfg.logging.wandb_dir_override
+    else:
+        experiment_dir = Path(sf.train_dir)
+        if sf.experiment_name:
+            experiment_dir = experiment_dir / sf.experiment_name
+        wandb_dir = str(experiment_dir)
+    os.environ["WANDB_DIR"] = wandb_dir
+
 
 def _get_sf_train_script(cfg: RunConfig) -> str:
     """Select the correct SF training script based on task name."""
@@ -377,6 +390,20 @@ def _make_log_path(log_dir: str, cfg: RunConfig) -> Path:
     return log_path / f"{mode}_{task}_{ts}.log"
 
 
+def _get_git_hash() -> str:
+    """Get short git hash of current HEAD."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        return result.stdout.strip() if result.returncode == 0 else "unknown"
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return "unknown"
+
+
 def _run_with_logging(cmd: List[str], log_file: Path | None, config_yaml: str = "") -> int:
     """Run a subprocess, tee-ing stdout+stderr to a log file if provided."""
     if log_file is None:
@@ -387,6 +414,9 @@ def _run_with_logging(cmd: List[str], log_file: Path | None, config_yaml: str = 
     with open(log_file, "w") as fh:
         fh.write(f"Command: {' '.join(cmd)}\n")
         fh.write(f"Started: {datetime.now().isoformat()}\n")
+        fh.write(f"Git hash: {_get_git_hash()}\n")
+        fh.write(f"Experiment: {os.environ.get('SF_EXPERIMENT_NAME', '')}\n")
+        fh.write(f"Wandb dir: {os.environ.get('WANDB_DIR', '')}\n")
         if config_yaml:
             fh.write(f"\n--- Config ---\n{config_yaml}--- End Config ---\n")
         fh.write("=" * 80 + "\n\n")

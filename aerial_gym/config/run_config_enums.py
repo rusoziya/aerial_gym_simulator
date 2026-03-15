@@ -82,3 +82,11 @@ class CameraBaseZ(str, Enum):
     """Special string value for adaptive camera Z positioning."""
 
     adaptive = "adaptive"
+
+
+class LogLevel(str, Enum):
+    """Python logging level."""
+
+    debug = "DEBUG"
+    info = "INFO"
+    warning = "WARNING"

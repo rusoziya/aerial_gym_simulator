@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import datetime
 import os
 
@@ -41,6 +42,7 @@ class CurriculumManager:
             self.task.curriculum_log_file.flush()
 
             logger.info(f"Curriculum logging setup successful: {curriculum_log_path}")
+            atexit.register(self._close_curriculum_log)
 
         except OSError as e:
             # If curriculum logging setup fails, continue without it
@@ -54,7 +56,7 @@ class CurriculumManager:
         """Log curriculum update messages to both console and curriculum log file."""
         try:
             # Always log to console
-            logger.warning(message)
+            logger.info(message)
 
             # Try to log to file if available
             if self.task.curriculum_log_file:
@@ -66,9 +68,17 @@ class CurriculumManager:
                     # If file logging fails, continue without it
                     logger.debug(f"Failed to write to curriculum log file: {e}")
         except OSError as e:
-            # If anything fails, just log to console
             logger.warning(f"Curriculum update: {message}")
             logger.debug(f"Curriculum logging error: {e}")
+
+    def _close_curriculum_log(self) -> None:
+        """Close curriculum log file handle. Called by atexit and NavigationTaskGate.close()."""
+        if self.task.curriculum_log_file is not None:
+            try:
+                self.task.curriculum_log_file.close()
+            except OSError:
+                pass
+            self.task.curriculum_log_file = None
 
     def check_and_update_curriculum_level(
         self, successes: torch.Tensor, crashes: torch.Tensor, timeouts: torch.Tensor

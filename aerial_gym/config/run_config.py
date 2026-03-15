@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from aerial_gym.config.run_config_enums import (
     CheckpointKind,
     FusionMode,
+    LogLevel,
     LRSchedule,
     Mode,
     Nonlinearity,
@@ -178,6 +179,22 @@ class CurriculumOverrides(_StrictBase):
         None, ge=40, le=100, description="Even integer in [40, 100]"
     )
 
+    @model_validator(mode="after")
+    def _validate_level_constraints(self) -> CurriculumOverrides:
+        if self.min_level is not None and self.max_level is not None:
+            if self.min_level > self.max_level:
+                raise ValueError(
+                    f"min_level ({self.min_level}) must be <= max_level ({self.max_level})"
+                )
+        if self.force_level is not None and (
+            self.min_level is not None or self.max_level is not None
+        ):
+            raise ValueError(
+                "force_level cannot coexist with min_level/max_level — "
+                "force_level pins the curriculum, min/max constrain progression"
+            )
+        return self
+
 
 class CameraOverrides(_StrictBase):
     """Camera mode and noise configuration.
@@ -268,6 +285,16 @@ class InferenceSuiteConfig(_StrictBase):
     experiment_name: str = Field("")
 
 
+class LoggingConfig(_StrictBase):
+    """Logging configuration."""
+
+    log_level: LogLevel = Field(LogLevel.info, description="Python log level for all loggers")
+    log_to_file: bool = Field(True, description="Write logger output to file in experiment dir")
+    wandb_dir_override: Optional[str] = Field(
+        None, description="Override WANDB_DIR. None = co-locate with train_dir/experiment/"
+    )
+
+
 class RunConfig(_StrictBase):
     """Top-level run configuration for aerial_gym Sample Factory pipeline."""
 
@@ -281,6 +308,7 @@ class RunConfig(_StrictBase):
     camera: CameraOverrides = Field(default_factory=CameraOverrides)
     ablation: AblationConfig = Field(default_factory=AblationConfig)
     gradient_monitoring: GradientMonitoringConfig = Field(default_factory=GradientMonitoringConfig)
+    logging: LoggingConfig = Field(default_factory=LoggingConfig)
     inference_suite: Optional[InferenceSuiteConfig] = Field(None)
 
     @model_validator(mode="after")
