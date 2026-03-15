@@ -238,11 +238,9 @@ def _sanitize_action(action: Tensor) -> Tensor:
 def _get_level_suffix(env: object) -> str:
     """Build a curriculum level suffix string for GIF filenames."""
     try:
-        if hasattr(env, "curriculum_level"):
-            return f"_L{int(env.curriculum_level):02d}"
-    except (ValueError, TypeError):
-        pass
-    return ""
+        return f"_L{int(env.curriculum_level):02d}"  # type: ignore[attr-defined]
+    except (AttributeError, ValueError, TypeError):
+        return ""
 
 
 def _build_gated_fuser(gate_per_feature: bool) -> nn.Module:

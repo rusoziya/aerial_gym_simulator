@@ -62,13 +62,19 @@ def build_enhanced_wandb_log(
 def _inject_frames(cfg: Config, metrics: dict[str, object], kwargs: dict[str, object]) -> None:
     """Attach frames / env_steps from cfg if available."""
     frames: int | None = None
-    train_step = getattr(cfg, "train_step", None)
-    if isinstance(train_step, (int, float)):
-        frames = int(train_step)
-    else:
-        env_steps = getattr(cfg, "env_steps", None)
-        if isinstance(env_steps, (int, float)):
-            frames = int(env_steps)
+    try:
+        train_step = cfg.train_step  # type: ignore[attr-defined]
+        if isinstance(train_step, (int, float)):
+            frames = int(train_step)
+    except AttributeError:
+        pass
+    if frames is None:
+        try:
+            env_steps = cfg.env_steps  # type: ignore[attr-defined]
+            if isinstance(env_steps, (int, float)):
+                frames = int(env_steps)
+        except AttributeError:
+            pass
     if frames is not None:
         metrics.setdefault("frames", frames)
         kwargs.setdefault("step", frames)
@@ -94,8 +100,8 @@ def _merge_influence_metrics(
 
     if tracker.should_log():  # type: ignore[attr-defined]
         tracker.step()  # type: ignore[attr-defined]
-        step_count = getattr(tracker, "step_count", None)
-        if step_count is not None and step_count % cfg.gradient_print_interval == 0:
+        step_count: int = tracker.step_count  # type: ignore[attr-defined]
+        if step_count % cfg.gradient_print_interval == 0:
             tracker.print_analysis_summary()  # type: ignore[attr-defined]
 
 
@@ -145,8 +151,6 @@ def _define_wandb_metrics(metrics: dict[str, object]) -> None:
     """Call wandb.define_metric for known custom groups."""
     import wandb
 
-    if not hasattr(wandb, "define_metric"):
-        return
     wandb.define_metric("frames")
     for name in list(metrics.keys()):
         if isinstance(name, str) and name.startswith(

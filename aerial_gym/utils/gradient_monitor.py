@@ -11,6 +11,21 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+def _resolve_module_path(model: torch.nn.Module, dotted_path: str) -> torch.nn.Module:
+    """Traverse a dotted attribute path on a module (e.g. 'encoder.encoders.obs')."""
+    module = model
+    for part in dotted_path.split("."):
+        module = module.__getattr__(part)
+    return module
+
+
+def _is_script_module(module: torch.nn.Module) -> bool:
+    """Check whether *module* is a TorchScript module (which doesn't support hooks)."""
+    type_name = type(module).__name__
+    return "ScriptModule" in type_name or "RecursiveScriptModule" in type_name
+
+
 class CompleteObservationInfluenceTracker:
     """
     Enhanced tracker that analyzes the influence of ALL observation components on the neural network's encoded features.
@@ -71,13 +86,10 @@ class CompleteObservationInfluenceTracker:
         
         for target_path, target_name in hook_targets:
             try:
-                target_module = self.model
-                for attr in target_path.split('.'):
-                    target_module = getattr(target_module, attr)
-                
-                # Check if this is a ScriptModule (which doesn't support hooks)
-                if hasattr(target_module, '_c') or 'ScriptModule' in str(type(target_module)):
-                    logger.warning(f"⚠️ Skipping {target_name} - ScriptModule doesn't support hooks")
+                target_module = _resolve_module_path(self.model, target_path)
+
+                if _is_script_module(target_module):
+                    logger.warning(f"Skipping {target_name} - ScriptModule doesn't support hooks")
                     continue
                 
                 # Try to attach hook
@@ -93,11 +105,9 @@ class CompleteObservationInfluenceTracker:
                 logger.warning(f"Failed to attach to {target_name}: {e}")
                 continue
                 
-        # If all targets failed, try to find any non-ScriptModule components
-        logger.warning("🔍 Searching for non-ScriptModule components...")
+        logger.warning("Searching for non-ScriptModule components...")
         for name, module in self.model.named_modules():
-            if (hasattr(module, '_c') or 'ScriptModule' in str(type(module)) or
-                'RecursiveScriptModule' in str(type(module))):
+            if _is_script_module(module):
                 continue
                 
             # Skip modules that are too basic

@@ -22,9 +22,9 @@ class DCE_RL_Navigation_Task(NavigationTask):
         if sf_headless is not None:
             task_config.headless = sf_headless.lower() == 'true'
             logger.info(f"DCE Navigation Task - Using SF_HEADLESS environment variable: {task_config.headless}")
-        elif not hasattr(task_config, 'headless') or task_config.headless is None:
-            task_config.headless = False  # Default to visualization enabled
-            logger.info(f"DCE Navigation Task - Using default headless=False for visualization")
+        elif task_config.headless is None:
+            task_config.headless = False
+            logger.info("DCE Navigation Task - Using default headless=False for visualization")
         else:
             logger.info(f"DCE Navigation Task - Using pre-configured headless: {task_config.headless}")
         

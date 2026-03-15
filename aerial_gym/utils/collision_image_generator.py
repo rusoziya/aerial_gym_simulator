@@ -51,8 +51,7 @@ if gpus:
 wp.init()
 
 
-# TFRECORD_FOLDER = "/home/arl/MihirK/DATA/ISVC_datasets"
-TFRECORD_FOLDER = "/home/ENTERYOURFOLDERHERE"
+TFRECORD_FOLDER = os.environ.get("TFRECORD_FOLDER", "/tmp/tfrecord_data")
 TFRECORD_TEST_FOLDER = os.path.join(TFRECORD_FOLDER, "test")
 
 
@@ -185,7 +184,6 @@ def create_sphere_mesh(edges, point_cloud, radius=0.1) -> None:
 
         if np.linalg.norm(point_origin) < 0.4:
             continue
-        # print("point_origin: ", point_origin)
         sphere_mesh_list.append(tm.creation.icosphere(radius=radius, subdivisions=3))
         sphere_mesh_list[-1].apply_translation(point_origin)
     return sphere_mesh_list

@@ -166,7 +166,7 @@ def test_gate_navigation_dual_camera() -> None:
                   f"reward_mean={rewards.mean():.3f}")
             
             # Check if static camera is working
-            if hasattr(rl_task, 'static_camera_latents'):
+            if rl_task.static_camera_latents is not None:
                 static_latents_mean = rl_task.static_camera_latents.mean()
                 drone_latents_mean = rl_task.image_latents.mean()
                 print(f"          Static camera VAE latents mean: {static_latents_mean:.3f}")

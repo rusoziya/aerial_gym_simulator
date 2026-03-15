@@ -39,20 +39,18 @@ import distutils
 
 
 def class_to_dict(obj: object) -> dict[str, object]:
-    if not hasattr(obj, "__dict__"):
-        return obj
-    result = {}
-    for key in dir(obj):
+    try:
+        attrs = vars(obj)
+    except TypeError:
+        return obj  # type: ignore[return-value]
+    result: dict[str, object] = {}
+    for key, val in attrs.items():
         if key.startswith("_"):
             continue
-        element = []
-        val = getattr(obj, key)
         if isinstance(val, list):
-            for item in val:
-                element.append(class_to_dict(item))
+            result[key] = [class_to_dict(item) for item in val]
         else:
-            element = class_to_dict(val)
-        result[key] = element
+            result[key] = class_to_dict(val)
     return result
 
 

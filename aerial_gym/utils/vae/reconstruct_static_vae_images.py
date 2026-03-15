@@ -153,7 +153,11 @@ def main() -> None:
 
     # Load checkpoint and auto-detect latent size if needed
     state_obj = torch.load(args.weights, map_location="cpu")
-    state = clean_state_dict(state_obj.state_dict() if hasattr(state_obj, "state_dict") else state_obj)
+    try:
+        raw_state = state_obj.state_dict()
+    except AttributeError:
+        raw_state = state_obj
+    state = clean_state_dict(raw_state)
     detected_latent = None
     # Try encoder dense1 first (shape [2*L, 512])
     for k in ("encoder.dense1.weight", "dronet.dense1.weight"):

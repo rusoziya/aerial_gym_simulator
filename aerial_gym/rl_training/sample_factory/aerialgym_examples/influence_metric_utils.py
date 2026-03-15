@@ -307,17 +307,33 @@ class _WindowedAccumulator:
                 self.spatial_overall += scalar
 
 
+def _get_window_values(
+    acc: _WindowedAccumulator, window: str
+) -> tuple[float, float, float, float, float]:
+    """Return (camera, state, visual, kinematic, spatial) values for the given window."""
+    if window == "recent":
+        return (
+            acc.camera_recent, acc.state_recent,
+            acc.visual_recent, acc.kinematic_recent, acc.spatial_recent,
+        )
+    return (
+        acc.camera_overall, acc.state_overall,
+        acc.visual_overall, acc.kinematic_overall, acc.spatial_overall,
+    )
+
+
 def _emit_window_shares(
     acc: _WindowedAccumulator, window_total: float, suffix: str
 ) -> dict[str, float]:
     """Emit camera/state/modality share metrics for a specific window (recent/overall)."""
     if window_total <= 0.0:
         return {}
-    cam = getattr(acc, f"camera_{suffix}") / window_total
-    st = getattr(acc, f"state_{suffix}") / window_total
-    vis = getattr(acc, f"visual_{suffix}") / window_total
-    kin = getattr(acc, f"kinematic_{suffix}") / window_total
-    spa = getattr(acc, f"spatial_{suffix}") / window_total
+    cam_val, st_val, vis_val, kin_val, spa_val = _get_window_values(acc, suffix)
+    cam = cam_val / window_total
+    st = st_val / window_total
+    vis = vis_val / window_total
+    kin = kin_val / window_total
+    spa = spa_val / window_total
     return {
         f"camera_share_{suffix}": cam,
         f"state_share_{suffix}": st,

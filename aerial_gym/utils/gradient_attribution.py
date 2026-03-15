@@ -9,6 +9,20 @@ import torch
 logger = logging.getLogger(__name__)
 
 
+def _resolve_module_path(model: torch.nn.Module, dotted_path: str) -> torch.nn.Module:
+    """Traverse a dotted attribute path on a module (e.g. 'encoder.encoders.obs')."""
+    module = model
+    for part in dotted_path.split("."):
+        module = module.__getattr__(part)
+    return module
+
+
+def _is_script_module(module: torch.nn.Module) -> bool:
+    """Check whether *module* is a TorchScript module (which doesn't support hooks)."""
+    type_name = type(module).__name__
+    return "ScriptModule" in type_name or "RecursiveScriptModule" in type_name
+
+
 class GradientAttributionTracker:
     """
     Tracks loss-aligned importance of observation components via gradient norms.
@@ -61,12 +75,9 @@ class GradientAttributionTracker:
 
         for target_path, target_name in hook_targets:
             try:
-                module = self.model
-                for attr in target_path.split('.'):
-                    module = getattr(module, attr)
+                module = _resolve_module_path(self.model, target_path)
 
-                # Skip TorchScript modules (no hooks)
-                if hasattr(module, '_c') or 'ScriptModule' in str(type(module)):
+                if _is_script_module(module):
                     logger.warning(f"⚠️ Skipping {target_name} for gradient hooks - ScriptModule")
                     continue
 

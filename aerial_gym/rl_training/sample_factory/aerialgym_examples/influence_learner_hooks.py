@@ -112,8 +112,11 @@ def _attach_forward_backward_hooks(learner: object, tracker_state: dict[str, obj
         ) -> tuple[object, ...] | dict[str, object] | torch.Tensor | None:
             return _process_forward_input(mod, inp, learner)
 
-        encoder = getattr(learner.actor_critic, "encoder", None)  # type: ignore[attr-defined]
-        if encoder is None or "ScriptModule" in str(type(encoder)):
+        try:
+            encoder = learner.actor_critic.encoder  # type: ignore[attr-defined]
+        except AttributeError:
+            encoder = None
+        if encoder is None or "ScriptModule" in type(encoder).__name__:
             target = learner.actor_critic  # type: ignore[attr-defined]
         else:
             target = encoder
@@ -124,8 +127,11 @@ def _attach_forward_backward_hooks(learner: object, tracker_state: dict[str, obj
             grad_in: tuple[torch.Tensor | None, ...],
             grad_out: tuple[torch.Tensor | None, ...],
         ) -> None:
-            x = getattr(mod, "_obs_proxy", None)
-            gt = getattr(learner, "_grad_tracker", None)
+            try:
+                x: torch.Tensor | None = mod._obs_proxy  # type: ignore[attr-defined]
+            except AttributeError:
+                x = None
+            gt = learner._grad_tracker  # type: ignore[attr-defined]
             if x is not None and x.grad is not None and gt:
                 gt.consume_grad(x.grad)
 
@@ -164,9 +170,9 @@ def _proxy_dict_obs(
         return None
     t = torch.nan_to_num(t, nan=0.0, posinf=0.0, neginf=0.0).clamp_(-1e6, 1e6)
     x = t.detach().requires_grad_(True)
-    gt = getattr(learner, "_grad_tracker", None)
+    gt: object = learner._grad_tracker  # type: ignore[attr-defined]
     if gt:
-        x.register_hook(lambda g: gt.consume_grad(g))
+        x.register_hook(lambda g: gt.consume_grad(g))  # type: ignore[attr-defined]
     mod._obs_proxy = x  # type: ignore[attr-defined]
     new_arg = dict(arg)
     new_arg["obs"] = x
@@ -183,9 +189,9 @@ def _proxy_tensor_obs(
 ) -> tuple[object, ...] | torch.Tensor:
     t = torch.nan_to_num(arg, nan=0.0, posinf=0.0, neginf=0.0).clamp_(-1e6, 1e6)
     x = t.detach().requires_grad_(True)
-    gt = getattr(learner, "_grad_tracker", None)
+    gt: object = learner._grad_tracker  # type: ignore[attr-defined]
     if gt:
-        x.register_hook(lambda g: gt.consume_grad(g))
+        x.register_hook(lambda g: gt.consume_grad(g))  # type: ignore[attr-defined]
     mod._obs_proxy = x  # type: ignore[attr-defined]
     if isinstance(inp, tuple):
         lst = list(inp)
@@ -220,7 +226,10 @@ def create_enhanced_train(
             import wandb
 
             frames = int(current_step)
-            latest = getattr(self, "last_episodic_stats", None)
+            try:
+                latest: dict[str, object] | None = self.last_episodic_stats  # type: ignore[attr-defined]
+            except AttributeError:
+                latest = None
             if isinstance(latest, dict):
                 _log_curriculum_metrics(latest, frames, last_curriculum)
                 _log_trajectory_metrics(latest, frames)
@@ -390,7 +399,7 @@ def _log_trajectory_metrics(latest: dict[str, object], frames: int) -> None:
 
 
 def _step_influence_tracker(learner: object, current_step: int, cfg: Config) -> None:
-    tracker = getattr(learner, "_influence_tracker", None)
+    tracker = learner._influence_tracker  # type: ignore[attr-defined]
     if tracker and tracker.enabled:
         tracker.step_count = current_step
         if current_step > 0 and current_step % cfg.gradient_print_interval == 0:
@@ -398,7 +407,7 @@ def _step_influence_tracker(learner: object, current_step: int, cfg: Config) -> 
 
 
 def _step_grad_tracker(learner: object, current_step: int, cfg: Config) -> None:
-    tracker = getattr(learner, "_grad_tracker", None)
+    tracker = learner._grad_tracker  # type: ignore[attr-defined]
     if tracker and tracker.enabled:
         if current_step > 0 and current_step % cfg.gradient_print_interval == 0:
             tracker.print_gradient_summary()
@@ -411,10 +420,10 @@ def _explicit_obs_grad_log(learner: object, current_step: int) -> None:
 
         frames = int(current_step)
         metric_sources: list[dict[str, object]] = []
-        inf_tracker = getattr(learner, "_influence_tracker", None)
+        inf_tracker = learner._influence_tracker  # type: ignore[attr-defined]
         if inf_tracker and inf_tracker.enabled:
             metric_sources.append(inf_tracker.get_logging_metrics())
-        grd_tracker = getattr(learner, "_grad_tracker", None)
+        grd_tracker = learner._grad_tracker  # type: ignore[attr-defined]
         if grd_tracker and grd_tracker.enabled:
             metric_sources.append(grd_tracker.get_logging_metrics())
 

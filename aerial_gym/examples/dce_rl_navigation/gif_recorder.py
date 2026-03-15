@@ -79,23 +79,21 @@ class GifRecorder:
         """Collect static camera depth/segmentation from camera manager."""
         if not self.enabled or static_camera_manager is None:
             return
-        if not hasattr(static_camera_manager, "capture_images"):
-            return
         try:
             depth, seg = static_camera_manager.capture_images(batched=False)
-            if depth is not None:
-                pil_d = _extract_env0_pil(depth)
-                if pil_d is not None:
-                    self._static_clean.append(pil_d)
-            if seg is not None:
-                seg_arr = seg
-                if isinstance(seg_arr, np.ndarray) and seg_arr.ndim > 2:
-                    seg_arr = np.squeeze(seg_arr)
-                pil_seg = _normalize_seg_to_pil(seg_arr)
-                if pil_seg is not None:
-                    self._static_seg.append(pil_seg)
-        except (ValueError, TypeError):
-            pass
+        except (AttributeError, ValueError, TypeError):
+            return
+        if depth is not None:
+            pil_d = _extract_env0_pil(depth)
+            if pil_d is not None:
+                self._static_clean.append(pil_d)
+        if seg is not None:
+            seg_arr = seg
+            if isinstance(seg_arr, np.ndarray) and seg_arr.ndim > 2:
+                seg_arr = np.squeeze(seg_arr)
+            pil_seg = _normalize_seg_to_pil(seg_arr)
+            if pil_seg is not None:
+                self._static_seg.append(pil_seg)
 
     def on_episode_end(self) -> None:
         """Save GIFs and reset frame buffers when env 0 episode ends."""

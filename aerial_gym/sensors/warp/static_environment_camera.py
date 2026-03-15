@@ -22,7 +22,7 @@ class StaticEnvironmentCamera:
         self.cfg = camera_config
         self.device = device
         self.num_envs = num_envs
-        self.num_cameras = self.cfg.num_cameras if hasattr(self.cfg, 'num_cameras') else 1
+        self.num_cameras: int = self.cfg.num_cameras
         self.mesh_ids_array = mesh_ids_array
 
         # Initialize static camera positions and orientations

@@ -23,12 +23,8 @@ from PIL import Image
 def sample_command(args) -> None:
     use_warp = True
     # Enable viewing by default for inference - user can override with --headless
-    headless = getattr(args, 'headless', False)  # Default to False (viewing enabled)
+    headless: bool = args.headless if args.headless is not None else False
     print(f"DCE Inference - Headless mode: {headless}")
-    
-    # seg_frames = []
-    # depth_frames = []
-    # merged_image_frames = []
 
     rl_task = task_registry.make_task(
         "dce_navigation_task", seed=42, use_warp=use_warp, headless=headless
