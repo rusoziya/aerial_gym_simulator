@@ -13,6 +13,12 @@ from aerial_gym.registry.robot_registry import robot_registry
 from aerial_gym.robots.inertia_computation import compute_composite_inertia, compute_robot_com
 from aerial_gym.sensors.imu_sensor import IMUSensor
 from aerial_gym.sensors.isaacgym_camera_sensor import IsaacGymCameraSensor
+from aerial_gym.sensors.sensor_keys import (
+    DEPTH_RANGE_KEY,
+    FORCE_SENSOR_KEY,
+    RGB_KEY,
+    SEGMENTATION_KEY,
+)
 from aerial_gym.sensors.warp.warp_sensor import WarpSensor
 from aerial_gym.utils.logging import CustomLogger
 
@@ -118,138 +124,123 @@ class RobotManagerIGE(BaseManager):
     def _init_sensors(self) -> None:
         """Initialize camera/lidar sensors (warp or Isaac Gym native)."""
         if not self.use_warp:
-            logger.error("Not using warp. Initializing sensors")
-            if self.cfg.sensor_config.enable_lidar:
-                raise ValueError(
-                    "Lidar sensors are not supported using Isaac Gym Rendering. Please enable warp."
-                )
-
-            if self.cfg.sensor_config.enable_camera:
-                self.image_tensor = torch.zeros(
-                    (
-                        self.num_envs,
-                        self.cfg.sensor_config.camera_config.num_sensors,
-                        self.cfg.sensor_config.camera_config.height,
-                        self.cfg.sensor_config.camera_config.width,
-                    ),
-                    device=self.device,
-                    requires_grad=False,
-                )
-                self.global_tensor_dict.depth_range_pixels = self.image_tensor
-                self.rgb_image_tensor = torch.zeros(
-                    (
-                        self.num_envs,
-                        self.cfg.sensor_config.camera_config.num_sensors,
-                        self.cfg.sensor_config.camera_config.height,
-                        self.cfg.sensor_config.camera_config.width,
-                        4,
-                    ),
-                    device=self.device,
-                    requires_grad=False,
-                )
-                self.global_tensor_dict.rgb_pixels = self.rgb_image_tensor
-
-                if self.cfg.sensor_config.camera_config.segmentation_camera:
-                    self.segmentation_tensor = torch.zeros(
-                        (
-                            self.num_envs,
-                            self.cfg.sensor_config.camera_config.num_sensors,
-                            self.cfg.sensor_config.camera_config.height,
-                            self.cfg.sensor_config.camera_config.width,
-                        ),
-                        dtype=torch.int32,
-                        device=self.device,
-                        requires_grad=False,
-                    )
-                    self.global_tensor_dict.segmentation_pixels = self.segmentation_tensor
-                    logger.critical(
-                        f"Segmentation pixels shape: {self.global_tensor_dict.segmentation_pixels.shape}"
-                    )
-                logger.critical(
-                    f"Depth range pixels shape: {self.global_tensor_dict.depth_range_pixels.shape}"
-                )
-
-                self.camera_sensor.init_tensors(global_tensor_dict=self.global_tensor_dict)
+            self._init_ige_camera()
         else:
-            # assert that only one of camera or lidar is used at once
-            assert not (
-                self.cfg.sensor_config.enable_camera and self.cfg.sensor_config.enable_lidar
-            ), "Do not use both camera and lidar sensors together for now."
+            self._init_warp_sensors()
 
-            self.warp_sensor_config = None
-            if self.cfg.sensor_config.enable_camera:
-                self.warp_sensor_config = self.cfg.sensor_config.camera_config
-                self.warp_sensor_class = WarpSensor
-            elif self.cfg.sensor_config.enable_lidar:
-                self.warp_sensor_config = self.cfg.sensor_config.lidar_config
-                self.warp_sensor_class = WarpSensor
+        self._register_sensor_tensors()
 
-            if self.warp_sensor_config is not None:
-                logger.debug("Initializing warp sensor")
-                # prepare the tensors for simulation before preparing the tensors for the sensors
-                image_tensor_dims = 3 * (self.warp_sensor_config.return_pointcloud)
-                if self.global_tensor_dict.CONST_WARP_MESH_ID_LIST is None:
-                    logger.critical(
-                        "Warp camera is enabled but there is nothing in the environment. No rendering will take place and the camera tensor will not be populated."
-                    )
-                else:
-                    if image_tensor_dims == 0:
-                        self.image_tensor = torch.zeros(
-                            (
-                                self.num_envs,
-                                self.warp_sensor_config.num_sensors,
-                                self.warp_sensor_config.height,
-                                self.warp_sensor_config.width,
-                            ),
-                            device=self.device,
-                            requires_grad=False,
-                        )
-                    else:
-                        self.image_tensor = torch.zeros(
-                            (
-                                self.num_envs,
-                                self.warp_sensor_config.num_sensors,
-                                self.warp_sensor_config.height,
-                                self.warp_sensor_config.width,
-                                image_tensor_dims,
-                            ),
-                            device=self.device,
-                            requires_grad=False,
-                        )
-                    self.global_tensor_dict.depth_range_pixels = self.image_tensor
+    def _init_ige_camera(self) -> None:
+        """Initialize Isaac Gym native camera sensor and allocate image tensors."""
+        logger.error("Not using warp. Initializing sensors")
+        if self.cfg.sensor_config.enable_lidar:
+            raise ValueError(
+                "Lidar sensors are not supported using Isaac Gym Rendering. Please enable warp."
+            )
 
-                    if self.warp_sensor_config.segmentation_camera:
-                        self.segmentation_tensor = torch.zeros(
-                            (
-                                self.num_envs,
-                                self.warp_sensor_config.num_sensors,
-                                self.warp_sensor_config.height,
-                                self.warp_sensor_config.width,
-                            ),
-                            dtype=torch.int32,
-                            device=self.device,
-                            requires_grad=False,
-                        )
-                        self.global_tensor_dict.segmentation_pixels = self.segmentation_tensor
-                    self.warp_sensor = self.warp_sensor_class(
-                        self.warp_sensor_config,
-                        self.num_envs,
-                        self.global_tensor_dict.CONST_WARP_MESH_ID_LIST,
-                        self.device,
-                    )
-                    self.warp_sensor.init_tensors(global_tensor_dict=self.global_tensor_dict)
-                    logger.debug("[DONE] Initializing warp sensor")
-                    logger.debug("Capturing warp sensor")
-                    self.warp_sensor.update()
-                    logger.debug("[DONE] Capturing warp sensor")
+        if not self.cfg.sensor_config.enable_camera:
+            return
 
+        cam_cfg = self.cfg.sensor_config.camera_config
+        self.image_tensor = torch.zeros(
+            (self.num_envs, cam_cfg.num_sensors, cam_cfg.height, cam_cfg.width),
+            device=self.device,
+            requires_grad=False,
+        )
+        self.global_tensor_dict[DEPTH_RANGE_KEY] = self.image_tensor
+        self.rgb_image_tensor = torch.zeros(
+            (self.num_envs, cam_cfg.num_sensors, cam_cfg.height, cam_cfg.width, 4),
+            device=self.device,
+            requires_grad=False,
+        )
+        self.global_tensor_dict[RGB_KEY] = self.rgb_image_tensor
+
+        if cam_cfg.segmentation_camera:
+            self.segmentation_tensor = torch.zeros(
+                (self.num_envs, cam_cfg.num_sensors, cam_cfg.height, cam_cfg.width),
+                dtype=torch.int32,
+                device=self.device,
+                requires_grad=False,
+            )
+            self.global_tensor_dict[SEGMENTATION_KEY] = self.segmentation_tensor
+            logger.critical(
+                f"Segmentation pixels shape: {self.global_tensor_dict.segmentation_pixels.shape}"
+            )
+        logger.critical(
+            f"Depth range pixels shape: {self.global_tensor_dict.depth_range_pixels.shape}"
+        )
+
+        self.camera_sensor.init_tensors(global_tensor_dict=self.global_tensor_dict)
+
+    def _init_warp_sensors(self) -> None:
+        """Initialize warp-based camera or lidar sensor and allocate image tensors."""
+        assert not (self.cfg.sensor_config.enable_camera and self.cfg.sensor_config.enable_lidar), (
+            "Do not use both camera and lidar sensors together for now."
+        )
+
+        self.warp_sensor_config = None
+        if self.cfg.sensor_config.enable_camera:
+            self.warp_sensor_config = self.cfg.sensor_config.camera_config
+            self.warp_sensor_class = WarpSensor
+        elif self.cfg.sensor_config.enable_lidar:
+            self.warp_sensor_config = self.cfg.sensor_config.lidar_config
+            self.warp_sensor_class = WarpSensor
+
+        if self.warp_sensor_config is None:
+            return
+
+        logger.debug("Initializing warp sensor")
+        image_tensor_dims = 3 * (self.warp_sensor_config.return_pointcloud)
+        if self.global_tensor_dict.CONST_WARP_MESH_ID_LIST is None:
+            logger.critical(
+                "Warp camera is enabled but there is nothing in the environment. "
+                "No rendering will take place and the camera tensor will not be populated."
+            )
+            return
+
+        wcfg = self.warp_sensor_config
+        if image_tensor_dims == 0:
+            self.image_tensor = torch.zeros(
+                (self.num_envs, wcfg.num_sensors, wcfg.height, wcfg.width),
+                device=self.device,
+                requires_grad=False,
+            )
+        else:
+            self.image_tensor = torch.zeros(
+                (self.num_envs, wcfg.num_sensors, wcfg.height, wcfg.width, image_tensor_dims),
+                device=self.device,
+                requires_grad=False,
+            )
+        self.global_tensor_dict[DEPTH_RANGE_KEY] = self.image_tensor
+
+        if wcfg.segmentation_camera:
+            self.segmentation_tensor = torch.zeros(
+                (self.num_envs, wcfg.num_sensors, wcfg.height, wcfg.width),
+                dtype=torch.int32,
+                device=self.device,
+                requires_grad=False,
+            )
+            self.global_tensor_dict[SEGMENTATION_KEY] = self.segmentation_tensor
+        self.warp_sensor = self.warp_sensor_class(
+            self.warp_sensor_config,
+            self.num_envs,
+            self.global_tensor_dict.CONST_WARP_MESH_ID_LIST,
+            self.device,
+        )
+        self.warp_sensor.init_tensors(global_tensor_dict=self.global_tensor_dict)
+        logger.debug("[DONE] Initializing warp sensor")
+        logger.debug("Capturing warp sensor")
+        self.warp_sensor.update()
+        logger.debug("[DONE] Capturing warp sensor")
+
+    def _register_sensor_tensors(self) -> None:
+        """Initialize IMU sensor and set IGE sensor flag."""
         if self.cfg.sensor_config.enable_imu:
             logger.debug("Initializing IMU sensor")
-            # acquire force tensors for each of the assets
             self.force_sensor_tensor = gymtorch.wrap_tensor(
                 self.gym.acquire_force_sensor_tensor(self.sim)
             )
-            self.global_tensor_dict.force_sensor_tensor = self.force_sensor_tensor
+            self.global_tensor_dict[FORCE_SENSOR_KEY] = self.force_sensor_tensor
 
             self.imu_sensor = IMUSensor(
                 self.cfg.sensor_config.imu_config, self.num_envs, self.device
@@ -259,7 +250,6 @@ class RobotManagerIGE(BaseManager):
 
         elif not self.use_warp and self.camera_sensor is not None:
             self.has_IGE_sensors = True
-        return
 
     def prepare_for_sim(self, global_tensor_dict: GlobalTensorDict) -> None:
         self.global_tensor_dict: GlobalTensorDict = global_tensor_dict

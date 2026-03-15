@@ -114,6 +114,55 @@ This repository utilizes some of the code and helper scripts from [https://githu
 
 
 
+## Development Workflow
+
+### Makefile Commands
+
+All training and evaluation is driven through `make` targets and YAML config files:
+
+| Command | Description |
+|---|---|
+| `make train CONFIG=configs/<file>.yaml` | Train with a config file |
+| `make eval CONFIG=configs/<file>.yaml` | Evaluate a trained checkpoint |
+| `make play CONFIG=configs/<file>.yaml` | Visualize a trained policy |
+| `make train-gate` | Train gate navigation (default SF config) |
+| `make validate-config` | Validate a config file without running |
+| `make dry-run` | Print the command without executing |
+| `make lint` | Run ruff linter |
+| `make format` | Format code with ruff |
+| `make test` | Run the test suite |
+| `make clean` | Remove `__pycache__` and `.pyc` files |
+
+Run `make help` to see the full list of targets.
+
+### Running Tests
+
+Tests do not require Isaac Gym or a GPU. They use `importlib` to load modules
+directly, bypassing the `aerial_gym.__init__` that imports `isaacgym`.
+
+```bash
+python -m pytest tests/test_*.py -v          # Run all tests
+python -m pytest tests/ -k reward            # Run reward tests only
+python -m pytest tests/ -k config            # Run config tests only
+```
+
+### Config System
+
+The pipeline uses a **Pydantic schema-driven** config system (`aerial_gym/config/run_config.py`).
+Each run is configured by a YAML file in `configs/` that is validated against `RunConfig` —
+a hierarchy of strict Pydantic models that reject unknown fields and enforce type constraints.
+
+- **Modes**: `train`, `eval`, `play`, `inference_suite` (controlled by the `mode:` field)
+- **Override from CLI**: `--set camera.enable_arc_follow=true` applies dotted-key overrides before validation
+- **Quick targets**: `make train-gate`, `make train-gate-arc`, `make eval-gate-drone-only`, etc.
+
+Config sub-schemas cover: `CommonConfig`, `TrainingConfig`, `SampleFactoryConfig`, `EvalConfig`,
+`CurriculumOverrides`, `CameraOverrides`, `AblationConfig`, and `InferenceSuiteConfig`.
+All fields have explicit types, defaults, and validation constraints — no raw dicts with
+unknown keys are accepted.
+
+---
+
 ## FAQs and Troubleshooting
 
 Please refer to our [website](https://ntnu-arl.github.io/aerial_gym_simulator/7_FAQ_and_troubleshooting/) or to the [Issues](https://github.com/ntnu-arl/aerial_gym_simulator/issues) section in the GitHub repository for more information.

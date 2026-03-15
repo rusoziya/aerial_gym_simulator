@@ -177,7 +177,8 @@ class RlNavClass:
         self.position[2] = self.odom.pose.pose.position.z
         quat_msg = self.odom.pose.pose.orientation
         quat = R.from_quat([quat_msg.x, quat_msg.y, quat_msg.z, quat_msg.w])
-        ### TODO: Check if this is the correct order for the euler angles
+        # scipy expects [x,y,z,w] quaternion order (same as Isaac Gym / ROS),
+        # and "xyz" intrinsic Euler yields (roll, pitch, yaw) -- both are correct here.
         rpy = quat.as_euler("xyz", degrees=False)
 
         self.rpy[0] = rpy[0]

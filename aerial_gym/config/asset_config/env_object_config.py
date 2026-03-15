@@ -4,48 +4,46 @@ import numpy as np
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
 
-THIN_SEMANTIC_ID = 1
-TREE_SEMANTIC_ID = 2
-OBJECT_SEMANTIC_ID = 3
-PANEL_SEMANTIC_ID = 20
+THIN_SEMANTIC_ID: int = 1
+TREE_SEMANTIC_ID: int = 2
+OBJECT_SEMANTIC_ID: int = 3
+PANEL_SEMANTIC_ID: int = 20
 
 
 class asset_state_params:
-    num_assets = 1  # number of assets to include
+    num_assets: int = 1
 
-    asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets"
-    file = None  # if file=None, random assets will be selected. If not None, this file will be used
+    asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets"
+    file: str | None = None
 
-    min_position_ratio = [0.5, 0.5, 0.5]  # min position as a ratio of the bounds
-    max_position_ratio = [0.5, 0.5, 0.5]  # max position as a ratio of the bounds
+    min_position_ratio: list[float] = [0.5, 0.5, 0.5]
+    max_position_ratio: list[float] = [0.5, 0.5, 0.5]
 
-    collision_mask = 1
+    collision_mask: int = 1
 
-    disable_gravity = False
-    replace_cylinder_with_capsule = (
-        True  # replace collision cylinders with capsules, leads to faster/more stable simulation
-    )
-    flip_visual_attachments = True  # Some .obj meshes must be flipped from y-up to z-up
-    density = 0.001
-    angular_damping = 0.1
-    linear_damping = 0.1
-    max_angular_velocity = 100.0
-    max_linear_velocity = 100.0
-    armature = 0.001
+    disable_gravity: bool = False
+    replace_cylinder_with_capsule: bool = True
+    flip_visual_attachments: bool = True
+    density: float = 0.001
+    angular_damping: float = 0.1
+    linear_damping: float = 0.1
+    max_angular_velocity: float = 100.0
+    max_linear_velocity: float = 100.0
+    armature: float = 0.001
 
-    collapse_fixed_joints = True
-    fix_base_link = True
-    specific_filepath = None  # if not None, use this folder instead randomizing
-    color = None
-    keep_in_env = False
+    collapse_fixed_joints: bool = True
+    fix_base_link: bool = True
+    specific_filepath: str | None = None
+    color: list[int] | None = None
+    keep_in_env: bool = False
 
-    body_semantic_label = 0
-    link_semantic_label = 0
-    per_link_semantic = False
-    semantic_masked_links = {}
-    place_force_sensor = False
-    force_sensor_parent_link = "base_link"
-    force_sensor_transform = [
+    body_semantic_label: int = 0
+    link_semantic_label: int = 0
+    per_link_semantic: bool = False
+    semantic_masked_links: dict[str, int] = {}
+    place_force_sensor: bool = False
+    force_sensor_parent_link: str = "base_link"
+    force_sensor_transform: list[float] = [
         0.0,
         0.0,
         0.0,
@@ -53,31 +51,31 @@ class asset_state_params:
         0.0,
         0.0,
         1.0,
-    ]  # position, quat x, y, z, w
+    ]
 
-    use_collision_mesh_instead_of_visual = False
+    use_collision_mesh_instead_of_visual: bool = False
 
 
 class panel_asset_params(asset_state_params):
-    num_assets = 3
+    num_assets: int = 3
 
-    asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/panels"
+    asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/panels"
 
-    collision_mask = 1  # objects with the same collision mask will not collide
+    collision_mask: int = 1
 
-    min_position_ratio = [0.3, 0.05, 0.05]  # max position as a ratio of the bounds
-    max_position_ratio = [0.85, 0.95, 0.95]  # min position as a ratio of the bounds
+    min_position_ratio: list[float] = [0.3, 0.05, 0.05]
+    max_position_ratio: list[float] = [0.85, 0.95, 0.95]
 
-    specified_position = [
+    specified_position: list[float] = [
         -1000.0,
         -1000.0,
         -1000.0,
-    ]  # if > -900, use this value instead of randomizing   the ratios
+    ]
 
-    min_euler_angles = [0.0, 0.0, -np.pi / 3.0]  # min euler angles
-    max_euler_angles = [0.0, 0.0, np.pi / 3.0]  # max euler angles
+    min_euler_angles: list[float] = [0.0, 0.0, -np.pi / 3.0]
+    max_euler_angles: list[float] = [0.0, 0.0, np.pi / 3.0]
 
-    min_state_ratio = [
+    min_state_ratio: list[float] = [
         0.3,
         0.05,
         0.05,
@@ -92,7 +90,7 @@ class panel_asset_params(asset_state_params):
         0.0,
         0.0,
     ]
-    max_state_ratio = [
+    max_state_ratio: list[float] = [
         0.85,
         0.95,
         0.95,
@@ -108,34 +106,34 @@ class panel_asset_params(asset_state_params):
         0.0,
     ]
 
-    keep_in_env = True
+    keep_in_env: bool = True
 
-    collapse_fixed_joints = True
-    per_link_semantic = False
-    semantic_id = -1  # will be assigned incrementally per instance
-    color = [170, 66, 66]
+    collapse_fixed_joints: bool = True
+    per_link_semantic: bool = False
+    semantic_id: int = -1
+    color: list[int] | None = [170, 66, 66]
 
 
 class tile_asset_params(asset_state_params):
-    num_assets = 1
+    num_assets: int = 1
 
-    asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/tile_meshes"
+    asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/tile_meshes"
 
-    collision_mask = 1  # objects with the same collision mask will not collide
+    collision_mask: int = 1
 
-    min_position_ratio = [0.3, 0.05, 0.05]  # max position as a ratio of the bounds
-    max_position_ratio = [0.85, 0.95, 0.95]  # min position as a ratio of the bounds
+    min_position_ratio: list[float] = [0.3, 0.05, 0.05]
+    max_position_ratio: list[float] = [0.85, 0.95, 0.95]
 
-    specified_position = [
+    specified_position: list[float] = [
         -1000.0,
         -1000.0,
         -1000.0,
-    ]  # if > -900, use this value instead of randomizing   the ratios
+    ]
 
-    min_euler_angles = [0.0, 0.0, 0.0]  # min euler angles
-    max_euler_angles = [0.0, 0.0, 0.0]  # max euler angles
+    min_euler_angles: list[float] = [0.0, 0.0, 0.0]
+    max_euler_angles: list[float] = [0.0, 0.0, 0.0]
 
-    min_state_ratio = [
+    min_state_ratio: list[float] = [
         0.5,
         0.5,
         0.5,
@@ -150,7 +148,7 @@ class tile_asset_params(asset_state_params):
         0.0,
         0.0,
     ]
-    max_state_ratio = [
+    max_state_ratio: list[float] = [
         0.5,
         0.5,
         0.5,
@@ -166,21 +164,21 @@ class tile_asset_params(asset_state_params):
         0.0,
     ]
 
-    keep_in_env = True
+    keep_in_env: bool = True
 
-    collapse_fixed_joints = True
-    per_link_semantic = False
-    semantic_id = -1  # will be assigned incrementally per instance
+    collapse_fixed_joints: bool = True
+    per_link_semantic: bool = False
+    semantic_id: int = -1
 
 
 class thin_asset_params(asset_state_params):
-    num_assets = 0
+    num_assets: int = 0
 
-    asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/thin"
+    asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/thin"
 
-    collision_mask = 1  # objects with the same collision mask will not collide
+    collision_mask: int = 1
 
-    min_state_ratio = [
+    min_state_ratio: list[float] = [
         0.3,
         0.05,
         0.05,
@@ -195,7 +193,7 @@ class thin_asset_params(asset_state_params):
         0.0,
         0.0,
     ]
-    max_state_ratio = [
+    max_state_ratio: list[float] = [
         0.85,
         0.95,
         0.95,
@@ -211,20 +209,20 @@ class thin_asset_params(asset_state_params):
         0.0,
     ]
 
-    collapse_fixed_joints = True
-    per_link_semantic = False
-    semantic_id = -1  # will be assigned incrementally per instance
-    color = [170, 66, 66]
+    collapse_fixed_joints: bool = True
+    per_link_semantic: bool = False
+    semantic_id: int = -1
+    color: list[int] | None = [170, 66, 66]
 
 
 class tree_asset_params(asset_state_params):
-    num_assets = 1
+    num_assets: int = 1
 
-    asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/trees"
+    asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/trees"
 
-    collision_mask = 1  # objects with the same collision mask will not collide
+    collision_mask: int = 1
 
-    min_state_ratio = [
+    min_state_ratio: list[float] = [
         0.1,
         0.1,
         0.0,
@@ -239,7 +237,7 @@ class tree_asset_params(asset_state_params):
         0.0,
         0.0,
     ]
-    max_state_ratio = [
+    max_state_ratio: list[float] = [
         0.9,
         0.9,
         0.0,
@@ -255,22 +253,22 @@ class tree_asset_params(asset_state_params):
         0.0,
     ]
 
-    collapse_fixed_joints = True
-    per_link_semantic = True
-    keep_in_env = True
+    collapse_fixed_joints: bool = True
+    per_link_semantic: bool = True
+    keep_in_env: bool = True
 
-    semantic_id = -1  # TREE_SEMANTIC_ID
-    color = [70, 200, 100]
+    semantic_id: int = -1
+    color: list[int] | None = [70, 200, 100]
 
-    semantic_masked_links = {}
+    semantic_masked_links: dict[str, int] = {}
 
 
 class object_asset_params(asset_state_params):
-    num_assets = 5
+    num_assets: int = 5
 
-    asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/objects"
+    asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/objects"
 
-    min_state_ratio = [
+    min_state_ratio: list[float] = [
         0.30,
         0.05,
         0.05,
@@ -285,7 +283,7 @@ class object_asset_params(asset_state_params):
         0.0,
         0.0,
     ]
-    max_state_ratio = [
+    max_state_ratio: list[float] = [
         0.85,
         0.9,
         0.9,
@@ -301,9 +299,9 @@ class object_asset_params(asset_state_params):
         0.0,
     ]
 
-    keep_in_env = False
-    per_link_semantic = False
-    semantic_id = -1  # will be assigned incrementally per instance
+    keep_in_env: bool = False
+    per_link_semantic: bool = False
+    semantic_id: int = -1
 
 
 # Re-export wall configs so existing imports from this module continue to work

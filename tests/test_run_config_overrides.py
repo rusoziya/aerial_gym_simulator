@@ -250,3 +250,75 @@ class TestMissingRequiredFields:
     def test_config_file_not_found_raises(self) -> None:
         with pytest.raises(FileNotFoundError):
             load_config("/nonexistent/path/config.yaml")
+
+
+# Expected mode for each YAML config file
+_EXPECTED_MODES: dict[str, str] = {
+    "train_gate_sf": "train",
+    "train_gate_sf_fixed_orient": "train",
+    "train_gate_sf_arc_follow": "train",
+    "train_gate_sf_dynamic_follow": "train",
+    "eval_gate_drone_only": "eval",
+    "eval_gate_dynamic_follow": "eval",
+    "eval_gate_sweeping": "eval",
+    "eval_gate_arc_follow": "eval",
+    "eval_gate_locked_yaw": "eval",
+    "eval_gate_static_random": "eval",
+    "eval_gate_all_modalities": "inference_suite",
+}
+
+
+class TestConfigExpectedModes:
+    """Each YAML config should have the expected mode (train/eval/inference_suite)."""
+
+    @pytest.fixture(params=YAML_FILES, ids=[f.stem for f in YAML_FILES])
+    def yaml_path(self, request: pytest.FixtureRequest) -> Path:
+        return request.param
+
+    def test_config_has_expected_mode(self, yaml_path: Path) -> None:
+        cfg = load_config(str(yaml_path))
+        stem = yaml_path.stem
+        if stem in _EXPECTED_MODES:
+            assert cfg.mode.value == _EXPECTED_MODES[stem], (
+                f"{stem}: expected mode={_EXPECTED_MODES[stem]!r}, got {cfg.mode.value!r}"
+            )
+
+    def test_mode_is_known_enum_value(self, yaml_path: Path) -> None:
+        cfg = load_config(str(yaml_path))
+        assert cfg.mode.value in {"train", "eval", "play", "inference_suite"}
+
+
+class TestInvalidEnumOverrideRaises:
+    """Overriding with an invalid enum value must raise ValidationError."""
+
+    @pytest.fixture()
+    def base_yaml(self, tmp_path: Path) -> Path:
+        content = """\
+mode: train
+common:
+  task: navigation_task_gate
+  num_envs: 256
+"""
+        p = tmp_path / "base.yaml"
+        p.write_text(content)
+        return p
+
+    def test_invalid_mode_raises(self, base_yaml: Path) -> None:
+        with pytest.raises(ValidationError, match="mode"):
+            load_config_with_overrides(base_yaml, {"mode": "bogus_mode"})
+
+    def test_invalid_task_raises(self, base_yaml: Path) -> None:
+        with pytest.raises(ValidationError, match="task"):
+            load_config_with_overrides(base_yaml, {"common.task": "nonexistent_task"})
+
+    def test_invalid_rnn_type_raises(self, base_yaml: Path) -> None:
+        with pytest.raises(ValidationError, match="rnn_type"):
+            load_config_with_overrides(base_yaml, {"sample_factory.rnn_type": "transformer"})
+
+    def test_invalid_nonlinearity_raises(self, base_yaml: Path) -> None:
+        with pytest.raises(ValidationError, match="nonlinearity"):
+            load_config_with_overrides(base_yaml, {"sample_factory.nonlinearity": "sigmoid"})
+
+    def test_invalid_lr_schedule_raises(self, base_yaml: Path) -> None:
+        with pytest.raises(ValidationError, match="lr_schedule"):
+            load_config_with_overrides(base_yaml, {"sample_factory.lr_schedule": "cosine_warmup"})

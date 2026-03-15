@@ -5,118 +5,91 @@ import numpy as np
 from aerial_gym import AERIAL_GYM_DIRECTORY
 from aerial_gym.config.asset_config.base_asset import BaseAssetParams
 
-# Semantic ID for gate objects
-GATE_SEMANTIC_ID = 10
+GATE_SEMANTIC_ID: int = 10
 
 
 class GateAssetConfig:
     class gate_asset_params(BaseAssetParams):
-        """
-        Configuration for gate assets that drones can fly through.
-        Creates a rectangular gate structure with two vertical posts and a horizontal beam.
-        """
+        """Configuration for gate assets that drones can fly through."""
 
-        num_assets = 31  # Load all 40–100% gate variants (2% steps)
+        num_assets: int = 31
 
-        # Asset file location
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/gates"
-        file = None  # Use all gate_scale_*.urdf variants from folder
+        asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/gates"
+        file: str | None = None
 
-        # Position ratios within environment bounds
-        # Center the gate in the environment
-        # Environment Z bounds are now [0.0, 8.0], so for Z=0 (ground level): ratio = 0.0
-        min_position_ratio = [0.5, 0.5, 0.0]  # Center XY, exactly at ground level Z=0
-        max_position_ratio = [0.5, 0.5, 0.0]  # Fixed position
+        min_position_ratio: list[float] = [0.5, 0.5, 0.0]
+        max_position_ratio: list[float] = [0.5, 0.5, 0.0]
 
-        # Alternatively, can randomize gate position (uncomment to use):
-        # min_position_ratio = [0.3, 0.3, 0.0]  # Allow some randomization
-        # max_position_ratio = [0.7, 0.7, 0.0]  # Within central area
+        min_euler_angles: list[float] = [0.0, 0.0, np.pi / 2]
+        max_euler_angles: list[float] = [0.0, 0.0, np.pi / 2]
 
-        # Orientation - rotate gate 90 degrees around Z-axis so trees are behind it
-        min_euler_angles = [0.0, 0.0, np.pi / 2]  # 90° rotation around Z-axis
-        max_euler_angles = [0.0, 0.0, np.pi / 2]  # Fixed orientation
-
-        # For randomized orientation, use:
-        # min_euler_angles = [0.0, 0.0, -np.pi/4]  # Rotate up to ±45 degrees
-        # max_euler_angles = [0.0, 0.0, np.pi/4]
-
-        # Full state specification (pos_x, pos_y, pos_z, roll, pitch, yaw, scale, vel_x, vel_y, vel_z, ang_vel_x, ang_vel_y, ang_vel_z)
-        min_state_ratio = [
+        min_state_ratio: list[float] = [
             0.5,
             0.5,
-            0.0,  # Position (center of environment, exactly at ground level Z=0)
             0.0,
             0.0,
-            np.pi / 2,  # Orientation (90° rotation around Z-axis)
-            1.0,  # Scale (no scaling)
+            0.0,
+            np.pi / 2,
+            1.0,
             0.0,
             0.0,
-            0.0,  # Linear velocity (stationary)
             0.0,
             0.0,
-            0.0,  # Angular velocity (stationary)
+            0.0,
+            0.0,
         ]
-        max_state_ratio = [
+        max_state_ratio: list[float] = [
             0.5,
             0.5,
-            0.0,  # Same as min for fixed position
             0.0,
             0.0,
-            np.pi / 2,  # Same as min for fixed orientation
-            1.0,  # Same scale
+            0.0,
+            np.pi / 2,
+            1.0,
             0.0,
             0.0,
-            0.0,  # Stationary
             0.0,
             0.0,
-            0.0,  # Stationary
+            0.0,
+            0.0,
         ]
 
-        # Physics properties for collision detection
-        collision_mask = 0  # Enable collision detection (0 = enable, 1 = disable)
-        disable_gravity = True  # Disable gravity since gate is fixed in place
-        fix_base_link = True  # Gate is stationary/fixed in place
+        collision_mask: int = 0
+        disable_gravity: bool = True
+        fix_base_link: bool = True
 
-        # Simulation optimization
-        replace_cylinder_with_capsule = True  # Faster collision detection with capsules
-        collapse_fixed_joints = True  # Optimize rigid body structure
+        replace_cylinder_with_capsule: bool = True
+        collapse_fixed_joints: bool = True
 
-        # Physical properties for realistic collision response
-        density = 2000.0  # Heavy material (concrete/steel) for realistic collisions
-        angular_damping = 1.0  # High damping to prevent unwanted motion
-        linear_damping = 1.0  # High damping to keep gate stationary
-        max_angular_velocity = 0.0  # No rotation allowed (fixed structure)
-        max_linear_velocity = 0.0  # No movement allowed (fixed structure)
+        density: float = 2000.0
+        angular_damping: float = 1.0
+        linear_damping: float = 1.0
+        max_angular_velocity: float = 0.0
+        max_linear_velocity: float = 0.0
 
-        # Visual properties
-        color = [150, 150, 150]  # Gray color for the gate
+        color: list[int] | None = [150, 150, 150]
 
-        # Semantic labeling
-        body_semantic_label = GATE_SEMANTIC_ID
-        link_semantic_label = GATE_SEMANTIC_ID
-        per_link_semantic = True  # Each part of gate has semantic label
-        semantic_id = GATE_SEMANTIC_ID
+        body_semantic_label: int = GATE_SEMANTIC_ID
+        link_semantic_label: int = GATE_SEMANTIC_ID
+        per_link_semantic: bool = True
+        semantic_id: int = GATE_SEMANTIC_ID
 
-        # Environment interaction
-        keep_in_env = False  # Do not keep all gates visible; selection logic will show exactly one
+        keep_in_env: bool = False
 
-        # Sensor configuration for collision detection
-        place_force_sensor = True  # Enable force sensor to detect collisions with drone
-        force_sensor_parent_link = "base_link"  # Attach sensor to gate base
+        place_force_sensor: bool = True
+        force_sensor_parent_link: str = "base_link"
 
-        # No collision mesh override needed
-        use_collision_mesh_instead_of_visual = False
+        use_collision_mesh_instead_of_visual: bool = False
 
     class small_gate_asset_params(gate_asset_params):
-        """
-        Evaluation-only smaller gates (50–58%). Loaded only when EVAL_STRETCH_ENABLED is set.
-        """
+        """Evaluation-only smaller gates (50-58%)."""
 
-        num_assets = 5  # gate_scale_050, 052, 054, 056, 058
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/smaller gates"
-        file = None
+        num_assets: int = 5
+        asset_folder: str = (
+            f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/smaller gates"
+        )
+        file: str | None = None
 
 
-# Create instances that can be imported
 gate_asset_params = GateAssetConfig.gate_asset_params
 small_gate_asset_params = GateAssetConfig.small_gate_asset_params
