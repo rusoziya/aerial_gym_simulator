@@ -85,7 +85,7 @@ class VAEImageEncoder:
                 cudnn.benchmark = True
                 cudnn.deterministic = False
                 z_sampled, means, *_ = self.vae_model.encode(interpolated_image)
-            except Exception as e:
+            except RuntimeError as e:
                 # Fallback: disable cuDNN for this call only
                 try:
                     cudnn.enabled = False

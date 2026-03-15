@@ -638,7 +638,7 @@ class CameraObservations:
             try:
                 scm = self.task.static_camera_manager
                 have_angles = (scm is not None) and hasattr(scm, 'current_camera_angles') and (len(scm.current_camera_angles) >= num_envs)
-            except Exception:
+            except (AttributeError, TypeError):
                 have_angles = False
             if have_angles:
                 # Build per-env target consistent with update_camera_positions

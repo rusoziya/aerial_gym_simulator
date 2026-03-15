@@ -359,13 +359,13 @@ class StepHelpers:
                 co_val = co_avg
                 if torch.isnan(co_val):
                     co_val = lco_avg
-            except Exception:
+            except (RuntimeError, TypeError):
                 co_val = lco_avg
             try:
                 ho_val = ho_avg
                 if torch.isnan(ho_val):
                     ho_val = lho_avg
-            except Exception:
+            except (RuntimeError, TypeError):
                 ho_val = lho_avg
             # Build metrics dict while avoiding undefined time-to-gate when no crossing occurred
             _metrics_avg = {

@@ -452,7 +452,7 @@ class RobotManagerIGE(BaseManager):
                     props["driveMode"].fill(gymapi.DOF_MODE_NONE)
                 self.dof_control_mode = self.cfg.reconfiguration_config.dof_mode
                 self.gym.set_actor_dof_properties(env_handle, self.actor_handle, props)
-        except Exception as e:
+        except (AttributeError, IndexError, KeyError, RuntimeError) as e:
             logger.error(
                 f"Something unexpected happened while setting parameters for the DOF modes of the robot. Please check if the correct reconfiguration_config params are set in the robot config file."
             )

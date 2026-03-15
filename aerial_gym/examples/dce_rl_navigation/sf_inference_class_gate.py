@@ -37,12 +37,12 @@ class NN_Inference_Class_Gate(nn.Module):
         # even if we load weights from DCE_MODEL. Fallback to provided cfg if not available.
         try:
             has_exp = bool(cfg.train_dir) and bool(cfg.experiment)
-        except Exception:
+        except AttributeError:
             has_exp = False
         if has_exp:
             try:
                 self.cfg = load_from_checkpoint(cfg)
-            except Exception:
+            except (FileNotFoundError, RuntimeError, KeyError):
                 self.cfg = cfg
         else:
             self.cfg = cfg if self._load_from_file else load_from_checkpoint(cfg)
@@ -110,7 +110,7 @@ class NN_Inference_Class_Gate(nn.Module):
                         print(f"  Shape mismatches: {shape_mismatch}")
                     raise RuntimeError("Strict state_dict check failed for loaded checkpoint.")
                 self.actor_critic.load_state_dict(ckpt_state, strict=True)
-            except Exception:
+            except RuntimeError:
                 # Re-raise after an attempt to load to provide default error
                 self.actor_critic.load_state_dict(checkpoint_dict["model"], strict=True)
         else:

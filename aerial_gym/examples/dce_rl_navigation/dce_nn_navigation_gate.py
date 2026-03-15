@@ -594,7 +594,7 @@ def _run_inference_loop(
     if save_gifs:
         try:
             os.makedirs(gif_dir, exist_ok=True)
-        except Exception:
+        except OSError:
             save_gifs = False
     _gif_drone_noised_frames = []
     _gif_drone_clean_frames = []

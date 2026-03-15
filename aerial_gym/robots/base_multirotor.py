@@ -252,7 +252,7 @@ class BaseMultirotor(BaseRobot):
                 random_state = torch_rand_float_tensor(min_init, max_init)
                 use_curriculum_spawn = True
                 logger.debug(f"[SPAWN_CURRICULUM] Level {level}: X∈[{x_min_m:.2f},{x_max_m:.2f}] m, Y∈[{y_min_m:.2f},{y_max_m:.2f}] m, Z∈[{z_min_m:.2f},{z_max_m:.2f}] m; yaw∈[{min_yaw:.2f},{max_yaw:.2f}]rad")
-        except Exception as e:
+        except (AttributeError, KeyError, ValueError, TypeError, RuntimeError) as e:
             logger.warning(f"[SPAWN_CURRICULUM] Disabled due to exception: {e}")
         if not use_curriculum_spawn:
             random_state = torch_rand_float_tensor(self.min_init_state, self.max_init_state)

@@ -811,7 +811,7 @@ class NavigationTaskGate(BaseTask):
             frac_current = (
                 self.curriculum_level - self.task_config.curriculum.min_level
             ) / (self.task_config.curriculum.max_level - self.task_config.curriculum.min_level)
-        except Exception:
+        except (ZeroDivisionError, AttributeError, TypeError):
             frac_current = 0.0
         frac_eff = 0.0 if cm_disabled else float(frac_current)
         self._curriculum_multiplier_factor = 1.0 + 0.5 * frac_eff

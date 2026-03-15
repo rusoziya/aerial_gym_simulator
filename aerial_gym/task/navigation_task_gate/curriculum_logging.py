@@ -114,7 +114,7 @@ class CurriculumLogging:
                     disable_flag = bool(disable_flag.item())
                 else:
                     disable_flag = bool(disable_flag)
-            except Exception:
+            except (ValueError, TypeError, RuntimeError):
                 disable_flag = False
             if disable_flag:
                 try:

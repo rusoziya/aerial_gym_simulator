@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 255.0 * env_manager.global_tensor_dict["depth_range_pixels"][0, 0].cpu().numpy()
             ).astype(np.uint8)
             seg_image1 = env_manager.global_tensor_dict["segmentation_pixels"][0, 0].cpu().numpy()
-        except Exception as e:
+        except (KeyError, RuntimeError) as e:
             logger.error("Error in getting images")
             logger.error("Seems like the image tensors have not been created yet.")
             logger.error("This is likely due to absence of a functional camera in the environment")

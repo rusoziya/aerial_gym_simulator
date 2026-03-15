@@ -118,7 +118,7 @@ class IsaacGymEnv(BaseManager):
             _use_graphics = (
                 str(_use_graphics_env).lower() == 'true'
             ) if _use_graphics_env is not None else True
-        except Exception:
+        except (ValueError, TypeError):
             _use_graphics = True
         if self.sim_config.viewer.headless:
             if _use_graphics or self.has_IGE_cameras:

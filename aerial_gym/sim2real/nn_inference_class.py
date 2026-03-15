@@ -91,7 +91,7 @@ class Sim2RealInferenceClass(nn.Module):
                     if isinstance(vec, torch.Tensor) and vec.ndim == 2 and vec.shape[1] >= 150:
                         z_e = vec[:, 22:86]; z_s = vec[:, 86:150]
                         print(f"[NORM_TAP] pre abs_mean: drone(22:86)={float(z_e.abs().mean().item()):.6e} static(86:150)={float(z_s.abs().mean().item()):.6e}")
-                except Exception:
+                except (RuntimeError, TypeError, KeyError, IndexError):
                     pass
             if disable_norm:
                 processed_obs = obs
@@ -105,7 +105,7 @@ class Sim2RealInferenceClass(nn.Module):
                         if isinstance(pvec, torch.Tensor) and pvec.ndim == 2 and pvec.shape[1] >= 150:
                             z_e2 = pvec[:, 22:86]; z_s2 = pvec[:, 86:150]
                             print(f"[NORM_TAP] post abs_mean: drone(22:86)={float(z_e2.abs().mean().item()):.6e} static(86:150)={float(z_s2.abs().mean().item()):.6e}")
-                    except Exception:
+                    except (RuntimeError, TypeError, KeyError, IndexError):
                         pass
             policy_outputs = self.actor_critic(processed_obs, self.rnn_states)
             # sample actions from the distribution by default
