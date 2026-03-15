@@ -15,10 +15,11 @@ class BaseRobot(ABC):
 
     """
 
-    def __init__(self, robot_config, controller_name, env_config, device):
+    def __init__(self, robot_config: object, controller_name: str, env_config: object, device: str) -> None:
         self.cfg = robot_config
-        self.num_envs = env_config.env.num_envs
-        self.device = device
+        self.num_envs: int = env_config.env.num_envs
+        self.device: str = device
+        self._global_tensor_dict: dict[str, object] = {}
 
         self.controller, self.controller_config = controller_registry.make_controller(
             controller_name,

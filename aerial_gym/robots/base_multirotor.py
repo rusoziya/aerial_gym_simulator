@@ -185,7 +185,7 @@ class BaseMultirotor(BaseRobot):
         use_curriculum_spawn = False
         try:
             # Try to read curriculum from global tensors
-            if hasattr(self, '_global_tensor_dict') and ('curriculum_level' in self._global_tensor_dict):
+            if 'curriculum_level' in self._global_tensor_dict:
                 from aerial_gym.config.task_config.navigation_task_config_gate import task_config
                 level = int(self._global_tensor_dict['curriculum_level'])
                 # Read spawn ablation flags
@@ -193,7 +193,7 @@ class BaseMultirotor(BaseRobot):
                 yaw_dis = bool(self._global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
                 # Active and baseline (min_level) spawn ranges
                 sr_active = task_config.curriculum.get_spawn_ranges(level)
-                baseline_level = int(getattr(task_config.curriculum, 'min_level', 3))
+                baseline_level = int(task_config.curriculum.min_level)
                 sr_base = task_config.curriculum.get_spawn_ranges(baseline_level)
                 # Choose ranges according to ablation flags
                 sr = {
@@ -264,12 +264,12 @@ class BaseMultirotor(BaseRobot):
         # Align spawn yaw so the camera (+X body axis) faces the gate center, with curriculum jitter
         try:
             from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
-            if hasattr(self, '_global_tensor_dict') and ('curriculum_level' in self._global_tensor_dict):
+            if 'curriculum_level' in self._global_tensor_dict:
                 level = int(self._global_tensor_dict['curriculum_level'])
                 # Respect orientation ablation flag by selecting baseline yaw if disabled
                 yaw_dis = bool(self._global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
                 if yaw_dis:
-                    baseline_level = int(getattr(_tc.curriculum, 'min_level', 3))
+                    baseline_level = int(_tc.curriculum.min_level)
                     sr_local = _tc.curriculum.get_spawn_ranges(baseline_level)
                 else:
                     sr_local = _tc.curriculum.get_spawn_ranges(level)
@@ -290,18 +290,15 @@ class BaseMultirotor(BaseRobot):
         # Overwrite yaw in random_state before quaternion conversion
         random_state[env_ids, 5] = yaw_face + jitter
 
-        # Optional spawn debug (disabled)
-        pass
-
         # Optional debug: print a few spawned positions and yaw to verify ranges
         try:
             from aerial_gym.config.task_config.navigation_task_config_gate import task_config
-            do_debug = bool(getattr(task_config.curriculum, 'enable_detailed_logging', False))
+            do_debug = bool(task_config.curriculum.enable_detailed_logging)
         except ImportError:
             do_debug = False
         if do_debug:
-            sample_n = min(3, env_ids.shape[0] if hasattr(env_ids, 'shape') else int(len(env_ids)))
-            sample_envs = env_ids[:sample_n] if hasattr(env_ids, 'shape') else env_ids[:sample_n]
+            sample_n = min(3, env_ids.shape[0])
+            sample_envs = env_ids[:sample_n]
             pos_samples = self.robot_state[sample_envs, 0:3].detach().cpu()
             yaw_samples = random_state[sample_envs, 5].detach().cpu()
 

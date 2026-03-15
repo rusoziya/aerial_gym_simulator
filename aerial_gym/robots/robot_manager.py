@@ -49,12 +49,11 @@ class RobotManagerIGE(BaseManager):
         self.robot_masses = torch.zeros(self.num_envs, device=self.device)
         self.robot_inertias = torch.zeros((self.num_envs, 3, 3), device=self.device)
 
-        self.dof_control_mode = "none"
+        self.dof_control_mode: str = "none"
 
-        self.dof_control_mode = "none"
-
-        self.robot_id = robot_id  # Unique identifier for this robot manager
-        self.robot_name_prefix = f"robot_{robot_id}_"  # Prefix for robot names
+        self.robot_id: int = robot_id
+        self.robot_name_prefix: str = f"robot_{robot_id}_"
+        self.env_robot_mapping: dict[int, int] = {}
 
         if self.use_warp == False:
             if self.cfg.sensor_config.enable_camera:
@@ -492,8 +491,6 @@ class RobotManagerIGE(BaseManager):
 
         self._compute_robot_inertia(env_handle, env_id)
         # Store mapping of environment to robot index within that environment
-        if not hasattr(self, 'env_robot_mapping'):
-            self.env_robot_mapping = {}
         self.env_robot_mapping[env_id] = robot_idx_in_env
         
         return segmentation_counter + 1
