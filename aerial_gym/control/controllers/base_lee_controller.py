@@ -3,7 +3,16 @@ from __future__ import annotations
 import torch
 
 from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.math import *
+from aerial_gym.utils.math import (
+    compute_vee_map,
+    euler_rates_to_body_rates,
+    quat_from_euler_xyz_tensor,
+    quat_inverse,
+    quat_mul,
+    quat_rotate,
+    quat_to_rotation_matrix,
+    torch_rand_float_tensor,
+)
 
 logger = CustomLogger("base_lee_controller")
 
@@ -12,7 +21,7 @@ logger.setLevel("DEBUG")
 
 import pytorch3d.transforms as p3d_transforms
 
-from aerial_gym.control.controllers.base_controller import *
+from aerial_gym.control.controllers.base_controller import BaseController
 
 
 class BaseLeeController(BaseController):

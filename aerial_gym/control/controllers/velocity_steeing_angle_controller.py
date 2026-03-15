@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import torch
 
-from aerial_gym.control.controllers.base_lee_controller import *
-from aerial_gym.utils.math import *
+from aerial_gym.control.controllers.base_lee_controller import (
+    BaseLeeController,
+    calculate_desired_orientation_for_position_velocity_control,
+    euler_rates_to_body_rates,
+)
+from aerial_gym.utils.math import quat_to_rotation_matrix
 
 
 class LeeVelocitySteeringAngleController(BaseLeeController):

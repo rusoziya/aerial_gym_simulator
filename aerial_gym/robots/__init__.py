@@ -1,8 +1,15 @@
 from __future__ import annotations
 
 from aerial_gym.config.robot_config.base_octarotor_config import BaseOctarotorCfg
-from aerial_gym.config.robot_config.base_quad_config import *
-from aerial_gym.config.robot_config.base_quad_config import BaseQuadCfg
+from aerial_gym.config.robot_config.base_quad_config import (
+    BaseQuadCfg,
+    BaseQuadWithCameraCfg,
+    BaseQuadWithCameraImuCfg,
+    BaseQuadWithFaceIDNormalCameraCfg,
+    BaseQuadWithImuCfg,
+    BaseQuadWithLidarCfg,
+    BaseQuadWithStereoCameraCfg,
+)
 from aerial_gym.config.robot_config.base_quad_root_link_control_config import (
     BaseQuadRootLinkControlCfg,
 )

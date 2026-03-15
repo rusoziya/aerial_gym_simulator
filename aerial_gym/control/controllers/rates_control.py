@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import torch
 
-from aerial_gym.control.controllers.base_lee_controller import *
-from aerial_gym.utils.math import *
+from aerial_gym.control.controllers.base_lee_controller import BaseLeeController
 
 
 class LeeRatesController(BaseLeeController):
