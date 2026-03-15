@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-import isaacgym
+import os
+
+if os.environ.get("AERIAL_GYM_BACKEND", "isaacgym").lower() != "isaaclab":
+    import isaacgym  # noqa: F401
 
 from aerial_gym.config.env_config.dynamic_environment import DynamicEnvironmentCfg
 from aerial_gym.config.env_config.empty_env import EmptyEnvCfg
