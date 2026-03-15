@@ -113,6 +113,12 @@ class EnvManager(BaseManager):
         self.robot_manager.create_robot(self.asset_loader)
 
         self.global_asset_dicts, keep_in_env_num = self.asset_loader.select_assets_for_sim()
+        num_unique = len(self.asset_loader.asset_buffer)
+        num_per_env = len(self.global_asset_dicts[0]) if self.global_asset_dicts else 0
+        logger.info(
+            f"Loaded {num_unique} unique assets, {num_per_env} per env, "
+            f"{keep_in_env_num} kept permanently"
+        )
         if self.keep_in_env is None:
             self.keep_in_env = keep_in_env_num
         elif self.keep_in_env != keep_in_env_num:

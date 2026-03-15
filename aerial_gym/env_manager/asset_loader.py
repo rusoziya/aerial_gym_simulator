@@ -131,9 +131,7 @@ class AssetLoader:
         if filepath in self.asset_buffer:
             return self.asset_buffer[filepath]
 
-        logger.info(
-            f"Loading asset: {selected_file} for the first time. Next use of this asset will be via the asset buffer."
-        )
+        logger.debug(f"Loading asset: {selected_file} (first load, buffered for reuse)")
 
         asset_class_dict = {
             "asset_type": asset_type,

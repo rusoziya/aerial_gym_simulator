@@ -216,33 +216,16 @@ class InitHelpers:
         total_obstacles_in_env = fixed_assets_visible + obstacles_behind_gate
 
         logger.info(
-            f"CURRICULUM: Visible assets: {visible_gates} gate + {walls} walls + {robot} robot + {obstacles_behind_gate} curriculum = {total_obstacles_in_env} total"
-        )
-        logger.warning(
-            f"[OBSTACLE_FIX] CURRICULUM: Level {self.task.curriculum_level} should spawn {obstacles_behind_gate} curriculum obstacles"
+            f"Curriculum L{self.task.curriculum_level}: "
+            f"{fixed_assets_visible} fixed + {obstacles_behind_gate} curriculum = {total_obstacles_in_env} total assets"
         )
 
-        # Update observation dictionary with obstacle count
+        # Update observation dictionary and global tensor dict with obstacle count
         self.task.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
-        logger.warning(
-            f"[OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = {total_obstacles_in_env}"
-        )
-
-        # Confirm the environment manager has the correct count
         old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
         if old_count != total_obstacles_in_env:
-            logger.warning(
-                f"[OBSTACLE_DEBUG] MISMATCH: Updating global_tensor_dict from {old_count} to {total_obstacles_in_env}"
-            )
+            logger.info(f"Updated obstacle count: {old_count} -> {total_obstacles_in_env}")
             self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
-        else:
-            logger.warning(
-                f"[OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: {total_obstacles_in_env}"
-            )
-
-        logger.info(
-            f"FINAL: Visible assets: {fixed_assets_visible}, Curriculum obstacles: {obstacles_behind_gate}, Total: {total_obstacles_in_env}"
-        )
 
         # Initialize camera difficulty parameters (only static camera curriculum remains)
         (

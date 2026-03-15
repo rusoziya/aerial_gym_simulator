@@ -125,13 +125,18 @@ class StaticCameraManager:
     def _create_camera_sensors(self, camera_props: gymapi.CameraProperties) -> None:
         """Create camera sensor in each environment."""
         self.camera_handles = []
+        failed_envs: list[int] = []
         for i, env_handle in enumerate(self.env_handles):
             cam_handle = self.gym.create_camera_sensor(env_handle, camera_props)
             if cam_handle >= 0:
                 self.camera_handles.append(cam_handle)
-                logger.info(f"Created static camera sensor {i} in environment {i}")
             else:
-                logger.warning(f"Failed to create camera for environment {i}, handle: {cam_handle}")
+                failed_envs.append(i)
+        if failed_envs:
+            logger.warning(f"Failed to create cameras for {len(failed_envs)} envs: {failed_envs}")
+        logger.info(
+            f"Created {len(self.camera_handles)}/{len(self.env_handles)} static camera sensors"
+        )
 
     def _resolve_initial_base_position(self) -> tuple[float, bool, float]:
         """Resolve base_y, adaptive_z flag, and base_z_value from config/env vars."""

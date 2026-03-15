@@ -388,58 +388,29 @@ class StepHelpers:
         self.task.process_static_camera_observation()
         self.task.post_image_reward_addition()
 
-        # FINAL VERIFICATION: After all processing is complete
+        # One-shot verification: confirm 150D observations are populated
         if not self.task._final_verification_printed:
             self.task._final_verification_printed = True
-            logger.warning("FINAL STATIC CAMERA VERIFICATION (AFTER PROCESSING):")
-
-            # Process observations to get final state
             self.task.process_obs_for_task()
 
             if "observations" in self.task.task_obs:
                 obs_sample = self.task.task_obs["observations"][0]
-
                 static_pos = obs_sample[3:6]
                 static_orient = obs_sample[6:9]
                 static_vae = obs_sample[86:150]
 
-                logger.warning(f"  Final static pos: {static_pos.cpu().numpy()}")
-                logger.warning(f"  Final static orient: {static_orient.cpu().numpy()}")
-                logger.warning(
-                    f"  Final static VAE: range=[{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]"
-                )
-
-                # Check final state
                 pos_ok = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
                 orient_ok = not torch.allclose(
                     static_orient, torch.zeros_like(static_orient), atol=1e-6
                 )
                 vae_ok = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
 
-                logger.warning(f"  FINAL RESULTS: pos={pos_ok}, orient={orient_ok}, vae={vae_ok}")
-
                 if pos_ok and orient_ok and vae_ok:
-                    logger.warning("SUCCESS: All 150D static camera observations verified!")
-
-                    # CRITICAL: Add verification that observations reach RL training
-                    logger.warning("RL TRAINING USAGE VERIFICATION:")
-                    logger.warning(
-                        "  IMPORTANT: This verifies DATA PIPELINE, not RL training usage!"
-                    )
-                    logger.warning("  To verify RL training usage, check:")
-                    logger.warning("     1. Neural network receives 150D input (not 128D or other)")
-                    logger.warning("     2. Policy network architecture matches observation space")
-                    logger.warning(
-                        "     3. Static camera indices [3:6] and [86:150] affect policy decisions"
-                    )
-                    logger.warning(
-                        "     4. Ablation test: performance difference with vs without static camera"
-                    )
-                    logger.warning(
-                        "  Current verification: Environment correctly provides 150D observations"
-                    )
-                    logger.warning(
-                        "  Next step needed: Verify Sample Factory & neural network usage"
+                    logger.info(
+                        f"150D obs verified: pos={pos_ok}, orient={orient_ok}, "
+                        f"vae=[{static_vae.min().item():.1f}, {static_vae.max().item():.1f}]"
                     )
                 else:
-                    logger.error("Some static camera data still missing after processing!")
+                    logger.error(
+                        f"Static camera data incomplete: pos={pos_ok}, orient={orient_ok}, vae={vae_ok}"
+                    )
