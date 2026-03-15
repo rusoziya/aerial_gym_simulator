@@ -36,7 +36,8 @@ from aerial_gym.task.navigation_task_gate import reward_helpers
 from aerial_gym.task.navigation_task_gate import gate_geometry
 from aerial_gym.task.navigation_task_gate import curriculum_management
 from aerial_gym.task.navigation_task_gate import camera_observations
-from aerial_gym.task.navigation_task_gate import debug_logging
+from aerial_gym.task.navigation_task_gate import reward_tracking
+from aerial_gym.task.navigation_task_gate import curriculum_logging
 
 
 logger = CustomLogger("navigation_task_gate")
@@ -419,7 +420,7 @@ class NavigationTaskGate(BaseTask):
         self.gate_approach_distance[env_ids] = 0.0
         
         # RESET EPISODE REWARD TRACKING: Store completed episode data and reset trackers
-        debug_logging.reset_episode_reward_tracking(self, env_ids)
+        reward_tracking.reset_episode_reward_tracking(self, env_ids)
         
         # Update static camera position based on curriculum level (ONLY for resetting environments)
         if len(env_ids) > 0:
@@ -829,8 +830,8 @@ class NavigationTaskGate(BaseTask):
         rewards = reward_helpers._apply_time_penalty(self, rewards, robot_position)
         rewards = reward_helpers._apply_static_fov_reward(self, rewards, robot_position)
         # UPDATE EPISODE REWARD TRACKING: Track cumulative reward components
-        debug_logging.update_episode_reward_tracking(self, obs_dict, rewards, crashes)
-        debug_logging._log_comprehensive_reward_debug(self, obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment)
+        reward_tracking.update_episode_reward_tracking(self, obs_dict, rewards, crashes)
+        reward_tracking._log_comprehensive_reward_debug(self, obs_dict, rewards, crashes, boundary_violation_one_shot_mask, camera_gate_alignment)
         
         # Store camera alignment for debugging
         self.camera_alignment_debug = camera_gate_alignment
