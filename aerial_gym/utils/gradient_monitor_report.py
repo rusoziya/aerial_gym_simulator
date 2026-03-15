@@ -3,14 +3,15 @@ from __future__ import annotations
 """Reporting logic for the observation influence tracker."""
 
 import logging
+from typing import Dict, List, Tuple
 
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
-# Type alias for the obs_components mapping
-ObsComponentMap = dict[str, tuple[int, int, str, str]]
-ActivationHistory = dict[str, dict[str, list[float]]]
+# Type aliases — use typing generics for Python 3.8 runtime compatibility
+ObsComponentMap = Dict[str, Tuple[int, int, str, str]]
+ActivationHistory = Dict[str, Dict[str, List[float]]]
 
 
 def print_analysis_summary(
