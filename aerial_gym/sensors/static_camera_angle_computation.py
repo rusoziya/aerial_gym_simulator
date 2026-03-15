@@ -118,9 +118,7 @@ def _get_eval_stretch_info(
         eval_end = int(
             gtd.get(
                 "eval_stretch_end_level",
-                _tc.curriculum.eval_stretch_end_level
-                if hasattr(_tc.curriculum, "eval_stretch_end_level")
-                else 23,
+                _tc.curriculum.eval_stretch_end_level,
             )
         )
     except (ValueError, TypeError, ImportError):
@@ -194,11 +192,7 @@ def _compute_speed_scale(curriculum_level: int, env_manager: object) -> float:
         eval_en, _ = _get_eval_stretch_info(env_manager)
         min_lvl = int(_tc2.curriculum.min_level)
         max_lvl_cfg = int(_tc2.curriculum.max_level)
-        max_lvl_eval = int(
-            _tc2.curriculum.eval_stretch_end_level
-            if hasattr(_tc2.curriculum, "eval_stretch_end_level")
-            else max_lvl_cfg
-        )
+        max_lvl_eval = int(_tc2.curriculum.eval_stretch_end_level)
         max_lvl = max_lvl_eval if eval_en else max_lvl_cfg
         level_clamped = max(min(curriculum_level, max_lvl), min_lvl)
         denom = max(1, max_lvl - min_lvl)
@@ -249,9 +243,7 @@ def compute_spawn_aware_angle(
     half_fov = horizontal_fov * 0.5
     margin = 2.5
 
-    max_angle_range = _extend_angle_range_for_eval(
-        max_angle_range, curriculum_level, env_manager
-    )
+    max_angle_range = _extend_angle_range_for_eval(max_angle_range, curriculum_level, env_manager)
 
     if rp is not None and env_idx < rp.shape[0]:
         cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
@@ -314,9 +306,7 @@ def _extend_angle_range_for_eval(
     try:
         eval_en, eval_end = _get_eval_stretch_info(env_manager)
         if eval_en and curriculum_level > 23:
-            frac = float(min(curriculum_level, eval_end) - 23) / max(
-                1.0, float(eval_end - 23)
-            )
+            frac = float(min(curriculum_level, eval_end) - 23) / max(1.0, float(eval_end - 23))
             max_angle_range = max_angle_range * (1.0 + 0.25 * frac)
     except (ValueError, TypeError):
         pass
@@ -352,9 +342,7 @@ def apply_camera_transform(
     angle_offset_radians = angle_offset_degrees * (3.14159 / 180.0)
 
     jitter_roll_deg, jitter_pitch_deg, jitter_yaw_deg = (
-        euler_jitter_deg[env_idx]
-        if (0 <= env_idx < len(euler_jitter_deg))
-        else (0.0, 0.0, 0.0)
+        euler_jitter_deg[env_idx] if (0 <= env_idx < len(euler_jitter_deg)) else (0.0, 0.0, 0.0)
     )
     if sweep_enabled or (not disable_flag and max_angle_range > 0):
         jitter_yaw_deg = 0.0
@@ -363,9 +351,7 @@ def apply_camera_transform(
     env_base_z = _resolve_env_base_z(base_z, gtd, env_idx)
     base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
 
-    jx, jy, jz = (
-        trans_jitter[env_idx] if (0 <= env_idx < len(trans_jitter)) else (0.0, 0.0, 0.0)
-    )
+    jx, jy, jz = trans_jitter[env_idx] if (0 <= env_idx < len(trans_jitter)) else (0.0, 0.0, 0.0)
     base_camera_env_pos = gymapi.Vec3(
         base_camera_env_pos.x + jx, base_camera_env_pos.y + jy, base_camera_env_pos.z + jz
     )
@@ -396,9 +382,7 @@ def apply_camera_transform(
     last_angle_deg[env_idx] = float(angle_offset_degrees)
 
 
-def _resolve_env_base_z(
-    base_z: float | None, gtd: dict, env_idx: int
-) -> float:
+def _resolve_env_base_z(base_z: float | None, gtd: dict, env_idx: int) -> float:
     """Resolve per-env base Z from adaptive gate height or fixed value."""
     try:
         if base_z is None:

@@ -9,7 +9,9 @@ from aerial_gym.env_manager.warp_env_manager import WarpEnv
 from aerial_gym.env_manager.asset_loader import AssetLoader
 from aerial_gym.robots.robot_manager import RobotManagerIGE
 from aerial_gym.env_manager.obstacle_manager import ObstacleManager
-from aerial_gym.env_manager.gate_variant_selection import apply_gate_variant_selection as _apply_gate_variant_selection
+from aerial_gym.env_manager.gate_variant_selection import (
+    apply_gate_variant_selection as _apply_gate_variant_selection,
+)
 
 
 from aerial_gym.registry.env_registry import env_config_registry
@@ -112,37 +114,44 @@ class EnvManager(BaseManager):
 
     def populate_env(self, env_cfg: object, sim_cfg: object) -> None:
         self.create_sim(env_cfg, sim_cfg)
-
         self.robot_manager.create_robot(self.asset_loader)
 
-        # first select assets for the environments:
         self.global_asset_dicts, keep_in_env_num = self.asset_loader.select_assets_for_sim()
-
-        if self.keep_in_env == None:
+        if self.keep_in_env is None:
             self.keep_in_env = keep_in_env_num
         elif self.keep_in_env != keep_in_env_num:
-            raise Exception(
-                "Inconsistent number of assets kept in the environment. The number of keep_in_env assets must be equal for all environments. Check."
+            raise ValueError(
+                "Inconsistent number of assets kept in the environment. "
+                "The number of keep_in_env assets must be equal for all environments."
             )
 
-        # add the assets to the environment
-        segmentation_ctr = 100
+        self._init_populate_tensors()
+        self._create_ground_plane_if_needed()
+        self._init_gate_variant_tracking()
 
+        segmentation_ctr = self._populate_all_environments()
+        self._finalize_asset_state_ratios()
+
+        self.global_tensor_dict["num_obstacles_in_env"] = self.num_obs_in_env
+        self.apply_gate_variant_selection(
+            env_ids=torch.arange(self.cfg.env.num_envs, device=self.device)
+        )
+
+    def _init_populate_tensors(self) -> None:
+        """Initialize counters, state ratio accumulators, and global tensor dict entries."""
         self.global_asset_counter = 0
         self.step_counter = 0
-
         self.asset_min_state_ratio = None
         self.asset_max_state_ratio = None
 
         self.global_tensor_dict["crashes"] = torch.zeros(
-            (self.num_envs), device=self.device, requires_grad=False, dtype=torch.bool
+            self.num_envs, device=self.device, requires_grad=False, dtype=torch.bool
         )
-        # Dedicated terminations tensor (true MDP terminals: success, boundary violation, etc.)
         self.global_tensor_dict["terminations"] = torch.zeros(
-            (self.num_envs), device=self.device, requires_grad=False, dtype=torch.bool
+            self.num_envs, device=self.device, requires_grad=False, dtype=torch.bool
         )
         self.global_tensor_dict["truncations"] = torch.zeros(
-            (self.num_envs), device=self.device, requires_grad=False, dtype=torch.bool
+            self.num_envs, device=self.device, requires_grad=False, dtype=torch.bool
         )
 
         self.num_env_actions = self.cfg.env.num_env_actions
@@ -154,23 +163,30 @@ class EnvManager(BaseManager):
         self.termination_tensor = self.global_tensor_dict["terminations"]
         self.truncation_tensor = self.global_tensor_dict["truncations"]
 
-        # Initialize per-env gate variant selection counters for deterministic randomization
         self.global_tensor_dict["gate_variant_counter"] = torch.zeros(
-            (self.num_envs), device=self.device, dtype=torch.int64
+            self.num_envs, device=self.device, dtype=torch.int64
         )
 
-        # Before we populate the environment, we need to create the ground plane
+    def _create_ground_plane_if_needed(self) -> None:
         if self.cfg.env.create_ground_plane:
             logger.info("Creating ground plane in Isaac Gym Simulation.")
             self.IGE_env.create_ground_plane()
             logger.info("[DONE] Creating ground plane in Isaac Gym Simulation")
 
-        # Track per-env list of gate variant asset indices after creation
-        self.global_tensor_dict["gate_variant_indices_per_env"] = [[] for _ in range(self.cfg.env.num_envs)]
-        self.global_tensor_dict["active_gate_variant_index"] = torch.full((self.cfg.env.num_envs,), -1, device=self.device, dtype=torch.long)
-        self.global_tensor_dict["active_gate_variant_array_index"] = torch.full((self.cfg.env.num_envs,), -1, device=self.device, dtype=torch.long)
-        self.global_tensor_dict["gate_variant_names_per_env"] = [[] for _ in range(self.cfg.env.num_envs)]
+    def _init_gate_variant_tracking(self) -> None:
+        n = self.cfg.env.num_envs
+        self.global_tensor_dict["gate_variant_indices_per_env"] = [[] for _ in range(n)]
+        self.global_tensor_dict["active_gate_variant_index"] = torch.full(
+            (n,), -1, device=self.device, dtype=torch.long
+        )
+        self.global_tensor_dict["active_gate_variant_array_index"] = torch.full(
+            (n,), -1, device=self.device, dtype=torch.long
+        )
+        self.global_tensor_dict["gate_variant_names_per_env"] = [[] for _ in range(n)]
 
+    def _populate_all_environments(self) -> int:
+        """Create environments and add robots + assets. Returns final segmentation counter."""
+        segmentation_ctr = 100
         for i in range(self.cfg.env.num_envs):
             logger.debug(f"Populating environment {i}")
             if i % 1000 == 0:
@@ -180,89 +196,77 @@ class EnvManager(BaseManager):
             if self.cfg.env.use_warp:
                 self.warp_env.create_env(i)
 
-            # add robot asset in the environment
             self.robot_manager.add_robot_to_env(
                 self.IGE_env, env_handle, self.global_asset_counter, i, segmentation_ctr
             )
             self.global_asset_counter += 1
 
-            self.num_obs_in_env = 0
-            # add regular assets in the environment
-            local_gate_variant_indices = []  # LOCAL indices including robot (robot=0)
-            local_gate_variant_names = []
-            local_index_counter = 1  # robot is 0, first env asset starts at 1
-            for asset_info_dict in self.global_asset_dicts[i]:
-                asset_handle, ige_seg_ctr = self.IGE_env.add_asset_to_env(
-                    asset_info_dict,
-                    env_handle,
-                    i,
-                    self.global_asset_counter,
-                    segmentation_ctr,
-                )
-                # Track gate variants using LOCAL per-env index (including robot)
-                if asset_info_dict.get("is_gate_variant", False):
-                    local_gate_variant_indices.append(local_index_counter)
-                    gate_variant_name = asset_info_dict.get("gate_variant_name", "unknown")
-                    local_gate_variant_names.append(gate_variant_name)
-                self.num_obs_in_env += 1
-                warp_segmentation_ctr = 0
-                if self.cfg.env.use_warp:
-                    empty_handle, warp_segmentation_ctr = self.warp_env.add_asset_to_env(
-                        asset_info_dict,
-                        i,
-                        self.global_asset_counter,
-                        segmentation_ctr,
-                    )
-                # Update counters after adding this asset
-                self.global_asset_counter += 1
-                local_index_counter += 1
-                segmentation_ctr += max(ige_seg_ctr, warp_segmentation_ctr)
-                if self.asset_min_state_ratio is None or self.asset_max_state_ratio is None:
-                    self.asset_min_state_ratio = torch.tensor(
-                        asset_info_dict["min_state_ratio"], requires_grad=False
-                    ).unsqueeze(0)
-                    self.asset_max_state_ratio = torch.tensor(
-                        asset_info_dict["max_state_ratio"], requires_grad=False
-                    ).unsqueeze(0)
-                else:
-                    self.asset_min_state_ratio = torch.vstack(
-                        (
-                            self.asset_min_state_ratio,
-                            torch.tensor(asset_info_dict["min_state_ratio"], requires_grad=False),
-                        )
-                    )
-                    self.asset_max_state_ratio = torch.vstack(
-                        (
-                            self.asset_max_state_ratio,
-                            torch.tensor(asset_info_dict["max_state_ratio"], requires_grad=False),
-                        )
-                    )
-            # Persist gate variant indices for this env
-            self.global_tensor_dict["gate_variant_indices_per_env"][i] = local_gate_variant_indices
-            self.global_tensor_dict["gate_variant_names_per_env"][i] = local_gate_variant_names
+            segmentation_ctr = self._add_assets_to_env(i, env_handle, segmentation_ctr)
+        return segmentation_ctr
 
-        # check if environment has 0 objects. If so, skip this step
+    def _add_assets_to_env(self, env_idx: int, env_handle: object, segmentation_ctr: int) -> int:
+        """Add all assets for a single environment. Returns updated segmentation counter."""
+        self.num_obs_in_env = 0
+        local_gate_variant_indices: list[int] = []
+        local_gate_variant_names: list[str] = []
+        local_index_counter = 1
+
+        for asset_info_dict in self.global_asset_dicts[env_idx]:
+            asset_handle, ige_seg_ctr = self.IGE_env.add_asset_to_env(
+                asset_info_dict, env_handle, env_idx, self.global_asset_counter, segmentation_ctr
+            )
+            if asset_info_dict.get("is_gate_variant", False):
+                local_gate_variant_indices.append(local_index_counter)
+                local_gate_variant_names.append(asset_info_dict.get("gate_variant_name", "unknown"))
+            self.num_obs_in_env += 1
+
+            warp_segmentation_ctr = 0
+            if self.cfg.env.use_warp:
+                _, warp_segmentation_ctr = self.warp_env.add_asset_to_env(
+                    asset_info_dict, env_idx, self.global_asset_counter, segmentation_ctr
+                )
+
+            self.global_asset_counter += 1
+            local_index_counter += 1
+            segmentation_ctr += max(ige_seg_ctr, warp_segmentation_ctr)
+            self._accumulate_state_ratios(asset_info_dict)
+
+        self.global_tensor_dict["gate_variant_indices_per_env"][
+            env_idx
+        ] = local_gate_variant_indices
+        self.global_tensor_dict["gate_variant_names_per_env"][env_idx] = local_gate_variant_names
+        return segmentation_ctr
+
+    def _accumulate_state_ratios(self, asset_info_dict: dict[str, object]) -> None:
+        """Accumulate min/max state ratios from asset info."""
+        ratio_tensor = torch.tensor(asset_info_dict["min_state_ratio"], requires_grad=False)
+        max_tensor = torch.tensor(asset_info_dict["max_state_ratio"], requires_grad=False)
+        if self.asset_min_state_ratio is None:
+            self.asset_min_state_ratio = ratio_tensor.unsqueeze(0)
+            self.asset_max_state_ratio = max_tensor.unsqueeze(0)
+        else:
+            self.asset_min_state_ratio = torch.vstack((self.asset_min_state_ratio, ratio_tensor))
+            self.asset_max_state_ratio = torch.vstack((self.asset_max_state_ratio, max_tensor))
+
+    def _finalize_asset_state_ratios(self) -> None:
+        """Move state ratio tensors to device and store in global tensor dict."""
+        n = self.cfg.env.num_envs
         if self.asset_min_state_ratio is not None:
             self.asset_min_state_ratio = self.asset_min_state_ratio.to(self.device)
             self.asset_max_state_ratio = self.asset_max_state_ratio.to(self.device)
             self.global_tensor_dict["asset_min_state_ratio"] = self.asset_min_state_ratio.view(
-                self.cfg.env.num_envs, -1, 13
+                n, -1, 13
             )
             self.global_tensor_dict["asset_max_state_ratio"] = self.asset_max_state_ratio.view(
-                self.cfg.env.num_envs, -1, 13
+                n, -1, 13
             )
         else:
             self.global_tensor_dict["asset_min_state_ratio"] = torch.zeros(
-                (self.cfg.env.num_envs, 0, 13), device=self.device
+                (n, 0, 13), device=self.device
             )
             self.global_tensor_dict["asset_max_state_ratio"] = torch.zeros(
-                (self.cfg.env.num_envs, 0, 13), device=self.device
+                (n, 0, 13), device=self.device
             )
-
-        self.global_tensor_dict["num_obstacles_in_env"] = self.num_obs_in_env
-
-        # Initial activation: select a gate for each env
-        self.apply_gate_variant_selection(env_ids=torch.arange(self.cfg.env.num_envs, device=self.device))
 
     def prepare_sim(self) -> None:
         if not self.IGE_env.prepare_for_simulation(self, self.global_tensor_dict):
@@ -294,13 +298,15 @@ class EnvManager(BaseManager):
         # When obstacle randomization is disabled, first let AssetManager place everything,
         # then enforce the exact fixed count after gate selection.
         try:
-            obs_dis = bool(self.global_tensor_dict.get('obstacles_randomization/disabled', False))
+            obs_dis = bool(self.global_tensor_dict.get("obstacles_randomization/disabled", False))
         except (KeyError, TypeError):
             obs_dis = False
         if obs_dis:
             # Show all assets for now so none are hidden prematurely
             try:
-                env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
+                env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(
+                    self.cfg.env.num_envs, -1, 13
+                )
                 total_assets = env_asset_state.shape[1]
             except (KeyError, TypeError):
                 total_assets = self.asset_manager.env_asset_state_tensor.shape[1]
@@ -311,10 +317,14 @@ class EnvManager(BaseManager):
         # Enforce fixed obstacle count after gate selection if obstacle randomization is disabled
         if obs_dis:
             try:
-                fixed_count = int(self.global_tensor_dict.get('obstacles_randomization/fixed_count', 0))
+                fixed_count = int(
+                    self.global_tensor_dict.get("obstacles_randomization/fixed_count", 0)
+                )
             except (ValueError, TypeError):
                 fixed_count = 0
-            env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(self.cfg.env.num_envs, -1, 13)
+            env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(
+                self.cfg.env.num_envs, -1, 13
+            )
             gate_indices_all = self.global_tensor_dict.get("gate_variant_indices_per_env", [])
             total_assets = env_asset_state.shape[1]
             # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
@@ -323,15 +333,23 @@ class EnvManager(BaseManager):
             loop_envs = env_ids.tolist()
             for env_id in loop_envs:
                 gate_indices = set(gate_indices_all[env_id]) if gate_indices_all else set()
-                candidates = [i for i in range(total_assets) if (i not in fixed_indices) and (i not in gate_indices)]
+                candidates = [
+                    i
+                    for i in range(total_assets)
+                    if (i not in fixed_indices) and (i not in gate_indices)
+                ]
                 # Keep the first N candidates; hide the rest
                 keep = set(candidates[: max(0, fixed_count)])
                 for i in candidates:
                     if i in keep:
                         continue
-                    env_asset_state[env_id, i, 0:3] = torch.tensor([-1000.0, -1000.0, -1000.0], device=self.device)
+                    env_asset_state[env_id, i, 0:3] = torch.tensor(
+                        [-1000.0, -1000.0, -1000.0], device=self.device
+                    )
             # Write back
-            self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
+            self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(
+                -1, 13
+            )
         if self.cfg.env.use_warp:
             self.warp_env.reset_idx(env_ids)
         self.robot_manager.reset_idx(env_ids)

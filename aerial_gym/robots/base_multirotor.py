@@ -23,7 +23,9 @@ class BaseMultirotor(BaseRobot):
     The controller config for the robot is used to initialize the controller for the robot.
     """
 
-    def __init__(self, robot_config: object, controller_name: str, env_config: object, device: str) -> None:
+    def __init__(
+        self, robot_config: object, controller_name: str, env_config: object, device: str
+    ) -> None:
         logger.debug("Initializing BaseQuadrotor")
         super().__init__(
             robot_config=robot_config,
@@ -179,140 +181,132 @@ class BaseMultirotor(BaseRobot):
     def reset_idx(self, env_ids: torch.Tensor) -> None:
         if len(env_ids) == 0:
             return
-        # robot_state is defined as a tensor of shape (num_envs, 13)
-        # init_state tensor if of the format [ratio_x, ratio_y, ratio_z, roll, pitch, yaw, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
-        # Curriculum-controlled spawn if task provides curriculum_level and helper; else fallback to fixed
-        use_curriculum_spawn = False
-        try:
-            # Try to read curriculum from global tensors
-            if 'curriculum_level' in self._global_tensor_dict:
-                from aerial_gym.config.task_config.navigation_task_config_gate import task_config
-                level = int(self._global_tensor_dict['curriculum_level'])
-                # Read spawn ablation flags
-                pos_dis = bool(self._global_tensor_dict.get('spawn_randomization/position_disabled', False))
-                yaw_dis = bool(self._global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
-                # Active and baseline (min_level) spawn ranges
-                sr_active = task_config.curriculum.get_spawn_ranges(level)
-                baseline_level = int(task_config.curriculum.min_level)
-                sr_base = task_config.curriculum.get_spawn_ranges(baseline_level)
-                # Choose ranges according to ablation flags
-                sr = {
-                    'x_half_span_m': sr_base['x_half_span_m'] if pos_dis else sr_active['x_half_span_m'],
-                    'y_center_m':    sr_base['y_center_m']    if pos_dis else sr_active['y_center_m'],
-                    'y_half_span_m': sr_base['y_half_span_m'] if pos_dis else sr_active['y_half_span_m'],
-                    'z_center_m':    sr_base['z_center_m']    if pos_dis else sr_active['z_center_m'],
-                    'z_half_span_m': sr_base['z_half_span_m'] if pos_dis else sr_active['z_half_span_m'],
-                    'yaw_abs_rad':   sr_base['yaw_abs_rad']   if yaw_dis else sr_active['yaw_abs_rad'],
-                }
-                # Convert meters to ratios using env bounds
-                # Use environment bounds to set center and scale
-                env_x_min = float(self.env_bounds_min[0, 0].item())
-                env_x_max = float(self.env_bounds_max[0, 0].item())
-                env_y_min = float(self.env_bounds_min[0, 1].item())
-                env_y_max = float(self.env_bounds_max[0, 1].item())
-                env_z_min = float(self.env_bounds_min[0, 2].item())
-                env_z_max = float(self.env_bounds_max[0, 2].item())
-                x_center = 0.5 * (env_x_min + env_x_max)  # center of X
-                y_center = float(sr['y_center_m'])
-                x_half = float(sr['x_half_span_m'])
-                y_half = float(sr['y_half_span_m'])
-                z_center = float(sr['z_center_m'])
-                z_half = float(sr['z_half_span_m'])
-                # Build min/max ratios (positions first three entries)
-                # Clamp spans to env bounds
-                x_min_m = max(env_x_min, x_center - x_half)
-                x_max_m = min(env_x_max, x_center + x_half)
-                y_min_m = max(env_y_min, y_center - y_half)
-                y_max_m = min(env_y_max, y_center + y_half)
-                z_min_m = max(env_z_min, z_center - z_half)
-                z_max_m = min(env_z_max, z_center + z_half)
-                # Convert meters to ratios based on env bounds
-                min_ratio_x = (x_min_m - env_x_min) / (env_x_max - env_x_min)
-                max_ratio_x = (x_max_m - env_x_min) / (env_x_max - env_x_min)
-                min_ratio_y = (y_min_m - env_y_min) / (env_y_max - env_y_min)
-                max_ratio_y = (y_max_m - env_y_min) / (env_y_max - env_y_min)
-                min_ratio_z = (z_min_m - env_z_min) / (env_z_max - env_z_min)
-                max_ratio_z = (z_max_m - env_z_min) / (env_z_max - env_z_min)
-                # Yaw in radians
-                yaw_abs = float(sr['yaw_abs_rad'])
-                min_yaw = -yaw_abs
-                max_yaw = +yaw_abs
-                # Clone base ranges and override pos/orient
-                min_init = self.min_init_state.clone()
-                max_init = self.max_init_state.clone()
-                min_init[:, 0] = min_ratio_x
-                max_init[:, 0] = max_ratio_x
-                min_init[:, 1] = min_ratio_y
-                max_init[:, 1] = max_ratio_y
-                min_init[:, 2] = min_ratio_z
-                max_init[:, 2] = max_ratio_z
-                # roll, pitch kept from config (0). yaw override
-                min_init[:, 5] = min_yaw
-                max_init[:, 5] = max_yaw
-                random_state = torch_rand_float_tensor(min_init, max_init)
-                use_curriculum_spawn = True
-                logger.debug(f"[SPAWN_CURRICULUM] Level {level}: X∈[{x_min_m:.2f},{x_max_m:.2f}] m, Y∈[{y_min_m:.2f},{y_max_m:.2f}] m, Z∈[{z_min_m:.2f},{z_max_m:.2f}] m; yaw∈[{min_yaw:.2f},{max_yaw:.2f}]rad")
-        except (AttributeError, KeyError, ValueError, TypeError, RuntimeError) as e:
-            logger.warning(f"[SPAWN_CURRICULUM] Disabled due to exception: {e}")
-        if not use_curriculum_spawn:
-            random_state = torch_rand_float_tensor(self.min_init_state, self.max_init_state)
+        random_state = self._compute_spawn_state()
 
         self.robot_state[env_ids, 0:3] = torch_interpolate_ratio(
             self.env_bounds_min, self.env_bounds_max, random_state[:, 0:3]
         )[env_ids]
 
-        # Align spawn yaw so the camera (+X body axis) faces the gate center, with curriculum jitter
-        try:
-            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
-            if 'curriculum_level' in self._global_tensor_dict:
-                level = int(self._global_tensor_dict['curriculum_level'])
-                # Respect orientation ablation flag by selecting baseline yaw if disabled
-                yaw_dis = bool(self._global_tensor_dict.get('spawn_randomization/orientation_disabled', False))
-                if yaw_dis:
-                    baseline_level = int(_tc.curriculum.min_level)
-                    sr_local = _tc.curriculum.get_spawn_ranges(baseline_level)
-                else:
-                    sr_local = _tc.curriculum.get_spawn_ranges(level)
-                yaw_abs = float(sr_local.get('yaw_abs_rad', 0.0))
-            else:
-                yaw_abs = 0.0
-        except ImportError:
-            yaw_abs = 0.0
+        yaw_abs = self._get_spawn_yaw_jitter()
+        self._apply_gate_facing_yaw(env_ids, random_state, yaw_abs)
 
-        # Compute yaw to face the gate center at (0, 0) in world X-Y (gate opening faces +Y)
-        pos_xy = self.robot_state[env_ids, 0:2]
-        to_gate_xy = -pos_xy  # gate assumed at (0,0)
-        yaw_face = torch.atan2(to_gate_xy[:, 1], to_gate_xy[:, 0])
-        if yaw_abs > 0.0:
-            jitter = (torch.rand_like(yaw_face) * 2.0 - 1.0) * yaw_abs
-        else:
-            jitter = torch.zeros_like(yaw_face)
-        # Overwrite yaw in random_state before quaternion conversion
-        random_state[env_ids, 5] = yaw_face + jitter
-
-        # Optional debug: print a few spawned positions and yaw to verify ranges
-        try:
-            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
-            do_debug = bool(task_config.curriculum.enable_detailed_logging)
-        except ImportError:
-            do_debug = False
-        if do_debug:
-            sample_n = min(3, env_ids.shape[0])
-            sample_envs = env_ids[:sample_n]
-            pos_samples = self.robot_state[sample_envs, 0:3].detach().cpu()
-            yaw_samples = random_state[sample_envs, 5].detach().cpu()
-
-        # quat conversion is handled separately (uses our yaw override above)
         self.robot_state[env_ids, 3:7] = quat_from_euler_xyz_tensor(random_state[env_ids, 3:6])
-
         self.robot_state[env_ids, 7:10] = random_state[env_ids, 7:10]
         self.robot_state[env_ids, 10:13] = random_state[env_ids, 10:13]
 
         self.controller.randomize_params(env_ids=env_ids)
         self.control_allocator.reset_idx(env_ids)
-
-        # update the states after resetting because the RL agent gets the first state after reset
         self.update_states()
+
+    def _compute_spawn_state(self) -> torch.Tensor:
+        """Compute initial random state using curriculum spawn ranges if available."""
+        try:
+            if "curriculum_level" in self._global_tensor_dict:
+                return self._compute_curriculum_spawn_state()
+        except (AttributeError, KeyError, ValueError, TypeError, RuntimeError) as e:
+            logger.warning(f"[SPAWN_CURRICULUM] Disabled due to exception: {e}")
+        return torch_rand_float_tensor(self.min_init_state, self.max_init_state)
+
+    def _compute_curriculum_spawn_state(self) -> torch.Tensor:
+        """Compute spawn state based on curriculum-controlled spawn ranges."""
+        from aerial_gym.config.task_config.navigation_task_config_gate import task_config
+
+        level = int(self._global_tensor_dict["curriculum_level"])
+        sr = self._get_effective_spawn_ranges(task_config, level)
+
+        env_bounds = self._extract_env_bounds()
+        min_init, max_init = self._build_curriculum_init_ranges(sr, env_bounds)
+
+        random_state = torch_rand_float_tensor(min_init, max_init)
+        logger.debug(
+            f"[SPAWN_CURRICULUM] Level {level}: "
+            f"X∈[{env_bounds['x_min_m']:.2f},{env_bounds['x_max_m']:.2f}] m"
+        )
+        return random_state
+
+    def _get_effective_spawn_ranges(self, task_config: object, level: int) -> dict[str, float]:
+        """Get spawn ranges respecting ablation flags."""
+        pos_dis = bool(self._global_tensor_dict.get("spawn_randomization/position_disabled", False))
+        yaw_dis = bool(
+            self._global_tensor_dict.get("spawn_randomization/orientation_disabled", False)
+        )
+        sr_active = task_config.curriculum.get_spawn_ranges(level)
+        baseline_level = int(task_config.curriculum.min_level)
+        sr_base = task_config.curriculum.get_spawn_ranges(baseline_level)
+        return {
+            "x_half_span_m": sr_base["x_half_span_m"] if pos_dis else sr_active["x_half_span_m"],
+            "y_center_m": sr_base["y_center_m"] if pos_dis else sr_active["y_center_m"],
+            "y_half_span_m": sr_base["y_half_span_m"] if pos_dis else sr_active["y_half_span_m"],
+            "z_center_m": sr_base["z_center_m"] if pos_dis else sr_active["z_center_m"],
+            "z_half_span_m": sr_base["z_half_span_m"] if pos_dis else sr_active["z_half_span_m"],
+            "yaw_abs_rad": sr_base["yaw_abs_rad"] if yaw_dis else sr_active["yaw_abs_rad"],
+        }
+
+    def _extract_env_bounds(self) -> dict[str, float]:
+        return {
+            "x_min": float(self.env_bounds_min[0, 0].item()),
+            "x_max": float(self.env_bounds_max[0, 0].item()),
+            "y_min": float(self.env_bounds_min[0, 1].item()),
+            "y_max": float(self.env_bounds_max[0, 1].item()),
+            "z_min": float(self.env_bounds_min[0, 2].item()),
+            "z_max": float(self.env_bounds_max[0, 2].item()),
+        }
+
+    def _build_curriculum_init_ranges(
+        self, sr: dict[str, float], eb: dict[str, float]
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Build min/max init state tensors from curriculum spawn ranges and env bounds."""
+        x_center = 0.5 * (eb["x_min"] + eb["x_max"])
+        x_min_m = max(eb["x_min"], x_center - sr["x_half_span_m"])
+        x_max_m = min(eb["x_max"], x_center + sr["x_half_span_m"])
+        y_min_m = max(eb["y_min"], sr["y_center_m"] - sr["y_half_span_m"])
+        y_max_m = min(eb["y_max"], sr["y_center_m"] + sr["y_half_span_m"])
+        z_min_m = max(eb["z_min"], sr["z_center_m"] - sr["z_half_span_m"])
+        z_max_m = min(eb["z_max"], sr["z_center_m"] + sr["z_half_span_m"])
+
+        min_init = self.min_init_state.clone()
+        max_init = self.max_init_state.clone()
+        min_init[:, 0] = (x_min_m - eb["x_min"]) / (eb["x_max"] - eb["x_min"])
+        max_init[:, 0] = (x_max_m - eb["x_min"]) / (eb["x_max"] - eb["x_min"])
+        min_init[:, 1] = (y_min_m - eb["y_min"]) / (eb["y_max"] - eb["y_min"])
+        max_init[:, 1] = (y_max_m - eb["y_min"]) / (eb["y_max"] - eb["y_min"])
+        min_init[:, 2] = (z_min_m - eb["z_min"]) / (eb["z_max"] - eb["z_min"])
+        max_init[:, 2] = (z_max_m - eb["z_min"]) / (eb["z_max"] - eb["z_min"])
+        min_init[:, 5] = -sr["yaw_abs_rad"]
+        max_init[:, 5] = sr["yaw_abs_rad"]
+        return min_init, max_init
+
+    def _get_spawn_yaw_jitter(self) -> float:
+        """Get yaw jitter range from curriculum config."""
+        try:
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc
+
+            if "curriculum_level" not in self._global_tensor_dict:
+                return 0.0
+            level = int(self._global_tensor_dict["curriculum_level"])
+            yaw_dis = bool(
+                self._global_tensor_dict.get("spawn_randomization/orientation_disabled", False)
+            )
+            if yaw_dis:
+                sr_local = _tc.curriculum.get_spawn_ranges(int(_tc.curriculum.min_level))
+            else:
+                sr_local = _tc.curriculum.get_spawn_ranges(level)
+            return float(sr_local.get("yaw_abs_rad", 0.0))
+        except ImportError:
+            return 0.0
+
+    def _apply_gate_facing_yaw(
+        self, env_ids: torch.Tensor, random_state: torch.Tensor, yaw_abs: float
+    ) -> None:
+        """Align spawn yaw so camera faces the gate center, with optional jitter."""
+        pos_xy = self.robot_state[env_ids, 0:2]
+        to_gate_xy = -pos_xy
+        yaw_face = torch.atan2(to_gate_xy[:, 1], to_gate_xy[:, 0])
+        if yaw_abs > 0.0:
+            jitter = (torch.rand_like(yaw_face) * 2.0 - 1.0) * yaw_abs
+        else:
+            jitter = torch.zeros_like(yaw_face)
+        random_state[env_ids, 5] = yaw_face + jitter
 
     def clip_actions(self) -> None:
         """

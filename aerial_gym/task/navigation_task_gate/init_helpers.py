@@ -20,12 +20,20 @@ class InitHelpers:
 
     def _init_gate_tracking_tensors(self) -> None:
         """Initialise gate-specific tracking tensors and adaptive dimensions."""
-        self.task.gate_position = torch.zeros((self.task.sim_env.num_envs, 3), device=self.task.device)
-        self.task.gate_approach_distance = torch.zeros(self.task.sim_env.num_envs, device=self.task.device)
+        self.task.gate_position = torch.zeros(
+            (self.task.sim_env.num_envs, 3), device=self.task.device
+        )
+        self.task.gate_approach_distance = torch.zeros(
+            self.task.sim_env.num_envs, device=self.task.device
+        )
         self.task.gate_width = torch.zeros((self.task.sim_env.num_envs,), device=self.task.device)
         self.task.gate_height = torch.zeros((self.task.sim_env.num_envs,), device=self.task.device)
-        self.task.gate_center_height = torch.zeros((self.task.sim_env.num_envs,), device=self.task.device)
-        self.task.gate_scale_factors = torch.ones((self.task.sim_env.num_envs,), device=self.task.device)
+        self.task.gate_center_height = torch.zeros(
+            (self.task.sim_env.num_envs,), device=self.task.device
+        )
+        self.task.gate_scale_factors = torch.ones(
+            (self.task.sim_env.num_envs,), device=self.task.device
+        )
 
     def _init_vae_model(self) -> None:
         """Set up shared VAE encoder (or identity fallback) and latent buffers."""
@@ -72,7 +80,9 @@ class InitHelpers:
             }
         )
         self.task.action_space = Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
-        self.task.action_transformation_function = self.task.task_config.action_transformation_function
+        self.task.action_transformation_function = (
+            self.task.task_config.action_transformation_function
+        )
         self.task.num_envs = self.task.sim_env.num_envs
 
     def _init_task_observations(self) -> None:
@@ -101,7 +111,9 @@ class InitHelpers:
 
     def _init_episode_reward_tracking(self) -> None:
         """Allocate per-component episode reward accumulators and statistics tensors."""
-        self.task.episode_rewards = EpisodeRewardAccumulators.create(self.task.num_envs, self.task.device)
+        self.task.episode_rewards = EpisodeRewardAccumulators.create(
+            self.task.num_envs, self.task.device
+        )
         # Backward-compatible aliases (used by update_episode_reward_tracking, reset, logging)
         self.task.episode_pos_reward = self.task.episode_rewards.pos_reward
         self.task.episode_very_close_reward = self.task.episode_rewards.very_close_reward
@@ -113,8 +125,12 @@ class InitHelpers:
         self.task.episode_gate_passage_reward = self.task.episode_rewards.gate_passage_reward
         self.task.episode_collision_penalty = self.task.episode_rewards.collision_penalty
         self.task.episode_image_reward = self.task.episode_rewards.image_reward
-        self.task.episode_static_fov_visibility_reward = self.task.episode_rewards.static_fov_visibility_reward
-        self.task.episode_boundary_violation_penalty = self.task.episode_rewards.boundary_violation_penalty
+        self.task.episode_static_fov_visibility_reward = (
+            self.task.episode_rewards.static_fov_visibility_reward
+        )
+        self.task.episode_boundary_violation_penalty = (
+            self.task.episode_rewards.boundary_violation_penalty
+        )
         self.task.episode_lengths = self.task.episode_rewards.lengths
         self.task.episode_time_penalty = self.task.episode_rewards.time_penalty
         self.task.episode_timeout_penalty = self.task.episode_rewards.timeout_penalty
@@ -169,7 +185,7 @@ class InitHelpers:
         """Initialize curriculum level, obstacle counts, camera difficulty, and logging."""
         # Use the curriculum level that was already set during pre-initialization
         # Force curriculum level if requested via env/task config
-        forced = os.environ.get('SF_FORCE_CURRICULUM_LEVEL', None)
+        forced = os.environ.get("SF_FORCE_CURRICULUM_LEVEL", None)
         if forced is None:
             forced = self.task.task_config.force_curriculum_level
         if forced is not None:
@@ -180,7 +196,9 @@ class InitHelpers:
         self.task.max_curriculum_level_reached = self.task.curriculum_level
 
         # Get obstacle count using the already-set curriculum level
-        obstacles_behind_gate = self.task.task_config.curriculum.get_obstacle_count_behind_gate(self.task.curriculum_level)
+        obstacles_behind_gate = self.task.task_config.curriculum.get_obstacle_count_behind_gate(
+            self.task.curriculum_level
+        )
 
         # Initialize curriculum logging first
         self.task.curriculum_log_file = None  # Initialize to None
@@ -189,59 +207,89 @@ class InitHelpers:
         # FIXED CALCULATION: Account for visible assets only (not all loaded assets)
         # Even though 11 gate variants are loaded, only 1 is visible at any time
         visible_gates = 1  # Only 1 gate visible at a time (others hidden by gate selection system)
-        walls = 6  # 6 boundary walls  
+        walls = 6  # 6 boundary walls
         robot = 1  # 1 robot
         fixed_assets_visible = visible_gates + walls + robot  # = 8 visible fixed assets
 
         total_obstacles_in_env = fixed_assets_visible + obstacles_behind_gate
 
-        logger.info(f"CURRICULUM: Visible assets: {visible_gates} gate + {walls} walls + {robot} robot + {obstacles_behind_gate} curriculum = {total_obstacles_in_env} total")
-        logger.warning(f"[OBSTACLE_FIX] CURRICULUM: Level {self.task.curriculum_level} should spawn {obstacles_behind_gate} curriculum obstacles")
+        logger.info(
+            f"CURRICULUM: Visible assets: {visible_gates} gate + {walls} walls + {robot} robot + {obstacles_behind_gate} curriculum = {total_obstacles_in_env} total"
+        )
+        logger.warning(
+            f"[OBSTACLE_FIX] CURRICULUM: Level {self.task.curriculum_level} should spawn {obstacles_behind_gate} curriculum obstacles"
+        )
 
         # Update observation dictionary with obstacle count
         self.task.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
-        logger.warning(f"[OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = {total_obstacles_in_env}")
+        logger.warning(
+            f"[OBSTACLE_DEBUG] Task setting obs_dict num_obstacles_in_env = {total_obstacles_in_env}"
+        )
 
         # Confirm the environment manager has the correct count
-        if hasattr(self.task.sim_env, 'global_tensor_dict'):
-            old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
-            if old_count != total_obstacles_in_env:
-                logger.warning(f"[OBSTACLE_DEBUG] MISMATCH: Updating global_tensor_dict from {old_count} to {total_obstacles_in_env}")
-                self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
-            else:
-                logger.warning(f"[OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: {total_obstacles_in_env}")
+        old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
+        if old_count != total_obstacles_in_env:
+            logger.warning(
+                f"[OBSTACLE_DEBUG] MISMATCH: Updating global_tensor_dict from {old_count} to {total_obstacles_in_env}"
+            )
+            self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+        else:
+            logger.warning(
+                f"[OBSTACLE_DEBUG] CONFIRMED: Global tensor dict already has correct obstacle count: {total_obstacles_in_env}"
+            )
 
-        logger.info(f"FINAL: Visible assets: {fixed_assets_visible}, Curriculum obstacles: {obstacles_behind_gate}, Total: {total_obstacles_in_env}")
+        logger.info(
+            f"FINAL: Visible assets: {fixed_assets_visible}, Curriculum obstacles: {obstacles_behind_gate}, Total: {total_obstacles_in_env}"
+        )
 
         # Initialize camera difficulty parameters (only static camera curriculum remains)
-        self.task.max_camera_angle, self.task.camera_height_offset, self.task.camera_distance_offset = self.task.task_config.curriculum.get_static_camera_difficulty(self.task.curriculum_level)
+        (
+            self.task.max_camera_angle,
+            self.task.camera_height_offset,
+            self.task.camera_distance_offset,
+        ) = self.task.task_config.curriculum.get_static_camera_difficulty(
+            self.task.curriculum_level
+        )
 
         logger.info(f"INITIAL CURRICULUM (Level {self.task.curriculum_level}):")
-        logger.info(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
+        logger.info(
+            f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)"
+        )
         try:
             # Determine baseline level and ablation flags
             baseline_level = int(self.task.task_config.curriculum.min_level)
-            pos_dis = False; yaw_dis = False
+            pos_dis = False
+            yaw_dis = False
             gtd = self.task.sim_env.global_tensor_dict
-            pos_dis = bool(gtd.get('spawn_randomization/position_disabled', False))
-            yaw_dis = bool(gtd.get('spawn_randomization/orientation_disabled', False))
+            pos_dis = bool(gtd.get("spawn_randomization/position_disabled", False))
+            yaw_dis = bool(gtd.get("spawn_randomization/orientation_disabled", False))
             # Read spawn ranges for active and baseline
-            sr_active = self.task.task_config.curriculum.get_spawn_ranges(self.task.curriculum_level)
+            sr_active = self.task.task_config.curriculum.get_spawn_ranges(
+                self.task.curriculum_level
+            )
             sr_base = self.task.task_config.curriculum.get_spawn_ranges(baseline_level)
             # Select ranges based on ablations
             sr_use = {
-                'x_half_span_m': sr_base['x_half_span_m'] if pos_dis else sr_active['x_half_span_m'],
-                'y_center_m':    sr_base['y_center_m']    if pos_dis else sr_active['y_center_m'],
-                'y_half_span_m': sr_base['y_half_span_m'] if pos_dis else sr_active['y_half_span_m'],
-                'z_center_m':    sr_base['z_center_m']    if pos_dis else sr_active['z_center_m'],
-                'z_half_span_m': sr_base['z_half_span_m'] if pos_dis else sr_active['z_half_span_m'],
-                'yaw_abs_rad':   sr_base['yaw_abs_rad']   if yaw_dis else sr_active['yaw_abs_rad'],
+                "x_half_span_m": (
+                    sr_base["x_half_span_m"] if pos_dis else sr_active["x_half_span_m"]
+                ),
+                "y_center_m": sr_base["y_center_m"] if pos_dis else sr_active["y_center_m"],
+                "y_half_span_m": (
+                    sr_base["y_half_span_m"] if pos_dis else sr_active["y_half_span_m"]
+                ),
+                "z_center_m": sr_base["z_center_m"] if pos_dis else sr_active["z_center_m"],
+                "z_half_span_m": (
+                    sr_base["z_half_span_m"] if pos_dis else sr_active["z_half_span_m"]
+                ),
+                "yaw_abs_rad": sr_base["yaw_abs_rad"] if yaw_dis else sr_active["yaw_abs_rad"],
             }
             # Report spawn ablation status in logs
             if pos_dis or yaw_dis:
                 status_pos = "DISABLED" if pos_dis else "ENABLED"
                 status_yaw = "DISABLED" if yaw_dis else "ENABLED"
-                logger.info(f"   2. SPAWN RANDOMIZATION: position={status_pos}, orientation={status_yaw}")
+                logger.info(
+                    f"   2. SPAWN RANDOMIZATION: position={status_pos}, orientation={status_yaw}"
+                )
             logger.info(
                 f"   2. SPAWN: X∈[{(-sr_use['x_half_span_m']):.1f}, {(+sr_use['x_half_span_m']):.1f}] m, "
                 f"Y∈[{(sr_use['y_center_m']-sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m']+sr_use['y_half_span_m']):.1f}] m, "
@@ -251,19 +299,27 @@ class InitHelpers:
             logger.info(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
         # 3. STATIC CAMERA YAW SWEEP STATUS (takes precedence over static orientation randomization)
         try:
-            yaw_enabled = str(os.environ.get('SF_ENABLE_STATIC_CAMERA_YAW_SWEEP', 'false')).lower() == 'true'
-            yaw_speed = float(os.environ.get('SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG', '10.0'))
+            yaw_enabled = (
+                str(os.environ.get("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", "false")).lower() == "true"
+            )
+            yaw_speed = float(os.environ.get("SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG", "10.0"))
         except (ValueError, TypeError):
             yaw_enabled = False
             yaw_speed = 10.0
         # Orientation randomization disable flag and dynamic camera effective state
         try:
-            cam_orient_disabled = bool(self.task.sim_env.global_tensor_dict.get('static_camera_randomization/orientation_disabled', False))
+            cam_orient_disabled = bool(
+                self.task.sim_env.global_tensor_dict.get(
+                    "static_camera_randomization/orientation_disabled", False
+                )
+            )
         except (KeyError, TypeError):
             cam_orient_disabled = False
         try:
             dyn_cfg = self.task.task_config.curriculum.enable_dynamic_camera_following
-            dyn_dis = bool(self.task.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
+            dyn_dis = bool(
+                self.task.sim_env.global_tensor_dict.get("dynamic_camera_following/disabled", False)
+            )
             dynamic_effective = bool(dyn_cfg and not dyn_dis)
         except (KeyError, TypeError):
             dynamic_effective = False
@@ -279,8 +335,8 @@ class InitHelpers:
             f"   3. STATIC CAMERA YAW SWEEP: {'ENABLED' if yaw_enabled else 'DISABLED'} (speed={yaw_speed:.1f} deg/s) — effective: {sweep_note}; orientation_rand={'DISABLED' if cam_orient_disabled else 'ENABLED'}"
         )
         try:
-            base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', -3.0))
-            base_z = float(os.environ.get('SF_STATIC_CAMERA_BASE_Z', 1.5))
+            base_y = float(os.environ.get("SF_STATIC_CAMERA_BASE_Y", -3.0))
+            base_z = float(os.environ.get("SF_STATIC_CAMERA_BASE_Z", 1.5))
         except (ValueError, TypeError):
             base_y, base_z = -3.0, 1.5
         logger.info(f"      ↳ static camera base: Y={base_y:.2f} m, Z={base_z:.2f} m")
@@ -292,20 +348,32 @@ class InitHelpers:
         elif cam_orient_disabled:
             logger.info("   4. CAMERA ANGLE: randomization DISABLED, fixed at 0.0°")
         else:
-            logger.info(f"   4. CAMERA ANGLE: ±{self.task.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
+            logger.info(
+                f"   4. CAMERA ANGLE: ±{self.task.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)"
+            )
 
         # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
-        initial_camera_gaussian_std, initial_camera_dropout_rate = self.task.task_config.curriculum.get_camera_noise(self.task.curriculum_level)
-        logger.info(f"   5. CAMERA NOISE: Gaussian STD={initial_camera_gaussian_std:.4f}, Dropout={initial_camera_dropout_rate*100:.1f}% (both drone & static)")
+        initial_camera_gaussian_std, initial_camera_dropout_rate = (
+            self.task.task_config.curriculum.get_camera_noise(self.task.curriculum_level)
+        )
+        logger.info(
+            f"   5. CAMERA NOISE: Gaussian STD={initial_camera_gaussian_std:.4f}, Dropout={initial_camera_dropout_rate*100:.1f}% (both drone & static)"
+        )
 
         # 6. CAMERA FRAME DROPOUT (entire-frame)
         fd = self.task.task_config.curriculum.get_camera_frame_dropout(self.task.curriculum_level)
-        logger.info(f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total']*100:.1f}% (freeze {fd['drone_freeze']*100:.1f}%, blank {fd['drone_blank']*100:.1f}%), static_total={fd['static_total']*100:.1f}% (freeze {fd['static_freeze']*100:.1f}%, blank {fd['static_blank']*100:.1f}%)")
+        logger.info(
+            f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total']*100:.1f}% (freeze {fd['drone_freeze']*100:.1f}%, blank {fd['drone_blank']*100:.1f}%), static_total={fd['static_total']*100:.1f}% (freeze {fd['static_freeze']*100:.1f}%, blank {fd['static_blank']*100:.1f}%)"
+        )
 
         # 7. STATE NOISE (pose) — new
         state_noise_disabled = False
         try:
-            state_noise_disabled = bool(self.task.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False))
+            state_noise_disabled = bool(
+                self.task.sim_env.global_tensor_dict.get(
+                    "state_randomization/noise_disabled", False
+                )
+            )
         except (KeyError, TypeError):
             state_noise_disabled = bool(self.task.disable_state_noise_randomization)
         if self.task.task_config.curriculum.enable_state_noise and not state_noise_disabled:
@@ -317,29 +385,44 @@ class InitHelpers:
         else:
             logger.info("   7. STATE NOISE: disabled")
 
-        logger.info(f"   8. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}")
+        logger.info(
+            f"   8. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}"
+        )
         # Curriculum multiplier debug (initial) - compute fraction directly (attribute may not exist yet)
-        cm_disabled = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", self.task.task_config.disable_curriculum_multiplier)
+        cm_disabled = read_env_bool(
+            "SF_DISABLE_CURRICULUM_MULTIPLIER", self.task.task_config.disable_curriculum_multiplier
+        )
         if not cm_disabled:
             cm_disabled = bool(self.task.task_config.disable_curriculum_multiplier)
         try:
             frac_current = (
                 self.task.curriculum_level - self.task.task_config.curriculum.min_level
-            ) / (self.task.task_config.curriculum.max_level - self.task.task_config.curriculum.min_level)
+            ) / (
+                self.task.task_config.curriculum.max_level
+                - self.task.task_config.curriculum.min_level
+            )
         except (ZeroDivisionError, AttributeError, TypeError):
             frac_current = 0.0
         frac_eff = 0.0 if cm_disabled else float(frac_current)
         factor = 1.0 + 0.5 * frac_eff
-        logger.info(f"   9. CURRICULUM MULTIPLIER: {'DISABLED' if cm_disabled else 'ENABLED'} (factor={factor:.3f})")
+        logger.info(
+            f"   9. CURRICULUM MULTIPLIER: {'DISABLED' if cm_disabled else 'ENABLED'} (factor={factor:.3f})"
+        )
 
         # Calculate progress fraction
         self.task.curriculum_progress_fraction = (
             self.task.curriculum_level - self.task.task_config.curriculum.min_level
-        ) / (self.task.task_config.curriculum.max_level - self.task.task_config.curriculum.min_level)
+        ) / (
+            self.task.task_config.curriculum.max_level - self.task.task_config.curriculum.min_level
+        )
 
-        logger.info(f"   8. PROGRESS: {self.task.curriculum_progress_fraction:.3f} (level {self.task.curriculum_level}/{self.task.task_config.curriculum.max_level})")
-        logger.info(f"   9. EVALUATION: Check every {self.task.task_config.curriculum.check_after_log_instances} instances (success rate threshold: {self.task.task_config.curriculum.success_rate_for_increase:.3f})")
+        logger.info(
+            f"   8. PROGRESS: {self.task.curriculum_progress_fraction:.3f} (level {self.task.curriculum_level}/{self.task.task_config.curriculum.max_level})"
+        )
+        logger.info(
+            f"   9. EVALUATION: Check every {self.task.task_config.curriculum.check_after_log_instances} instances (success rate threshold: {self.task.task_config.curriculum.success_rate_for_increase:.3f})"
+        )
 
-        self.task.log_curriculum_update(f"[INIT] Multi-aspect curriculum initialized at level {self.task.curriculum_level}")
-
-
+        self.task.log_curriculum_update(
+            f"[INIT] Multi-aspect curriculum initialized at level {self.task.curriculum_level}"
+        )

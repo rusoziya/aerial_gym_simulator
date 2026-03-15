@@ -241,7 +241,7 @@ def get_args() -> None:
 class RecordEpisodeStatisticsTorch(gym.Wrapper):
     def __init__(self, env, device):
         super().__init__(env)
-        self.num_envs = getattr(env, "num_envs", 1)
+        self.num_envs = env.num_envs
         self.device = device
         self.episode_returns = None
         self.episode_lengths = None
@@ -548,5 +548,4 @@ if __name__ == "__main__":
                 action, logprob, _, value = agent.get_action_and_value(next_obs)
             next_obs, rewards, next_done, info = envs.step(action)
 
-    # envs.close()
     writer.close()
