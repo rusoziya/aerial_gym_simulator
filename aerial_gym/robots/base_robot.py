@@ -43,20 +43,20 @@ class BaseRobot(ABC):
 
     @abstractmethod
     def init_tensors(self, global_tensor_dict: GlobalTensorDict) -> None:
-        self.dt = global_tensor_dict["dt"]
-        self.gravity = global_tensor_dict["gravity"]
-        self.robot_state = global_tensor_dict["robot_state_tensor"]
-        self.robot_position = global_tensor_dict["robot_position"]
-        self.robot_orientation = global_tensor_dict["robot_orientation"]
-        self.robot_linvel = global_tensor_dict["robot_linvel"]
-        self.robot_angvel = global_tensor_dict["robot_angvel"]
+        self.dt = global_tensor_dict.dt
+        self.gravity = global_tensor_dict.gravity
+        self.robot_state = global_tensor_dict.robot_state_tensor
+        self.robot_position = global_tensor_dict.robot_position
+        self.robot_orientation = global_tensor_dict.robot_orientation
+        self.robot_linvel = global_tensor_dict.robot_linvel
+        self.robot_angvel = global_tensor_dict.robot_angvel
 
         # tensors for robot forces and torques
-        self.robot_force_tensors = global_tensor_dict["robot_force_tensor"]
-        self.robot_torque_tensors = global_tensor_dict["robot_torque_tensor"]
+        self.robot_force_tensors = global_tensor_dict.robot_force_tensor
+        self.robot_torque_tensors = global_tensor_dict.robot_torque_tensor
 
-        self.env_bounds_min = global_tensor_dict["env_bounds_min"]
-        self.env_bounds_max = global_tensor_dict["env_bounds_max"]
+        self.env_bounds_min = global_tensor_dict.env_bounds_min
+        self.env_bounds_max = global_tensor_dict.env_bounds_max
         # Keep a reference for optional features (e.g., curriculum level)
         self._global_tensor_dict = global_tensor_dict
 

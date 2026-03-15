@@ -108,10 +108,8 @@ class CurriculumManager:
                 max(self.task.curriculum_level, self.task.task_config.curriculum.min_level),
                 effective_max,
             )
-            self.task.sim_env.global_tensor_dict["curriculum_level"] = int(
-                self.task.curriculum_level
-            )
-            self.task.obs_dict["curriculum_level"] = self.task.curriculum_level
+            self.task.sim_env.global_tensor_dict.curriculum_level = int(self.task.curriculum_level)
+            self.task.obs_dict.curriculum_level = self.task.curriculum_level
             self.task.max_curriculum_level_reached = max(
                 self.task.max_curriculum_level_reached, self.task.curriculum_level
             )
@@ -252,13 +250,11 @@ class CurriculumManager:
                 max(self.task.curriculum_level, self.task.task_config.curriculum.min_level),
                 effective_max,
             )
-            self.task.obs_dict["curriculum_level"] = self.task.curriculum_level
+            self.task.obs_dict.curriculum_level = self.task.curriculum_level
 
             # Propagate curriculum level to env manager for gate unlocking
             # Only update the value; gate selection will occur on reset_idx
-            self.task.sim_env.global_tensor_dict["curriculum_level"] = int(
-                self.task.curriculum_level
-            )
+            self.task.sim_env.global_tensor_dict.curriculum_level = int(self.task.curriculum_level)
 
             # 1. OBSTACLE COUNT PROGRESSION: Apply new obstacle count behind gate
             try:
@@ -295,12 +291,12 @@ class CurriculumManager:
             fixed_assets_visible = visible_gates + walls  # = 7 visible fixed assets
 
             total_obstacles_in_env = fixed_assets_visible + obstacles_behind_gate
-            self.task.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            self.task.obs_dict.num_obstacles_in_env = total_obstacles_in_env
 
             # CRITICAL: Also update the environment manager's global tensor dict for asset management
             # This ensures the asset manager gets the updated obstacle count when environments reset
-            old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
-            self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            old_count = self.task.sim_env.global_tensor_dict.num_obstacles_in_env
+            self.task.sim_env.global_tensor_dict.num_obstacles_in_env = total_obstacles_in_env
 
             # Update asset manager obstacle count directly
             self.task.sim_env.asset_manager.num_obstacles_per_env = total_obstacles_in_env

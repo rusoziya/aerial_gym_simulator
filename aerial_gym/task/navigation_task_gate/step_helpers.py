@@ -61,9 +61,9 @@ class StepHelpers:
                 nan_trunc_mask |= bad
         if torch.any(nan_trunc_mask):
             if "robot_position" in self.task.obs_dict and isinstance(
-                self.task.obs_dict["robot_position"], torch.Tensor
+                self.task.obs_dict.robot_position, torch.Tensor
             ):
-                self.task.obs_dict["robot_position"][nan_trunc_mask] = 0.0
+                self.task.obs_dict.robot_position[nan_trunc_mask] = 0.0
 
         return transformed_action, nan_trunc_mask
 
@@ -123,7 +123,7 @@ class StepHelpers:
             )
 
         # Success when episode TERMINATES (not crashes) and gate passage achieved
-        crash_mask = self.task.obs_dict["crashes"] > 0
+        crash_mask = self.task.obs_dict.crashes > 0
         successes = (self.task.terminations > 0) & gate_passage_success & (~crash_mask)
 
         # Target success at truncation: same 10% width/height window around adaptive gate center
@@ -160,7 +160,7 @@ class StepHelpers:
         self.task.infos["successes"] = successes
         self.task.infos["timeouts"] = timeouts
         # Report crashes only (exclude success-based terminations)
-        self.task.infos["crashes"] = self.task.obs_dict["crashes"]
+        self.task.infos["crashes"] = self.task.obs_dict.crashes
 
         # One-off timeout penalty: discourage hover-to-horizon strategies
         try:

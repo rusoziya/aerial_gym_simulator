@@ -86,12 +86,12 @@ class BaseMultirotor(BaseRobot):
         self.robot_euler_angles = torch.zeros_like(
             self.robot_linvel, requires_grad=False, device=self.device
         )
-        global_tensor_dict["robot_vehicle_orientation"] = self.robot_vehicle_orientation
-        global_tensor_dict["robot_vehicle_linvel"] = self.robot_vehicle_linvel
-        global_tensor_dict["robot_body_angvel"] = self.robot_body_angvel
-        global_tensor_dict["robot_body_linvel"] = self.robot_body_linvel
-        global_tensor_dict["robot_euler_angles"] = self.robot_euler_angles
-        global_tensor_dict["num_robot_actions"] = self.controller_config.num_actions
+        global_tensor_dict.robot_vehicle_orientation = self.robot_vehicle_orientation
+        global_tensor_dict.robot_vehicle_linvel = self.robot_vehicle_linvel
+        global_tensor_dict.robot_body_angvel = self.robot_body_angvel
+        global_tensor_dict.robot_body_linvel = self.robot_body_linvel
+        global_tensor_dict.robot_euler_angles = self.robot_euler_angles
+        global_tensor_dict.num_robot_actions = self.controller_config.num_actions
 
     def _init_state_and_disturbance_tensors(self) -> None:
         """Allocate init-state bounds and disturbance parameter tensors."""
@@ -161,10 +161,10 @@ class BaseMultirotor(BaseRobot):
             requires_grad=False,
         )
         self.output_forces = torch.zeros_like(
-            global_tensor_dict["robot_force_tensor"], device=self.device
+            global_tensor_dict.robot_force_tensor, device=self.device
         )
         self.output_torques = torch.zeros_like(
-            global_tensor_dict["robot_torque_tensor"], device=self.device
+            global_tensor_dict.robot_torque_tensor, device=self.device
         )
 
     def reset(self) -> None:
@@ -203,7 +203,7 @@ class BaseMultirotor(BaseRobot):
         """Compute spawn state based on curriculum-controlled spawn ranges."""
         from aerial_gym.config.task_config.navigation_task_config_gate import task_config
 
-        level = int(self._global_tensor_dict["curriculum_level"])
+        level = int(self._global_tensor_dict.curriculum_level)
         sr = self._get_effective_spawn_ranges(task_config, level)
 
         env_bounds = self._extract_env_bounds()
@@ -275,7 +275,7 @@ class BaseMultirotor(BaseRobot):
 
             if "curriculum_level" not in self._global_tensor_dict:
                 return 0.0
-            level = int(self._global_tensor_dict["curriculum_level"])
+            level = int(self._global_tensor_dict.curriculum_level)
             yaw_dis = bool(
                 self._global_tensor_dict.get("spawn_randomization/orientation_disabled", False)
             )

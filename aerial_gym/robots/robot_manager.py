@@ -135,7 +135,7 @@ class RobotManagerIGE(BaseManager):
                     device=self.device,
                     requires_grad=False,
                 )
-                self.global_tensor_dict["depth_range_pixels"] = self.image_tensor
+                self.global_tensor_dict.depth_range_pixels = self.image_tensor
                 self.rgb_image_tensor = torch.zeros(
                     (
                         self.num_envs,
@@ -147,7 +147,7 @@ class RobotManagerIGE(BaseManager):
                     device=self.device,
                     requires_grad=False,
                 )
-                self.global_tensor_dict["rgb_pixels"] = self.rgb_image_tensor
+                self.global_tensor_dict.rgb_pixels = self.rgb_image_tensor
 
                 if self.cfg.sensor_config.camera_config.segmentation_camera:
                     self.segmentation_tensor = torch.zeros(
@@ -161,12 +161,12 @@ class RobotManagerIGE(BaseManager):
                         device=self.device,
                         requires_grad=False,
                     )
-                    self.global_tensor_dict["segmentation_pixels"] = self.segmentation_tensor
+                    self.global_tensor_dict.segmentation_pixels = self.segmentation_tensor
                     logger.critical(
-                        f"Segmentation pixels shape: {self.global_tensor_dict['segmentation_pixels'].shape}"
+                        f"Segmentation pixels shape: {self.global_tensor_dict.segmentation_pixels.shape}"
                     )
                 logger.critical(
-                    f"Depth range pixels shape: {self.global_tensor_dict['depth_range_pixels'].shape}"
+                    f"Depth range pixels shape: {self.global_tensor_dict.depth_range_pixels.shape}"
                 )
 
                 self.camera_sensor.init_tensors(global_tensor_dict=self.global_tensor_dict)
@@ -188,7 +188,7 @@ class RobotManagerIGE(BaseManager):
                 logger.debug("Initializing warp sensor")
                 # prepare the tensors for simulation before preparing the tensors for the sensors
                 image_tensor_dims = 3 * (self.warp_sensor_config.return_pointcloud == True)
-                if self.global_tensor_dict["CONST_WARP_MESH_ID_LIST"] is None:
+                if self.global_tensor_dict.CONST_WARP_MESH_ID_LIST is None:
                     logger.critical(
                         "Warp camera is enabled but there is nothing in the environment. No rendering will take place and the camera tensor will not be populated."
                     )
@@ -216,7 +216,7 @@ class RobotManagerIGE(BaseManager):
                             device=self.device,
                             requires_grad=False,
                         )
-                    self.global_tensor_dict["depth_range_pixels"] = self.image_tensor
+                    self.global_tensor_dict.depth_range_pixels = self.image_tensor
 
                     if self.warp_sensor_config.segmentation_camera:
                         self.segmentation_tensor = torch.zeros(
@@ -230,11 +230,11 @@ class RobotManagerIGE(BaseManager):
                             device=self.device,
                             requires_grad=False,
                         )
-                        self.global_tensor_dict["segmentation_pixels"] = self.segmentation_tensor
+                        self.global_tensor_dict.segmentation_pixels = self.segmentation_tensor
                     self.warp_sensor = self.warp_sensor_class(
                         self.warp_sensor_config,
                         self.num_envs,
-                        self.global_tensor_dict["CONST_WARP_MESH_ID_LIST"],
+                        self.global_tensor_dict.CONST_WARP_MESH_ID_LIST,
                         self.device,
                     )
                     self.warp_sensor.init_tensors(global_tensor_dict=self.global_tensor_dict)
@@ -249,7 +249,7 @@ class RobotManagerIGE(BaseManager):
             self.force_sensor_tensor = gymtorch.wrap_tensor(
                 self.gym.acquire_force_sensor_tensor(self.sim)
             )
-            self.global_tensor_dict["force_sensor_tensor"] = self.force_sensor_tensor
+            self.global_tensor_dict.force_sensor_tensor = self.force_sensor_tensor
 
             self.imu_sensor = IMUSensor(
                 self.cfg.sensor_config.imu_config, self.num_envs, self.device
@@ -264,21 +264,21 @@ class RobotManagerIGE(BaseManager):
     def prepare_for_sim(self, global_tensor_dict: GlobalTensorDict) -> None:
         self.global_tensor_dict: GlobalTensorDict = global_tensor_dict
 
-        self.global_tensor_dict["robot_mass"] = self.robot_masses
-        self.global_tensor_dict["robot_inertia"] = self.robot_inertias
+        self.global_tensor_dict.robot_mass = self.robot_masses
+        self.global_tensor_dict.robot_inertia = self.robot_inertias
 
-        self.global_tensor_dict["robot_actions"] = torch.zeros(
+        self.global_tensor_dict.robot_actions = torch.zeros(
             (self.num_envs, self.robot.num_actions), device=self.device
         )
 
-        self.global_tensor_dict["robot_prev_actions"] = torch.zeros_like(
-            self.global_tensor_dict["robot_actions"]
+        self.global_tensor_dict.robot_prev_actions = torch.zeros_like(
+            self.global_tensor_dict.robot_actions
         )
 
-        self.actions = self.global_tensor_dict["robot_actions"]
-        self.prev_actions = self.global_tensor_dict["robot_prev_actions"]
+        self.actions = self.global_tensor_dict.robot_actions
+        self.prev_actions = self.global_tensor_dict.robot_prev_actions
 
-        self.global_tensor_dict["dof_control_mode"] = self.dof_control_mode
+        self.global_tensor_dict.dof_control_mode = self.dof_control_mode
 
         self.robot.init_tensors(self.global_tensor_dict)
 

@@ -192,7 +192,7 @@ class InitHelpers:
             forced = self.task.task_config.force_curriculum_level
         if forced is not None:
             self.task.curriculum_level = int(forced)
-        self.task.obs_dict["curriculum_level"] = self.task.curriculum_level
+        self.task.obs_dict.curriculum_level = self.task.curriculum_level
 
         # Track maximum curriculum level reached (for no-decrease policy)
         self.task.max_curriculum_level_reached = self.task.curriculum_level
@@ -221,11 +221,11 @@ class InitHelpers:
         )
 
         # Update observation dictionary and global tensor dict with obstacle count
-        self.task.obs_dict["num_obstacles_in_env"] = total_obstacles_in_env
-        old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
+        self.task.obs_dict.num_obstacles_in_env = total_obstacles_in_env
+        old_count = self.task.sim_env.global_tensor_dict.num_obstacles_in_env
         if old_count != total_obstacles_in_env:
             logger.info(f"Updated obstacle count: {old_count} -> {total_obstacles_in_env}")
-            self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            self.task.sim_env.global_tensor_dict.num_obstacles_in_env = total_obstacles_in_env
 
         # Initialize camera difficulty parameters (only static camera curriculum remains)
         (

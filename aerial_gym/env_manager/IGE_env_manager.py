@@ -351,38 +351,38 @@ class IsaacGymEnv(BaseManager):
 
     def _populate_root_state_tensors(self) -> None:
         """Set up root state, robot state, and environment asset state tensors."""
-        self.global_tensor_dict["vec_root_tensor"] = self.vec_root_tensor
-        self.global_tensor_dict["robot_state_tensor"] = self.vec_root_tensor[:, 0, :]
-        self.global_tensor_dict["env_asset_state_tensor"] = self.vec_root_tensor[:, 1:, :]
-        self.global_tensor_dict["unfolded_env_asset_state_tensor"] = self.unfolded_vec_root_tensor
-        self.global_tensor_dict["unfolded_env_asset_state_tensor_const"] = self.global_tensor_dict[
-            "unfolded_env_asset_state_tensor"
-        ].clone()
+        self.global_tensor_dict.vec_root_tensor = self.vec_root_tensor
+        self.global_tensor_dict.robot_state_tensor = self.vec_root_tensor[:, 0, :]
+        self.global_tensor_dict.env_asset_state_tensor = self.vec_root_tensor[:, 1:, :]
+        self.global_tensor_dict.unfolded_env_asset_state_tensor = self.unfolded_vec_root_tensor
+        self.global_tensor_dict.unfolded_env_asset_state_tensor_const = (
+            self.global_tensor_dict.unfolded_env_asset_state_tensor.clone()
+        )
 
     def _populate_dof_and_contact_tensors(self) -> None:
         """Set up DOF state and contact force tensors."""
-        self.global_tensor_dict["unfolded_dof_state_tensor"] = gymtorch.wrap_tensor(
+        self.global_tensor_dict.unfolded_dof_state_tensor = gymtorch.wrap_tensor(
             self.gym.acquire_dof_state_tensor(self.sim)
         )
-        if self.global_tensor_dict["unfolded_dof_state_tensor"] is not None:
+        if self.global_tensor_dict.unfolded_dof_state_tensor is not None:
             self.sim_has_dof = True
-            self.global_tensor_dict["dof_state_tensor"] = self.global_tensor_dict[
-                "unfolded_dof_state_tensor"
-            ].view(self.num_envs, -1, 2)
+            self.global_tensor_dict.dof_state_tensor = (
+                self.global_tensor_dict.unfolded_dof_state_tensor.view(self.num_envs, -1, 2)
+            )
 
-        self.global_tensor_dict["global_contact_force_tensor"] = self.global_contact_force_tensor
-        self.global_tensor_dict["robot_contact_force_tensor"] = self.global_contact_force_tensor[
+        self.global_tensor_dict.global_contact_force_tensor = self.global_contact_force_tensor
+        self.global_tensor_dict.robot_contact_force_tensor = self.global_contact_force_tensor[
             :, 0, :
         ]
 
     def _populate_env_metadata(self) -> None:
         """Set up environment bounds, gravity, and time step tensors."""
-        self.global_tensor_dict["env_bounds_max"] = self.env_upper_bound
-        self.global_tensor_dict["env_bounds_min"] = self.env_lower_bound
-        self.global_tensor_dict["gravity"] = torch.tensor(
+        self.global_tensor_dict.env_bounds_max = self.env_upper_bound
+        self.global_tensor_dict.env_bounds_min = self.env_lower_bound
+        self.global_tensor_dict.gravity = torch.tensor(
             self.sim_config.sim.gravity, device=self.device, requires_grad=False
         ).expand(self.num_envs, -1)
-        self.global_tensor_dict["dt"] = self.sim_config.sim.dt
+        self.global_tensor_dict.dt = self.sim_config.sim.dt
 
     def create_viewer(self, env_manager: EnvManager) -> None:
         self.robot_handles = [ah[0] for ah in self.asset_handles]
@@ -407,27 +407,27 @@ class IsaacGymEnv(BaseManager):
             self.write_to_sim()
         self.gym.apply_rigid_body_force_tensors(
             self.sim,
-            gymtorch.unwrap_tensor(self.global_tensor_dict["global_force_tensor"]),
-            gymtorch.unwrap_tensor(self.global_tensor_dict["global_torque_tensor"]),
+            gymtorch.unwrap_tensor(self.global_tensor_dict.global_force_tensor),
+            gymtorch.unwrap_tensor(self.global_tensor_dict.global_torque_tensor),
             gymapi.LOCAL_SPACE,
         )
         if self.sim_has_dof:
-            self.dof_control_mode = self.global_tensor_dict["dof_control_mode"]
+            self.dof_control_mode = self.global_tensor_dict.dof_control_mode
 
             if self.dof_control_mode == "position":
                 self.dof_application_function = self.gym.set_dof_position_target_tensor
                 self.dof_application_tensor = gymtorch.unwrap_tensor(
-                    self.global_tensor_dict["dof_position_setpoint_tensor"]
+                    self.global_tensor_dict.dof_position_setpoint_tensor
                 )
             elif self.dof_control_mode == "velocity":
                 self.dof_application_function = self.gym.set_dof_velocity_target_tensor
                 self.dof_application_tensor = gymtorch.unwrap_tensor(
-                    self.global_tensor_dict["dof_velocity_setpoint_tensor"]
+                    self.global_tensor_dict.dof_velocity_setpoint_tensor
                 )
             elif self.dof_control_mode == "effort":
                 self.dof_application_function = self.gym.set_dof_actuation_force_tensor
                 self.dof_application_tensor = gymtorch.unwrap_tensor(
-                    self.global_tensor_dict["dof_effort_tensor"]
+                    self.global_tensor_dict.dof_effort_tensor
                 )
             else:
                 raise ValueError("Invalid dof control mode")
@@ -481,10 +481,10 @@ class IsaacGymEnv(BaseManager):
         """
         self.gym.set_actor_root_state_tensor(
             self.sim,
-            gymtorch.unwrap_tensor(self.global_tensor_dict["unfolded_env_asset_state_tensor"]),
+            gymtorch.unwrap_tensor(self.global_tensor_dict.unfolded_env_asset_state_tensor),
         )
         if self.sim_has_dof:
             self.gym.set_dof_state_tensor(
                 self.sim,
-                gymtorch.unwrap_tensor(self.global_tensor_dict["unfolded_dof_state_tensor"]),
+                gymtorch.unwrap_tensor(self.global_tensor_dict.unfolded_dof_state_tensor),
             )

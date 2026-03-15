@@ -171,7 +171,7 @@ class NavigationTaskGate(BaseTask):
                 self.sim_env.global_tensor_dict.get("obstacles_randomization/fixed_count", 0)
             )
             total_obstacles_in_env = fixed_assets_visible + max(0, fixed_count)
-        self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+        self.sim_env.global_tensor_dict.num_obstacles_in_env = total_obstacles_in_env
         logger.info(
             f"POST-INIT: Updated global_tensor_dict with obstacle count: {total_obstacles_in_env}"
         )
@@ -195,10 +195,10 @@ class NavigationTaskGate(BaseTask):
         self._init._init_curriculum()
 
         try:
-            self.terminations = self.obs_dict["terminations"]
+            self.terminations = self.obs_dict.terminations
         except (KeyError, TypeError):
-            self.terminations = self.obs_dict["crashes"]
-        self.truncations = self.obs_dict["truncations"]
+            self.terminations = self.obs_dict.crashes
+        self.truncations = self.obs_dict.truncations
         self.rewards = torch.zeros(self.truncations.shape[0], device=self.device)
 
         self._init._init_observation_action_spaces()
@@ -277,7 +277,7 @@ class NavigationTaskGate(BaseTask):
     def reset_idx(self, env_ids: torch.Tensor) -> None:
         """Reset specified environments: update gate tracking, camera, and target positions."""
         if "gate_position" in self.obs_dict:
-            self.gate_position[env_ids] = self.obs_dict["gate_position"][env_ids]
+            self.gate_position[env_ids] = self.obs_dict.gate_position[env_ids]
         else:
             self.gate_position[env_ids] = 0.0
 
@@ -293,11 +293,11 @@ class NavigationTaskGate(BaseTask):
                 f"Updated static camera angles for {len(env_ids)} resetting environments: {env_ids.tolist()}"
             )
 
-        self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
-        self.sim_env.global_tensor_dict["eval_stretch_enabled"] = bool(
+        self.sim_env.global_tensor_dict.curriculum_level = int(self.curriculum_level)
+        self.sim_env.global_tensor_dict.eval_stretch_enabled = bool(
             self.task_config.curriculum.eval_stretch_enabled
         )
-        self.sim_env.global_tensor_dict["eval_stretch_end_level"] = int(
+        self.sim_env.global_tensor_dict.eval_stretch_end_level = int(
             self.task_config.curriculum.eval_stretch_end_level
         )
         self._geometry.update_gate_dimensions_for_environments(env_ids)
@@ -356,7 +356,7 @@ class NavigationTaskGate(BaseTask):
                 _ids = torch.nonzero(nan_trunc_mask, as_tuple=False).squeeze(-1).tolist()
                 logger.warning(f"[NaNGuard] Truncating envs due to NaN/Inf: {_ids}")
 
-        robot_position = self.obs_dict["robot_position"]
+        robot_position = self.obs_dict.robot_position
         robot_position_before_reset = robot_position.clone()
         successes, target_successes, gate_passage_success = self._step._detect_gate_passage(
             robot_position
@@ -364,7 +364,7 @@ class NavigationTaskGate(BaseTask):
 
         self._step._apply_timeout_and_populate_infos(successes)
 
-        robot_position = self.obs_dict["robot_position"]
+        robot_position = self.obs_dict.robot_position
         gate_center_position, gate_passed_current = self._step._compute_gate_navigation_metrics(
             robot_position,
             camera_gate_alignment,

@@ -39,8 +39,8 @@ class BaseReconfigurable(BaseMultirotor):
 
     def init_tensors(self, global_tensor_dict) -> None:
         super().init_tensors(global_tensor_dict)
-        self.dof_states = global_tensor_dict["dof_state_tensor"]
-        self.dof_control_mode = global_tensor_dict["dof_control_mode"]
+        self.dof_states = global_tensor_dict.dof_state_tensor
+        self.dof_control_mode = global_tensor_dict.dof_control_mode
 
         self.dof_effort_tensor = torch.zeros_like(self.dof_states[..., 0])
         self.dof_position_setpoint_tensor = torch.zeros_like(self.dof_states[..., 0])
@@ -49,9 +49,9 @@ class BaseReconfigurable(BaseMultirotor):
         self.dof_states_position = self.dof_states[..., 0]
         self.dof_states_velocity = self.dof_states[..., 1]
 
-        global_tensor_dict["dof_position_setpoint_tensor"] = self.dof_position_setpoint_tensor
-        global_tensor_dict["dof_velocity_setpoint_tensor"] = self.dof_velocity_setpoint_tensor
-        global_tensor_dict["dof_effort_tensor"] = self.dof_effort_tensor
+        global_tensor_dict.dof_position_setpoint_tensor = self.dof_position_setpoint_tensor
+        global_tensor_dict.dof_velocity_setpoint_tensor = self.dof_velocity_setpoint_tensor
+        global_tensor_dict.dof_effort_tensor = self.dof_effort_tensor
 
     def reset_idx(self, env_ids) -> None:
         super().reset_idx(env_ids)

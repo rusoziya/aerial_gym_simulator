@@ -76,13 +76,13 @@ class BaseROV(BaseRobot):
             self.robot_linvel, requires_grad=False, device=self.device
         )
         # Add to tensor dictionary
-        global_tensor_dict["robot_vehicle_orientation"] = self.robot_vehicle_orientation
-        global_tensor_dict["robot_vehicle_linvel"] = self.robot_vehicle_linvel
-        global_tensor_dict["robot_body_angvel"] = self.robot_body_angvel
-        global_tensor_dict["robot_body_linvel"] = self.robot_body_linvel
-        global_tensor_dict["robot_euler_angles"] = self.robot_euler_angles
+        global_tensor_dict.robot_vehicle_orientation = self.robot_vehicle_orientation
+        global_tensor_dict.robot_vehicle_linvel = self.robot_vehicle_linvel
+        global_tensor_dict.robot_body_angvel = self.robot_body_angvel
+        global_tensor_dict.robot_body_linvel = self.robot_body_linvel
+        global_tensor_dict.robot_euler_angles = self.robot_euler_angles
 
-        global_tensor_dict["num_robot_actions"] = self.controller_config.num_actions
+        global_tensor_dict.num_robot_actions = self.controller_config.num_actions
 
         self.controller.init_tensors(global_tensor_dict)
         self.action_tensor = torch.zeros(
@@ -156,10 +156,10 @@ class BaseROV(BaseRobot):
         )
 
         self.output_forces = torch.zeros_like(
-            global_tensor_dict["robot_force_tensor"], device=self.device, requires_grad=False
+            global_tensor_dict.robot_force_tensor, device=self.device, requires_grad=False
         )
         self.output_torques = torch.zeros_like(
-            global_tensor_dict["robot_torque_tensor"], device=self.device, requires_grad=False
+            global_tensor_dict.robot_torque_tensor, device=self.device, requires_grad=False
         )
 
     def reset(self) -> None:

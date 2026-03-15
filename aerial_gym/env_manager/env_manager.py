@@ -142,7 +142,7 @@ class EnvManager(BaseManager):
         segmentation_ctr = self._populate_all_environments()
         self._finalize_asset_state_ratios()
 
-        self.global_tensor_dict["num_obstacles_in_env"] = self.num_obs_in_env
+        self.global_tensor_dict.num_obstacles_in_env = self.num_obs_in_env
         self.apply_gate_variant_selection(
             env_ids=torch.arange(self.cfg.env.num_envs, device=self.device)
         )
@@ -154,26 +154,26 @@ class EnvManager(BaseManager):
         self.asset_min_state_ratio = None
         self.asset_max_state_ratio = None
 
-        self.global_tensor_dict["crashes"] = torch.zeros(
+        self.global_tensor_dict.crashes = torch.zeros(
             self.num_envs, device=self.device, requires_grad=False, dtype=torch.bool
         )
-        self.global_tensor_dict["terminations"] = torch.zeros(
+        self.global_tensor_dict.terminations = torch.zeros(
             self.num_envs, device=self.device, requires_grad=False, dtype=torch.bool
         )
-        self.global_tensor_dict["truncations"] = torch.zeros(
+        self.global_tensor_dict.truncations = torch.zeros(
             self.num_envs, device=self.device, requires_grad=False, dtype=torch.bool
         )
 
         self.num_env_actions = self.cfg.env.num_env_actions
-        self.global_tensor_dict["num_env_actions"] = self.num_env_actions
-        self.global_tensor_dict["env_actions"] = None
-        self.global_tensor_dict["prev_env_actions"] = None
+        self.global_tensor_dict.num_env_actions = self.num_env_actions
+        self.global_tensor_dict.env_actions = None
+        self.global_tensor_dict.prev_env_actions = None
 
-        self.collision_tensor = self.global_tensor_dict["crashes"]
-        self.termination_tensor = self.global_tensor_dict["terminations"]
-        self.truncation_tensor = self.global_tensor_dict["truncations"]
+        self.collision_tensor = self.global_tensor_dict.crashes
+        self.termination_tensor = self.global_tensor_dict.terminations
+        self.truncation_tensor = self.global_tensor_dict.truncations
 
-        self.global_tensor_dict["gate_variant_counter"] = torch.zeros(
+        self.global_tensor_dict.gate_variant_counter = torch.zeros(
             self.num_envs, device=self.device, dtype=torch.int64
         )
 
@@ -185,14 +185,14 @@ class EnvManager(BaseManager):
 
     def _init_gate_variant_tracking(self) -> None:
         n = self.cfg.env.num_envs
-        self.global_tensor_dict["gate_variant_indices_per_env"] = [[] for _ in range(n)]
-        self.global_tensor_dict["active_gate_variant_index"] = torch.full(
+        self.global_tensor_dict.gate_variant_indices_per_env = [[] for _ in range(n)]
+        self.global_tensor_dict.active_gate_variant_index = torch.full(
             (n,), -1, device=self.device, dtype=torch.long
         )
-        self.global_tensor_dict["active_gate_variant_array_index"] = torch.full(
+        self.global_tensor_dict.active_gate_variant_array_index = torch.full(
             (n,), -1, device=self.device, dtype=torch.long
         )
-        self.global_tensor_dict["gate_variant_names_per_env"] = [[] for _ in range(n)]
+        self.global_tensor_dict.gate_variant_names_per_env = [[] for _ in range(n)]
 
     def _populate_all_environments(self) -> int:
         """Create environments and add robots + assets. Returns final segmentation counter."""
@@ -243,10 +243,8 @@ class EnvManager(BaseManager):
             segmentation_ctr += max(ige_seg_ctr, warp_segmentation_ctr)
             self._accumulate_state_ratios(asset_info_dict)
 
-        self.global_tensor_dict["gate_variant_indices_per_env"][env_idx] = (
-            local_gate_variant_indices
-        )
-        self.global_tensor_dict["gate_variant_names_per_env"][env_idx] = local_gate_variant_names
+        self.global_tensor_dict.gate_variant_indices_per_env[env_idx] = local_gate_variant_indices
+        self.global_tensor_dict.gate_variant_names_per_env[env_idx] = local_gate_variant_names
         return segmentation_ctr
 
     def _accumulate_state_ratios(
@@ -269,17 +267,17 @@ class EnvManager(BaseManager):
         if self.asset_min_state_ratio is not None:
             self.asset_min_state_ratio = self.asset_min_state_ratio.to(self.device)
             self.asset_max_state_ratio = self.asset_max_state_ratio.to(self.device)
-            self.global_tensor_dict["asset_min_state_ratio"] = self.asset_min_state_ratio.view(
+            self.global_tensor_dict.asset_min_state_ratio = self.asset_min_state_ratio.view(
                 n, -1, 13
             )
-            self.global_tensor_dict["asset_max_state_ratio"] = self.asset_max_state_ratio.view(
+            self.global_tensor_dict.asset_max_state_ratio = self.asset_max_state_ratio.view(
                 n, -1, 13
             )
         else:
-            self.global_tensor_dict["asset_min_state_ratio"] = torch.zeros(
+            self.global_tensor_dict.asset_min_state_ratio = torch.zeros(
                 (n, 0, 13), device=self.device
             )
-            self.global_tensor_dict["asset_max_state_ratio"] = torch.zeros(
+            self.global_tensor_dict.asset_max_state_ratio = torch.zeros(
                 (n, 0, 13), device=self.device
             )
 
@@ -297,7 +295,7 @@ class EnvManager(BaseManager):
             self.IGE_env.num_assets_per_env, self.cfg, self.device
         )
         self.obstacle_manager.prepare_for_sim(self.global_tensor_dict)
-        self.num_robot_actions = self.global_tensor_dict["num_robot_actions"]
+        self.num_robot_actions = self.global_tensor_dict.num_robot_actions
 
     def reset_idx(self, env_ids: torch.Tensor | None = None) -> None:
         """
@@ -309,7 +307,7 @@ class EnvManager(BaseManager):
         # finally reset the robot manager that resets the robot state tensors and the sensors
         self.IGE_env.reset_idx(env_ids)
         # Determine how many assets to keep visible this reset
-        obstacle_count = self.global_tensor_dict["num_obstacles_in_env"]
+        obstacle_count = self.global_tensor_dict.num_obstacles_in_env
         # When obstacle randomization is disabled, first let AssetManager place everything,
         # then enforce the exact fixed count after gate selection.
         try:
@@ -319,7 +317,7 @@ class EnvManager(BaseManager):
         if obs_dis:
             # Show all assets for now so none are hidden prematurely
             try:
-                env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(
+                env_asset_state = self.global_tensor_dict.unfolded_env_asset_state_tensor.view(
                     self.cfg.env.num_envs, -1, 13
                 )
                 total_assets = env_asset_state.shape[1]
@@ -344,10 +342,10 @@ class EnvManager(BaseManager):
             fixed_count = int(self.global_tensor_dict.get("obstacles_randomization/fixed_count", 0))
         except (ValueError, TypeError):
             fixed_count = 0
-        env_asset_state = self.global_tensor_dict["unfolded_env_asset_state_tensor"].view(
+        env_asset_state = self.global_tensor_dict.unfolded_env_asset_state_tensor.view(
             self.cfg.env.num_envs, -1, 13
         )
-        gate_indices_all = self.global_tensor_dict.get("gate_variant_indices_per_env", [])
+        gate_indices_all = self.global_tensor_dict.gate_variant_indices_per_env
         total_assets = env_asset_state.shape[1]
         # Assets in [0 : keep_in_env) are fixed (walls etc.) and must stay visible
         fixed_indices = set(range(int(self.keep_in_env or 0)))
@@ -369,7 +367,7 @@ class EnvManager(BaseManager):
                     [-1000.0, -1000.0, -1000.0], device=self.device
                 )
         # Write back
-        self.global_tensor_dict["unfolded_env_asset_state_tensor"][:] = env_asset_state.view(-1, 13)
+        self.global_tensor_dict.unfolded_env_asset_state_tensor[:] = env_asset_state.view(-1, 13)
 
     def apply_gate_variant_selection(self, env_ids: torch.Tensor | None) -> None:
         """Select exactly one gate variant per environment, hiding the rest."""
@@ -427,7 +425,7 @@ class EnvManager(BaseManager):
 
     def compute_observations(self) -> None:
         self.collision_tensor[:] += (
-            torch.norm(self.global_tensor_dict["robot_contact_force_tensor"], dim=1)
+            torch.norm(self.global_tensor_dict.robot_contact_force_tensor, dim=1)
             > self.cfg.env.collision_force_threshold
         )
 
@@ -472,11 +470,11 @@ class EnvManager(BaseManager):
     def step(self, actions: torch.Tensor, env_actions: torch.Tensor | None = None) -> None:
         self.reset_tensors()
         if env_actions is not None:
-            if self.global_tensor_dict["env_actions"] is None:
-                self.global_tensor_dict["env_actions"] = env_actions
-                self.global_tensor_dict["prev_env_actions"] = env_actions
-                self.prev_env_actions = self.global_tensor_dict["prev_env_actions"]
-                self.env_actions = self.global_tensor_dict["env_actions"]
+            if self.global_tensor_dict.env_actions is None:
+                self.global_tensor_dict.env_actions = env_actions
+                self.global_tensor_dict.prev_env_actions = env_actions
+                self.prev_env_actions = self.global_tensor_dict.prev_env_actions
+                self.env_actions = self.global_tensor_dict.env_actions
             logger.warning(
                 f"Env actions shape: {env_actions.shape}, Previous env actions shape: {self.env_actions.shape}"
             )
@@ -496,7 +494,7 @@ class EnvManager(BaseManager):
             self.compute_observations()
         self.sim_steps[:] = self.sim_steps[:] + 1
         # Expose sim steps to global tensor dict for modules needing a global time base (e.g., static camera yaw sweep)
-        self.global_tensor_dict["sim_steps"] = self.sim_steps
+        self.global_tensor_dict.sim_steps = self.sim_steps
         self.step_counter += 1
         if self.step_counter % self.cfg.env.render_viewer_every_n_steps == 0:
             self.render(render_components="viewer")
