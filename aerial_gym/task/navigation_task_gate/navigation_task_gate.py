@@ -69,7 +69,6 @@ class NavigationTaskGate(BaseTask):
         
         # If static latents (86:150) are fully ablated, disable static FOV visibility reward
         try:
-            import os as _os
             spec_str = _os.environ.get('ABLATE_OBS_RANGES', '').strip()
             static_ablated = False
             if spec_str:
@@ -701,8 +700,6 @@ class NavigationTaskGate(BaseTask):
         """Setup separate curriculum logging file in train_dir."""
         try:
             # Try to determine train_dir path from Sample Factory environment or working directory
-            import os
-            import datetime
             
             # Get train_dir from environment variable or use current directory/train_dir
             train_dir = os.environ.get('SF_TRAIN_DIR', './train_dir')
@@ -740,7 +737,6 @@ class NavigationTaskGate(BaseTask):
             # Try to log to file if available
             if self.curriculum_log_file:
                 try:
-                    import datetime
                     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     self.curriculum_log_file.write(f"[{timestamp}] {message}\n")
                     self.curriculum_log_file.flush()  # Ensure immediate write
@@ -844,7 +840,6 @@ class NavigationTaskGate(BaseTask):
         Returns (width, height, center_height, scale_factor)
         """
         import xml.etree.ElementTree as ET
-        import os
         
         try:
             if not os.path.exists(urdf_path):
@@ -1552,7 +1547,6 @@ class NavigationTaskGate(BaseTask):
                     # if 4D, assume (N, C, H, W)
                 else:
                     # Fallback: convert numpy to tensor
-                    import numpy as np
                     if isinstance(img, np.ndarray):
                         img = torch.from_numpy(img).to(self.device, dtype=torch.float32).contiguous()
                         if img.ndim == 2:
@@ -1787,7 +1781,6 @@ class NavigationTaskGate(BaseTask):
         # Geometric gate visibility metric (pose-only, no pixels)
         # Disabled by default; enable with SF_ENABLE_GEOM_VISIBILITY, static_visibility/enable, or VISIBILITY_DEBUG
         try:
-            import os as _os
             gtd = self.sim_env.global_tensor_dict
             _flag_env = _os.environ.get('SF_ENABLE_GEOM_VISIBILITY', '').strip().lower() in ('1', 'true', 'yes', 'y')
             _flag_gtd = bool(gtd.get('static_visibility/enable', False))
@@ -1852,7 +1845,6 @@ class NavigationTaskGate(BaseTask):
                     z_c = torch.sum(Pw * fv, dim=3)
 
                     # Frustum test using symmetric FOV (D455 ~87° horiz, use same for vert)
-                    import math as _math
                     half_angle = _math.radians(87.0 * 0.5)
                     tan_half = _math.tan(half_angle)
                     near = 0.4; far = 20.0
@@ -1931,7 +1923,6 @@ class NavigationTaskGate(BaseTask):
         except (ValueError, TypeError) as _e_vis:
             # Keep visibility diagnostics non-fatal
             try:
-                import os as _os
                 if _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') or _os.environ.get('ABLATE_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y'):
                     logger.warning(f"[VIS] Geometric visibility computation skipped due to: {_e_vis}")
                 else:
@@ -1960,7 +1951,6 @@ class NavigationTaskGate(BaseTask):
                 x_c = torch.sum(pw * right, dim=1)
                 y_c = torch.sum(pw * up, dim=1)
                 z_c = torch.sum(pw * fwd, dim=1)
-                import math as _math
                 half_fov_rad = _math.radians(87.0 * 0.5)
                 horiz_angle = torch.atan2(torch.abs(x_c), torch.clamp(z_c, min=1e-6))
                 vert_angle = torch.atan2(torch.abs(y_c), torch.clamp(z_c, min=1e-6))
@@ -1984,7 +1974,6 @@ class NavigationTaskGate(BaseTask):
                 infos_to_return["static_fov/vert_angle_rad"] = vert_angle
                 infos_to_return["static_fov/score"] = fov_score
                 # Optional env0 debug
-                import os as _os
                 if _os.environ.get('VISIBILITY_DEBUG', '').strip().lower() in ('1', 'true', 'yes', 'y') and self.num_envs > 0:
                     e0 = 0
                     step_ep0 = int(self.episode_lengths[0].item())
@@ -3146,7 +3135,6 @@ class NavigationTaskGate(BaseTask):
             else:
                 # Compute linear threshold from 80 -> 60 over levels 3..23
                 # If EVAL_STRETCH_ENABLED, extend further to 50% by eval_end_level
-                import os as _os
                 stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
                 eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(self.task_config.curriculum.eval_stretch_end_level)))
                 level = int(self.curriculum_level)
@@ -3521,7 +3509,6 @@ class NavigationTaskGate(BaseTask):
                     self._curriculum_cooldown = self.task_config.curriculum.cooldown_windows
                     action_msg = f"LEVEL DECREASED: {old_level} -> {self.curriculum_level} (SR {success_rate:.3f} < threshold)"
             # Apply optional maximum cap without changing per-level scaling
-            import os
             cap_env = os.environ.get('SF_MAX_CURRICULUM_LEVEL', None)
             cap_cfg = self.task_config.max_curriculum_level
             cap = int(cap_env) if cap_env is not None else (int(cap_cfg) if cap_cfg is not None else None)

@@ -184,7 +184,6 @@ class StaticCameraManager:
         """Update static camera orientation ONLY for resetting environments."""
         if self.use_synthetic_camera:
             # In synthetic mode, update orientation per resetting env with spawn-aware logic
-            from aerial_gym.config.task_config.navigation_task_config_gate import task_config
             max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
             # Read flags and robot positions
             try:
@@ -232,7 +231,6 @@ class StaticCameraManager:
             return
         
         # Get maximum angle range. For yaw sweep feature we use fixed ±30° (curriculum-independent)
-        from aerial_gym.config.task_config.navigation_task_config_gate import task_config
         _max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
         FIXED_SWEEP_MAX_DEG = 15.0
         # Honor ablation flag from parent task/global dict and read robot positions
@@ -278,7 +276,6 @@ class StaticCameraManager:
                 base_z_for_vec = 1.5
             base_camera_pos = gymapi.Vec3(0.0, base_y, base_z_for_vec)
             
-            import math
             import random
             
             # Ensure per-env randomized sweep parameters exist
@@ -587,7 +584,6 @@ class StaticCameraManager:
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         try:
-            import math
             # Fixed offsets in world frame (Y offset can be overridden via global tensor dict)
             try:
                 gtd = self.env_manager.IGE_env.global_tensor_dict
@@ -662,7 +658,6 @@ class StaticCameraManager:
         if not self.camera_setup_success or len(self.camera_handles) == 0:
             return
         try:
-            import math
             # Read global sim steps for a smooth arc oscillation per env
             try:
                 gtd = self.env_manager.IGE_env.global_tensor_dict

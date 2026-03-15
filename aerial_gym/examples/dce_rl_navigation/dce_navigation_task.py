@@ -35,7 +35,6 @@ class DCE_RL_Navigation_Task(NavigationTask):
         env_agents_override = None
         try:
             # Try to access the global Sample Factory config if available
-            import os
             if 'SF_ENV_AGENTS' in os.environ:
                 env_agents_override = int(os.environ['SF_ENV_AGENTS'])
                 logger.info(f"Found SF_ENV_AGENTS environment variable: {env_agents_override}")
