@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 
 from aerial_gym.task.navigation_task_gate.trajectory_metrics import (
@@ -11,11 +13,14 @@ from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import *  # noqa: F401,F403
 from aerial_gym.utils.tensor_utils import invalid_mask_per_env
 
+if TYPE_CHECKING:
+    from aerial_gym.task.navigation_task_gate.navigation_task_gate import NavigationTaskGate
+
 logger = CustomLogger("navigation_task_gate_step")
 
 
 class StepHelpers:
-    def __init__(self, task: object) -> None:
+    def __init__(self, task: NavigationTaskGate) -> None:
         self.task = task
 
     def _validate_and_step(self, actions: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:

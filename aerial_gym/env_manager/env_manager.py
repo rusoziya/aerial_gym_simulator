@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import argparse
 import math
 import random
+from typing import TYPE_CHECKING
 
 import torch
+
+if TYPE_CHECKING:
+    from isaacgym import gymapi
 
 from aerial_gym.env_manager.asset_loader import AssetLoader
 from aerial_gym.env_manager.asset_manager import AssetManager
@@ -31,7 +36,7 @@ class EnvManager(BaseManager):
         robot_name: str,
         controller_name: str,
         device: str,
-        args: object = None,
+        args: argparse.Namespace | None = None,
         num_envs: int | None = None,
         use_warp: bool | None = None,
         headless: bool | None = None,
@@ -69,7 +74,7 @@ class EnvManager(BaseManager):
             self.num_envs, dtype=torch.int32, requires_grad=False, device=self.device
         )
 
-    def create_sim(self, env_cfg: object, sim_cfg: object) -> None:
+    def create_sim(self, env_cfg: type, sim_cfg: type) -> None:
         logger.info("Creating simulation instance.")
         logger.info("Instantiating IGE object.")
 
@@ -108,7 +113,7 @@ class EnvManager(BaseManager):
 
         logger.info("[DONE] Creating simulation instance.")
 
-    def populate_env(self, env_cfg: object, sim_cfg: object) -> None:
+    def populate_env(self, env_cfg: type, sim_cfg: type) -> None:
         self.create_sim(env_cfg, sim_cfg)
         self.robot_manager.create_robot(self.asset_loader)
 
@@ -206,7 +211,9 @@ class EnvManager(BaseManager):
             segmentation_ctr = self._add_assets_to_env(i, env_handle, segmentation_ctr)
         return segmentation_ctr
 
-    def _add_assets_to_env(self, env_idx: int, env_handle: object, segmentation_ctr: int) -> int:
+    def _add_assets_to_env(
+        self, env_idx: int, env_handle: gymapi.Env, segmentation_ctr: int
+    ) -> int:
         """Add all assets for a single environment. Returns updated segmentation counter."""
         self.num_obs_in_env = 0
         local_gate_variant_indices: list[int] = []
@@ -239,7 +246,10 @@ class EnvManager(BaseManager):
         self.global_tensor_dict["gate_variant_names_per_env"][env_idx] = local_gate_variant_names
         return segmentation_ctr
 
-    def _accumulate_state_ratios(self, asset_info_dict: dict[str, object]) -> None:
+    def _accumulate_state_ratios(
+        self,
+        asset_info_dict: dict[str, int | str | bool | list[float] | None],
+    ) -> None:
         """Accumulate min/max state ratios from asset info."""
         ratio_tensor = torch.tensor(asset_info_dict["min_state_ratio"], requires_grad=False)
         max_tensor = torch.tensor(asset_info_dict["max_state_ratio"], requires_grad=False)
@@ -488,6 +498,8 @@ class EnvManager(BaseManager):
         if self.step_counter % self.cfg.env.render_viewer_every_n_steps == 0:
             self.render(render_components="viewer")
 
-    def get_obs(self) -> dict[str, object]:
+    def get_obs(
+        self,
+    ) -> dict[str, torch.Tensor | int | float | bool | list[list[int]] | list[list[str]]]:
         # Just return the dict of all tensors. Whatever the task needs can be used to compute the rewards.
         return self.global_tensor_dict

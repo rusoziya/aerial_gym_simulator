@@ -129,3 +129,118 @@ logging:
         cfg = load_config(str(config_file))
         assert cfg.logging.log_level == LogLevel.debug
         assert cfg.logging.log_to_file is False
+
+
+CameraOverrides = _config_mod.CameraOverrides
+GradientMonitoringConfig = _config_mod.GradientMonitoringConfig
+Mode = _enums_mod.Mode
+
+
+class TestCameraModeExclusivity:
+    """Camera modes are mutually exclusive — at most one can be active."""
+
+    def test_two_modes_raises(self) -> None:
+        with pytest.raises(ValidationError, match="mutually exclusive"):
+            CameraOverrides(enable_arc_follow=True, enable_yaw_sweep=True)
+
+    def test_three_modes_raises(self) -> None:
+        with pytest.raises(ValidationError, match="mutually exclusive"):
+            CameraOverrides(
+                enable_arc_follow=True,
+                enable_yaw_sweep=True,
+                enable_locked_follow=True,
+            )
+
+    def test_dynamic_and_arc_raises(self) -> None:
+        with pytest.raises(ValidationError, match="mutually exclusive"):
+            CameraOverrides(enable_dynamic_following=True, enable_arc_follow=True)
+
+    def test_dynamic_and_locked_raises(self) -> None:
+        with pytest.raises(ValidationError, match="mutually exclusive"):
+            CameraOverrides(enable_dynamic_following=True, enable_locked_follow=True)
+
+    def test_single_mode_arc_passes(self) -> None:
+        cfg = CameraOverrides(enable_arc_follow=True)
+        assert cfg.enable_arc_follow is True
+
+    def test_single_mode_sweep_passes(self) -> None:
+        cfg = CameraOverrides(enable_yaw_sweep=True)
+        assert cfg.enable_yaw_sweep is True
+
+    def test_all_false_passes(self) -> None:
+        cfg = CameraOverrides()
+        assert cfg.enable_arc_follow is False
+        assert cfg.enable_yaw_sweep is False
+        assert cfg.enable_locked_follow is False
+        assert cfg.enable_dynamic_following is None
+
+
+class TestDynamicFollowYOffsetRequiresEnable:
+    """dynamic_camera_follow_y_offset_m without enable_dynamic_following must fail."""
+
+    def test_y_offset_without_dynamic_raises(self) -> None:
+        with pytest.raises(ValidationError, match="dynamic_camera_follow_y_offset_m"):
+            RunConfig(
+                common={"task": "navigation_task_gate"},
+                camera={"dynamic_camera_follow_y_offset_m": -1.0},
+            )
+
+    def test_y_offset_with_dynamic_passes(self) -> None:
+        cfg = RunConfig(
+            common={"task": "navigation_task_gate"},
+            camera={
+                "enable_dynamic_following": True,
+                "dynamic_camera_follow_y_offset_m": -1.0,
+            },
+        )
+        assert cfg.camera.dynamic_camera_follow_y_offset_m == -1.0
+
+    def test_gate_blending_without_dynamic_raises(self) -> None:
+        with pytest.raises(ValidationError, match="disable_dynamic_follow_gate_blending"):
+            RunConfig(
+                common={"task": "navigation_task_gate"},
+                camera={"disable_dynamic_follow_gate_blending": True},
+            )
+
+
+class TestGradientMonitoringEvalMode:
+    """Gradient monitoring in eval/play/inference_suite mode must raise."""
+
+    def test_influence_tracker_in_eval_raises(self) -> None:
+        with pytest.raises(ValidationError, match="Gradient monitoring"):
+            RunConfig(
+                mode="eval",
+                common={"task": "navigation_task_gate"},
+                eval={"checkpoint": "dummy.pth"},
+                gradient_monitoring={"enable_influence_tracker": True},
+            )
+
+    def test_grad_attribution_in_play_raises(self) -> None:
+        with pytest.raises(ValidationError, match="Gradient monitoring"):
+            RunConfig(
+                mode="play",
+                common={"task": "navigation_task_gate"},
+                eval={"checkpoint": "dummy.pth"},
+                gradient_monitoring={"enable_grad_attribution": True},
+            )
+
+    def test_grad_monitoring_in_inference_suite_raises(self) -> None:
+        with pytest.raises(ValidationError, match="Gradient monitoring"):
+            RunConfig(
+                mode="inference_suite",
+                common={"task": "navigation_task_gate"},
+                inference_suite={},
+                eval={"checkpoint": "dummy.pth"},
+                gradient_monitoring={"enable_influence_tracker": True},
+            )
+
+    def test_grad_monitoring_in_train_passes(self) -> None:
+        cfg = RunConfig(
+            common={"task": "navigation_task_gate"},
+            gradient_monitoring={
+                "enable_influence_tracker": True,
+                "enable_grad_attribution": True,
+            },
+        )
+        assert cfg.gradient_monitoring.enable_influence_tracker is True
+        assert cfg.gradient_monitoring.enable_grad_attribution is True

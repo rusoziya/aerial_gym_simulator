@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import torch
 from isaacgym import gymapi, gymtorch, gymutil
@@ -20,13 +22,14 @@ from aerial_gym.utils.helpers import (
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import torch_rand_float_tensor
 
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.env_manager import EnvManager
+
 logger = CustomLogger("IsaacGymEnvManager")
 
 
 class IsaacGymEnv(BaseManager):
-    def __init__(
-        self, config: object, sim_config: object, has_IGE_cameras: bool, device: str
-    ) -> None:
+    def __init__(self, config: type, sim_config: type, has_IGE_cameras: bool, device: str) -> None:
         super().__init__(config, device)
         self.sim_config = sim_config
         self.env_tensor_bounds_min = None
@@ -67,7 +70,7 @@ class IsaacGymEnv(BaseManager):
         self.viewer = None
         self.graphics_are_stepped = True
 
-    def create_sim(self) -> tuple[object, object]:
+    def create_sim(self) -> tuple[gymapi.Gym, gymapi.Sim]:
         """
         Create a gym object and initialize with the appropriate simulation parameters
         """
@@ -154,7 +157,7 @@ class IsaacGymEnv(BaseManager):
         plane_params.normal = gymapi.Vec3(0.0, 0.0, 1.0)
         self.gym.add_ground(self.sim, plane_params)
 
-    def create_env(self, env_id: int) -> object:
+    def create_env(self, env_id: int) -> gymapi.Env:
         """
         Create an environment with the given id
         """
@@ -186,12 +189,12 @@ class IsaacGymEnv(BaseManager):
 
     def add_asset_to_env(
         self,
-        asset_info_dict: dict[str, object],
-        env_handle: object,
+        asset_info_dict: dict[str, int | str | bool | list[float] | None],
+        env_handle: gymapi.Env,
         env_id: int,
         global_asset_counter: int,
         segmentation_counter: int,
-    ) -> tuple[object, int]:
+    ) -> tuple[int, int]:
         local_segmentation_ctr_for_isaacgym_asset = segmentation_counter
         if asset_info_dict["semantic_id"] < 0:
             asset_segmentation_id = local_segmentation_ctr_for_isaacgym_asset
@@ -270,7 +273,9 @@ class IsaacGymEnv(BaseManager):
         )
 
     def prepare_for_simulation(
-        self, env_manager: object, global_tensor_dict: dict[str, object]
+        self,
+        env_manager: EnvManager,
+        global_tensor_dict: dict[str, torch.Tensor | int | float | bool],
     ) -> bool:
         if not self.gym.prepare_sim(self.sim):
             raise RuntimeError("Failed to prepare Isaac Gym Environment")
@@ -378,7 +383,7 @@ class IsaacGymEnv(BaseManager):
         ).expand(self.num_envs, -1)
         self.global_tensor_dict["dt"] = self.sim_config.sim.dt
 
-    def create_viewer(self, env_manager: object) -> None:
+    def create_viewer(self, env_manager: EnvManager) -> None:
         self.robot_handles = [ah[0] for ah in self.asset_handles]
         logger.warning(f"Headless: {self.sim_config.viewer.headless}")
         if not self.sim_config.viewer.headless:
