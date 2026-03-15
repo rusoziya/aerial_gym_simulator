@@ -415,6 +415,21 @@ def main() -> int:
     else:
         cfg = load_config(cli_args.config)
 
+    # Auto-generate experiment name if empty
+    if not cfg.sample_factory.experiment_name:
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        task = cfg.common.task.value if hasattr(cfg.common.task, "value") else str(cfg.common.task)
+        mode = cfg.mode.value
+        auto_name = f"{task}_{mode}_{ts}"
+        cfg = cfg.model_copy(
+            update={
+                "sample_factory": cfg.sample_factory.model_copy(
+                    update={"experiment_name": auto_name}
+                )
+            }
+        )
+        print(f"Auto-generated experiment name: {auto_name}")
+
     if cli_args.validate_only:
         _print_config_summary(cfg)
         print("Configuration is valid.")
