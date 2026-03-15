@@ -61,3 +61,24 @@ wandb/
 TRAINED/
 selected_network/
 events.out.tfevents.*
+
+# Training artifacts
+*.gif
+*.pth
+*.wandb
+*.ulg
+*.log
+*.csv
+*.pyc
+__pycache__/
+gif_episodes/
+wandb/
+TRAINED/
+selected_network/
+events.out.tfevents.*
+static_frames_*/
+val_reports/
+datasets/
+*.png
+!docs/**/*.png
+!resources/**/*.png
