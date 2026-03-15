@@ -278,6 +278,87 @@ class StepHelpers:
             )
             self.task._ep_height_offset_cross[newly_crossed] = torch.abs(dz_cross)
 
+    def _compute_reset_trajectory_metrics(
+        self,
+        env_ids: torch.Tensor,
+        robot_position: torch.Tensor,
+        robot_position_before_reset: torch.Tensor,
+        gate_center_position: torch.Tensor,
+        successes: torch.Tensor,
+        target_successes: torch.Tensor,
+    ) -> None:
+        """Compute and stash per-env trajectory metrics for resetting environments."""
+        denom = torch.norm(
+            self.task._ep_spawn_pos[env_ids] - self.task._ep_gate_center_at_spawn[env_ids],
+            dim=1,
+        )
+        denom = torch.clamp(denom, min=1e-6)
+        disp = torch.norm((robot_position[env_ids] - self.task._ep_spawn_pos[env_ids]), dim=1)
+        path_len = self.task._ep_path_len[env_ids]
+        path_len = torch.where(path_len <= 1e-6, disp, path_len)
+        path_eff = torch.full((self.task.num_envs,), float("nan"), device=self.task.device)
+        path_eff[env_ids] = (path_len / denom).clamp(max=1000.0)
+        time_to_gate = self.task._ep_time_to_gate.clone()
+        min_gate_dist = self.task._ep_min_gate_dist.clone()
+        center_offset = self.task._ep_center_offset_cross.clone()
+        height_offset = self.task._ep_height_offset_cross.clone()
+        last_pos = robot_position_before_reset[env_ids]
+        last_pos_x = last_pos[:, 0]
+        last_pos_y = last_pos[:, 1]
+        last_pos_z = last_pos[:, 2]
+        dx_last = last_pos_x - gate_center_position[env_ids, 0]
+        dz_last = last_pos_z - gate_center_position[env_ids, 2]
+        last_center_offset_vals = torch.sqrt(dx_last * dx_last + dz_last * dz_last)
+        last_height_offset_vals = torch.abs(dz_last)
+        pe_avg = torch.nanmean(path_eff[env_ids])
+        ttg_avg = torch.nanmean(time_to_gate[env_ids])
+        mgd_avg = torch.nanmean(min_gate_dist[env_ids])
+        co_avg = torch.nanmean(center_offset[env_ids])
+        ho_avg = torch.nanmean(height_offset[env_ids])
+        lpx_avg = torch.nanmean(last_pos_x)
+        lpy_avg = torch.nanmean(last_pos_y)
+        lpz_avg = torch.nanmean(last_pos_z)
+        lco_avg = torch.nanmean(last_center_offset_vals)
+        lho_avg = torch.nanmean(last_height_offset_vals)
+        try:
+            overall_success_rate = torch.mean((successes[env_ids] > 0).float())
+            target_success_rate = torch.mean((target_successes[env_ids] > 0).float())
+        except (ValueError, TypeError):
+            overall_success_rate = torch.tensor(float("nan"), device=self.task.device)
+            target_success_rate = torch.tensor(float("nan"), device=self.task.device)
+        stash_per_env_trajectory_metrics(
+            self.task,
+            env_ids,
+            path_eff,
+            time_to_gate,
+            min_gate_dist,
+            center_offset,
+            height_offset,
+            last_pos_x,
+            last_pos_y,
+            last_pos_z,
+            last_center_offset_vals,
+            last_height_offset_vals,
+        )
+        stash_averaged_trajectory_metrics(
+            self.task,
+            env_ids,
+            pe_avg,
+            ttg_avg,
+            mgd_avg,
+            co_avg,
+            ho_avg,
+            lpx_avg,
+            lpy_avg,
+            lpz_avg,
+            lco_avg,
+            lho_avg,
+            overall_success_rate,
+            target_success_rate,
+            time_to_gate,
+        )
+        populate_episode_extra_stats(self.task)
+
     def _handle_post_reward_reset(
         self,
         robot_position: torch.Tensor,
@@ -294,97 +375,17 @@ class StepHelpers:
                 if torch.is_tensor(reset_envs)
                 else torch.tensor(reset_envs, device=self.task.device, dtype=torch.long)
             )
-            # Path efficiency = path length / straight-line distance from spawn to gate center at spawn
-            denom = torch.norm(
-                self.task._ep_spawn_pos[env_ids] - self.task._ep_gate_center_at_spawn[env_ids],
-                dim=1,
-            )
-            denom = torch.clamp(denom, min=1e-6)
-            # Fallback for rare cases where incremental path stayed ~0 (e.g., immediate reset)
-            disp = torch.norm((robot_position[env_ids] - self.task._ep_spawn_pos[env_ids]), dim=1)
-            path_len = self.task._ep_path_len[env_ids]
-            path_len = torch.where(path_len <= 1e-6, disp, path_len)
-            path_eff = torch.full((self.task.num_envs,), float("nan"), device=self.task.device)
-            path_eff[env_ids] = (path_len / denom).clamp(max=1000.0)
-            # Time to gate in steps (already NaN for non-crossers)
-            time_to_gate = self.task._ep_time_to_gate.clone()
-            # Min distance to gate center during episode
-            min_gate_dist = self.task._ep_min_gate_dist.clone()
-            # Offsets at crossing (NaN for non-crossers)
-            center_offset = self.task._ep_center_offset_cross.clone()
-            height_offset = self.task._ep_height_offset_cross.clone()
-            # Last position at episode end (absolute and center-relative distance)
-            # Use the snapshot from BEFORE reset to report end-of-episode last pose
-            last_pos = robot_position_before_reset[env_ids]
-            last_pos_x = last_pos[:, 0]
-            last_pos_y = last_pos[:, 1]
-            last_pos_z = last_pos[:, 2]
-            # Center-relative error (2D XZ) at termination
-            dx_last = last_pos_x - gate_center_position[env_ids, 0]
-            dz_last = last_pos_z - gate_center_position[env_ids, 2]
-            last_center_offset_vals = torch.sqrt(dx_last * dx_last + dz_last * dz_last)
-            last_height_offset_vals = torch.abs(dz_last)
-            # Debug print: average across resetting envs (NaN-aware)
-            pe_avg = torch.nanmean(path_eff[env_ids])
-            ttg_avg = torch.nanmean(time_to_gate[env_ids])
-            mgd_avg = torch.nanmean(min_gate_dist[env_ids])
-            co_avg = torch.nanmean(center_offset[env_ids])
-            ho_avg = torch.nanmean(height_offset[env_ids])
-            lpx_avg = torch.nanmean(last_pos_x)
-            lpy_avg = torch.nanmean(last_pos_y)
-            lpz_avg = torch.nanmean(last_pos_z)
-            # Also compute episode-end offsets (useful fallback when no crossing occurred)
-            lco_avg = torch.nanmean(last_center_offset_vals)
-            lho_avg = torch.nanmean(last_height_offset_vals)
-            # Report both: overall success rate (gate passage) and target success rate (gate passage AND 10%/10%)
-            try:
-                # Overall success rate among resetting envs
-                overall_success_rate = torch.mean((successes[env_ids] > 0).float())
-                # Target success (10% width/height AND gate passage) among resetting envs
-                target_success_rate = torch.mean((target_successes[env_ids] > 0).float())
-            except (ValueError, TypeError):
-                overall_success_rate = torch.tensor(float("nan"), device=self.task.device)
-                target_success_rate = torch.tensor(float("nan"), device=self.task.device)
-            # Stash per-env episode metrics for worker-side running aggregation
-            stash_per_env_trajectory_metrics(
-                self.task,
+            self._compute_reset_trajectory_metrics(
                 env_ids,
-                path_eff,
-                time_to_gate,
-                min_gate_dist,
-                center_offset,
-                height_offset,
-                last_pos_x,
-                last_pos_y,
-                last_pos_z,
-                last_center_offset_vals,
-                last_height_offset_vals,
+                robot_position,
+                robot_position_before_reset,
+                gate_center_position,
+                successes,
+                target_successes,
             )
-            # Stash the averaged trajectory metrics for logging
-            stash_averaged_trajectory_metrics(
-                self.task,
-                env_ids,
-                pe_avg,
-                ttg_avg,
-                mgd_avg,
-                co_avg,
-                ho_avg,
-                lpx_avg,
-                lpy_avg,
-                lpz_avg,
-                lco_avg,
-                lho_avg,
-                overall_success_rate,
-                target_success_rate,
-                time_to_gate,
-            )
-            # Provide averaged metrics to infos['episode_extra_stats'] so learner can push to W&B as a backup
-            populate_episode_extra_stats(self.task)
         except (ValueError, TypeError) as e:
             logger.debug(f"Trajectory metrics computation failed: {e}")
-        # Stash infos to return to the learner before we clear them in reset
         self.task._infos_to_return = dict(self.task.infos)
-        # Finally, reset environments and mark them fresh for next episode
         self.task.reset_idx(reset_envs)
 
     def _process_images_and_finalize(self) -> None:

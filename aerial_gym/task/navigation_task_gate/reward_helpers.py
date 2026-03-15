@@ -84,11 +84,80 @@ class RewardHelpers:
 
         return rewards
 
+    def _compute_fov_visibility(
+        self,
+        robot_position: torch.Tensor,
+        fov_alpha: float,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Compute static camera FOV visibility geometry.
+
+        Returns (visible, horiz_angle, vert_angle, fov_score, x_c, y_c, z_c) tensors.
+        """
+        gtd = self.task.sim_env.global_tensor_dict
+        try:
+            base_y = float(
+                os.environ.get("SF_STATIC_CAMERA_BASE_Y", gtd.get("static_camera/base_y", -3.0))
+            )
+        except (ValueError, TypeError):
+            base_y = -3.0
+        try:
+            base_z_env = os.environ.get("SF_STATIC_CAMERA_BASE_Z", None)
+            if base_z_env is None:
+                base_z_env = gtd.get("static_camera/base_z", 1.5)
+            adaptive_z = isinstance(base_z_env, str) and base_z_env.strip().lower() == "adaptive"
+        except (KeyError, TypeError):
+            adaptive_z = False
+
+        if adaptive_z:
+            gate_center_z = self.task.gate_center_height
+        else:
+            gate_center_z = torch.full((self.task.num_envs,), 1.5, device=self.task.device)
+
+        cam_pos = torch.stack(
+            [
+                torch.zeros(self.task.num_envs, device=self.task.device),
+                torch.full((self.task.num_envs,), base_y, device=self.task.device),
+                gate_center_z,
+            ],
+            dim=1,
+        )
+        target = torch.stack(
+            [
+                torch.zeros(self.task.num_envs, device=self.task.device),
+                torch.zeros(self.task.num_envs, device=self.task.device),
+                gate_center_z,
+            ],
+            dim=1,
+        )
+
+        fwd = target - cam_pos
+        fwd = fwd / (torch.norm(fwd, dim=1, keepdim=True) + 1e-8)
+        up_world = torch.tensor([0.0, 0.0, 1.0], device=self.task.device).view(1, 3).expand_as(fwd)
+        right = torch.cross(fwd, up_world)
+        right = right / (torch.norm(right, dim=1, keepdim=True) + 1e-8)
+        up = torch.cross(right, fwd)
+
+        pw = robot_position - cam_pos
+        x_c = torch.sum(pw * right, dim=1)
+        y_c = torch.sum(pw * up, dim=1)
+        z_c = torch.sum(pw * fwd, dim=1)
+
+        half_fov_rad = (87.0 * 3.141592653589793 / 180.0) * 0.5
+        horiz_angle = torch.atan2(torch.abs(x_c), torch.clamp(z_c, min=1e-6))
+        vert_angle = torch.atan2(torch.abs(y_c), torch.clamp(z_c, min=1e-6))
+        visible = (z_c > 0.1) & (horiz_angle <= half_fov_rad) & (vert_angle <= half_fov_rad)
+
+        h_norm = torch.clamp(horiz_angle / half_fov_rad, 0.0, 1.0)
+        v_norm = torch.clamp(vert_angle / half_fov_rad, 0.0, 1.0)
+        m_norm = torch.maximum(h_norm, v_norm)
+        fov_score = torch.pow(torch.clamp(1.0 - m_norm, min=0.0), fov_alpha)
+
+        return visible, horiz_angle, vert_angle, fov_score, x_c, y_c, z_c
+
     def _apply_static_fov_reward(
         self, rewards: torch.Tensor, robot_position: torch.Tensor
     ) -> torch.Tensor:
         """Apply static camera FOV visibility reward if enabled."""
-        # Static camera FOV visibility reward (depth-based frustum check, shaped)
         try:
             try:
                 fov_mag = float(
@@ -98,7 +167,6 @@ class RewardHelpers:
                 )
             except (ValueError, TypeError):
                 fov_mag = 0.0
-            # If env var SF_ENABLE_STATIC_FOV_REWARD is not explicitly true, force-disable
             try:
                 _env_flag = os.environ.get("SF_ENABLE_STATIC_FOV_REWARD", "").strip().lower()
                 if _env_flag not in ("1", "true", "yes", "y"):
@@ -114,137 +182,72 @@ class RewardHelpers:
             except (ValueError, TypeError):
                 fov_alpha = 2.0
             if fov_mag != 0.0:
-                # Camera base position (x=0, y=base_y, z either adaptive gate center or fixed 1.5)
-                gtd = self.task.sim_env.global_tensor_dict
-                try:
-                    base_y = float(
-                        os.environ.get(
-                            "SF_STATIC_CAMERA_BASE_Y", gtd.get("static_camera/base_y", -3.0)
-                        )
-                    )
-                except (ValueError, TypeError):
-                    base_y = -3.0
-                try:
-                    base_z_env = os.environ.get("SF_STATIC_CAMERA_BASE_Z", None)
-                    if base_z_env is None:
-                        base_z_env = gtd.get("static_camera/base_z", 1.5)
-                    adaptive_z = (
-                        isinstance(base_z_env, str) and base_z_env.strip().lower() == "adaptive"
-                    )
-                except (KeyError, TypeError):
-                    adaptive_z = False
-
-                # Resolve Z per env
-                if adaptive_z:
-                    gate_center_z = self.task.gate_center_height
-                else:
-                    gate_center_z = torch.full((self.task.num_envs,), 1.5, device=self.task.device)
-
-                cam_pos = torch.stack(
-                    [
-                        torch.zeros(self.task.num_envs, device=self.task.device),
-                        torch.full((self.task.num_envs,), base_y, device=self.task.device),
-                        gate_center_z,
-                    ],
-                    dim=1,
+                visible, horiz_angle, vert_angle, fov_score, x_c, y_c, z_c = (
+                    self._compute_fov_visibility(robot_position, fov_alpha)
                 )
-                target = torch.stack(
-                    [
-                        torch.zeros(self.task.num_envs, device=self.task.device),
-                        torch.zeros(self.task.num_envs, device=self.task.device),
-                        gate_center_z,
-                    ],
-                    dim=1,
-                )
-
-                # Camera basis (right, up, forward)
-                fwd = target - cam_pos
-                fwd = fwd / (torch.norm(fwd, dim=1, keepdim=True) + 1e-8)
-                up_world = (
-                    torch.tensor([0.0, 0.0, 1.0], device=self.task.device).view(1, 3).expand_as(fwd)
-                )
-                right = torch.cross(fwd, up_world)
-                right = right / (torch.norm(right, dim=1, keepdim=True) + 1e-8)
-                up = torch.cross(right, fwd)
-
-                # Transform drone position into camera coordinates
-                pw = robot_position - cam_pos
-                x_c = torch.sum(pw * right, dim=1)
-                y_c = torch.sum(pw * up, dim=1)
-                z_c = torch.sum(pw * fwd, dim=1)
-
-                # Visibility checks within symmetric FOV (approx for D455)
-                half_fov_rad = (87.0 * 3.141592653589793 / 180.0) * 0.5
-                horiz_angle = torch.atan2(torch.abs(x_c), torch.clamp(z_c, min=1e-6))
-                vert_angle = torch.atan2(torch.abs(y_c), torch.clamp(z_c, min=1e-6))
-                visible = (z_c > 0.1) & (horiz_angle <= half_fov_rad) & (vert_angle <= half_fov_rad)
-
-                # Graded score inside frustum: m = max(h/hfov, v/vfov); score = (1 - m)^alpha
-                h_norm = torch.clamp(horiz_angle / half_fov_rad, 0.0, 1.0)
-                v_norm = torch.clamp(vert_angle / half_fov_rad, 0.0, 1.0)
-                m_norm = torch.maximum(h_norm, v_norm)
-                fov_score = torch.pow(torch.clamp(1.0 - m_norm, min=0.0), fov_alpha)
                 fov_reward = fov_mag * fov_score
 
-                # Apply only for non-terminated envs and visible
                 add_mask = visible & (~self.task.terminations)
                 if torch.any(add_mask):
                     rewards[add_mask] = rewards[add_mask] + fov_reward[add_mask]
-                    # Track episode totals
                     self.task.episode_static_fov_visibility_reward[add_mask] += fov_reward[add_mask]
 
-                # Periodic debug infos
                 if self.task.num_task_steps % 200 == 0:
-                    frac_visible = float(torch.mean(visible.float()).item())
-                    avg_h = float(torch.mean(horiz_angle).item())
-                    avg_v = float(torch.mean(vert_angle).item())
-                    avg_score = float(torch.mean(fov_score).item())
-                    self.task.infos["static_fov/visible_fraction"] = torch.tensor(
-                        frac_visible, dtype=torch.float32
-                    )
-                    self.task.infos["static_fov/avg_horiz_angle_rad"] = torch.tensor(
-                        avg_h, dtype=torch.float32
-                    )
-                    self.task.infos["static_fov/avg_vert_angle_rad"] = torch.tensor(
-                        avg_v, dtype=torch.float32
-                    )
-                    self.task.infos["static_fov/avg_score"] = torch.tensor(
-                        avg_score, dtype=torch.float32
-                    )
-
-                    # Per-step env0 deep dive
-                    try:
-                        env0 = 0
-                        if visible.shape[0] > env0:
-                            vis0 = bool(visible[env0].item())
-                            hdeg0 = float(horiz_angle[env0].item() * (180.0 / 3.141592653589793))
-                            vdeg0 = float(vert_angle[env0].item() * (180.0 / 3.141592653589793))
-                            xc0 = float(x_c[env0].item())
-                            yc0 = float(y_c[env0].item())
-                            zc0 = float(z_c[env0].item())
-                            score0 = float(fov_score[env0].item())
-                            # Current static camera yaw (if available)
-                            try:
-                                scm = self.task.static_camera_manager
-                                yaw_cur = (
-                                    float(scm.current_camera_angles[env0])
-                                    if (
-                                        scm is not None
-                                        and scm.current_camera_angles
-                                        and len(scm.current_camera_angles) > env0
-                                    )
-                                    else 0.0
-                                )
-                            except (ValueError, TypeError):
-                                yaw_cur = 0.0
-                            logger.warning(
-                                f" 🖼️ env0 FOV: visible={1 if vis0 else 0} h={hdeg0:.1f}° v={vdeg0:.1f}° | score={score0:.3f} | cam_yaw={yaw_cur:.1f}° | x_c={xc0:.2f}, y_c={yc0:.2f}, z_c={zc0:.2f}"
-                            )
-                    except (ValueError, TypeError):
-                        pass
+                    self._log_fov_debug(visible, horiz_angle, vert_angle, fov_score, x_c, y_c, z_c)
         except (ValueError, TypeError):
             pass
         return rewards
+
+    def _log_fov_debug(
+        self,
+        visible: torch.Tensor,
+        horiz_angle: torch.Tensor,
+        vert_angle: torch.Tensor,
+        fov_score: torch.Tensor,
+        x_c: torch.Tensor,
+        y_c: torch.Tensor,
+        z_c: torch.Tensor,
+    ) -> None:
+        """Populate infos with FOV stats and log env0 deep-dive."""
+        frac_visible = float(torch.mean(visible.float()).item())
+        avg_h = float(torch.mean(horiz_angle).item())
+        avg_v = float(torch.mean(vert_angle).item())
+        avg_score = float(torch.mean(fov_score).item())
+        self.task.infos["static_fov/visible_fraction"] = torch.tensor(
+            frac_visible, dtype=torch.float32
+        )
+        self.task.infos["static_fov/avg_horiz_angle_rad"] = torch.tensor(avg_h, dtype=torch.float32)
+        self.task.infos["static_fov/avg_vert_angle_rad"] = torch.tensor(avg_v, dtype=torch.float32)
+        self.task.infos["static_fov/avg_score"] = torch.tensor(avg_score, dtype=torch.float32)
+
+        try:
+            env0 = 0
+            if visible.shape[0] > env0:
+                vis0 = bool(visible[env0].item())
+                hdeg0 = float(horiz_angle[env0].item() * (180.0 / 3.141592653589793))
+                vdeg0 = float(vert_angle[env0].item() * (180.0 / 3.141592653589793))
+                xc0 = float(x_c[env0].item())
+                yc0 = float(y_c[env0].item())
+                zc0 = float(z_c[env0].item())
+                score0 = float(fov_score[env0].item())
+                try:
+                    scm = self.task.static_camera_manager
+                    yaw_cur = (
+                        float(scm.current_camera_angles[env0])
+                        if (
+                            scm is not None
+                            and scm.current_camera_angles
+                            and len(scm.current_camera_angles) > env0
+                        )
+                        else 0.0
+                    )
+                except (ValueError, TypeError):
+                    yaw_cur = 0.0
+                logger.warning(
+                    f" 🖼️ env0 FOV: visible={1 if vis0 else 0} h={hdeg0:.1f}° v={vdeg0:.1f}° | score={score0:.3f} | cam_yaw={yaw_cur:.1f}° | x_c={xc0:.2f}, y_c={yc0:.2f}, z_c={zc0:.2f}"
+                )
+        except (ValueError, TypeError):
+            pass
 
     def post_image_reward_addition(self) -> None:
         """Add image-based rewards from drone camera."""

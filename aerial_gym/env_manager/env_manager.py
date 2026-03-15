@@ -88,8 +88,6 @@ class EnvManager(BaseManager):
 
         self.IGE_env = IsaacGymEnv(env_cfg, sim_cfg, has_IGE_cameras, self.device)
 
-        # define a global dictionary to store the simulation objects and important parameters
-        # that are shared across the environment, asset, and robot managers
         self.global_sim_dict: GlobalSimDict = {}
         self.global_sim_dict["gym"] = self.IGE_env.gym
         self.global_sim_dict["sim"] = self.IGE_env.sim
@@ -298,24 +296,15 @@ class EnvManager(BaseManager):
         self.num_robot_actions = self.global_tensor_dict.num_robot_actions
 
     def reset_idx(self, env_ids: torch.Tensor | None = None) -> None:
-        """
-        This function resets the environment for the given environment indices.
-        """
-        # first reset the Isaac Gym environment since that determines the environment bounds
-        # then reset the asset managet that respositions assets within the environment
-        # then reset the warp environment if it is being used that reads the state tensors from the assets and transforms meshes
-        # finally reset the robot manager that resets the robot state tensors and the sensors
+        """Reset environments for the given indices (IGE, assets, warp, robot)."""
         self.IGE_env.reset_idx(env_ids)
-        # Determine how many assets to keep visible this reset
         obstacle_count = self.global_tensor_dict.num_obstacles_in_env
-        # When obstacle randomization is disabled, first let AssetManager place everything,
-        # then enforce the exact fixed count after gate selection.
+        # When obstacle randomization is disabled, show all assets initially then enforce count.
         try:
             obs_dis = bool(self.global_tensor_dict.get("obstacles_randomization/disabled", False))
         except (KeyError, TypeError):
             obs_dis = False
         if obs_dis:
-            # Show all assets for now so none are hidden prematurely
             try:
                 env_asset_state = self.global_tensor_dict.unfolded_env_asset_state_tensor.view(
                     self.cfg.env.num_envs, -1, 13
@@ -325,9 +314,7 @@ class EnvManager(BaseManager):
                 total_assets = self.asset_manager.env_asset_state_tensor.shape[1]
             obstacle_count = int(total_assets)
         self.asset_manager.reset_idx(env_ids, obstacle_count)
-        # IMPORTANT: After asset manager randomization, activate one gate variant per env
         self.apply_gate_variant_selection(env_ids=env_ids)
-        # Enforce fixed obstacle count after gate selection if obstacle randomization is disabled
         if obs_dis:
             self._enforce_fixed_obstacle_count(env_ids)
         if self.cfg.env.use_warp:
@@ -394,15 +381,10 @@ class EnvManager(BaseManager):
         self.reset_idx(env_ids=torch.arange(self.cfg.env.num_envs))
 
     def pre_physics_step(self, actions: torch.Tensor, env_actions: torch.Tensor | None) -> None:
-        # first let the robot compute the actions
         self.robot_manager.pre_physics_step(actions)
-        # then the asset manager applies the actions here
         self.asset_manager.pre_physics_step(env_actions)
-        # apply actions to obstacle manager
         self.obstacle_manager.pre_physics_step(env_actions)
-        # then the simulator applies them here
         self.IGE_env.pre_physics_step(actions)
-        # If you change the mesh, refit() needs to be called (expensive).
         if self.use_warp:
             self.warp_env.pre_physics_step(actions)
 
@@ -452,18 +434,15 @@ class EnvManager(BaseManager):
             self.render_sensors()
 
     def render_sensors(self) -> None:
-        # render sensors after the physics step
         if self.robot_manager.has_IGE_sensors:
             self.IGE_env.step_graphics()
         self.robot_manager.capture_sensors()
 
     def render_viewer(self) -> None:
-        # render viewer GUI
         self.IGE_env.render_viewer()
 
     def post_reward_calculation_step(self) -> torch.Tensor:
         envs_to_reset = self.reset_terminated_and_truncated_envs()
-        # render is performed after reset to ensure that the sensors are updated from the new robot state.
         self.render(render_components="sensors")
         return envs_to_reset
 
@@ -493,14 +472,10 @@ class EnvManager(BaseManager):
             self.simulate(actions, env_actions)
             self.compute_observations()
         self.sim_steps[:] = self.sim_steps[:] + 1
-        # Expose sim steps to global tensor dict for modules needing a global time base (e.g., static camera yaw sweep)
         self.global_tensor_dict.sim_steps = self.sim_steps
         self.step_counter += 1
         if self.step_counter % self.cfg.env.render_viewer_every_n_steps == 0:
             self.render(render_components="viewer")
 
-    def get_obs(
-        self,
-    ) -> GlobalTensorDict:
-        # Just return the dict of all tensors. Whatever the task needs can be used to compute the rewards.
+    def get_obs(self) -> GlobalTensorDict:
         return self.global_tensor_dict

@@ -105,19 +105,15 @@ def _setenv(key: str, value: bool) -> None:
     os.environ[key] = "true" if value else "false"
 
 
-def _set_env_vars_from_config(cfg: RunConfig) -> None:
-    """Set ALL environment variables matching cfg_env_bridge.py behavior."""
+def _set_camera_env_vars(cfg: RunConfig) -> None:
+    """Set all camera-related environment variables."""
     cam = cfg.camera
-    cur = cfg.curriculum
-    sf = cfg.sample_factory
 
-    # Camera orientation and noise
     _setenv("SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION", cam.disable_static_camera_orientation)
     _setenv("SF_DISABLE_CAMERA_NOISE_RANDOMIZATION", cam.disable_camera_noise)
     _setenv("SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION", cam.disable_frame_dropout)
     _setenv("SF_DISABLE_STATE_NOISE_RANDOMIZATION", cam.disable_state_noise)
 
-    # Per-camera noise/dropout (only set if explicitly configured)
     if cam.disable_drone_camera_noise is not None:
         _setenv("SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION", cam.disable_drone_camera_noise)
     if cam.disable_static_camera_noise is not None:
@@ -127,14 +123,12 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
     if cam.disable_static_camera_frame_dropout is not None:
         _setenv("SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT", cam.disable_static_camera_frame_dropout)
 
-    # Camera modes
     _setenv("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", cam.enable_yaw_sweep)
     _setenv("SF_STATIC_CAMERA_LOCKED_FOLLOW", cam.enable_locked_follow)
     _setenv("SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW", cam.enable_arc_follow)
     os.environ["SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG"] = str(cam.yaw_sweep_speed_deg)
     os.environ["SF_STATIC_CAMERA_ARC_RADIUS_M"] = str(cam.arc_follow_radius_m)
 
-    # Camera position
     os.environ["SF_STATIC_CAMERA_BASE_Y"] = str(cam.static_camera_base_y)
     base_z = cam.static_camera_base_z
     os.environ["SF_STATIC_CAMERA_BASE_Z"] = (
@@ -144,16 +138,18 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
         os.environ["SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y"] = str(cam.dynamic_camera_follow_y_offset_m)
     _setenv("SF_DISABLE_DYNAMIC_FOLLOW_GATE_BLENDING", cam.disable_dynamic_follow_gate_blending)
 
-    # Dynamic camera following
     if cam.enable_dynamic_following is not None:
         _setenv("enable_dynamic_camera_following", cam.enable_dynamic_following)
         _setenv("disable_dynamic_camera_following", not cam.enable_dynamic_following)
 
-    # Spawn randomization
+
+def _set_curriculum_env_vars(cfg: RunConfig) -> None:
+    """Set curriculum, spawn, gate, and obstacle environment variables."""
+    cur = cfg.curriculum
+
     _setenv("SF_DISABLE_SPAWN_POSITION_RANDOMIZATION", cur.disable_spawn_position)
     _setenv("SF_DISABLE_SPAWN_ORIENTATION_RANDOMIZATION", cur.disable_spawn_orientation)
 
-    # Curriculum
     _setenv("SF_DISABLE_CURRICULUM_MULTIPLIER", cur.disable_curriculum_multiplier)
     if cur.force_level is not None:
         os.environ["SF_FORCE_CURRICULUM_LEVEL"] = str(cur.force_level)
@@ -162,7 +158,6 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
     if cur.max_level is not None:
         os.environ["SF_MAX_CURRICULUM_LEVEL"] = str(cur.max_level)
 
-    # Gate/obstacle randomization
     _setenv("SF_DISABLE_GATE_SIZE_RANDOMIZATION", cur.disable_gate_size_randomization)
     if cur.fixed_gate_scale_percent is not None:
         os.environ["SF_FIXED_GATE_SCALE_PERCENT"] = str(cur.fixed_gate_scale_percent)
@@ -170,37 +165,32 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
     if cur.fixed_obstacles_behind_gate is not None:
         os.environ["SF_FIXED_OBSTACLES_BEHIND_GATE"] = str(cur.fixed_obstacles_behind_gate)
 
-    # Ablation
     if cfg.ablation.obs_ranges:
         os.environ["ABLATE_OBS_RANGES"] = cfg.ablation.obs_ranges
     _setenv("ABLATE_ZERO_RNN", cfg.ablation.zero_rnn)
 
-    # Gradient monitoring
+
+def _set_training_env_vars(cfg: RunConfig) -> None:
+    """Set fusion, gradient monitoring, eval stretch, and agent environment variables."""
+    sf = cfg.sample_factory
+
     _setenv("SF_ENABLE_INFLUENCE_TRACKER", cfg.gradient_monitoring.enable_influence_tracker)
     _setenv("SF_ENABLE_GRAD_ATTR", cfg.gradient_monitoring.enable_grad_attribution)
 
-    # Fusion
     os.environ["SF_FUSION_MODE"] = sf.fusion.value
     os.environ["SF_GATE_PER_FEATURE"] = "1" if sf.gate_per_feature else "0"
 
-    # Eval stretch
     if cfg.eval is not None and cfg.eval.eval_stretch_enabled:
         os.environ["EVAL_STRETCH_ENABLED"] = "1"
         os.environ["EVAL_STRETCH_END_LEVEL"] = str(cfg.eval.eval_stretch_end_level)
 
-    # Deterministic CUDA
-    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
-
-    # Agent count, headless, and experiment identity
     os.environ["SF_ENV_AGENTS"] = str(cfg.common.num_envs)
     _setenv("SF_HEADLESS", cfg.common.headless)
     os.environ["SF_TRAIN_DIR"] = sf.train_dir
     os.environ["SF_EXPERIMENT_NAME"] = sf.experiment_name
 
-    # Log level propagation (read by CustomLogger.__init__)
     os.environ["SF_LOG_LEVEL"] = cfg.logging.log_level.value
 
-    # Wandb co-location: artifacts go inside experiment dir
     if cfg.logging.wandb_dir_override is not None:
         wandb_dir = cfg.logging.wandb_dir_override
     else:
@@ -209,6 +199,14 @@ def _set_env_vars_from_config(cfg: RunConfig) -> None:
             experiment_dir = experiment_dir / sf.experiment_name
         wandb_dir = str(experiment_dir)
     os.environ["WANDB_DIR"] = wandb_dir
+
+
+def _set_env_vars_from_config(cfg: RunConfig) -> None:
+    """Set ALL environment variables matching cfg_env_bridge.py behavior."""
+    _set_camera_env_vars(cfg)
+    _set_curriculum_env_vars(cfg)
+    _set_training_env_vars(cfg)
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
 
 
 def _get_sf_train_script(cfg: RunConfig) -> str:
@@ -385,7 +383,7 @@ def _make_log_path(log_dir: str, cfg: RunConfig) -> Path:
     log_path = base_dir / "logs"
     log_path.mkdir(parents=True, exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    task = cfg.common.task.value if hasattr(cfg.common.task, "value") else str(cfg.common.task)
+    task = cfg.common.task.value
     mode = cfg.mode.value
     return log_path / f"{mode}_{task}_{ts}.log"
 
@@ -450,7 +448,7 @@ def main() -> int:
     # Auto-generate experiment name if empty
     if not cfg.sample_factory.experiment_name:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        task = cfg.common.task.value if hasattr(cfg.common.task, "value") else str(cfg.common.task)
+        task = cfg.common.task.value
         mode = cfg.mode.value
         auto_name = f"{task}_{mode}_{ts}"
         cfg = cfg.model_copy(
