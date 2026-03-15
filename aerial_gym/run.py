@@ -13,6 +13,7 @@ import argparse
 import os
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
 
@@ -41,6 +42,17 @@ def _parse_cli_args() -> argparse.Namespace:
     )
     parser.add_argument("--dry-run", action="store_true", help="Print command without executing.")
     parser.add_argument("--validate-only", action="store_true", help="Validate config and exit.")
+    parser.add_argument(
+        "--log",
+        action="store_true",
+        help="Save all output (stdout+stderr) to a timestamped log file.",
+    )
+    parser.add_argument(
+        "--log-dir",
+        type=str,
+        default="./logs",
+        help="Directory for log files (default: ./logs).",
+    )
     return parser.parse_args()
 
 
@@ -349,6 +361,51 @@ def _build_command(cfg: RunConfig) -> List[str]:
     return _build_eval_args(cfg)
 
 
+def _make_log_path(log_dir: str, cfg: RunConfig) -> Path:
+    """Generate a timestamped log file path inside the training directory."""
+    # Use train_dir from config so logs, checkpoints, and wandb are co-located
+    base_dir = Path(cfg.sample_factory.train_dir)
+    if cfg.sample_factory.experiment_name:
+        base_dir = base_dir / cfg.sample_factory.experiment_name
+    log_path = base_dir / "logs"
+    log_path.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    task = cfg.common.task.value if hasattr(cfg.common.task, "value") else str(cfg.common.task)
+    mode = cfg.mode.value
+    return log_path / f"{mode}_{task}_{ts}.log"
+
+
+def _run_with_logging(cmd: List[str], log_file: Path | None, config_yaml: str = "") -> int:
+    """Run a subprocess, tee-ing stdout+stderr to a log file if provided."""
+    if log_file is None:
+        result = subprocess.run(cmd)
+        return result.returncode
+
+    print(f"Logging to: {log_file}\n")
+    with open(log_file, "w") as fh:
+        fh.write(f"Command: {' '.join(cmd)}\n")
+        fh.write(f"Started: {datetime.now().isoformat()}\n")
+        if config_yaml:
+            fh.write(f"\n--- Config ---\n{config_yaml}--- End Config ---\n")
+        fh.write("=" * 80 + "\n\n")
+        fh.flush()
+
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
+        for line in iter(proc.stdout.readline, b""):
+            decoded = line.decode("utf-8", errors="replace")
+            sys.stdout.write(decoded)
+            sys.stdout.flush()
+            fh.write(decoded)
+            fh.flush()
+        proc.wait()
+
+        fh.write(f"\n{'=' * 80}\n")
+        fh.write(f"Finished: {datetime.now().isoformat()}\n")
+        fh.write(f"Exit code: {proc.returncode}\n")
+
+    return proc.returncode
+
+
 def main() -> int:
     cli_args = _parse_cli_args()
 
@@ -366,6 +423,8 @@ def main() -> int:
     _print_config_summary(cfg)
     _set_env_vars_from_config(cfg)
 
+    log_file = _make_log_path(cli_args.log_dir, cfg) if cli_args.log else None
+
     if cfg.mode == Mode.inference_suite:
         return _run_inference_suite(cfg, cli_args.dry_run)
 
@@ -377,8 +436,13 @@ def main() -> int:
         return 0
 
     print(f"\nExecuting: {' '.join(cmd)}\n")
-    result = subprocess.run(cmd)
-    return result.returncode
+    # Embed the config YAML in the log for reproducibility
+    config_yaml = ""
+    if log_file is not None:
+        config_path = Path(cli_args.config)
+        if config_path.exists():
+            config_yaml = config_path.read_text()
+    return _run_with_logging(cmd, log_file, config_yaml)
 
 
 if __name__ == "__main__":

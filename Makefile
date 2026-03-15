@@ -9,7 +9,7 @@ PYTHON ?= LD_LIBRARY_PATH=$(CONDA_PREFIX)/lib $(CONDA_PREFIX)/bin/python
 .PHONY: train eval play validate-config dry-run
 
 train:
-	$(PYTHON) -m aerial_gym.run --config $(CONFIG) --set mode=train
+	$(PYTHON) -m aerial_gym.run --config $(CONFIG) --set mode=train --log
 
 eval:
 	$(PYTHON) -m aerial_gym.run --config $(CONFIG) --set mode=eval
