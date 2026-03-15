@@ -24,6 +24,7 @@ from aerial_gym.utils.math import torch_rand_float_tensor
 
 if TYPE_CHECKING:
     from aerial_gym.env_manager.env_manager import EnvManager
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 
 logger = CustomLogger("IsaacGymEnvManager")
 
@@ -275,7 +276,7 @@ class IsaacGymEnv(BaseManager):
     def prepare_for_simulation(
         self,
         env_manager: EnvManager,
-        global_tensor_dict: dict[str, torch.Tensor | int | float | bool],
+        global_tensor_dict: GlobalTensorDict,
     ) -> bool:
         if not self.gym.prepare_sim(self.sim):
             raise RuntimeError("Failed to prepare Isaac Gym Environment")
@@ -321,7 +322,7 @@ class IsaacGymEnv(BaseManager):
             self.num_envs, self.num_assets_per_env, -1
         )
 
-        self.global_tensor_dict = global_tensor_dict
+        self.global_tensor_dict: GlobalTensorDict = global_tensor_dict
 
         self._populate_root_state_tensors()
         populate_force_tensors(

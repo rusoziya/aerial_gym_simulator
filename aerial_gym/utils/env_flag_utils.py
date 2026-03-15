@@ -11,9 +11,13 @@ These helpers collapse that try-except boilerplate into single-line calls.
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
 
 from aerial_gym.task.task_config_protocol import TaskConfig
 from aerial_gym.utils.logging import CustomLogger
+
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 
 
 def read_env_bool(
@@ -164,7 +168,7 @@ def parse_ablation_flags(task_config: TaskConfig) -> dict[str, bool | int | floa
 
 
 def apply_ablation_flags_to_tensor_dict(
-    gtd: dict[str, object],
+    gtd: GlobalTensorDict,
     flags: dict[str, bool | int | float | str | None],
     task_config: TaskConfig | None = None,
     logger: CustomLogger | None = None,

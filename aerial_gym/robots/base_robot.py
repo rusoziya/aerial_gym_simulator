@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from aerial_gym.registry.controller_registry import controller_registry
 from aerial_gym.utils.logging import CustomLogger
+
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 
 logger = CustomLogger("BaseRobot")
 
@@ -20,7 +24,7 @@ class BaseRobot(ABC):
         self.cfg = robot_config
         self.num_envs: int = env_config.env.num_envs
         self.device: str = device
-        self._global_tensor_dict: dict[str, object] = {}
+        self._global_tensor_dict: GlobalTensorDict = {}
 
         self.controller, self.controller_config = controller_registry.make_controller(
             controller_name,
@@ -38,7 +42,7 @@ class BaseRobot(ABC):
         self.num_actions = self.controller_config.num_actions
 
     @abstractmethod
-    def init_tensors(self, global_tensor_dict) -> None:
+    def init_tensors(self, global_tensor_dict: GlobalTensorDict) -> None:
         self.dt = global_tensor_dict["dt"]
         self.gravity = global_tensor_dict["gravity"]
         self.robot_state = global_tensor_dict["robot_state_tensor"]

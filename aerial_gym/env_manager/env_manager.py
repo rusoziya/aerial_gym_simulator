@@ -10,6 +10,8 @@ import torch
 if TYPE_CHECKING:
     from isaacgym import gymapi
 
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalSimDict, GlobalTensorDict
+
 from aerial_gym.env_manager.asset_loader import AssetLoader
 from aerial_gym.env_manager.asset_manager import AssetManager
 from aerial_gym.env_manager.base_env_manager import BaseManager
@@ -63,7 +65,7 @@ class EnvManager(BaseManager):
 
         self.keep_in_env = None
 
-        self.global_tensor_dict = {}
+        self.global_tensor_dict: GlobalTensorDict = {}
 
         logger.info("Populating environments.")
         self.populate_env(env_cfg=self.cfg, sim_cfg=self.sim_config)
@@ -87,7 +89,7 @@ class EnvManager(BaseManager):
 
         # define a global dictionary to store the simulation objects and important parameters
         # that are shared across the environment, asset, and robot managers
-        self.global_sim_dict = {}
+        self.global_sim_dict: GlobalSimDict = {}
         self.global_sim_dict["gym"] = self.IGE_env.gym
         self.global_sim_dict["sim"] = self.IGE_env.sim
         self.global_sim_dict["env_cfg"] = self.cfg
@@ -500,6 +502,6 @@ class EnvManager(BaseManager):
 
     def get_obs(
         self,
-    ) -> dict[str, torch.Tensor | int | float | bool | list[list[int]] | list[list[str]]]:
+    ) -> GlobalTensorDict:
         # Just return the dict of all tensors. Whatever the task needs can be used to compute the rewards.
         return self.global_tensor_dict

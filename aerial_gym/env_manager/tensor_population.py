@@ -1,15 +1,20 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from isaacgym import gymtorch
 
 from aerial_gym.utils.logging import CustomLogger
 
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
+
 logger = CustomLogger("tensor_population")
 
 
 def populate_robot_tensors(
-    global_tensor_dict: dict[str, object],
+    global_tensor_dict: GlobalTensorDict,
 ) -> None:
     """Populate robot-specific tensor slices from the root state tensor."""
     global_tensor_dict["robot_position"] = global_tensor_dict["robot_state_tensor"][:, :3]
@@ -28,7 +33,7 @@ def populate_robot_tensors(
 
 
 def populate_obstacle_tensors(
-    global_tensor_dict: dict[str, object],
+    global_tensor_dict: GlobalTensorDict,
     num_envs: int,
     num_rigid_bodies_per_env: int,
     num_rigid_bodies_robot: int,
@@ -63,7 +68,7 @@ def populate_obstacle_tensors(
 
 
 def populate_force_tensors(
-    global_tensor_dict: dict[str, object],
+    global_tensor_dict: GlobalTensorDict,
     gym: object,
     sim: object,
     num_envs: int,

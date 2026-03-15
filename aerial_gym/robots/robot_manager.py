@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from isaacgym import gymapi, gymtorch
 
 from aerial_gym.env_manager.base_env_manager import BaseManager
+
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 from aerial_gym.registry.robot_registry import robot_registry
 from aerial_gym.robots.inertia_computation import compute_composite_inertia, compute_robot_com
 from aerial_gym.sensors.imu_sensor import IMUSensor
@@ -256,8 +261,8 @@ class RobotManagerIGE(BaseManager):
             self.has_IGE_sensors = True
         return
 
-    def prepare_for_sim(self, global_tensor_dict: dict[str, object]) -> None:
-        self.global_tensor_dict = global_tensor_dict
+    def prepare_for_sim(self, global_tensor_dict: GlobalTensorDict) -> None:
+        self.global_tensor_dict: GlobalTensorDict = global_tensor_dict
 
         self.global_tensor_dict["robot_mass"] = self.robot_masses
         self.global_tensor_dict["robot_inertia"] = self.robot_inertias

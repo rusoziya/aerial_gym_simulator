@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC
+from typing import TYPE_CHECKING
 
 import torch
+
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 
 
 class BaseManager(ABC):
@@ -27,6 +31,6 @@ class BaseManager(ABC):
 
     def init_tensors(
         self,
-        global_tensor_dict: dict[str, torch.Tensor | int | float | bool],
+        global_tensor_dict: GlobalTensorDict,
     ) -> None:
         pass

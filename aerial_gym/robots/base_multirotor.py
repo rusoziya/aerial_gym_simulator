@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 
 from aerial_gym.control.control_allocation import ControlAllocator
 from aerial_gym.robots.base_robot import BaseRobot
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import *
+
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 
 logger = CustomLogger("base_multirotor")
 
@@ -56,7 +61,7 @@ class BaseMultirotor(BaseRobot):
 
         logger.debug("[DONE] Initializing BaseQuadrotor")
 
-    def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
+    def init_tensors(self, global_tensor_dict: GlobalTensorDict) -> None:
         """Initialize tensors for robot state, force, torque, and action."""
         super().init_tensors(global_tensor_dict)
         self._init_body_frame_tensors(global_tensor_dict)
@@ -64,7 +69,7 @@ class BaseMultirotor(BaseRobot):
         self._init_controller_and_damping(global_tensor_dict)
         self._init_motor_and_force_tensors(global_tensor_dict)
 
-    def _init_body_frame_tensors(self, global_tensor_dict: dict[str, object]) -> None:
+    def _init_body_frame_tensors(self, global_tensor_dict: GlobalTensorDict) -> None:
         """Allocate body-frame velocity/orientation tensors and register them."""
         self.robot_vehicle_orientation = torch.zeros_like(
             self.robot_orientation, requires_grad=False, device=self.device
@@ -102,7 +107,7 @@ class BaseMultirotor(BaseRobot):
             requires_grad=False,
         ).expand(self.num_envs, -1)
 
-    def _init_controller_and_damping(self, global_tensor_dict: dict[str, object]) -> None:
+    def _init_controller_and_damping(self, global_tensor_dict: GlobalTensorDict) -> None:
         """Initialize controller, action tensor, control allocator, and damping coefficients."""
         self.controller.init_tensors(global_tensor_dict)
         self.action_tensor = torch.zeros(
@@ -140,7 +145,7 @@ class BaseMultirotor(BaseRobot):
             requires_grad=False,
         )
 
-    def _init_motor_and_force_tensors(self, global_tensor_dict: dict[str, object]) -> None:
+    def _init_motor_and_force_tensors(self, global_tensor_dict: GlobalTensorDict) -> None:
         """Initialize motor direction, application mask, and output force/torque tensors."""
         if self.force_application_level == "motor_link":
             self.application_mask = torch.tensor(
