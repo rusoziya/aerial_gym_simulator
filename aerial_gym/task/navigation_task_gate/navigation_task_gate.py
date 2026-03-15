@@ -252,6 +252,9 @@ class NavigationTaskGate(BaseTask):
     def process_static_camera_observation(self):
         self._camera.process_static_camera_observation()
 
+    def post_image_reward_addition(self):
+        self._rewards.post_image_reward_addition()
+
     def close(self) -> None:
         self.sim_env.delete_env()
 
