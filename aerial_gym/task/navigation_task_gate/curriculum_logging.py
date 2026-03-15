@@ -1,141 +1,31 @@
 from __future__ import annotations
 
-import os
-
-import torch
-
+from aerial_gym.task.navigation_task_gate.curriculum_data import (
+    RAD_TO_DEG,
+    collect_unlocked_scales,
+    compute_min_gate_scale,
+    get_camera_noise_effective,
+    get_current_camera_angle,
+    get_fixed_assets_visible,
+    get_frame_dropout_effective,
+    get_global_tensor_dict,
+    get_obs_disabled,
+    get_spawn_ranges,
+    get_yaw_sweep_state,
+    is_dynamic_effective,
+    to_tensor_scalar,
+)
 from aerial_gym.task.navigation_task_gate.curriculum_infos import CurriculumInfos
 from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("navigation_task_gate_curriculum_logging")
 
-RAD_TO_DEG: float = 57.2958
-
 
 class CurriculumLogging:
     def __init__(self, task: object) -> None:
         self.task = task
         self._infos = CurriculumInfos(self)
-
-    def _get_gtd(self) -> dict[str, object]:
-        return self.task.sim_env.global_tensor_dict
-
-    def _get_obs_disabled(self) -> bool:
-        return bool(self._get_gtd().get("obstacles_randomization/disabled", False))
-
-    def _get_fixed_assets_visible(self) -> int:
-        visible_gates = 1
-        walls = 6
-        robot = 1
-        return visible_gates + walls + robot
-
-    def _get_yaw_sweep_state(self) -> tuple[bool, float]:
-        try:
-            enabled = (
-                str(os.environ.get("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", "false")).lower() == "true"
-            )
-            speed = float(os.environ.get("SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG", "10.0"))
-        except (ValueError, TypeError):
-            enabled = False
-            speed = 10.0
-        return enabled, speed
-
-    def _is_dynamic_effective(self) -> bool:
-        dyn_cfg = self.task.task_config.curriculum.enable_dynamic_camera_following
-        dyn_dis = bool(self._get_gtd().get("dynamic_camera_following/disabled", False))
-        return bool(dyn_cfg and not dyn_dis)
-
-    def _get_current_camera_angle(self) -> float:
-        scm = self.task.static_camera_manager
-        if scm.current_camera_angles:
-            return scm.current_camera_angles[0]
-        return 0.0
-
-    def _get_spawn_ranges(self) -> dict[str, float] | None:
-        """Compute effective spawn ranges respecting ablation flags. Returns None on error."""
-        try:
-            baseline_level = int(self.task.task_config.curriculum.min_level)
-            gtd = self._get_gtd()
-            pos_dis = bool(gtd.get("spawn_randomization/position_disabled", False))
-            yaw_dis = bool(gtd.get("spawn_randomization/orientation_disabled", False))
-            sr_active = self.task.task_config.curriculum.get_spawn_ranges(
-                self.task.curriculum_level
-            )
-            sr_base = self.task.task_config.curriculum.get_spawn_ranges(baseline_level)
-            return {
-                "x_half_span_m": (
-                    sr_base["x_half_span_m"] if pos_dis else sr_active["x_half_span_m"]
-                ),
-                "y_center_m": sr_base["y_center_m"] if pos_dis else sr_active["y_center_m"],
-                "y_half_span_m": (
-                    sr_base["y_half_span_m"] if pos_dis else sr_active["y_half_span_m"]
-                ),
-                "z_center_m": sr_base["z_center_m"] if pos_dis else sr_active["z_center_m"],
-                "z_half_span_m": (
-                    sr_base["z_half_span_m"] if pos_dis else sr_active["z_half_span_m"]
-                ),
-                "yaw_abs_rad": sr_base["yaw_abs_rad"] if yaw_dis else sr_active["yaw_abs_rad"],
-                "pos_disabled": pos_dis,
-                "yaw_disabled": yaw_dis,
-            }
-        except (ValueError, TypeError):
-            return None
-
-    def _get_camera_noise_effective(
-        self,
-    ) -> tuple[float, float, float, float, float, float]:
-        """Return (gaussian_std, dropout_rate, eff_drone_std, eff_static_std, eff_drone_drop, eff_static_drop)."""
-        gaussian_std, dropout_rate = self.task.task_config.curriculum.get_camera_noise(
-            self.task.curriculum_level
-        )
-        gtd = self._get_gtd()
-        cam_noise_disabled = bool(gtd.get("camera_randomization/noise_disabled", False))
-        drone_noise_flag = bool(
-            gtd.get("camera_randomization/drone_noise_disabled", cam_noise_disabled)
-        )
-        static_noise_flag = bool(
-            gtd.get("camera_randomization/static_noise_disabled", cam_noise_disabled)
-        )
-        d_std_min, d_drop_min = self.task.task_config.curriculum.get_camera_noise(3)
-        return (
-            gaussian_std,
-            dropout_rate,
-            gaussian_std if not drone_noise_flag else d_std_min,
-            gaussian_std if not static_noise_flag else d_std_min,
-            dropout_rate if not drone_noise_flag else d_drop_min,
-            dropout_rate if not static_noise_flag else d_drop_min,
-        )
-
-    def _get_frame_dropout_effective(
-        self,
-    ) -> tuple[dict[str, float], dict[str, float]]:
-        """Return (effective_fd, scheduled_fd) dicts with per-camera frame dropout rates."""
-        fd = self.task.task_config.curriculum.get_camera_frame_dropout(self.task.curriculum_level)
-        gtd = self._get_gtd()
-        global_fd_dis = bool(gtd.get("camera_randomization/frame_dropout_disabled", False))
-        drone_fd_flag = bool(
-            gtd.get("camera_randomization/drone_frame_dropout_disabled", global_fd_dis)
-        )
-        static_fd_flag = bool(
-            gtd.get("camera_randomization/static_frame_dropout_disabled", global_fd_dis)
-        )
-        fd_min = self.task.task_config.curriculum.get_camera_frame_dropout(3)
-        eff = {
-            "drone_total": fd["drone_total"] if not drone_fd_flag else fd_min["drone_total"],
-            "static_total": fd["static_total"] if not static_fd_flag else fd_min["static_total"],
-            "drone_freeze": fd["drone_freeze"] if not drone_fd_flag else fd_min["drone_freeze"],
-            "drone_blank": fd["drone_blank"] if not drone_fd_flag else fd_min["drone_blank"],
-            "static_freeze": fd["static_freeze"] if not static_fd_flag else fd_min["static_freeze"],
-            "static_blank": fd["static_blank"] if not static_fd_flag else fd_min["static_blank"],
-        }
-        return eff, fd
-
-    def _to_tensor_scalar(self, val: object) -> bool:
-        """Safely convert a value (possibly a tensor) to bool."""
-        if isinstance(val, torch.Tensor):
-            return bool(val.item())
-        return bool(val)
 
     def _log_curriculum_details(
         self,
@@ -170,8 +60,8 @@ class CurriculumLogging:
         self._log_final_state(obstacles_behind_gate, total_obstacles_in_env)
 
     def _log_yaw_sweep_status(self) -> None:
-        yaw_enabled, yaw_speed = self._get_yaw_sweep_state()
-        dynamic_effective = self._is_dynamic_effective()
+        yaw_enabled, yaw_speed = get_yaw_sweep_state()
+        dynamic_effective = is_dynamic_effective(self.task)
         log = self.task.log_curriculum_update
         if yaw_enabled and not dynamic_effective:
             log(f"   3. STATIC CAMERA YAW SWEEP: ENABLED (speed={yaw_speed:.1f} deg/s)")
@@ -181,7 +71,7 @@ class CurriculumLogging:
             log("   3. STATIC CAMERA YAW SWEEP: DISABLED")
 
     def _log_arc_follow_status(self) -> None:
-        gtd = self._get_gtd()
+        gtd = get_global_tensor_dict(self.task)
         arc_follow_enabled = bool(gtd.get("static_camera/arc_follow_enabled", False))
         if arc_follow_enabled:
             arc_radius = float(gtd.get("static_camera/arc_follow_radius_m", 2.0))
@@ -190,8 +80,8 @@ class CurriculumLogging:
             )
 
     def _log_obstacle_status(self, obstacles_behind_gate: int, total_obstacles_in_env: int) -> None:
-        obs_dis = self._get_obs_disabled()
-        fixed_assets_visible = self._get_fixed_assets_visible()
+        obs_dis = get_obs_disabled(self.task)
+        fixed_assets_visible = get_fixed_assets_visible()
         log = self.task.log_curriculum_update
         if obs_dis:
             log(
@@ -206,7 +96,7 @@ class CurriculumLogging:
 
     def _log_spawn_ranges(self) -> None:
         log = self.task.log_curriculum_update
-        sr = self._get_spawn_ranges()
+        sr = get_spawn_ranges(self.task)
         if sr is None:
             log("   2. SPAWN: (fallback) Using fixed LMF2 config")
             return
@@ -223,11 +113,13 @@ class CurriculumLogging:
 
     def _log_camera_angle_status(self) -> None:
         log = self.task.log_curriculum_update
-        yaw_enabled, _ = self._get_yaw_sweep_state()
-        dynamic_effective = self._is_dynamic_effective()
-        current_angle = self._get_current_camera_angle()
+        yaw_enabled, _ = get_yaw_sweep_state()
+        dynamic_effective = is_dynamic_effective(self.task)
+        current_angle = get_current_camera_angle(self.task)
         cam_orient_disabled = bool(
-            self._get_gtd().get("static_camera_randomization/orientation_disabled", False)
+            get_global_tensor_dict(self.task).get(
+                "static_camera_randomization/orientation_disabled", False
+            )
         )
         if yaw_enabled and not dynamic_effective:
             log(f"   4. CAMERA ANGLE: overridden by yaw sweep (env0 current: {current_angle:.1f}°)")
@@ -245,71 +137,27 @@ class CurriculumLogging:
 
     def _log_gate_size_unlocks(self) -> None:
         log = self.task.log_curriculum_update
-        gtd = self._get_gtd()
+        gtd = get_global_tensor_dict(self.task)
         gate_names: list[str] = []
         names_per_env = gtd.get("gate_variant_names_per_env", [])
         if len(names_per_env) > 0:
             gate_names = names_per_env[0]
 
-        disable_flag = self._to_tensor_scalar(gtd.get("gate_randomization/disabled", False))
+        disable_flag = to_tensor_scalar(gtd.get("gate_randomization/disabled", False))
         if disable_flag:
-            fixed_scale = self._to_tensor_scalar(
-                gtd.get("gate_randomization/fixed_scale_percent", 100)
-            )
+            fixed_scale = to_tensor_scalar(gtd.get("gate_randomization/fixed_scale_percent", 100))
             log(f"   4. GATE SIZE: randomization disabled, fixed scale = {int(fixed_scale)}%")
         else:
-            min_scale = self._compute_min_gate_scale()
-            scales = self._collect_unlocked_scales(gate_names, min_scale)
+            min_scale = compute_min_gate_scale(self.task)
+            scales = collect_unlocked_scales(gate_names, min_scale)
             log(
                 f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> "
                 f"{scales if scales else [100]} (uniform across unique scales)"
             )
 
-    def _compute_min_gate_scale(self) -> int:
-        stretch_enabled = os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in (
-            "1",
-            "true",
-            "True",
-        )
-        eval_end = int(
-            os.environ.get(
-                "EVAL_STRETCH_END_LEVEL",
-                str(self.task.task_config.curriculum.eval_stretch_end_level),
-            )
-        )
-        level = int(self.task.curriculum_level)
-        if level <= 3:
-            min_scale = 80
-        elif level <= 23:
-            frac = (level - 3) / (23 - 3)
-            raw = 80 - frac * (80 - 60)
-            min_scale = int((int(raw) // 2) * 2)
-        elif stretch_enabled:
-            if level >= eval_end:
-                min_scale = 50
-            else:
-                extra_frac = (level - 23) / max(1, (eval_end - 23))
-                raw = 60 - extra_frac * (60 - 50)
-                min_scale = int((int(raw) // 2) * 2)
-        else:
-            min_scale = 60
-        return max(50, min(100, min_scale))
-
-    def _collect_unlocked_scales(self, gate_names: list[str], min_scale: int) -> list[int]:
-        scales: list[int] = []
-        for n in gate_names:
-            if isinstance(n, str) and "gate_scale_" in n:
-                try:
-                    s = int(n.replace("gate_scale_", ""))
-                    if s >= min_scale:
-                        scales.append(s)
-                except (ValueError, TypeError):
-                    pass
-        return sorted(set(scales), reverse=True)
-
     def _log_camera_noise_status(self) -> None:
         _, _, eff_drone_std, eff_static_std, eff_drone_drop, eff_static_drop = (
-            self._get_camera_noise_effective()
+            get_camera_noise_effective(self.task)
         )
         self.task.log_curriculum_update(
             f"   5. CAMERA NOISE: drone(std={eff_drone_std:.4f}, pixel_drop={eff_drone_drop * 100:.1f}%), "
@@ -317,7 +165,7 @@ class CurriculumLogging:
         )
 
     def _log_frame_dropout_status(self) -> None:
-        eff, _ = self._get_frame_dropout_effective()
+        eff, _ = get_frame_dropout_effective(self.task)
         self.task.log_curriculum_update(
             f"   6. CAMERA FRAME DROPOUT: drone_total={eff['drone_total'] * 100:.1f}% "
             f"(freeze {eff['drone_freeze'] * 100:.1f}%, blank {eff['drone_blank'] * 100:.1f}%), "
@@ -331,7 +179,7 @@ class CurriculumLogging:
             log("   7. STATE NOISE: disabled")
             return
         state_noise_disabled = bool(
-            self._get_gtd().get("state_randomization/noise_disabled", False)
+            get_global_tensor_dict(self.task).get("state_randomization/noise_disabled", False)
         )
         if state_noise_disabled:
             log("   7. STATE NOISE: DISABLED (all std=0)")
@@ -346,7 +194,7 @@ class CurriculumLogging:
 
     def _log_dynamic_camera_status(self) -> None:
         log = self.task.log_curriculum_update
-        gtd = self._get_gtd()
+        gtd = get_global_tensor_dict(self.task)
         dynamic_enabled = self.task.task_config.curriculum.enable_dynamic_camera_following
         dynamic_disabled = bool(gtd.get("dynamic_camera_following/disabled", False))
         config_overridden = bool(gtd.get("dynamic_camera_following/config_overridden", False))
@@ -381,7 +229,7 @@ class CurriculumLogging:
 
     def _log_final_state(self, obstacles_behind_gate: int, total_obstacles_in_env: int) -> None:
         log = self.task.log_curriculum_update
-        fixed_assets_visible = self._get_fixed_assets_visible()
+        fixed_assets_visible = get_fixed_assets_visible()
         log("[CURRICULUM UPDATE] FINAL STATE:")
         log(
             f"[CURRICULUM UPDATE]   Level: {self.task.curriculum_level} "
@@ -404,7 +252,7 @@ class CurriculumLogging:
 
     def _log_final_spawn_status(self) -> None:
         log = self.task.log_curriculum_update
-        sr = self._get_spawn_ranges()
+        sr = get_spawn_ranges(self.task)
         if sr is None:
             log("[CURRICULUM UPDATE]   Spawn difficulty: LMF2 config (fallback)")
             return
@@ -421,8 +269,8 @@ class CurriculumLogging:
         )
 
     def _log_final_camera_angle_status(self) -> None:
-        yaw_enabled, _ = self._get_yaw_sweep_state()
-        dynamic_effective = self._is_dynamic_effective()
+        yaw_enabled, _ = get_yaw_sweep_state()
+        dynamic_effective = is_dynamic_effective(self.task)
         if not (yaw_enabled and not dynamic_effective):
             self.task.log_curriculum_update(
                 f"[CURRICULUM UPDATE]   Camera angle: ±{self.task.max_camera_angle:.1f}deg max range "

@@ -4,16 +4,22 @@ from typing import TYPE_CHECKING
 
 import torch
 
+from aerial_gym.task.navigation_task_gate.curriculum_data import (
+    RAD_TO_DEG,
+    get_camera_noise_effective,
+    get_current_camera_angle,
+    get_frame_dropout_effective,
+    get_global_tensor_dict,
+)
+
 if TYPE_CHECKING:
     from aerial_gym.task.navigation_task_gate.curriculum_logging import CurriculumLogging
-
-RAD_TO_DEG: float = 57.2958
 
 
 class CurriculumInfos:
     """Populates task.infos with curriculum metrics for wandb logging.
 
-    Delegates to CurriculumLogging for shared accessor helpers.
+    Delegates to curriculum_data functions for shared accessor helpers.
     """
 
     def __init__(self, curriculum_logging: CurriculumLogging) -> None:
@@ -75,7 +81,7 @@ class CurriculumInfos:
             eff_static_std,
             eff_drone_drop,
             eff_static_drop,
-        ) = self.cl._get_camera_noise_effective()
+        ) = get_camera_noise_effective(self.task)
         infos["curriculum/camera_gaussian_std"] = torch.as_tensor(gaussian_std, dtype=torch.float32)
         infos["curriculum/camera_dropout_rate"] = torch.as_tensor(dropout_rate, dtype=torch.float32)
         infos["curriculum/camera_noise_drone_gaussian_std"] = torch.tensor(
@@ -93,7 +99,7 @@ class CurriculumInfos:
 
     def _populate_frame_dropout_metrics(self) -> None:
         infos = self.task.infos
-        eff, _ = self.cl._get_frame_dropout_effective()
+        eff, _ = get_frame_dropout_effective(self.task)
         infos["curriculum/camera_frame_dropout_drone_total"] = torch.tensor(
             eff["drone_total"], dtype=torch.float32
         )
@@ -118,10 +124,12 @@ class CurriculumInfos:
         infos["curriculum/camera_max_angle"] = torch.tensor(
             self.task.max_camera_angle, dtype=torch.float32
         )
-        current_angle = self.cl._get_current_camera_angle()
+        current_angle = get_current_camera_angle(self.task)
         infos["curriculum/camera_current_angle"] = torch.tensor(current_angle, dtype=torch.float32)
         cam_orient_disabled = bool(
-            self.cl._get_gtd().get("static_camera_randomization/orientation_disabled", False)
+            get_global_tensor_dict(self.task).get(
+                "static_camera_randomization/orientation_disabled", False
+            )
         )
         infos["curriculum/camera_orientation_randomization_disabled"] = torch.tensor(
             1.0 if cam_orient_disabled else 0.0, dtype=torch.float32

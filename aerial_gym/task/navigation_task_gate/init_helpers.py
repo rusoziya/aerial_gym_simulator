@@ -6,8 +6,10 @@ import numpy as np
 import torch
 from gym.spaces import Box, Dict
 
+from aerial_gym.task.navigation_task_gate.init_curriculum_logging import (
+    log_initial_curriculum_state,
+)
 from aerial_gym.task.schemas import EpisodeRewardAccumulators, EpisodeTrajectoryState
-from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.vae.vae_image_encoder import VAEImageEncoder
 
@@ -251,164 +253,6 @@ class InitHelpers:
             self.task.curriculum_level
         )
 
-        logger.info(f"INITIAL CURRICULUM (Level {self.task.curriculum_level}):")
-        logger.info(
-            f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)"
-        )
-        try:
-            # Determine baseline level and ablation flags
-            baseline_level = int(self.task.task_config.curriculum.min_level)
-            pos_dis = False
-            yaw_dis = False
-            gtd = self.task.sim_env.global_tensor_dict
-            pos_dis = bool(gtd.get("spawn_randomization/position_disabled", False))
-            yaw_dis = bool(gtd.get("spawn_randomization/orientation_disabled", False))
-            # Read spawn ranges for active and baseline
-            sr_active = self.task.task_config.curriculum.get_spawn_ranges(
-                self.task.curriculum_level
-            )
-            sr_base = self.task.task_config.curriculum.get_spawn_ranges(baseline_level)
-            # Select ranges based on ablations
-            sr_use = {
-                "x_half_span_m": (
-                    sr_base["x_half_span_m"] if pos_dis else sr_active["x_half_span_m"]
-                ),
-                "y_center_m": sr_base["y_center_m"] if pos_dis else sr_active["y_center_m"],
-                "y_half_span_m": (
-                    sr_base["y_half_span_m"] if pos_dis else sr_active["y_half_span_m"]
-                ),
-                "z_center_m": sr_base["z_center_m"] if pos_dis else sr_active["z_center_m"],
-                "z_half_span_m": (
-                    sr_base["z_half_span_m"] if pos_dis else sr_active["z_half_span_m"]
-                ),
-                "yaw_abs_rad": sr_base["yaw_abs_rad"] if yaw_dis else sr_active["yaw_abs_rad"],
-            }
-            # Report spawn ablation status in logs
-            if pos_dis or yaw_dis:
-                status_pos = "DISABLED" if pos_dis else "ENABLED"
-                status_yaw = "DISABLED" if yaw_dis else "ENABLED"
-                logger.info(
-                    f"   2. SPAWN RANDOMIZATION: position={status_pos}, orientation={status_yaw}"
-                )
-            logger.info(
-                f"   2. SPAWN: X∈[{(-sr_use['x_half_span_m']):.1f}, {(+sr_use['x_half_span_m']):.1f}] m, "
-                f"Y∈[{(sr_use['y_center_m'] - sr_use['y_half_span_m']):.1f}, {(sr_use['y_center_m'] + sr_use['y_half_span_m']):.1f}] m, "
-                f"Z∈[{(sr_use['z_center_m'] - sr_use['z_half_span_m']):.1f}, {(sr_use['z_center_m'] + sr_use['z_half_span_m']):.1f}] m; yaw ±{(sr_use['yaw_abs_rad'] * 57.2958):.1f}°"
-            )
-        except (ValueError, TypeError) as e:
-            logger.info(f"   2. SPAWN: (fallback) Using fixed LMF2 config due to: {e}")
-        # 3. STATIC CAMERA YAW SWEEP STATUS (takes precedence over static orientation randomization)
-        try:
-            yaw_enabled = (
-                str(os.environ.get("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", "false")).lower() == "true"
-            )
-            yaw_speed = float(os.environ.get("SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG", "10.0"))
-        except (ValueError, TypeError):
-            yaw_enabled = False
-            yaw_speed = 10.0
-        # Orientation randomization disable flag and dynamic camera effective state
-        try:
-            cam_orient_disabled = bool(
-                self.task.sim_env.global_tensor_dict.get(
-                    "static_camera_randomization/orientation_disabled", False
-                )
-            )
-        except (KeyError, TypeError):
-            cam_orient_disabled = False
-        try:
-            dyn_cfg = self.task.task_config.curriculum.enable_dynamic_camera_following
-            dyn_dis = bool(
-                self.task.sim_env.global_tensor_dict.get("dynamic_camera_following/disabled", False)
-            )
-            dynamic_effective = bool(dyn_cfg and not dyn_dis)
-        except (KeyError, TypeError):
-            dynamic_effective = False
-        # Effective note for sweep
-        if yaw_enabled:
-            if dynamic_effective:
-                sweep_note = "IGNORED (dynamic camera active)"
-            else:
-                sweep_note = "ACTIVE"
-        else:
-            sweep_note = "N/A"
-        logger.info(
-            f"   3. STATIC CAMERA YAW SWEEP: {'ENABLED' if yaw_enabled else 'DISABLED'} (speed={yaw_speed:.1f} deg/s) — effective: {sweep_note}; orientation_rand={'DISABLED' if cam_orient_disabled else 'ENABLED'}"
-        )
-        try:
-            base_y = float(os.environ.get("SF_STATIC_CAMERA_BASE_Y", -3.0))
-            base_z = float(os.environ.get("SF_STATIC_CAMERA_BASE_Z", 1.5))
-        except (ValueError, TypeError):
-            base_y, base_z = -3.0, 1.5
-        logger.info(f"      ↳ static camera base: Y={base_y:.2f} m, Z={base_z:.2f} m")
-        # 4. CAMERA ANGLE (randomization applies only when sweep is disabled and dynamic camera is inactive)
-        if yaw_enabled and not dynamic_effective:
-            logger.info("   4. CAMERA ANGLE: overridden by yaw sweep")
-        elif dynamic_effective:
-            logger.info("   4. CAMERA ANGLE: suppressed (dynamic camera following active)")
-        elif cam_orient_disabled:
-            logger.info("   4. CAMERA ANGLE: randomization DISABLED, fixed at 0.0°")
-        else:
-            logger.info(
-                f"   4. CAMERA ANGLE: ±{self.task.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)"
-            )
-
-        # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
-        initial_camera_gaussian_std, initial_camera_dropout_rate = (
-            self.task.task_config.curriculum.get_camera_noise(self.task.curriculum_level)
-        )
-        logger.info(
-            f"   5. CAMERA NOISE: Gaussian STD={initial_camera_gaussian_std:.4f}, Dropout={initial_camera_dropout_rate * 100:.1f}% (both drone & static)"
-        )
-
-        # 6. CAMERA FRAME DROPOUT (entire-frame)
-        fd = self.task.task_config.curriculum.get_camera_frame_dropout(self.task.curriculum_level)
-        logger.info(
-            f"   6. CAMERA FRAME DROPOUT: drone_total={fd['drone_total'] * 100:.1f}% (freeze {fd['drone_freeze'] * 100:.1f}%, blank {fd['drone_blank'] * 100:.1f}%), static_total={fd['static_total'] * 100:.1f}% (freeze {fd['static_freeze'] * 100:.1f}%, blank {fd['static_blank'] * 100:.1f}%)"
-        )
-
-        # 7. STATE NOISE (pose) — new
-        state_noise_disabled = False
-        try:
-            state_noise_disabled = bool(
-                self.task.sim_env.global_tensor_dict.get(
-                    "state_randomization/noise_disabled", False
-                )
-            )
-        except (KeyError, TypeError):
-            state_noise_disabled = bool(self.task.disable_state_noise_randomization)
-        if self.task.task_config.curriculum.enable_state_noise and not state_noise_disabled:
-            sn = self.task.task_config.curriculum.get_state_noise(self.task.curriculum_level)
-            logger.info(
-                f"   7. STATE NOISE: drone_pos_std={sn['drone_pos_std_m']:.4f} m, drone_orient_std={sn['drone_orient_std_rad'] * 57.2958:.3f} deg, "
-                f"static_pos_std={sn['static_pos_std_m']:.4f} m, static_orient_std={sn['static_orient_std_rad'] * 57.2958:.3f} deg"
-            )
-        else:
-            logger.info("   7. STATE NOISE: disabled")
-
-        logger.info(
-            f"   8. ASSET MANAGER: Updated both obs_dict and global_tensor_dict with count {total_obstacles_in_env}"
-        )
-        # Curriculum multiplier debug (initial) - compute fraction directly (attribute may not exist yet)
-        cm_disabled = read_env_bool(
-            "SF_DISABLE_CURRICULUM_MULTIPLIER", self.task.task_config.disable_curriculum_multiplier
-        )
-        if not cm_disabled:
-            cm_disabled = bool(self.task.task_config.disable_curriculum_multiplier)
-        try:
-            frac_current = (
-                self.task.curriculum_level - self.task.task_config.curriculum.min_level
-            ) / (
-                self.task.task_config.curriculum.max_level
-                - self.task.task_config.curriculum.min_level
-            )
-        except (ZeroDivisionError, AttributeError, TypeError):
-            frac_current = 0.0
-        frac_eff = 0.0 if cm_disabled else float(frac_current)
-        factor = 1.0 + 0.5 * frac_eff
-        logger.info(
-            f"   9. CURRICULUM MULTIPLIER: {'DISABLED' if cm_disabled else 'ENABLED'} (factor={factor:.3f})"
-        )
-
         # Calculate progress fraction
         self.task.curriculum_progress_fraction = (
             self.task.curriculum_level - self.task.task_config.curriculum.min_level
@@ -416,13 +260,6 @@ class InitHelpers:
             self.task.task_config.curriculum.max_level - self.task.task_config.curriculum.min_level
         )
 
-        logger.info(
-            f"   8. PROGRESS: {self.task.curriculum_progress_fraction:.3f} (level {self.task.curriculum_level}/{self.task.task_config.curriculum.max_level})"
-        )
-        logger.info(
-            f"   9. EVALUATION: Check every {self.task.task_config.curriculum.check_after_log_instances} instances (success rate threshold: {self.task.task_config.curriculum.success_rate_for_increase:.3f})"
-        )
-
-        self.task._curriculum.log_curriculum_update(
-            f"[INIT] Multi-aspect curriculum initialized at level {self.task.curriculum_level}"
+        log_initial_curriculum_state(
+            self.task, fixed_assets_visible, obstacles_behind_gate, total_obstacles_in_env
         )
