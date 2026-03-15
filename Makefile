@@ -3,7 +3,7 @@
 
 CONFIG ?= configs/train_gate_sf.yaml
 CONDA_ENV ?= aerialgym
-PYTHON ?= conda run --no-banner -n $(CONDA_ENV) python
+PYTHON ?= conda run -n $(CONDA_ENV) python
 
 # ─── Training & Evaluation ───────────────────────────────────────
 .PHONY: train eval play validate-config dry-run
