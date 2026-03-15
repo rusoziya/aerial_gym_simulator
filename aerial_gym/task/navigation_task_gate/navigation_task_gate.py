@@ -855,64 +855,31 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
 
         return transformed_action, nan_trunc_mask
 
-    def step(self, actions: torch.Tensor) -> StepReturn:
-        # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
-        # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] ∈ [-1, 1]^4
-        # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
-        
-        transformed_action, nan_trunc_mask = self._validate_and_step(actions)
+    def _detect_gate_passage(
+        self,
+        robot_position: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Detect gate passage success and compute immediate/target success masks.
 
-        # This step must be done since the reset is done after the reward is calculated.
-        # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
-        # This is important for the RL agent to get the correct state after the reset.
-        self.rewards[:], self.terminations[:], camera_gate_alignment = self.compute_rewards_and_crashes(self.obs_dict)
-        # Reward NaN/Inf guard: sanitize invalid rewards and truncate offending envs
-        invalid_reward_mask = torch.isnan(self.rewards) | torch.isinf(self.rewards)
-        if torch.any(invalid_reward_mask):
-            if self.task_config.guard_debug_enabled:
-                _ids = torch.nonzero(invalid_reward_mask, as_tuple=False).squeeze(-1).tolist()
-                logger.warning(f"[NaNGuard] Invalid REWARD in envs {_ids}; zeroed and truncating.")
-            self.rewards[invalid_reward_mask] = 0.0
-            # Ensure truncation to reset these envs safely
-            self.truncations[invalid_reward_mask] = 1
-
-
-        if self.task_config.return_state_before_reset == True:
-            return_tuple = self.get_return_tuple()
-
-        self.truncations[:] = torch.where(
-            self.sim_env.sim_steps > self.task_config.episode_len_steps,
-            torch.ones_like(self.truncations),
-            torch.zeros_like(self.truncations),
-        )
-        # Apply NaN/Inf-triggered truncations (takes precedence)
-        if torch.any(nan_trunc_mask):
-            self.truncations[nan_trunc_mask] = 1
-            # Guard debug: final truncation set due to NaN/Inf
-            if self.task_config.guard_debug_enabled:
-                _ids = torch.nonzero(nan_trunc_mask, as_tuple=False).squeeze(-1).tolist()
-                logger.warning(f"[NaNGuard] Truncating envs due to NaN/Inf: {_ids}")
-
-        # Success = simply passing through the gate boundary (any part of the gate opening)
-        # More forgiving than target-based or centered passage requirements
-        robot_position = self.obs_dict["robot_position"]
-        # Snapshot positions BEFORE any potential resets mutate the shared tensors
-        robot_position_before_reset = robot_position.clone()
-        
+        Returns:
+            successes: per-env bool tensor -- gate passage without crash.
+            target_successes: per-env bool tensor -- gate passage within 10% center window.
+            gate_passage_success: raw gate-passage bool tensor (before crash filtering).
+        """
         # Gate passage detection: crossed gate plane within the FULL gate opening (100% tolerance)
-        # Accept any passage through the opening: width ±50% and height from bottom to top
+        # Accept any passage through the opening: width +/-50% and height from bottom to top
         gate_success_width_tolerance = self.gate_width * 0.50
         gate_success_min_height = self.gate_position[:, 2]  # gate bottom
         gate_success_max_height = self.gate_position[:, 2] + self.gate_height  # gate top
-        
+
         gate_passage_success = (
-            (robot_position[:, 1] > self.gate_position[:, 1]) &  # Crossed gate (Y > 0)
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_success_width_tolerance) &  # Within gate width
-            (robot_position[:, 2] > gate_success_min_height) & (robot_position[:, 2] < gate_success_max_height)  # Within gate height range
+            (robot_position[:, 1] > self.gate_position[:, 1])
+            & (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_success_width_tolerance)
+            & (robot_position[:, 2] > gate_success_min_height)
+            & (robot_position[:, 2] < gate_success_max_height)
         )
-        
+
         # Immediate success termination and reset
-        # If success occurs now (by gate passage), mark TERMINATION to force reset
         # Target window: within 10% of gate width (X) and 10% of gate height (Z) around ADAPTIVE gate center
         x_off_imm = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
         z_off_imm = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + self.gate_center_height))
@@ -931,11 +898,11 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
             except RuntimeError:
                 success_envs = []
             logger.debug(f"[SUCCESS_RESET] Immediate success achieved in envs: {success_envs}. Terminating and resetting.")
-        
+
         # Success when episode TERMINATES (not crashes) and gate passage achieved
         crash_mask = (self.obs_dict["crashes"] > 0)
         successes = (self.terminations > 0) & gate_passage_success & (~crash_mask)
-        
+
         # Target success at truncation: same 10% width/height window around adaptive gate center
         x_off = torch.abs(robot_position[:, 0] - self.gate_position[:, 0])
         z_off = torch.abs(robot_position[:, 2] - (self.gate_position[:, 2] + self.gate_center_height))
@@ -946,10 +913,14 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
         # Also accumulate per-episode target success flag when truncated at step end
         end_success_mask = (self.terminations > 0) & (target_success & gate_passage_success) & (~crash_mask)
         self._ep_target_success_flag[end_success_mask] = True
-        
-        # Training success remains gate passage only; target success is for logging metrics only
 
+        return successes, target_successes, gate_passage_success
 
+    def _apply_timeout_and_populate_infos(
+        self,
+        successes: torch.Tensor,
+    ) -> None:
+        """Compute timeout flags, populate self.infos, and apply timeout penalty to rewards."""
         timeouts = torch.where(
             self.truncations > 0, torch.logical_not(successes), torch.zeros_like(successes)
         )
@@ -971,32 +942,41 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
             # Apply to the per-env reward vector maintained at the task level
             self.rewards = self.rewards - (timeouts.float() * timeout_penalty)
             self.episode_timeout_penalty[timeouts] -= timeout_penalty
-        
-        # Add gate navigation specific info to wandb tracking
-        # Calculate gate navigation metrics from current state
-        robot_position = self.obs_dict["robot_position"]
+
+    def _compute_gate_navigation_metrics(
+        self,
+        robot_position: torch.Tensor,
+        camera_gate_alignment: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Calculate gate navigation metrics and populate self.infos with tracking data.
+
+        Returns:
+            gate_center_position: (num_envs, 3) tensor of adaptive gate center positions.
+            gate_passed_current: per-env bool tensor for tracking-tolerance gate passage.
+        """
         # Use geometric center of gate opening (z + center_height) so a perfect center pass can approach 0
         gate_center_position = self.gate_position.clone()
         gate_center_position[:, 2] = gate_center_position[:, 2] + self.gate_center_height
         gate_distance = torch.norm(robot_position - gate_center_position, dim=1)
-        
+
         # Check if robot has passed gate (crossed Y = 0 plane with proper alignment) - ADAPTIVE
         gate_tracking_width_tolerance = self.gate_width * 0.6  # 60% of gate width for tracking
         gate_tracking_min_height = self.gate_position[:, 2] + self.gate_height * 0.08  # 8% above ground
         gate_tracking_max_height = self.gate_position[:, 2] + self.gate_height * 0.92  # 92% of gate height
-        
+
         gate_passed_current = (
-            (robot_position[:, 1] > self.gate_position[:, 1]) &  # In front of gate
-            (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_tracking_width_tolerance) &  # Within gate width
-            (robot_position[:, 2] > gate_tracking_min_height) & (robot_position[:, 2] < gate_tracking_max_height)  # Within gate height
+            (robot_position[:, 1] > self.gate_position[:, 1])
+            & (torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_tracking_width_tolerance)
+            & (robot_position[:, 2] > gate_tracking_min_height)
+            & (robot_position[:, 2] < gate_tracking_max_height)
         )
-        
+
         # Gate alignment: check if robot is roughly aligned with gate opening - ADAPTIVE
         gate_alignment = torch.abs(robot_position[:, 0] - self.gate_position[:, 0]) < gate_tracking_width_tolerance
-        
+
         # Camera alignment angle in degrees (convert from dot product)
         alignment_angle_deg = torch.acos(torch.clamp(camera_gate_alignment, -1.0, 1.0)) * 180.0 / 3.14159
-        
+
         # Camera alignment category based on angle
         alignment_category = torch.zeros_like(alignment_angle_deg)
         alignment_category[alignment_angle_deg <= 15] = 5  # Perfect
@@ -1005,16 +985,313 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
         alignment_category[(alignment_angle_deg > 60) & (alignment_angle_deg <= 90)] = 2  # Moderate
         alignment_category[(alignment_angle_deg > 90) & (alignment_angle_deg <= 135)] = 1  # Poor
         alignment_category[alignment_angle_deg > 135] = 0  # Severely misaligned
-        
+
         self.infos["gate/passed"] = gate_passed_current.float()
         self.infos["gate/distance"] = gate_distance
         self.infos["gate/alignment"] = gate_alignment.float()
         self.infos["camera/facing_alignment"] = camera_gate_alignment
         self.infos["camera/alignment_angle_deg"] = alignment_angle_deg
         self.infos["camera/alignment_category"] = alignment_category
-        
-        # Skip logging of continuous curriculum/current_* to W&B entirely
-        # (retain internal counters elsewhere if needed)
+
+        return gate_center_position, gate_passed_current
+
+    def _handle_post_reward_reset(
+        self,
+        robot_position: torch.Tensor,
+        robot_position_before_reset: torch.Tensor,
+        gate_center_position: torch.Tensor,
+        successes: torch.Tensor,
+        target_successes: torch.Tensor,
+        reset_envs: torch.Tensor,
+    ) -> None:
+        """Compute episode-end trajectory metrics, stash infos, and reset completed envs."""
+        try:
+            env_ids = reset_envs if torch.is_tensor(reset_envs) else torch.tensor(reset_envs, device=self.device, dtype=torch.long)
+            # Path efficiency = path length / straight-line distance from spawn to gate center at spawn
+            denom = torch.norm(self._ep_spawn_pos[env_ids] - self._ep_gate_center_at_spawn[env_ids], dim=1)
+            denom = torch.clamp(denom, min=1e-6)
+            # Fallback for rare cases where incremental path stayed ~0 (e.g., immediate reset)
+            disp = torch.norm((robot_position[env_ids] - self._ep_spawn_pos[env_ids]), dim=1)
+            path_len = self._ep_path_len[env_ids]
+            path_len = torch.where(path_len <= 1e-6, disp, path_len)
+            path_eff = torch.full((self.num_envs,), float('nan'), device=self.device)
+            path_eff[env_ids] = (path_len / denom).clamp(max=1000.0)
+            # Time to gate in steps (already NaN for non-crossers)
+            time_to_gate = self._ep_time_to_gate.clone()
+            # Min distance to gate center during episode
+            min_gate_dist = self._ep_min_gate_dist.clone()
+            # Offsets at crossing (NaN for non-crossers)
+            center_offset = self._ep_center_offset_cross.clone()
+            height_offset = self._ep_height_offset_cross.clone()
+            # Last position at episode end (absolute and center-relative distance)
+            # Use the snapshot from BEFORE reset to report end-of-episode last pose
+            last_pos = robot_position_before_reset[env_ids]
+            last_pos_x = last_pos[:, 0]
+            last_pos_y = last_pos[:, 1]
+            last_pos_z = last_pos[:, 2]
+            # Center-relative error (2D XZ) at termination
+            dx_last = last_pos_x - gate_center_position[env_ids, 0]
+            dz_last = last_pos_z - gate_center_position[env_ids, 2]
+            last_center_offset_vals = torch.sqrt(dx_last * dx_last + dz_last * dz_last)
+            last_height_offset_vals = torch.abs(dz_last)
+            # Debug print: average across resetting envs (NaN-aware)
+            pe_avg = torch.nanmean(path_eff[env_ids])
+            ttg_avg = torch.nanmean(time_to_gate[env_ids])
+            mgd_avg = torch.nanmean(min_gate_dist[env_ids])
+            co_avg = torch.nanmean(center_offset[env_ids])
+            ho_avg = torch.nanmean(height_offset[env_ids])
+            lpx_avg = torch.nanmean(last_pos_x)
+            lpy_avg = torch.nanmean(last_pos_y)
+            lpz_avg = torch.nanmean(last_pos_z)
+            # Also compute episode-end offsets (useful fallback when no crossing occurred)
+            lco_avg = torch.nanmean(last_center_offset_vals)
+            lho_avg = torch.nanmean(last_height_offset_vals)
+            # Report both: overall success rate (gate passage) and target success rate (gate passage AND 10%/10%)
+            try:
+                # Overall success rate among resetting envs
+                overall_success_rate = torch.mean((successes[env_ids] > 0).float())
+                # Target success (10% width/height AND gate passage) among resetting envs
+                target_success_rate = torch.mean((target_successes[env_ids] > 0).float())
+            except (ValueError, TypeError):
+                overall_success_rate = torch.tensor(float('nan'), device=self.device)
+                target_success_rate = torch.tensor(float('nan'), device=self.device)
+            # Stash per-env episode metrics for worker-side running aggregation
+            self._stash_per_env_trajectory_metrics(
+                env_ids, path_eff, time_to_gate, min_gate_dist, center_offset, height_offset,
+                last_pos_x, last_pos_y, last_pos_z, last_center_offset_vals, last_height_offset_vals,
+            )
+            # Stash the averaged trajectory metrics for logging
+            self._stash_averaged_trajectory_metrics(
+                env_ids, pe_avg, ttg_avg, mgd_avg, co_avg, ho_avg,
+                lpx_avg, lpy_avg, lpz_avg, lco_avg, lho_avg,
+                overall_success_rate, target_success_rate, time_to_gate,
+            )
+            # Provide averaged metrics to infos['episode_extra_stats'] so learner can push to W&B as a backup
+            self._populate_episode_extra_stats()
+        except (ValueError, TypeError) as e:
+            logger.debug(f"Trajectory metrics computation failed: {e}")
+        # Stash infos to return to the learner before we clear them in reset
+        self._infos_to_return = dict(self.infos)
+        # Finally, reset environments and mark them fresh for next episode
+        self.reset_idx(reset_envs)
+
+    def _stash_per_env_trajectory_metrics(
+        self,
+        env_ids: torch.Tensor,
+        path_eff: torch.Tensor,
+        time_to_gate: torch.Tensor,
+        min_gate_dist: torch.Tensor,
+        center_offset: torch.Tensor,
+        height_offset: torch.Tensor,
+        last_pos_x: torch.Tensor,
+        last_pos_y: torch.Tensor,
+        last_pos_z: torch.Tensor,
+        last_center_offset_vals: torch.Tensor,
+        last_height_offset_vals: torch.Tensor,
+    ) -> None:
+        """Stash per-env episode trajectory metrics for worker-side running aggregation."""
+        try:
+            self._last_traj_metrics_per_env = {
+                'path_efficiency': path_eff.detach().clone(),
+                'time_to_gate_steps': time_to_gate.detach().clone(),
+                'min_gate_distance': min_gate_dist.detach().clone(),
+                'center_offset_success': center_offset.detach().clone(),
+                'height_offset_success': height_offset.detach().clone(),
+                'target_success_flag': self._ep_target_success_flag.detach().clone(),
+                'last_position_x': torch.full((self.num_envs,), float('nan'), device=self.device),
+                'last_position_y': torch.full((self.num_envs,), float('nan'), device=self.device),
+                'last_position_z': torch.full((self.num_envs,), float('nan'), device=self.device),
+                'last_center_offset': torch.full((self.num_envs,), float('nan'), device=self.device),
+                'last_height_offset': torch.full((self.num_envs,), float('nan'), device=self.device),
+                'crossed': self._ep_gate_crossed.detach().clone(),
+            }
+            self._last_traj_metrics_per_env['last_position_x'][env_ids] = last_pos_x
+            self._last_traj_metrics_per_env['last_position_y'][env_ids] = last_pos_y
+            self._last_traj_metrics_per_env['last_position_z'][env_ids] = last_pos_z
+            self._last_traj_metrics_per_env['last_center_offset'][env_ids] = last_center_offset_vals
+            self._last_traj_metrics_per_env['last_height_offset'][env_ids] = last_height_offset_vals
+        except (ValueError, TypeError):
+            self._last_traj_metrics_per_env = None
+
+    def _stash_averaged_trajectory_metrics(
+        self,
+        env_ids: torch.Tensor,
+        pe_avg: torch.Tensor,
+        ttg_avg: torch.Tensor,
+        mgd_avg: torch.Tensor,
+        co_avg: torch.Tensor,
+        ho_avg: torch.Tensor,
+        lpx_avg: torch.Tensor,
+        lpy_avg: torch.Tensor,
+        lpz_avg: torch.Tensor,
+        lco_avg: torch.Tensor,
+        lho_avg: torch.Tensor,
+        overall_success_rate: torch.Tensor,
+        target_success_rate: torch.Tensor,
+        time_to_gate: torch.Tensor,
+    ) -> None:
+        """Stash averaged trajectory metrics for logging."""
+        try:
+            # Fallback to episode-end offsets if crossing-based offsets are NaN
+            try:
+                co_val = co_avg
+                if torch.isnan(co_val):
+                    co_val = lco_avg
+            except Exception:
+                co_val = lco_avg
+            try:
+                ho_val = ho_avg
+                if torch.isnan(ho_val):
+                    ho_val = lho_avg
+            except Exception:
+                ho_val = lho_avg
+            # Build metrics dict while avoiding undefined time-to-gate when no crossing occurred
+            _metrics_avg = {
+                'path_efficiency': float(pe_avg.item()),
+                'min_gate_distance': float(mgd_avg.item()),
+                'center_offset_success': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
+                'height_offset_success': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
+                # Duplicate keys to match existing dashboards
+                'center_offset': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
+                'height_offset': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
+                'success_rate': float(overall_success_rate.item()) if hasattr(overall_success_rate, 'item') else float('nan'),
+                'target_success_rate': float(target_success_rate.item()) if hasattr(target_success_rate, 'item') else float('nan'),
+                'last_position_x': float(lpx_avg.item()),
+                'last_position_y': float(lpy_avg.item()),
+                'last_position_z': float(lpz_avg.item()),
+                'last_center_offset': float(lco_avg.item()),
+                'last_height_offset': float(lho_avg.item()),
+            }
+            # Only include time-to-gate (steps/seconds) if any env in this reset batch actually crossed
+            try:
+                num_crossed = int(torch.isfinite(time_to_gate[env_ids]).sum().item())
+            except (ValueError, TypeError):
+                num_crossed = 0
+            if num_crossed > 0 and not torch.isnan(ttg_avg):
+                _metrics_avg['time_to_gate_steps'] = float(ttg_avg.item())
+                _metrics_avg['time_to_gate'] = float(ttg_avg.item())
+            self._last_traj_metrics_avg = _metrics_avg
+        except (ValueError, TypeError):
+            self._last_traj_metrics_avg = None
+
+    def _populate_episode_extra_stats(self) -> None:
+        """Populate infos['episode_extra_stats'] with trajectory metrics and camera ablation flags."""
+        extra = self.infos.get('episode_extra_stats', {})
+        if not isinstance(extra, dict):
+            extra = {}
+        extra.update(self._last_traj_metrics_avg or {})
+        # Expose per-camera noise/frame-drop overrides to W&B, mirroring prior style
+        gtd = getattr(self.sim_env, 'global_tensor_dict', {})
+        cam_noise_global = bool(gtd.get('camera_randomization/noise_disabled', False))
+        cam_fd_global = bool(gtd.get('camera_randomization/frame_dropout_disabled', False))
+        drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if 'camera_randomization/drone_noise_disabled' in gtd else cam_noise_global
+        static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False)) if 'camera_randomization/static_noise_disabled' in gtd else cam_noise_global
+        drone_fd_dis = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if 'camera_randomization/drone_frame_dropout_disabled' in gtd else cam_fd_global
+        static_fd_dis = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False)) if 'camera_randomization/static_frame_dropout_disabled' in gtd else cam_fd_global
+        extra['episode_extra_stats/camera_noise_disabled_drone'] = float(drone_noise_dis)
+        extra['episode_extra_stats/camera_noise_disabled_static'] = float(static_noise_dis)
+        extra['episode_extra_stats/camera_frame_dropout_disabled_drone'] = float(drone_fd_dis)
+        extra['episode_extra_stats/camera_frame_dropout_disabled_static'] = float(static_fd_dis)
+        self.infos['episode_extra_stats'] = extra
+
+    def _process_images_and_finalize(self) -> None:
+        """Run image processing, static camera updates, and one-shot final verification."""
+        self.process_image_observation()
+        self.process_static_camera_observation()
+        self.post_image_reward_addition()
+
+        # FINAL VERIFICATION: After all processing is complete
+        if not self._final_verification_printed:
+            self._final_verification_printed = True
+            logger.warning("FINAL STATIC CAMERA VERIFICATION (AFTER PROCESSING):")
+
+            # Process observations to get final state
+            self.process_obs_for_task()
+
+            if 'observations' in self.task_obs:
+                obs_sample = self.task_obs["observations"][0]
+
+                static_pos = obs_sample[3:6]
+                static_orient = obs_sample[6:9]
+                static_vae = obs_sample[86:150]
+
+                logger.warning(f"  Final static pos: {static_pos.cpu().numpy()}")
+                logger.warning(f"  Final static orient: {static_orient.cpu().numpy()}")
+                logger.warning(f"  Final static VAE: range=[{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]")
+
+                # Check final state
+                pos_ok = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
+                orient_ok = not torch.allclose(static_orient, torch.zeros_like(static_orient), atol=1e-6)
+                vae_ok = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
+
+                logger.warning(f"  FINAL RESULTS: pos={pos_ok}, orient={orient_ok}, vae={vae_ok}")
+
+                if pos_ok and orient_ok and vae_ok:
+                    logger.warning("SUCCESS: All 150D static camera observations verified!")
+
+                    # CRITICAL: Add verification that observations reach RL training
+                    logger.warning("RL TRAINING USAGE VERIFICATION:")
+                    logger.warning("  IMPORTANT: This verifies DATA PIPELINE, not RL training usage!")
+                    logger.warning("  To verify RL training usage, check:")
+                    logger.warning("     1. Neural network receives 150D input (not 128D or other)")
+                    logger.warning("     2. Policy network architecture matches observation space")
+                    logger.warning("     3. Static camera indices [3:6] and [86:150] affect policy decisions")
+                    logger.warning("     4. Ablation test: performance difference with vs without static camera")
+                    logger.warning("  Current verification: Environment correctly provides 150D observations")
+                    logger.warning("  Next step needed: Verify Sample Factory & neural network usage")
+                else:
+                    logger.error("Some static camera data still missing after processing!")
+
+    def step(self, actions: torch.Tensor) -> StepReturn:
+        # VELOCITY CONTROLLER: Transform 4D actions to direct velocity commands for LMF2 robot
+        # Input: [x_vel_cmd, y_vel_cmd, z_vel_cmd, yaw_rate_cmd] in [-1, 1]^4
+        # Output: [x_vel, y_vel, z_vel, yaw_rate] applied directly as velocity commands
+
+        transformed_action, nan_trunc_mask = self._validate_and_step(actions)
+
+        # This step must be done since the reset is done after the reward is calculated.
+        # This enables the robot to send back an updated state, and an updated observation to the RL agent after the reset.
+        # This is important for the RL agent to get the correct state after the reset.
+        self.rewards[:], self.terminations[:], camera_gate_alignment = self.compute_rewards_and_crashes(self.obs_dict)
+        # Reward NaN/Inf guard: sanitize invalid rewards and truncate offending envs
+        invalid_reward_mask = torch.isnan(self.rewards) | torch.isinf(self.rewards)
+        if torch.any(invalid_reward_mask):
+            if self.task_config.guard_debug_enabled:
+                _ids = torch.nonzero(invalid_reward_mask, as_tuple=False).squeeze(-1).tolist()
+                logger.warning(f"[NaNGuard] Invalid REWARD in envs {_ids}; zeroed and truncating.")
+            self.rewards[invalid_reward_mask] = 0.0
+            # Ensure truncation to reset these envs safely
+            self.truncations[invalid_reward_mask] = 1
+
+        if self.task_config.return_state_before_reset == True:
+            return_tuple = self.get_return_tuple()
+
+        self.truncations[:] = torch.where(
+            self.sim_env.sim_steps > self.task_config.episode_len_steps,
+            torch.ones_like(self.truncations),
+            torch.zeros_like(self.truncations),
+        )
+        # Apply NaN/Inf-triggered truncations (takes precedence)
+        if torch.any(nan_trunc_mask):
+            self.truncations[nan_trunc_mask] = 1
+            # Guard debug: final truncation set due to NaN/Inf
+            if self.task_config.guard_debug_enabled:
+                _ids = torch.nonzero(nan_trunc_mask, as_tuple=False).squeeze(-1).tolist()
+                logger.warning(f"[NaNGuard] Truncating envs due to NaN/Inf: {_ids}")
+
+        # --- Gate passage detection ---
+        robot_position = self.obs_dict["robot_position"]
+        robot_position_before_reset = robot_position.clone()
+        successes, target_successes, gate_passage_success = self._detect_gate_passage(robot_position)
+
+        # --- Timeout / truncation handling and infos population ---
+        self._apply_timeout_and_populate_infos(successes)
+
+        # --- Gate navigation metrics ---
+        robot_position = self.obs_dict["robot_position"]
+        gate_center_position, gate_passed_current = self._compute_gate_navigation_metrics(
+            robot_position, camera_gate_alignment,
+        )
 
         # Update per-env episode trajectory state
         self._update_trajectory_state(robot_position, gate_center_position, gate_passed_current)
@@ -1022,199 +1299,19 @@ class NavigationTaskGate(NavigationTaskGateGeometryMixin, NavigationTaskGateCurr
         self.check_and_update_curriculum_level(
             self.infos["successes"], self.infos["crashes"], self.infos["timeouts"]
         )
-        # rendering happens at the post-reward calculation step since the newer measurement is required to be
-        # sent to the RL algorithm as an observation and it helps if the camera image is updated then
+
+        # --- Post-reward reset and trajectory metric stashing ---
         reset_envs = self.sim_env.post_reward_calculation_step()
         if len(reset_envs) > 0:
-            # Episode-end trajectory metrics for envs that reset now (computed from per-env state)
-            try:
-                env_ids = reset_envs if torch.is_tensor(reset_envs) else torch.tensor(reset_envs, device=self.device, dtype=torch.long)
-                # Path efficiency = path length / straight-line distance from spawn to gate center at spawn
-                denom = torch.norm(self._ep_spawn_pos[env_ids] - self._ep_gate_center_at_spawn[env_ids], dim=1)
-                denom = torch.clamp(denom, min=1e-6)
-                # Fallback for rare cases where incremental path stayed ~0 (e.g., immediate reset)
-                disp = torch.norm((robot_position[env_ids] - self._ep_spawn_pos[env_ids]), dim=1)
-                path_len = self._ep_path_len[env_ids]
-                path_len = torch.where(path_len <= 1e-6, disp, path_len)
-                path_eff = torch.full((self.num_envs,), float('nan'), device=self.device)
-                path_eff[env_ids] = (path_len / denom).clamp(max=1000.0)
-                # Time to gate in steps (already NaN for non-crossers)
-                time_to_gate = self._ep_time_to_gate.clone()
-                # Min distance to gate center during episode
-                min_gate_dist = self._ep_min_gate_dist.clone()
-                # Offsets at crossing (NaN for non-crossers)
-                center_offset = self._ep_center_offset_cross.clone()
-                height_offset = self._ep_height_offset_cross.clone()
-                # Last position at episode end (absolute and center-relative distance)
-                # Use the snapshot from BEFORE reset to report end-of-episode last pose
-                last_pos = robot_position_before_reset[env_ids]
-                last_pos_x = last_pos[:, 0]
-                last_pos_y = last_pos[:, 1]
-                last_pos_z = last_pos[:, 2]
-                # Center-relative error (2D XZ) at termination
-                dx_last = last_pos_x - gate_center_position[env_ids, 0]
-                dz_last = last_pos_z - gate_center_position[env_ids, 2]
-                last_center_offset_vals = torch.sqrt(dx_last * dx_last + dz_last * dz_last)
-                last_height_offset_vals = torch.abs(dz_last)
-                # Debug print: average across resetting envs (NaN-aware)
-                pe_avg = torch.nanmean(path_eff[env_ids])
-                ttg_avg = torch.nanmean(time_to_gate[env_ids])
-                mgd_avg = torch.nanmean(min_gate_dist[env_ids])
-                co_avg = torch.nanmean(center_offset[env_ids])
-                ho_avg = torch.nanmean(height_offset[env_ids])
-                lpx_avg = torch.nanmean(last_pos_x)
-                lpy_avg = torch.nanmean(last_pos_y)
-                lpz_avg = torch.nanmean(last_pos_z)
-                # Also compute episode-end offsets (useful fallback when no crossing occurred)
-                lco_avg = torch.nanmean(last_center_offset_vals)
-                lho_avg = torch.nanmean(last_height_offset_vals)
-                # Report both: overall success rate (gate passage) and target success rate (gate passage AND 10%/10%)
-                try:
-                    # Overall success rate among resetting envs
-                    overall_success_rate = torch.mean((successes[env_ids] > 0).float())
-                    # Target success (10% width/height AND gate passage) among resetting envs
-                    target_success_rate = torch.mean((target_successes[env_ids] > 0).float())
-                except (ValueError, TypeError):
-                    overall_success_rate = torch.tensor(float('nan'), device=self.device)
-                    target_success_rate = torch.tensor(float('nan'), device=self.device)
-                # Stash per-env episode metrics for worker-side running aggregation
-                try:
-                    self._last_traj_metrics_per_env = {
-                        'path_efficiency': path_eff.detach().clone(),
-                        'time_to_gate_steps': time_to_gate.detach().clone(),
-                        'min_gate_distance': min_gate_dist.detach().clone(),
-                        'center_offset_success': center_offset.detach().clone(),
-                        'height_offset_success': height_offset.detach().clone(),
-                        'target_success_flag': self._ep_target_success_flag.detach().clone(),
-                        'last_position_x': torch.full((self.num_envs,), float('nan'), device=self.device),
-                        'last_position_y': torch.full((self.num_envs,), float('nan'), device=self.device),
-                        'last_position_z': torch.full((self.num_envs,), float('nan'), device=self.device),
-                        'last_center_offset': torch.full((self.num_envs,), float('nan'), device=self.device),
-                        'last_height_offset': torch.full((self.num_envs,), float('nan'), device=self.device),
-                        'crossed': self._ep_gate_crossed.detach().clone(),
-                    }
-                    self._last_traj_metrics_per_env['last_position_x'][env_ids] = last_pos_x
-                    self._last_traj_metrics_per_env['last_position_y'][env_ids] = last_pos_y
-                    self._last_traj_metrics_per_env['last_position_z'][env_ids] = last_pos_z
-                    self._last_traj_metrics_per_env['last_center_offset'][env_ids] = last_center_offset_vals
-                    self._last_traj_metrics_per_env['last_height_offset'][env_ids] = last_height_offset_vals
-                except (ValueError, TypeError):
-                    self._last_traj_metrics_per_env = None
-                # Stash the averaged trajectory metrics for logging
-                try:
-                    # Fallback to episode-end offsets if crossing-based offsets are NaN
-                    try:
-                        co_val = co_avg
-                        if torch.isnan(co_val):
-                            co_val = lco_avg
-                    except Exception:
-                        co_val = lco_avg
-                    try:
-                        ho_val = ho_avg
-                        if torch.isnan(ho_val):
-                            ho_val = lho_avg
-                    except Exception:
-                        ho_val = lho_avg
-                    # Build metrics dict while avoiding undefined time-to-gate when no crossing occurred
-                    _metrics_avg = {
-                        'path_efficiency': float(pe_avg.item()),
-                        'min_gate_distance': float(mgd_avg.item()),
-                        'center_offset_success': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
-                        'height_offset_success': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
-                        # Duplicate keys to match existing dashboards
-                        'center_offset': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
-                        'height_offset': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
-                        'success_rate': float(overall_success_rate.item()) if hasattr(overall_success_rate, 'item') else float('nan'),
-                        'target_success_rate': float(target_success_rate.item()) if hasattr(target_success_rate, 'item') else float('nan'),
-                        'last_position_x': float(lpx_avg.item()),
-                        'last_position_y': float(lpy_avg.item()),
-                        'last_position_z': float(lpz_avg.item()),
-                        'last_center_offset': float(lco_avg.item()),
-                        'last_height_offset': float(lho_avg.item()),
-                    }
-                    # Only include time-to-gate (steps/seconds) if any env in this reset batch actually crossed
-                    try:
-                        num_crossed = int(torch.isfinite(time_to_gate[env_ids]).sum().item())
-                    except (ValueError, TypeError):
-                        num_crossed = 0
-                    if num_crossed > 0 and not torch.isnan(ttg_avg):
-                        _metrics_avg['time_to_gate_steps'] = float(ttg_avg.item())
-                        _metrics_avg['time_to_gate'] = float(ttg_avg.item())
-                    self._last_traj_metrics_avg = _metrics_avg
-                except (ValueError, TypeError):
-                    self._last_traj_metrics_avg = None
-                # Provide averaged metrics to infos['episode_extra_stats'] so learner can push to W&B as a backup
-                extra = self.infos.get('episode_extra_stats', {})
-                if not isinstance(extra, dict):
-                    extra = {}
-                extra.update(self._last_traj_metrics_avg or {})
-                # Expose per-camera noise/frame-drop overrides to W&B, mirroring prior style
-                gtd = getattr(self.sim_env, 'global_tensor_dict', {})
-                cam_noise_global = bool(gtd.get('camera_randomization/noise_disabled', False))
-                cam_fd_global = bool(gtd.get('camera_randomization/frame_dropout_disabled', False))
-                drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if 'camera_randomization/drone_noise_disabled' in gtd else cam_noise_global
-                static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False)) if 'camera_randomization/static_noise_disabled' in gtd else cam_noise_global
-                drone_fd_dis = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if 'camera_randomization/drone_frame_dropout_disabled' in gtd else cam_fd_global
-                static_fd_dis = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False)) if 'camera_randomization/static_frame_dropout_disabled' in gtd else cam_fd_global
-                extra['episode_extra_stats/camera_noise_disabled_drone'] = float(drone_noise_dis)
-                extra['episode_extra_stats/camera_noise_disabled_static'] = float(static_noise_dis)
-                extra['episode_extra_stats/camera_frame_dropout_disabled_drone'] = float(drone_fd_dis)
-                extra['episode_extra_stats/camera_frame_dropout_disabled_static'] = float(static_fd_dis)
-                self.infos['episode_extra_stats'] = extra
-            except (ValueError, TypeError) as e:
-                logger.debug(f"Trajectory metrics computation failed: {e}")
-            # Stash infos to return to the learner before we clear them in reset
-            self._infos_to_return = dict(self.infos)
-            # Finally, reset environments and mark them fresh for next episode
-            self.reset_idx(reset_envs)
+            self._handle_post_reward_reset(
+                robot_position, robot_position_before_reset, gate_center_position,
+                successes, target_successes, reset_envs,
+            )
         self.num_task_steps += 1
-        # do stuff with the image observations here
-        self.process_image_observation()
-        self.process_static_camera_observation()
-        self.post_image_reward_addition()
-        
-        # FINAL VERIFICATION: After all processing is complete
-        if not self._final_verification_printed:
-            self._final_verification_printed = True
-            logger.warning("🎯 FINAL STATIC CAMERA VERIFICATION (AFTER PROCESSING):")
-            
-            # Process observations to get final state
-            self.process_obs_for_task()
-            
-            if'observations' in self.task_obs:
-                obs_sample = self.task_obs["observations"][0]
-                
-                static_pos = obs_sample[3:6]
-                static_orient = obs_sample[6:9]
-                static_vae = obs_sample[86:150]
-                
-                logger.warning(f"  📍 Final static pos: {static_pos.cpu().numpy()}")
-                logger.warning(f"  🧭 Final static orient: {static_orient.cpu().numpy()}")
-                logger.warning(f"  📷 Final static VAE: range=[{static_vae.min().item():.3f}, {static_vae.max().item():.3f}]")
-                
-                # Check final state
-                pos_ok = not torch.allclose(static_pos, torch.zeros_like(static_pos), atol=1e-6)
-                orient_ok = not torch.allclose(static_orient, torch.zeros_like(static_orient), atol=1e-6)
-                vae_ok = not torch.allclose(static_vae, torch.zeros_like(static_vae), atol=1e-6)
-                
-                logger.warning(f"  ✅ FINAL RESULTS: pos={pos_ok}, orient={orient_ok}, vae={vae_ok}")
-                
-                if pos_ok and orient_ok and vae_ok:
-                    logger.warning("🎉 SUCCESS: All 150D static camera observations verified!")
-                    
-                    # CRITICAL: Add verification that observations reach RL training
-                    logger.warning("🤖 RL TRAINING USAGE VERIFICATION:")
-                    logger.warning("  ⚠️  IMPORTANT: This verifies DATA PIPELINE, not RL training usage!")
-                    logger.warning("  📋 To verify RL training usage, check:")
-                    logger.warning("     1. Neural network receives 150D input (not 128D or other)")
-                    logger.warning("     2. Policy network architecture matches observation space")
-                    logger.warning("     3. Static camera indices [3:6] and [86:150] affect policy decisions")
-                    logger.warning("     4. Ablation test: performance difference with vs without static camera")
-                    logger.warning("  🔍 Current verification: Environment correctly provides 150D observations")
-                    logger.warning("  ❓ Next step needed: Verify Sample Factory & neural network usage")
-                else:
-                    logger.error("❌ Some static camera data still missing after processing!")
-        
+
+        # --- Image processing and final return ---
+        self._process_images_and_finalize()
+
         if self.task_config.return_state_before_reset == False:
             return_tuple = self.get_return_tuple()
         return return_tuple

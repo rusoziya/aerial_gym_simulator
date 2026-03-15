@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import os
 import numpy as np
 import torch
 
@@ -180,60 +181,12 @@ class StaticCameraManager:
             self.camera_setup_success = False
             self.use_synthetic_camera = False
     
-    def update_camera_positions(self, curriculum_level: int, env_ids: torch.Tensor) -> None:
-        """Update static camera orientation ONLY for resetting environments."""
-        if self.use_synthetic_camera:
-            # In synthetic mode, update orientation per resetting env with spawn-aware logic
-            max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
-            # Read flags and robot positions
-            try:
-                parent = self.env_manager
-                disable_flag = False
-                rp = None
-                if parent is not None and hasattr(parent, 'global_tensor_dict'):
-                    gtd = parent.global_tensor_dict
-                    disable_flag = bool(gtd.get('static_camera_randomization/orientation_disabled', False))
-                    rp = gtd.get('robot_position', None)
-            except (KeyError, TypeError):
-                disable_flag = False
-                rp = None
-            import random, math
-            horizontal_fov = 87.0
-            half_fov = horizontal_fov * 0.5
-            margin = 5.0
-            for env_idx in env_ids:
-                if env_idx < len(self.current_camera_angles):
-                    if disable_flag or max_angle_range <= 0:
-                        ang = 0.0
-                    else:
-                        # Camera at (0,-3) looks toward +Y (0°). Keep both gate (0°) and drone in FOV.
-                        if rp is not None and env_idx < rp.shape[0]:
-                            cam_x, cam_y = 0.0, -3.0
-                            dx = float(rp[env_idx, 0].item()) - cam_x
-                            dy = float(rp[env_idx, 1].item()) - cam_y
-                            theta_r = math.degrees(math.atan2(dx, dy))
-                            gate_low, gate_high = -half_fov + margin, half_fov - margin
-                            rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
-                            low = max(gate_low, rob_low, -max_angle_range)
-                            high = min(gate_high, rob_high, max_angle_range)
-                            if high > low:
-                                ang = random.uniform(low, high)
-                            else:
-                                target = max(min(theta_r, gate_high), gate_low)
-                                ang = max(-max_angle_range, min(max_angle_range, target))
-                        else:
-                            ang = random.uniform(-max_angle_range, max_angle_range)
-                    self.current_camera_angles[env_idx] = ang
-            logger.debug(f"Synthetic camera mode - updated angles for envs {env_ids.tolist()}")
-            return
-            
-        if not self.camera_setup_success or len(self.camera_handles) == 0:
-            return
-        
-        # Get maximum angle range. For yaw sweep feature we use fixed ±30° (curriculum-independent)
-        _max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
-        FIXED_SWEEP_MAX_DEG = 15.0
-        # Honor ablation flag from parent task/global dict and read robot positions
+    def _read_ablation_flags_and_robot_positions(self) -> tuple[bool, torch.Tensor | None]:
+        """Read the orientation-disabled ablation flag and robot positions from global tensor dict.
+
+        Returns:
+            A tuple of (disable_flag, robot_positions).
+        """
         try:
             parent = self.env_manager
             disable_flag = False
@@ -245,66 +198,403 @@ class StaticCameraManager:
         except (KeyError, TypeError):
             disable_flag = False
             rp = None
-        
+        return disable_flag, rp
+
+    def _update_synthetic_camera_angles(
+        self, curriculum_level: int, env_ids: torch.Tensor
+    ) -> None:
+        """Update camera angles for synthetic camera mode (no Isaac Gym camera handles)."""
+        max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
+        disable_flag, rp = self._read_ablation_flags_and_robot_positions()
+        import random, math
+        horizontal_fov = 87.0
+        half_fov = horizontal_fov * 0.5
+        margin = 5.0
+        for env_idx in env_ids:
+            if env_idx < len(self.current_camera_angles):
+                if disable_flag or max_angle_range <= 0:
+                    ang = 0.0
+                else:
+                    # Camera at (0,-3) looks toward +Y (0°). Keep both gate (0°) and drone in FOV.
+                    if rp is not None and env_idx < rp.shape[0]:
+                        cam_x, cam_y = 0.0, -3.0
+                        dx = float(rp[env_idx, 0].item()) - cam_x
+                        dy = float(rp[env_idx, 1].item()) - cam_y
+                        theta_r = math.degrees(math.atan2(dx, dy))
+                        gate_low, gate_high = -half_fov + margin, half_fov - margin
+                        rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
+                        low = max(gate_low, rob_low, -max_angle_range)
+                        high = min(gate_high, rob_high, max_angle_range)
+                        if high > low:
+                            ang = random.uniform(low, high)
+                        else:
+                            target = max(min(theta_r, gate_high), gate_low)
+                            ang = max(-max_angle_range, min(max_angle_range, target))
+                    else:
+                        ang = random.uniform(-max_angle_range, max_angle_range)
+                self.current_camera_angles[env_idx] = ang
+        logger.debug(f"Synthetic camera mode - updated angles for envs {env_ids.tolist()}")
+
+    def _resolve_base_camera_position(self) -> tuple[gymapi.Vec3, float | None, dict]:
+        """Resolve the base camera position from env vars and global tensor dict.
+
+        Returns:
+            A tuple of (base_camera_pos, base_z, gtd) where base_z is None when
+            adaptive-per-env mode is active.
+        """
         try:
-            # Fixed camera base position with optional CLI overrides
+            parent = self.env_manager
+            gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+        except Exception:
+            gtd = {}
+        try:
+            base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
+        except (ValueError, TypeError):
+            base_y = -3.0
+        # Determine base Z spawning mode: numeric or 'adaptive' to gate center
+        try:
+            base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
+            if base_z_env is None:
+                base_z_env = gtd.get('static_camera/base_z', 1.5)
+            # Accept string 'adaptive' (case-insensitive) to enable adaptive Z per env
+            if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':
+                base_z: float | None = None  # Means adaptive per env
+            else:
+                base_z = float(base_z_env)
+        except (ValueError, TypeError):
+            base_z = 1.5
+        # If base_z is None (adaptive per env), use a numeric placeholder for Vec3; per-env Z resolved below
+        try:
+            base_z_for_vec = 1.5 if base_z is None else float(base_z)
+        except (ValueError, TypeError):
+            base_z_for_vec = 1.5
+        base_camera_pos = gymapi.Vec3(0.0, base_y, base_z_for_vec)
+        return base_camera_pos, base_z, gtd
+
+    def _resample_jitter_for_env(self, env_idx: int) -> None:
+        """Re-sample per-env translation and euler jitter on episode reset."""
+        try:
+            u = torch.rand(3, device=self.device)
+            tmin = torch.tensor(self.static_cam_min_t, device=self.device, dtype=torch.float32)
+            tmax = torch.tensor(self.static_cam_max_t, device=self.device, dtype=torch.float32)
+            t = (tmin + u * (tmax - tmin)).tolist()
+            v = torch.rand(3, device=self.device)
+            emin = torch.tensor(self.static_cam_min_euler, device=self.device, dtype=torch.float32)
+            emax = torch.tensor(self.static_cam_max_euler, device=self.device, dtype=torch.float32)
+            e = (emin + v * (emax - emin)).tolist()
+            self._trans_jitter[env_idx] = (float(t[0]), float(t[1]), float(t[2]))
+            self._euler_jitter_deg[env_idx] = (float(e[0]), float(e[1]), float(e[2]))
+        except (ValueError, TypeError):
+            self._trans_jitter[env_idx] = (0.0, 0.0, 0.0)
+            self._euler_jitter_deg[env_idx] = (0.0, 0.0, 0.0)
+
+    def _compute_yaw_sweep_angle(
+        self, env_idx: int, curriculum_level: int, sweep_speed_deg: float, gtd: dict
+    ) -> tuple[float, float]:
+        """Compute yaw sweep angle offset for a single environment.
+
+        Returns:
+            A tuple of (angle_offset_degrees, debug_max_range).
+        """
+        # Compute time-based angle: A(level)*sin(omega*t + phase).
+        # Linear amplitude schedule: 2 deg at level 3 -> 19 deg at level end_level; clamp outside.
+        start_level = 3
+        # Honor evaluation stretch: extend beyond 23 up to eval_end when enabled
+        try:
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_eval
+            # Detect eval-stretch (prefer global_tensor_dict, fallback to env var)
             try:
                 parent = self.env_manager
-                gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+                gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
             except Exception:
-                gtd = {}
+                gtd_local = {}
+            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
+            if not eval_en:
+                import os as _os
+                eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
             try:
-                base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
+                eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23)))
             except (ValueError, TypeError):
-                base_y = -3.0
-            # Determine base Z spawning mode: numeric or 'adaptive' to gate center
+                eval_end = int(getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23))
+            end_level = int(eval_end) if eval_en else 23
+        except (ValueError, TypeError):
+            end_level = 23
+        A_min = 2.0
+        A_max = 19.0
+        if curriculum_level <= start_level:
+            A = A_min
+        elif curriculum_level >= end_level:
+            A = A_max
+        else:
+            frac = float(curriculum_level - start_level) / max(1.0, float(end_level - start_level))
+            A = A_min + frac * (A_max - A_min)
+        dt = 1.0/60.0
+        # Keep peak angular speed similar to baseline A0=50 deg when changing amplitude.
+        # For theta(t)=A*sin(wt), peak speed = A*w. Compensate w by (A0/A).
+        A0 = 50.0
+        comp = (A0 / max(A, 1e-6))
+        # Additionally, increase sweep speed with curriculum level (1.0x -> 2.0x)
+        try:
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc2
+            # Respect eval stretch when enabled (eval only), otherwise cap at training max
             try:
-                base_z_env = os.environ.get('SF_STATIC_CAMERA_BASE_Z', None)
-                if base_z_env is None:
-                    base_z_env = gtd.get('static_camera/base_z', 1.5)
-                # Accept string 'adaptive' (case-insensitive) to enable adaptive Z per env
-                if isinstance(base_z_env, str) and base_z_env.strip().lower() == 'adaptive':
-                    base_z = None  # Means adaptive per env
-                else:
-                    base_z = float(base_z_env)
-            except (ValueError, TypeError):
-                base_z = 1.5
-            # If base_z is None (adaptive per env), use a numeric placeholder for Vec3; per-env Z resolved below
+                parent = self.env_manager
+                gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+            except Exception:
+                gtd_local = {}
+            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
+            min_lvl = int(getattr(_tc2.curriculum, 'min_level', 1))
+            max_lvl_cfg = int(getattr(_tc2.curriculum, 'max_level', min_lvl))
+            max_lvl_eval = int(getattr(_tc2.curriculum, 'eval_stretch_end_level', max_lvl_cfg))
+            max_lvl = max_lvl_eval if eval_en else max_lvl_cfg
+            level_clamped = max(min(curriculum_level, max_lvl), min_lvl)
+            denom = max(1, max_lvl - min_lvl)
+            level_frac = float(level_clamped - min_lvl) / float(denom)
+            speed_scale = 1.0 + level_frac
+        except (ValueError, TypeError):
+            speed_scale = 1.0
+        sweep_speed_eff = sweep_speed_deg * speed_scale * comp
+        omega = (sweep_speed_eff * 3.14159 / 180.0) * dt
+        # Use global sim step as t and per-env small phase to desynchronize
+        sim_steps = 0
+        try:
+            steps_obj = gtd.get('sim_steps', 0)
+            # Support torch tensors or plain ints
+            if hasattr(steps_obj, 'shape') or hasattr(steps_obj, 'ndim'):
+                # Torch tensor
+                try:
+                    if getattr(steps_obj, 'ndim', 0) == 0:
+                        sim_steps = int(steps_obj.item())
+                    else:
+                        idx = env_idx if env_idx < steps_obj.shape[0] else 0
+                        sim_steps = int(steps_obj[idx].item())
+                except (ValueError, TypeError):
+                    sim_steps = 0
+            else:
+                sim_steps = int(steps_obj)
+        except (ValueError, TypeError):
+            sim_steps = 0
+        # Per-env randomized phase and direction so starting angle and direction vary
+        # Re-randomize on first step after reset for each env (sim_steps == 0)
+        try:
+            if sim_steps == 0:
+                # Use seeded torch RNG for determinism across runs with the same --seed
+                rand_phase = float(torch.rand(1, device=self.device).item())  # [0,1)
+                self.sweep_phase_offsets[env_idx] = -math.pi + (2.0 * math.pi * rand_phase)
+                dir_flag = int(torch.randint(low=0, high=2, size=(1,), device=self.device).item())
+                self.sweep_directions[env_idx] = 1.0 if dir_flag == 1 else -1.0
+            phi0 = self.sweep_phase_offsets[env_idx]
+            direction = self.sweep_directions[env_idx]
+        except (ValueError, TypeError):
+            phi0 = 0.0
+            direction = 1.0
+        angle_offset_degrees = A * math.sin(direction * (omega * sim_steps) + phi0)
+        debug_max_range = A
+        return angle_offset_degrees, debug_max_range
+
+    def _compute_spawn_aware_angle(
+        self,
+        env_idx: int,
+        curriculum_level: int,
+        base_angle_range: float,
+        base_camera_pos: gymapi.Vec3,
+        disable_flag: bool,
+        rp: torch.Tensor | None,
+        base_y: float,
+    ) -> tuple[float, float]:
+        """Compute spawn-aware angle when yaw sweep is disabled.
+
+        Returns:
+            A tuple of (angle_offset_degrees, debug_max_range).
+        """
+        # Extend the allowable angle range using the same per-level formula as yaw sweep
+        max_angle_range = base_angle_range
+        try:
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_fix
+            # Detect eval-stretch
             try:
-                base_z_for_vec = 1.5 if base_z is None else float(base_z)
+                parent = self.env_manager
+                gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+            except Exception:
+                gtd_local = {}
+            eval_en = False
+            try:
+                eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
+            except (KeyError, TypeError):
+                eval_en = False
+            if not eval_en:
+                try:
+                    import os as _os
+                    eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+                except (KeyError, TypeError):
+                    eval_en = False
+            try:
+                eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23)))
             except (ValueError, TypeError):
-                base_z_for_vec = 1.5
-            base_camera_pos = gymapi.Vec3(0.0, base_y, base_z_for_vec)
-            
+                eval_end = int(getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23))
+            eff_level = min(curriculum_level, eval_end) if eval_en else curriculum_level
+            sr_fix = _tc_fix.curriculum.get_spawn_ranges(eff_level)
+            x_half_fix = float(sr_fix.get('x_half_span_m', 0.5))
+            y_center_fix = float(sr_fix.get('y_center_m', -1.5))
+            dy_fix = abs(y_center_fix - float(base_y))
+            half_fov_fix = 87.0 * 0.5
+            margin_fix = 2.5
+            alpha_fix = math.degrees(math.atan2(x_half_fix, max(1e-6, dy_fix)))
+            sweep_like_max = max(0.0, alpha_fix - half_fov_fix) + margin_fix
+            max_angle_range = max(max_angle_range, sweep_like_max)
+        except (ValueError, TypeError):
+            pass
+        # When sweep is disabled, honor the orientation randomization disable flag
+        if disable_flag or max_angle_range <= 0:
+            return 0.0, max_angle_range
+        horizontal_fov = 87.0
+        half_fov = horizontal_fov * 0.5
+        margin = 2.5
+        # Extend allowable randomization range further under eval-stretch (levels beyond 23)
+        try:
+            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_ext
+            try:
+                parent = self.env_manager
+                gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
+            except Exception:
+                gtd_local = {}
+            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
+            if not eval_en:
+                import os as _os
+                eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_ext.curriculum, 'eval_stretch_end_level', 23)))
+            if eval_en and curriculum_level > 23:
+                # Scale max_angle_range slightly up to eval_end to keep randomization non-zero
+                # e.g., +25% headroom when at eval_end
+                frac = float(min(curriculum_level, eval_end) - 23) / max(1.0, float(eval_end - 23))
+                max_angle_range = max_angle_range * (1.0 + 0.25 * frac)
+        except (ValueError, TypeError):
+            pass
+        if rp is not None and env_idx < rp.shape[0]:
+            cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
+            dx = float(rp[env_idx, 0].item()) - cam_x
+            dy = float(rp[env_idx, 1].item()) - cam_y
+            theta_r = math.degrees(math.atan2(dx, dy))  # 0 deg points to +Y
+            gate_low, gate_high = -half_fov + margin, half_fov - margin
+            rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
+            low = max(gate_low, rob_low, -max_angle_range)
+            high = min(gate_high, rob_high, max_angle_range)
+            if high > low:
+                # Seeded torch RNG for deterministic selection
+                u = float(torch.rand(1, device=self.device).item())
+                angle_offset_degrees = low + u * (high - low)
+            else:
+                target = max(min(theta_r, gate_high), gate_low)
+                angle_offset_degrees = max(-max_angle_range, min(max_angle_range, target))
+        else:
+            # Seeded torch RNG for deterministic selection
+            u = float(torch.rand(1, device=self.device).item())
+            angle_offset_degrees = -max_angle_range + u * (2.0 * max_angle_range)
+        return angle_offset_degrees, max_angle_range
+
+    def _apply_camera_transform(
+        self,
+        env_idx: int,
+        angle_offset_degrees: float,
+        sweep_enabled: bool,
+        disable_flag: bool,
+        max_angle_range: float,
+        base_camera_pos: gymapi.Vec3,
+        base_z: float | None,
+        gtd: dict,
+    ) -> None:
+        """Apply the computed angle to the Isaac Gym camera for a single environment.
+
+        Resolves per-env Z, applies translation/euler jitter, and calls set_camera_location.
+        """
+        # Store the angle for this environment
+        if env_idx < len(self.current_camera_angles):
+            self.current_camera_angles[env_idx] = angle_offset_degrees
+
+        # Convert to radians and update camera
+        angle_offset_radians = angle_offset_degrees * (3.14159 / 180.0)
+        # Euler jitter policy: avoid yaw jitter if curriculum yaw/sweep active. Apply only pitch (small tilt)
+        jitter_roll_deg, jitter_pitch_deg, jitter_yaw_deg = self._euler_jitter_deg[env_idx] if (0 <= env_idx < len(self._euler_jitter_deg)) else (0.0, 0.0, 0.0)
+        if sweep_enabled or (not disable_flag and max_angle_range > 0):
+            # Curriculum yaw active: zero yaw jitter
+            jitter_yaw_deg = 0.0
+        # Apply pitch jitter as a small vertical target offset; roll is not supported via set_camera_location
+        pitch_rad = jitter_pitch_deg * (3.14159 / 180.0)
+
+        # Resolve per-env base Z (adaptive to gate center if requested)
+        try:
+            env_base_z = base_z
+            if env_base_z is None:
+                gh = gtd.get('gate/center_height_per_env', None)
+                env_base_z = float(gh[env_idx].item()) if gh is not None else 1.5
+        except (ValueError, TypeError):
+            env_base_z = 1.5
+        base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
+        # Apply per-env translation jitter sampled at setup/reset
+        try:
+            jx, jy, jz = self._trans_jitter[env_idx]
+        except Exception:
+            jx, jy, jz = 0.0, 0.0, 0.0
+        base_camera_env_pos = gymapi.Vec3(base_camera_env_pos.x + jx, base_camera_env_pos.y + jy, base_camera_env_pos.z + jz)
+
+        # Calculate offset target position based on randomized angle for this environment
+        target_distance = abs(base_camera_env_pos.y)  # Keep look-at distance consistent with base Y
+        # Apply additional small yaw jitter around the curriculum yaw (if allowed)
+        yaw_total = angle_offset_radians + (jitter_yaw_deg * (3.14159 / 180.0))
+        target_x = base_camera_env_pos.x + target_distance * math.sin(yaw_total)
+        target_y = base_camera_env_pos.y + target_distance * math.cos(yaw_total)
+        # Look at gate adaptive center height, to keep camera pitched to the center
+        try:
+            gh = gtd.get('gate/center_height_per_env', None)
+            target_z = float(gh[env_idx].item()) if gh is not None else env_base_z
+        except (ValueError, TypeError):
+            target_z = env_base_z
+        # Apply pitch jitter as small vertical offset in look-at target
+        target_z = target_z + math.tan(pitch_rad) * target_distance
+        new_target = gymapi.Vec3(target_x, target_y, target_z)
+
+        # Update ONLY this environment's camera
+        env_handle = self.env_handles[env_idx]
+        cam_handle = self.camera_handles[env_idx]
+        self.gym.set_camera_location(cam_handle, env_handle, base_camera_env_pos, new_target)
+        # Update debug caches
+        self.last_camera_pos[env_idx] = (float(base_camera_env_pos.x), float(base_camera_env_pos.y), float(base_camera_env_pos.z))
+        self.last_camera_target[env_idx] = (float(new_target.x), float(new_target.y), float(new_target.z))
+        self.last_angle_deg[env_idx] = float(angle_offset_degrees)
+
+    def update_camera_positions(self, curriculum_level: int, env_ids: torch.Tensor) -> None:
+        """Update static camera orientation ONLY for resetting environments."""
+        if self.use_synthetic_camera:
+            self._update_synthetic_camera_angles(curriculum_level, env_ids)
+            return
+
+        if not self.camera_setup_success or len(self.camera_handles) == 0:
+            return
+
+        # Get maximum angle range from curriculum
+        _max_angle_range, _, _ = task_config.curriculum.get_static_camera_difficulty(curriculum_level)
+        FIXED_SWEEP_MAX_DEG = 15.0
+        disable_flag, rp = self._read_ablation_flags_and_robot_positions()
+
+        try:
+            base_camera_pos, base_z, gtd = self._resolve_base_camera_position()
+
             import random
-            
+
             # Ensure per-env randomized sweep parameters exist
             if not True or (len(self.sweep_phase_offsets) != len(self.env_handles)):
                 self.sweep_phase_offsets = [0.0 for _ in range(len(self.env_handles))]
                 self.sweep_directions = [1.0 for _ in range(len(self.env_handles))]
-            
+
             # Update camera orientation ONLY for the specified environments (those resetting)
             for env_idx in env_ids:
                 if env_idx >= len(self.env_handles) or env_idx >= len(self.camera_handles):
                     continue
                 # Re-sample per-env jitter on reset for fresh episodes
                 if self.static_cam_randomize:
-                    try:
-                        u = torch.rand(3, device=self.device)
-                        tmin = torch.tensor(self.static_cam_min_t, device=self.device, dtype=torch.float32)
-                        tmax = torch.tensor(self.static_cam_max_t, device=self.device, dtype=torch.float32)
-                        t = (tmin + u * (tmax - tmin)).tolist()
-                        v = torch.rand(3, device=self.device)
-                        emin = torch.tensor(self.static_cam_min_euler, device=self.device, dtype=torch.float32)
-                        emax = torch.tensor(self.static_cam_max_euler, device=self.device, dtype=torch.float32)
-                        e = (emin + v * (emax - emin)).tolist()
-                        self._trans_jitter[env_idx] = (float(t[0]), float(t[1]), float(t[2]))
-                        self._euler_jitter_deg[env_idx] = (float(e[0]), float(e[1]), float(e[2]))
-                    except (ValueError, TypeError):
-                        self._trans_jitter[env_idx] = (0.0, 0.0, 0.0)
-                        self._euler_jitter_deg[env_idx] = (0.0, 0.0, 0.0)
-                    
-                # Optional: constant yaw sweep (±30°), curriculum-independent
+                    self._resample_jitter_for_env(env_idx)
+
+                # Check if yaw sweep is enabled
                 try:
                     parent = self.env_manager
                     gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
@@ -315,253 +605,20 @@ class StaticCameraManager:
                     sweep_speed_deg = 10.0
 
                 if sweep_enabled:
-                    # Compute time-based angle: A(level)*sin(omega*t + phase).
-                    # Linear amplitude schedule: 2° at level 3 → 19° at level end_level; clamp outside.
-                    start_level = 3
-                    # Honor evaluation stretch: extend beyond 23 up to eval_end when enabled
-                    try:
-                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_eval
-                        # Detect eval-stretch (prefer global_tensor_dict, fallback to env var)
-                        try:
-                            parent = self.env_manager
-                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                        except Exception:
-                            gtd_local = {}
-                        eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        if not eval_en:
-                            import os as _os
-                            eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                        try:
-                            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23)))
-                        except (ValueError, TypeError):
-                            eval_end = int(getattr(_tc_eval.curriculum, 'eval_stretch_end_level', 23))
-                        end_level = int(eval_end) if eval_en else 23
-                    except (ValueError, TypeError):
-                        end_level = 23
-                    A_min = 2.0
-                    A_max = 19.0
-                    if curriculum_level <= start_level:
-                        A = A_min
-                    elif curriculum_level >= end_level:
-                        A = A_max
-                    else:
-                        frac = float(curriculum_level - start_level) / max(1.0, float(end_level - start_level))
-                        A = A_min + frac * (A_max - A_min)
-                    dt = 1.0/60.0
-                    # Keep peak angular speed similar to baseline A0=50° when changing amplitude.
-                    # For theta(t)=A*sin(ωt), peak speed = A*ω. Compensate ω by (A0/A).
-                    A0 = 50.0
-                    comp = (A0 / max(A, 1e-6))
-                    # Additionally, increase sweep speed with curriculum level (1.0x -> 2.0x)
-                    try:
-                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc2
-                        # Respect eval stretch when enabled (eval only), otherwise cap at training max
-                        try:
-                            parent = self.env_manager
-                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                        except Exception:
-                            gtd_local = {}
-                        eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        min_lvl = int(getattr(_tc2.curriculum, 'min_level', 1))
-                        max_lvl_cfg = int(getattr(_tc2.curriculum, 'max_level', min_lvl))
-                        max_lvl_eval = int(getattr(_tc2.curriculum, 'eval_stretch_end_level', max_lvl_cfg))
-                        max_lvl = max_lvl_eval if eval_en else max_lvl_cfg
-                        level_clamped = max(min(curriculum_level, max_lvl), min_lvl)
-                        denom = max(1, max_lvl - min_lvl)
-                        level_frac = float(level_clamped - min_lvl) / float(denom)
-                        speed_scale = 1.0 + level_frac
-                    except (ValueError, TypeError):
-                        speed_scale = 1.0
-                    sweep_speed_eff = sweep_speed_deg * speed_scale * comp
-                    omega = (sweep_speed_eff * 3.14159 / 180.0) * dt
-                    # Use global sim step as t and per-env small phase to desynchronize
-                    sim_steps = 0
-                    try:
-                        steps_obj = gtd.get('sim_steps', 0)
-                        # Support torch tensors or plain ints
-                        if hasattr(steps_obj, 'shape') or hasattr(steps_obj, 'ndim'):
-                            # Torch tensor
-                            try:
-                                if getattr(steps_obj, 'ndim', 0) == 0:
-                                    sim_steps = int(steps_obj.item())
-                                else:
-                                    idx = env_idx if env_idx < steps_obj.shape[0] else 0
-                                    sim_steps = int(steps_obj[idx].item())
-                            except (ValueError, TypeError):
-                                sim_steps = 0
-                        else:
-                            sim_steps = int(steps_obj)
-                    except (ValueError, TypeError):
-                        sim_steps = 0
-                    # Per-env randomized phase and direction so starting angle and direction vary
-                    # Re-randomize on first step after reset for each env (sim_steps == 0)
-                    try:
-                        if sim_steps == 0:
-                            # Use seeded torch RNG for determinism across runs with the same --seed
-                            rand_phase = float(torch.rand(1, device=self.device).item())  # [0,1)
-                            self.sweep_phase_offsets[env_idx] = -math.pi + (2.0 * math.pi * rand_phase)
-                            dir_flag = int(torch.randint(low=0, high=2, size=(1,), device=self.device).item())
-                            self.sweep_directions[env_idx] = 1.0 if dir_flag == 1 else -1.0
-                        phi0 = self.sweep_phase_offsets[env_idx]
-                        direction = self.sweep_directions[env_idx]
-                    except (ValueError, TypeError):
-                        phi0 = 0.0
-                        direction = 1.0
-                    angle_offset_degrees = A * math.sin(direction * (omega * sim_steps) + phi0)
-                    debug_max_range = A
-                    # [YawSweep DEBUG DISABLED]
+                    angle_offset_degrees, debug_max_range = self._compute_yaw_sweep_angle(
+                        env_idx, curriculum_level, sweep_speed_deg, gtd
+                    )
                 else:
-                    # Spawn-aware angle selection: keep both gate (0°) and drone inside FOV; or 0 if disabled
-                    # Extend the allowable angle range using the same per-level formula as yaw sweep:
-                    # A = max(0, atan2(x_half, |y_center - base_y|) - 43.5) + 2.5 (deg)
-                    # Also honor evaluation stretch during inference when enabled.
-                    max_angle_range = _max_angle_range
-                    try:
-                        from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_fix
-                        # Detect eval-stretch
-                        try:
-                            parent = self.env_manager
-                            gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                        except Exception:
-                            gtd_local = {}
-                        eval_en = False
-                        try:
-                            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                        except (KeyError, TypeError):
-                            eval_en = False
-                        if not eval_en:
-                            try:
-                                import os as _os
-                                eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                            except (KeyError, TypeError):
-                                eval_en = False
-                        try:
-                            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23)))
-                        except (ValueError, TypeError):
-                            eval_end = int(getattr(_tc_fix.curriculum, 'eval_stretch_end_level', 23))
-                        eff_level = min(curriculum_level, eval_end) if eval_en else curriculum_level
-                        sr_fix = _tc_fix.curriculum.get_spawn_ranges(eff_level)
-                        x_half_fix = float(sr_fix.get('x_half_span_m', 0.5))
-                        y_center_fix = float(sr_fix.get('y_center_m', -1.5))
-                        dy_fix = abs(y_center_fix - float(base_y))
-                        half_fov_fix = 87.0 * 0.5
-                        margin_fix = 2.5
-                        alpha_fix = math.degrees(math.atan2(x_half_fix, max(1e-6, dy_fix)))
-                        sweep_like_max = max(0.0, alpha_fix - half_fov_fix) + margin_fix
-                        max_angle_range = max(max_angle_range, sweep_like_max)
-                    except (ValueError, TypeError):
-                        pass
-                    # When sweep is disabled, honor the orientation randomization disable flag
-                    if disable_flag or max_angle_range <= 0:
-                        angle_offset_degrees = 0.0
-                    else:
-                        horizontal_fov = 87.0
-                        half_fov = horizontal_fov * 0.5
-                        margin = 2.5
-                        # Extend allowable randomization range further under eval-stretch (levels beyond 23)
-                        try:
-                            from aerial_gym.config.task_config.navigation_task_config_gate import task_config as _tc_ext
-                            try:
-                                parent = self.env_manager
-                                gtd_local = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                            except Exception:
-                                gtd_local = {}
-                            eval_en = bool(gtd_local.get('eval_stretch_enabled', False))
-                            if not eval_en:
-                                import os as _os
-                                eval_en = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                            eval_end = int(gtd_local.get('eval_stretch_end_level', getattr(_tc_ext.curriculum, 'eval_stretch_end_level', 23)))
-                            if eval_en and curriculum_level > 23:
-                                # Scale max_angle_range slightly up to eval_end to keep randomization non-zero
-                                # e.g., +25% headroom when at eval_end
-                                frac = float(min(curriculum_level, eval_end) - 23) / max(1.0, float(eval_end - 23))
-                                max_angle_range = max_angle_range * (1.0 + 0.25 * frac)
-                        except (ValueError, TypeError):
-                            pass
-                        if rp is not None and env_idx < rp.shape[0]:
-                            cam_x, cam_y = base_camera_pos.x, base_camera_pos.y
-                            dx = float(rp[env_idx, 0].item()) - cam_x
-                            dy = float(rp[env_idx, 1].item()) - cam_y
-                            theta_r = math.degrees(math.atan2(dx, dy))  # 0° points to +Y
-                            gate_low, gate_high = -half_fov + margin, half_fov - margin
-                            rob_low, rob_high = theta_r - (half_fov - margin), theta_r + (half_fov - margin)
-                            low = max(gate_low, rob_low, -max_angle_range)
-                            high = min(gate_high, rob_high, max_angle_range)
-                            if high > low:
-                                # Seeded torch RNG for deterministic selection
-                                u = float(torch.rand(1, device=self.device).item())
-                                angle_offset_degrees = low + u * (high - low)
-                            else:
-                                target = max(min(theta_r, gate_high), gate_low)
-                                angle_offset_degrees = max(-max_angle_range, min(max_angle_range, target))
-                        else:
-                            # Seeded torch RNG for deterministic selection
-                            u = float(torch.rand(1, device=self.device).item())
-                            angle_offset_degrees = -max_angle_range + u * (2.0 * max_angle_range)
-                        debug_max_range = max_angle_range
-                
-                # Store the angle for this environment
-                if env_idx < len(self.current_camera_angles):
-                    self.current_camera_angles[env_idx] = angle_offset_degrees
-                
-                # Convert to radians and update camera
-                angle_offset_radians = angle_offset_degrees * (3.14159 / 180.0)
-                # Euler jitter policy: avoid yaw jitter if curriculum yaw/sweep active. Apply only pitch (small tilt)
-                jitter_roll_deg, jitter_pitch_deg, jitter_yaw_deg = self._euler_jitter_deg[env_idx] if (0 <= env_idx < len(self._euler_jitter_deg)) else (0.0, 0.0, 0.0)
-                if sweep_enabled or (not disable_flag and max_angle_range > 0):
-                    # Curriculum yaw active: zero yaw jitter
-                    jitter_yaw_deg = 0.0
-                # Apply pitch jitter as a small vertical target offset; roll is not supported via set_camera_location
-                pitch_rad = jitter_pitch_deg * (3.14159 / 180.0)
-                
-                # Resolve per-env base Z (adaptive to gate center if requested)
-                try:
-                    env_base_z = base_z
-                    if env_base_z is None:
-                        gh = gtd.get('gate/center_height_per_env', None)
-                        env_base_z = float(gh[env_idx].item()) if gh is not None else 1.5
-                except (ValueError, TypeError):
-                    env_base_z = 1.5
-                base_camera_env_pos = gymapi.Vec3(base_camera_pos.x, base_camera_pos.y, env_base_z)
-                # Apply per-env translation jitter sampled at setup/reset
-                try:
-                    jx, jy, jz = self._trans_jitter[env_idx]
-                except Exception:
-                    jx, jy, jz = 0.0, 0.0, 0.0
-                base_camera_env_pos = gymapi.Vec3(base_camera_env_pos.x + jx, base_camera_env_pos.y + jy, base_camera_env_pos.z + jz)
+                    angle_offset_degrees, debug_max_range = self._compute_spawn_aware_angle(
+                        env_idx, curriculum_level, _max_angle_range,
+                        base_camera_pos, disable_flag, rp, base_camera_pos.y,
+                    )
 
-                # Calculate offset target position based on randomized angle for this environment
-                target_distance = abs(base_camera_env_pos.y)  # Keep look-at distance consistent with base Y
-                # Apply additional small yaw jitter around the curriculum yaw (if allowed)
-                yaw_total = angle_offset_radians + (jitter_yaw_deg * (3.14159 / 180.0))
-                target_x = base_camera_env_pos.x + target_distance * math.sin(yaw_total)
-                target_y = base_camera_env_pos.y + target_distance * math.cos(yaw_total)
-                # Look at gate adaptive center height, to keep camera pitched to the center
-                try:
-                    gh = gtd.get('gate/center_height_per_env', None)
-                    target_z = float(gh[env_idx].item()) if gh is not None else env_base_z
-                except (ValueError, TypeError):
-                    target_z = env_base_z
-                # Apply pitch jitter as small vertical offset in look-at target
-                target_z = target_z + math.tan(pitch_rad) * target_distance
-                new_target = gymapi.Vec3(target_x, target_y, target_z)
-                
-                # Update ONLY this environment's camera
-                env_handle = self.env_handles[env_idx]
-                cam_handle = self.camera_handles[env_idx]
-                self.gym.set_camera_location(cam_handle, env_handle, base_camera_env_pos, new_target)
-                # Update debug caches
-                self.last_camera_pos[env_idx] = (float(base_camera_env_pos.x), float(base_camera_env_pos.y), float(base_camera_env_pos.z))
-                self.last_camera_target[env_idx] = (float(new_target.x), float(new_target.y), float(new_target.z))
-                self.last_angle_deg[env_idx] = float(angle_offset_degrees)
-                # Debug only for env 0 to avoid spam
-                if env_idx == 0:
-                    pass
-                
-                # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera for env {env_idx} - Level {curriculum_level}: {angle_offset_degrees:.1f}° (max range: ±{debug_max_range:.1f}°)")
-            
-            # [YawSweep DEBUG DISABLED] logger.warning(f"[YawSweep] Updated static camera orientation for {len(env_ids)} environments")
-            
+                self._apply_camera_transform(
+                    env_idx, angle_offset_degrees, sweep_enabled, disable_flag,
+                    debug_max_range, base_camera_pos, base_z, gtd,
+                )
+
         except RuntimeError as e:
             logger.warning(f"Failed to update static camera orientation: {e}")
             # Fall back to fixed positioning if update fails
