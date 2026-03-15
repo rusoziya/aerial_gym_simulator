@@ -8,7 +8,7 @@ version = "2.0.0"
 description = "Isaac Gym environments for Aerial Robots"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
-requires-python = ">=3.8,<3.9"
+requires-python = ">=3.8"  # 3.8 for Isaac Gym, 3.11 for Isaac Lab
 authors = [
     {name = "Ziya Ruso", email = "ziya.ruso@gmail.com"},
 ]

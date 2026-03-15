@@ -31,11 +31,25 @@ EnvManager (unchanged)
 ## Prerequisites
 
 ```bash
-# Isaac Lab requires:
-# - Python 3.10+
-# - NVIDIA Isaac Sim (Omniverse)
-# - CUDA 11.8+
-pip install isaacsim-rl isaacsim-replicator isaacsim-extscache-physics
+# Requirements:
+# - Python 3.11 (Isaac Sim 5.x requirement)
+# - NVIDIA GPU with CUDA 12.x drivers
+# - GLIBC 2.35+ (Ubuntu 22.04+)
+# - ~15GB disk space for Isaac Sim runtime
+
+# Create conda env
+conda create -n isaaclab python=3.11 -y
+conda activate isaaclab
+
+# Install Isaac Sim 5.1.0 with full runtime from NVIDIA PyPI
+pip install "isaacsim[all,extscache]==5.1.0" --extra-index-url https://pypi.nvidia.com
+
+# Install Isaac Lab
+pip install isaaclab==2.3.2
+
+# Install aerial_gym in Isaac Lab mode
+cd aerialgym_ws/src/aerial_gym_simulator
+pip install -e .
 ```
 
 ## Step-by-Step Migration
