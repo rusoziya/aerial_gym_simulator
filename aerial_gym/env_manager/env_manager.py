@@ -19,14 +19,17 @@ from aerial_gym.env_manager.base_env_manager import BaseManager
 from aerial_gym.env_manager.gate_variant_selection import (
     apply_gate_variant_selection as _apply_gate_variant_selection,
 )
-from aerial_gym.env_manager.IGE_env_manager import IsaacGymEnv
 from aerial_gym.env_manager.obstacle_manager import ObstacleManager
 from aerial_gym.env_manager.tensor_state import TensorState
-from aerial_gym.env_manager.warp_env_manager import WarpEnv
 from aerial_gym.registry.env_registry import env_config_registry
 from aerial_gym.registry.robot_registry import robot_registry
 from aerial_gym.registry.sim_registry import sim_config_registry
-from aerial_gym.robots.robot_manager import RobotManagerIGE
+
+_BACKEND = os.environ.get("AERIAL_GYM_BACKEND", "isaacgym").lower()
+if _BACKEND != "isaaclab":
+    from aerial_gym.env_manager.IGE_env_manager import IsaacGymEnv
+    from aerial_gym.env_manager.warp_env_manager import WarpEnv
+    from aerial_gym.robots.robot_manager import RobotManagerIGE
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("env_manager")

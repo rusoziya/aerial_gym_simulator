@@ -5,8 +5,13 @@ import os.path
 import random
 from collections import deque
 
-from aerial_gym.assets.isaacgym_asset import IsaacGymAsset, asset_class_to_AssetOptions
-from aerial_gym.assets.warp_asset import WarpAsset
+if os.environ.get("AERIAL_GYM_BACKEND", "isaacgym").lower() != "isaaclab":
+    from aerial_gym.assets.isaacgym_asset import IsaacGymAsset, asset_class_to_AssetOptions
+    from aerial_gym.assets.warp_asset import WarpAsset
+else:
+    IsaacGymAsset = None  # type: ignore[assignment,misc]
+    asset_class_to_AssetOptions = None  # type: ignore[assignment]
+    WarpAsset = None  # type: ignore[assignment]
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("asset_loader")

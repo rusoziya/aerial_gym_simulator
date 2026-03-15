@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-import pytorch3d.transforms as p3d_transforms
+try:
+    import pytorch3d.transforms as p3d_transforms
+except ImportError:
+    p3d_transforms = None  # type: ignore[assignment]
 import torch
 
 from aerial_gym.utils.logging import CustomLogger

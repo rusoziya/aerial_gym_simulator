@@ -24,15 +24,15 @@ class ObservationLayout:
         latents = obs[:, layout.drone_vae_latents]
     """
 
-    drone_position: slice = slice(0, 3)  # 3D absolute position
-    static_camera_position: slice = slice(3, 6)  # 3D relative to drone
-    static_camera_orientation: slice = slice(6, 9)  # 3D (roll, pitch, yaw) relative
-    drone_orientation: slice = slice(9, 12)  # 3D (roll, pitch, yaw) in world
-    body_linear_velocity: slice = slice(12, 15)  # 3D
-    body_angular_velocity: slice = slice(15, 18)  # 3D
-    actions: slice = slice(18, 22)  # 4D (x_vel, y_vel, z_vel, yaw_rate)
-    drone_vae_latents: slice = slice(22, 86)  # 64D
-    static_vae_latents: slice = slice(86, 150)  # 64D
+    drone_position: slice = field(default_factory=lambda: slice(0, 3))  # 3D
+    static_camera_position: slice = field(default_factory=lambda: slice(3, 6))  # 3D
+    static_camera_orientation: slice = field(default_factory=lambda: slice(6, 9))  # 3D
+    drone_orientation: slice = field(default_factory=lambda: slice(9, 12))  # 3D
+    body_linear_velocity: slice = field(default_factory=lambda: slice(12, 15))  # 3D
+    body_angular_velocity: slice = field(default_factory=lambda: slice(15, 18))  # 3D
+    actions: slice = field(default_factory=lambda: slice(18, 22))  # 4D
+    drone_vae_latents: slice = field(default_factory=lambda: slice(22, 86))  # 64D
+    static_vae_latents: slice = field(default_factory=lambda: slice(86, 150))  # 64D
 
     total_dim: int = 150
 

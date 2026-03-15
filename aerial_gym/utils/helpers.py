@@ -32,8 +32,14 @@ from __future__ import annotations
 
 import argparse
 import distutils
+import os
 
-from isaacgym import gymapi, gymutil
+_BACKEND = os.environ.get("AERIAL_GYM_BACKEND", "isaacgym").lower()
+if _BACKEND != "isaaclab":
+    from isaacgym import gymapi, gymutil
+else:
+    gymapi = None  # type: ignore[assignment]
+    gymutil = None  # type: ignore[assignment]
 
 
 def class_to_dict(obj: object) -> dict[str, object]:

@@ -3,12 +3,19 @@ from __future__ import annotations
 import numpy as np
 import torch
 from gym.spaces import Box, Dict
-from pytorch3d.transforms import (
-    euler_angles_to_matrix,
-    matrix_to_euler_angles,
-    matrix_to_rotation_6d,
-    quaternion_to_matrix,
-)
+
+try:
+    from pytorch3d.transforms import (
+        euler_angles_to_matrix,
+        matrix_to_euler_angles,
+        matrix_to_rotation_6d,
+        quaternion_to_matrix,
+    )
+except ImportError:
+    euler_angles_to_matrix = None  # type: ignore[assignment]
+    matrix_to_euler_angles = None  # type: ignore[assignment]
+    matrix_to_rotation_6d = None  # type: ignore[assignment]
+    quaternion_to_matrix = None  # type: ignore[assignment]
 
 from aerial_gym.sim.sim_builder import SimBuilder
 from aerial_gym.task.base_task import BaseTask

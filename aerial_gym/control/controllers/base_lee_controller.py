@@ -18,7 +18,10 @@ logger = CustomLogger("base_lee_controller")
 logger.setLevel("DEBUG")
 
 
-import pytorch3d.transforms as p3d_transforms
+try:
+    import pytorch3d.transforms as p3d_transforms
+except ImportError:
+    p3d_transforms = None  # type: ignore[assignment]
 
 from aerial_gym.control.controllers.base_controller import BaseController
 

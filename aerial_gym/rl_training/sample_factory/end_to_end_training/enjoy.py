@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
-from pytorch3d.transforms import matrix_to_euler_angles, rotation_6d_to_matrix
+
+try:
+    from pytorch3d.transforms import matrix_to_euler_angles, rotation_6d_to_matrix
+except ImportError:
+    matrix_to_euler_angles = None  # type: ignore[assignment]
+    rotation_6d_to_matrix = None  # type: ignore[assignment]
 
 from aerial_gym.registry.env_registry import env_config_registry
 from aerial_gym.registry.robot_registry import robot_registry
