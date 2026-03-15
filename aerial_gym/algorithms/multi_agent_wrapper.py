@@ -247,45 +247,26 @@ def create_multi_agent_env(task_config_class, algorithm="ppo", **kwargs) -> None
     """
     from aerial_gym.envs.navigation_task.multi_agent_navigation_task import MultiAgentNavigationTask
     
-    # Create configuration
     config = task_config_class()
-    
-    # Update device in config if provided
     device = kwargs.get("device", "cuda" if torch.cuda.is_available() else "cpu")
-    if hasattr(config, 'task_config') and isinstance(config.task_config, dict):
-        config.task_config['device'] = device
-        
-        # Handle headless parameter
+
+    if isinstance(config.task_config, dict):
+        config.task_config["device"] = device
         if "headless" in kwargs:
             config.task_config["headless"] = kwargs["headless"]
-            if hasattr(config, 'sim_config') and isinstance(config.sim_config, dict):
+            if isinstance(config.sim_config, dict):
                 config.sim_config["headless"] = kwargs["headless"]
-        
-        # Handle num_envs parameter
         if "num_envs" in kwargs:
             config.task_config["num_envs"] = kwargs["num_envs"]
             config.env_config["num_envs"] = kwargs["num_envs"]
-        
-        # Convert task_config dict to object with attributes that BaseTask expects
-        class TaskConfig:
-            def __init__(self, config_dict):
-                for key, value in config_dict.items():
-                    setattr(self, key, value)
-        
-        task_config_obj = TaskConfig(config.task_config)
+
+        task_config_obj = type("TaskConfig", (), config.task_config)()
     else:
-        # Fallback: try to set device on config directly
-        if hasattr(config, '__dict__'):
-            config.device = device
-            
-            # Handle headless parameter
-            if "headless" in kwargs:
-                config.headless = kwargs["headless"]
-            
-            # Handle num_envs parameter
-            if "num_envs" in kwargs:
-                config.num_envs = kwargs["num_envs"]
-                
+        config.device = device
+        if "headless" in kwargs:
+            config.headless = kwargs["headless"]
+        if "num_envs" in kwargs:
+            config.num_envs = kwargs["num_envs"]
         task_config_obj = config
     
     # Create task with the properly formatted task config

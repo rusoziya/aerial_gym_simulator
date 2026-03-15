@@ -197,8 +197,6 @@ class task_config:
         interpolation_mode = "nearest"
         return_sampled_latent = True
 
-    # ===== NEW MULTI-ASPECT CURRICULUM LEARNING SYSTEM =====
-    # Comprehensive domain randomization with multiple difficulty aspects
     class curriculum:
         # EXPANDED CURRICULUM RANGE: Level 3-23 (20 levels total)
         min_level = 3   # Start with 3 obstacles behind gate (base level)
@@ -213,18 +211,14 @@ class task_config:
         # Optional: allow obstacles to increase beyond level 23 during eval stretch
         stretched_end_obstacles = int(os.getenv('EVAL_STRETCH_END_OBSTACLES', '25'))
         
-        # ===== 5. CAMERA NOISE PROGRESSION (Levels 3-23) - D455 Realistic Noise =====
-        # Simulate Intel RealSense D455 camera characteristics for both drone and static cameras
-        enable_camera_noise = True                # Enable curriculum-dependent camera noise
+        enable_camera_noise = True
         camera_noise_start_level = 3             # Start minimal noise from level 3 
         camera_noise_end_level = 23              # Reach maximum noise at level 23
         max_gaussian_noise_std = 0.00625         # Halved: 0.625% of depth range
         max_pixel_dropout_rate = 0.00625         # Halved: 0.625% of pixels
 
-        # max_gaussian_noise_std = 0.0125          # Maximum Gaussian noise: 1.25% of depth range
-        # max_pixel_dropout_rate = 0.0125          # Halved: 1.25% of pixels
 
-        # 6. CAMERA FRAME DROPOUT (entire-frame) parameters (split freeze/blank)
+
         enable_camera_frame_dropout = True
         max_frame_freeze_prob_drone = 0.0125      # Halved: 1.25% freeze at level 23
         max_frame_blank_prob_drone = 0.0025      # Halved: 0.25% blank at level 23
@@ -245,19 +239,6 @@ class task_config:
         max_static_orient_noise_rad = 0.0175  # 1.0 deg
         max_drone_orient_noise_rad = 0.00873   # 0.5 deg
 
-        # 8. SPAWN RANGE PROGRESSION (Levels 3-23) — curriculum-controlled spawn
-        # OLD (kept for easy rollback):
-        # spawn_easy_x_half_span_m = 0.20
-        # spawn_easy_y_center_m = -2.0
-        # spawn_easy_y_half_span_m = 0.05
-        # spawn_easy_z_center_m = 1.5
-        # spawn_easy_z_half_span_m = 0.05
-        # spawn_hard_x_half_span_m = 1.20
-        # spawn_hard_y_center_m = -2.0
-        # spawn_hard_y_half_span_m = 0.20
-        # spawn_hard_z_center_m = 1.5
-        # spawn_hard_z_half_span_m = 0.10
-        
         spawn_start_level = 3
         spawn_end_level = 23
         
@@ -288,8 +269,6 @@ class task_config:
         check_after_log_instances = 256  # Check curriculum every 256 instances for reduced variance
         increase_step = 1  # Increase by 1 level at a time for fine-grained progression
         decrease_step = 1  # Allow decreases by 1 level when success collapses
-        # success_rate_for_increase = 0.5  # Promote when SR > 50%
-        # success_rate_for_decrease = 0.25   # Demote when SR < 25%
         success_rate_for_increase = 0.55  # Promote when SR > 55%
         success_rate_for_decrease = 0.25   # Demote when SR < 30%
         cooldown_windows = 12  # After any change, hold level for this many evaluation windows

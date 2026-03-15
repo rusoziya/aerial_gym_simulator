@@ -38,7 +38,7 @@ def save_strip(panels, titles, out_path) -> None:
     draw = ImageDraw.Draw(canvas)
     try:
         font = ImageFont.load_default()
-    except Exception:
+    except OSError:
         font = None
     # paste images
     for i, p in enumerate(panels):

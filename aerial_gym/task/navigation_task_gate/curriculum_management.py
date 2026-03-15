@@ -227,30 +227,13 @@ class CurriculumManager:
             old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
             self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
 
-            # The asset manager may be caching the initial obstacle count, so we need to force it to update
-            if hasattr(self.task.sim_env, 'asset_manager'):
-                try:
-                    # Try to directly update the asset manager's obstacle count
-                    if hasattr(self.task.sim_env.asset_manager, 'num_obstacles_per_env'):
-                        old_count = getattr(self.task.sim_env.asset_manager, 'num_obstacles_per_env', 'unknown')
-                        self.task.sim_env.asset_manager.num_obstacles_per_env = total_obstacles_in_env
-                        self.task.log_curriculum_update(f"[CRITICAL FIX] Direct asset manager update: {old_count} → {total_obstacles_in_env}")
+            # Update asset manager obstacle count directly
+            self.task.sim_env.asset_manager.num_obstacles_per_env = total_obstacles_in_env
+            self.task.log_curriculum_update(
+                f"Asset manager updated: {old_count} -> {total_obstacles_in_env}"
+            )
 
-                    # NOTE: Asset manager changes will be applied when environments naturally reset
-                    self.task.log_curriculum_update(f"[CRITICAL FIX] Asset manager updated - changes will apply on next environment reset")
-
-                except Exception as e:
-                    self.task.log_curriculum_update(f"[CRITICAL FIX] Warning: Failed to directly update asset manager: {e}")
-
-            # ALTERNATIVE: Try to access environment configuration directly
-            if hasattr(self.task.sim_env, 'env_config'):
-                try:
-                    if hasattr(self.task.sim_env.env_config, 'num_obstacles'):
-                        old_env_count = getattr(self.task.sim_env.env_config, 'num_obstacles', 'unknown')
-                        self.task.sim_env.env_config.num_obstacles = total_obstacles_in_env
-                        self.task.log_curriculum_update(f"[CRITICAL FIX] Environment config update: {old_env_count} → {total_obstacles_in_env}")
-                except Exception as e:
-                    self.task.log_curriculum_update(f"[CRITICAL FIX] Warning: Failed to update environment config: {e}")
+            self.task.sim_env.env_config.num_obstacles = total_obstacles_in_env
 
             # 2. STATIC CAMERA DIFFICULTY: Update camera parameters for NEW episodes only
             # Update max camera angle for logging (affects new episodes only)

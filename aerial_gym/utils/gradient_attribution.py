@@ -50,9 +50,6 @@ class GradientAttributionTracker:
         # Try to attach hooks
         self._attach_hooks()
 
-    # ---------------------------------------------------------------------
-    # Hooking
-    # ---------------------------------------------------------------------
     def _attach_hooks(self) -> None:
         """Attach forward+backward hooks to capture grads wrt observation tensor."""
         hook_targets = [
@@ -83,8 +80,8 @@ class GradientAttributionTracker:
             except AttributeError as e:
                 logger.warning(f"⚠️ Could not access {target_name}: {e}")
                 continue
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to attach gradient hooks to {target_name}: {e}")
+            except RuntimeError as e:
+                logger.warning(f"Failed to attach gradient hooks to {target_name}: {e}")
                 continue
 
         logger.warning("❌ Failed to attach gradient attribution hooks - no suitable non-ScriptModule target found; falling back to model pre-hook")
@@ -92,13 +89,10 @@ class GradientAttributionTracker:
             self.module_hook_handle = self.model.register_forward_pre_hook(self._forward_pre_hook_model)
             self.backward_hook_handle = self.model.register_full_backward_hook(self._backward_hook)
             logger.warning("✅ Gradient attribution fallback hooks attached at model level")
-        except Exception as e:
-            logger.warning(f"⚠️ Model-level fallback failed: {e}")
+        except RuntimeError as e:
+            logger.warning(f"Model-level fallback failed: {e}")
             self.enabled = False
 
-    # ---------------------------------------------------------------------
-    # Hooks
-    # ---------------------------------------------------------------------
     def _forward_hook(self, module, input, output) -> None:
         """Enable grad on observation tensor and register a tensor-level grad hook.
         Robust to dict/tuple/list inputs; extracts 'obs'/'observations' if present.
@@ -118,7 +112,7 @@ class GradientAttributionTracker:
                         if torch.is_tensor(v):
                             return v
                 return None
-            except Exception:
+            except (RuntimeError, IndexError, KeyError):
                 return None
         try:
             if not input:
@@ -143,10 +137,9 @@ class GradientAttributionTracker:
                     slice_norm = torch.norm(g_slice, dim=1).mean().item()
                     self.grad_history[name].append(slice_norm)
             x.register_hook(_tensor_grad_hook)
-        except Exception as e:
-            # Only warn a couple of times to avoid spam
+        except RuntimeError as e:
             if self.backward_pass_count < 2:
-                logger.warning(f"🔧 Forward hook setup failed: {e}")
+                logger.warning(f"Forward hook setup failed: {e}")
 
     def _forward_pre_hook_model(self, module, input) -> None:
         """Model-level pre-hook to wrap obs with requires_grad when encoder is scripted."""
@@ -185,7 +178,7 @@ class GradientAttributionTracker:
                 return tuple(lst)
             else:
                 return wrapped
-        except Exception:
+        except (RuntimeError, TypeError):
             return None
 
     def _backward_hook(self, module, grad_input, grad_output) -> None:
@@ -203,13 +196,10 @@ class GradientAttributionTracker:
                 g_slice = grads[:, start:end]
                 slice_norm = torch.norm(g_slice, dim=1).mean().item()
                 self.grad_history[name].append(slice_norm)
-        except Exception as e:
+        except RuntimeError as e:
             if self.backward_pass_count < 2:
-                logger.warning(f"🔧 Gradient hook error: {e}")
+                logger.warning(f"Gradient hook error: {e}")
 
-    # ---------------------------------------------------------------------
-    # API
-    # ---------------------------------------------------------------------
     def step(self) -> None:
         # External step sync (optional)
         pass
@@ -286,7 +276,7 @@ class GradientAttributionTracker:
                 g_slice = grad[:, start:end]
                 slice_norm = torch.norm(g_slice, dim=1).mean().item()
                 self.grad_history[name].append(slice_norm)
-        except Exception:
+        except RuntimeError:
             pass
 
 
@@ -299,8 +289,8 @@ def create_gradient_tracker(model: torch.nn.Module, config: dict[str, object]) -
         else:
             logger.warning("❌ Gradient attribution tracker creation failed")
             return None
-    except Exception as e:
-        logger.warning(f"❌ Error creating gradient attribution tracker: {e}")
+    except (RuntimeError, AttributeError) as e:
+        logger.warning(f"Error creating gradient attribution tracker: {e}")
         return None
 
 

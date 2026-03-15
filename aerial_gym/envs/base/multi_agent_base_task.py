@@ -13,18 +13,13 @@ class MultiAgentBaseTask(BaseTask):
     def __init__(self, task_config):
         super().__init__(task_config)
         
-        # Extract multi-agent configurations from task_config
-        self.num_robots_per_env = getattr(task_config, 'num_robots_per_env', 1)
-        self.enable_inter_agent_obs = getattr(task_config, 'enable_inter_agent_obs', False)
-        self.communication_range = getattr(task_config, 'communication_range', 10.0)  # meters
-        
-        # Multi-agent specific configurations
-        self.shared_reward = getattr(task_config, 'shared_reward', False)
-        self.individual_rewards = getattr(task_config, 'individual_rewards', True)
-        
-        # Device will be set from task_config
-        self.device = getattr(task_config, 'device', 'cuda')
-        self.num_envs = getattr(task_config, 'num_envs', 16)
+        self.num_robots_per_env = task_config.num_robots_per_env
+        self.enable_inter_agent_obs = task_config.enable_inter_agent_obs
+        self.communication_range = task_config.communication_range
+        self.shared_reward = task_config.shared_reward
+        self.individual_rewards = task_config.individual_rewards
+        self.device = task_config.device
+        self.num_envs = task_config.num_envs
         
         # Initialize multi-agent observation and action spaces
         self._setup_multi_agent_spaces()

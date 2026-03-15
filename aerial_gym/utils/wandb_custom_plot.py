@@ -120,8 +120,8 @@ def _get_series(run, x_key: str, y_key: str) -> None:
         # Remove NaNs
         good = np.isfinite(x) & np.isfinite(y)
         return x[good], y[good]
-    except Exception:
-        # Fallback to scan_history
+    except (KeyError, AttributeError, ImportError):
+        # Fallback to scan_history when pandas history is unavailable
         xs, ys = [], []
         for row in run.scan_history(keys=[x_key, y_key]):
             xv = row.get(x_key, None)
@@ -131,7 +131,7 @@ def _get_series(run, x_key: str, y_key: str) -> None:
             try:
                 xs.append(float(xv))
                 ys.append(float(yv))
-            except Exception:
+            except (ValueError, TypeError):
                 continue
         if not xs:
             return None, None
@@ -151,7 +151,7 @@ def main() -> None:
 
     try:
         filt = json.loads(args.filter) if args.filter else None
-    except Exception as e:
+    except (json.JSONDecodeError, ValueError) as e:
         print(f"Invalid --filter JSON: {e}", file=sys.stderr)
         sys.exit(2)
 
@@ -199,8 +199,8 @@ def main() -> None:
             for x, y in series:
                 try:
                     yi = np.interp(grid, x, y)
-                except Exception:
-                    # If interpolation fails (unsorted x), sort first
+                except ValueError:
+                    # Unsorted x causes interp failure; sort first
                     order = np.argsort(x)
                     yi = np.interp(grid, x[order], y[order])
                 if args.smoothing > 0:
