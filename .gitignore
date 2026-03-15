@@ -50,3 +50,14 @@ aerial_gym/utils/vae/combined/
 aerial_gym/utils/vae/val_reports/
 aerial_gym/utils/vae/aerial_gym/utils/vae/val_reports/
 aerial_gym/utils/vae/datasets/static_frames_480x270/test/
+
+*.gif
+*.pth
+*.wandb
+*.ulg
+*.log
+gif_episodes/
+wandb/
+TRAINED/
+selected_network/
+events.out.tfevents.*
