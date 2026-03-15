@@ -371,13 +371,13 @@ class StepHelpers:
             _metrics_avg = {
                 'path_efficiency': float(pe_avg.item()),
                 'min_gate_distance': float(mgd_avg.item()),
-                'center_offset_success': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
-                'height_offset_success': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
+                'center_offset_success': float(co_val.item()),
+                'height_offset_success': float(ho_val.item()),
                 # Duplicate keys to match existing dashboards
-                'center_offset': float(co_val.item()) if hasattr(co_val, 'item') else float('nan'),
-                'height_offset': float(ho_val.item()) if hasattr(ho_val, 'item') else float('nan'),
-                'success_rate': float(overall_success_rate.item()) if hasattr(overall_success_rate, 'item') else float('nan'),
-                'target_success_rate': float(target_success_rate.item()) if hasattr(target_success_rate, 'item') else float('nan'),
+                'center_offset': float(co_val.item()),
+                'height_offset': float(ho_val.item()),
+                'success_rate': float(overall_success_rate.item()),
+                'target_success_rate': float(target_success_rate.item()),
                 'last_position_x': float(lpx_avg.item()),
                 'last_position_y': float(lpy_avg.item()),
                 'last_position_z': float(lpz_avg.item()),
@@ -403,7 +403,7 @@ class StepHelpers:
             extra = {}
         extra.update(self.task._last_traj_metrics_avg or {})
         # Expose per-camera noise/frame-drop overrides to W&B, mirroring prior style
-        gtd = getattr(self.task.sim_env, 'global_tensor_dict', {})
+        gtd = self.task.sim_env.global_tensor_dict
         cam_noise_global = bool(gtd.get('camera_randomization/noise_disabled', False))
         cam_fd_global = bool(gtd.get('camera_randomization/frame_dropout_disabled', False))
         drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if 'camera_randomization/drone_noise_disabled' in gtd else cam_noise_global

@@ -95,11 +95,7 @@ class RewardHelpers:
                 fov_alpha = 2.0
             if fov_mag != 0.0:
                 # Camera base position (x=0, y=base_y, z either adaptive gate center or fixed 1.5)
-                try:
-                    parent = self.task.sim_env
-                    gtd = parent.global_tensor_dict if (parent is not None and hasattr(parent, 'global_tensor_dict')) else {}
-                except (AttributeError, KeyError):
-                    gtd = {}
+                gtd = self.task.sim_env.global_tensor_dict
                 try:
                     base_y = float(os.environ.get('SF_STATIC_CAMERA_BASE_Y', gtd.get('static_camera/base_y', -3.0)))
                 except (ValueError, TypeError):
