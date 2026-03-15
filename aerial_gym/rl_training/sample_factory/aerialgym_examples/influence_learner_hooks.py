@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import os
 from typing import Callable
 
 import torch
@@ -15,6 +14,7 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.influence_metric_u
     is_obs_grad_key,
     metrics_to_float,
 )
+from aerial_gym.utils.env_flag_utils import read_env_bool
 
 
 def create_enhanced_learner_init(
@@ -56,10 +56,9 @@ def _attach_influence_tracker(
     create_influence_tracker: Callable[..., object],
     tracker_state: dict[str, object],
 ) -> None:
-    env_val = os.getenv("SF_ENABLE_INFLUENCE_TRACKER")
-    enable = bool(cfg.enable_gradient_monitoring)
-    if env_val is not None:
-        enable = str(env_val).lower() == "true"
+    enable = read_env_bool(
+        "SF_ENABLE_INFLUENCE_TRACKER", config_value=cfg.enable_gradient_monitoring
+    )
     if not enable:
         tracker_state["influence"] = None
         return
@@ -81,10 +80,7 @@ def _attach_grad_tracker(
     create_gradient_tracker: Callable[..., object],
     tracker_state: dict[str, object],
 ) -> None:
-    env_val = os.getenv("SF_ENABLE_GRAD_ATTR")
-    enable = bool(cfg.enable_grad_attribution)
-    if env_val is not None:
-        enable = str(env_val).lower() == "true"
+    enable = read_env_bool("SF_ENABLE_GRAD_ATTR", config_value=cfg.enable_grad_attribution)
     if not enable:
         tracker_state["grad"] = None
         return

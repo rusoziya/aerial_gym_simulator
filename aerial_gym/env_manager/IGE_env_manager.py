@@ -129,17 +129,9 @@ class IsaacGymEnv(BaseManager):
 
     def _resolve_graphics_device(self) -> int:
         """Determine the graphics device ID based on headless mode and camera usage."""
-        import os as _os
+        from aerial_gym.utils.env_flag_utils import read_env_bool
 
-        try:
-            _use_graphics_env = _os.getenv("SF_HEADLESS_USE_GRAPHICS")
-            _use_graphics = (
-                (str(_use_graphics_env).lower() == "true")
-                if _use_graphics_env is not None
-                else True
-            )
-        except (ValueError, TypeError):
-            _use_graphics = True
+        _use_graphics = read_env_bool("SF_HEADLESS_USE_GRAPHICS", default=True)
 
         if self.sim_config.viewer.headless:
             if _use_graphics or self.has_IGE_cameras:

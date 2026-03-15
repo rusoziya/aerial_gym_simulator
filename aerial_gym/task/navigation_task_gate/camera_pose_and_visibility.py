@@ -8,6 +8,7 @@ import torch
 from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import *  # noqa: F401,F403
+from aerial_gym.utils.tensor_utils import normalize_safe
 
 logger = CustomLogger("navigation_task_gate_camera_pose_visibility")
 
@@ -48,9 +49,9 @@ class CameraPoseAndVisibility:
             .expand(self.task.num_envs, 3)
         )
         fwd = cam_tgt - cam_pos
-        fwd = fwd / (torch.norm(fwd, dim=1, keepdim=True) + 1e-8)
+        fwd = normalize_safe(fwd)
         right = torch.cross(fwd, up_world)
-        right = right / (torch.norm(right, dim=1, keepdim=True) + 1e-8)
+        right = normalize_safe(right)
         up = torch.cross(right, fwd)
         return right, up, fwd
 
@@ -209,7 +210,7 @@ class CameraPoseAndVisibility:
         target_world = self._compute_camera_target(cam_world, num_envs, device)
 
         fwd = target_world - cam_world
-        fwd = fwd / (torch.norm(fwd, dim=1, keepdim=True) + 1e-8)
+        fwd = normalize_safe(fwd)
         fx, fy, fz = fwd[:, 0], fwd[:, 1], fwd[:, 2]
         yaw_cam = torch.atan2(fx, torch.clamp(fy, min=1e-8))
         hyp = torch.sqrt(torch.clamp(fx * fx + fy * fy, min=1e-8))

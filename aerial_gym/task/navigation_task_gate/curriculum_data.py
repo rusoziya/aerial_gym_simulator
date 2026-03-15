@@ -4,6 +4,8 @@ import os
 
 import torch
 
+from aerial_gym.utils.env_flag_utils import read_env_bool
+
 RAD_TO_DEG: float = 57.2958
 
 
@@ -28,9 +30,7 @@ def get_fixed_assets_visible() -> int:
 def get_yaw_sweep_state() -> tuple[bool, float]:
     """Return (enabled, speed_deg_per_sec) for static camera yaw sweep from env vars."""
     try:
-        enabled = (
-            str(os.environ.get("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", "false")).lower() == "true"
-        )
+        enabled = read_env_bool("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", default=False)
         speed = float(os.environ.get("SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG", "10.0"))
     except (ValueError, TypeError):
         enabled = False

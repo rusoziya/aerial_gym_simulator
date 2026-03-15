@@ -35,6 +35,7 @@ from aerial_gym.utils.env_flag_utils import (
     read_env_int,
 )
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.tensor_utils import invalid_mask_per_env
 
 logger = CustomLogger("navigation_task_gate")
 
@@ -331,7 +332,7 @@ class NavigationTaskGate(BaseTask):
             self.compute_rewards_and_crashes(self.obs_dict)
         )
         # Reward NaN/Inf guard: sanitize invalid rewards and truncate offending envs
-        invalid_reward_mask = torch.isnan(self.rewards) | torch.isinf(self.rewards)
+        invalid_reward_mask = invalid_mask_per_env(self.rewards)
         if torch.any(invalid_reward_mask):
             if self.task_config.guard_debug_enabled:
                 _ids = torch.nonzero(invalid_reward_mask, as_tuple=False).squeeze(-1).tolist()

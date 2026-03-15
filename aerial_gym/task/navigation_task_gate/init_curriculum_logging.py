@@ -80,9 +80,7 @@ def _log_spawn_ranges(task: object) -> None:
 def _log_static_camera_yaw_sweep(task: object) -> None:
     """Log static camera yaw sweep status (item 3) and base position."""
     try:
-        yaw_enabled = (
-            str(os.environ.get("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", "false")).lower() == "true"
-        )
+        yaw_enabled = read_env_bool("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", default=False)
         yaw_speed = float(os.environ.get("SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG", "10.0"))
     except (ValueError, TypeError):
         yaw_enabled = False
@@ -130,12 +128,7 @@ def _get_dynamic_camera_effective(task: object) -> bool:
 
 def _log_camera_angle(task: object) -> None:
     """Log camera angle configuration (item 4)."""
-    try:
-        yaw_enabled = (
-            str(os.environ.get("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", "false")).lower() == "true"
-        )
-    except (ValueError, TypeError):
-        yaw_enabled = False
+    yaw_enabled = read_env_bool("SF_ENABLE_STATIC_CAMERA_YAW_SWEEP", default=False)
 
     try:
         cam_orient_disabled = bool(

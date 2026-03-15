@@ -33,6 +33,11 @@ def invalid_mask_per_env(t: torch.Tensor) -> torch.Tensor:
     return bad
 
 
+def normalize_safe(vec: torch.Tensor, dim: int = 1, eps: float = 1e-8) -> torch.Tensor:
+    """L2-normalize a tensor along dim, with epsilon to prevent division by zero."""
+    return vec / (torch.norm(vec, dim=dim, keepdim=True) + eps)
+
+
 def clamp_actions(actions: torch.Tensor, low: float = -1.0, high: float = 1.0) -> torch.Tensor:
     """Sanitize and clamp actions: replace NaN/Inf then clamp to [low, high]."""
     return sanitize_tensor(actions).clamp_(low, high)

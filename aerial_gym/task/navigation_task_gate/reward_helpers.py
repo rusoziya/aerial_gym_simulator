@@ -6,6 +6,7 @@ import torch
 
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import *  # noqa: F401,F403
+from aerial_gym.utils.tensor_utils import normalize_safe
 
 logger = CustomLogger("navigation_task_gate_rewards")
 
@@ -131,10 +132,10 @@ class RewardHelpers:
         )
 
         fwd = target - cam_pos
-        fwd = fwd / (torch.norm(fwd, dim=1, keepdim=True) + 1e-8)
+        fwd = normalize_safe(fwd)
         up_world = torch.tensor([0.0, 0.0, 1.0], device=self.task.device).view(1, 3).expand_as(fwd)
         right = torch.cross(fwd, up_world)
-        right = right / (torch.norm(right, dim=1, keepdim=True) + 1e-8)
+        right = normalize_safe(right)
         up = torch.cross(right, fwd)
 
         pw = robot_position - cam_pos

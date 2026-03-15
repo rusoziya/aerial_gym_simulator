@@ -37,6 +37,7 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common impor
     clear_sf_cache,
     setup_env_agents,
 )
+from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.utils.logging import CustomLogger
 
 # Deterministic mode disabled — incompatible with Isaac Gym CuBLAS operations
@@ -319,10 +320,8 @@ def _add_fusion_params(p: object) -> None:
 
 
 def _add_influence_params(p: object) -> None:
-    _inf_env = os.getenv("SF_ENABLE_INFLUENCE_TRACKER")
-    _inf_default = str(_inf_env).lower() == "true" if _inf_env is not None else False
-    _grad_env = os.getenv("SF_ENABLE_GRAD_ATTR")
-    _grad_default = str(_grad_env).lower() == "true" if _grad_env is not None else True
+    _inf_default = read_env_bool("SF_ENABLE_INFLUENCE_TRACKER", default=False)
+    _grad_default = read_env_bool("SF_ENABLE_GRAD_ATTR", default=True)
 
     p.add_argument(
         "--enable_gradient_monitoring",

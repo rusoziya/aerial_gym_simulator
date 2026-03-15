@@ -27,8 +27,10 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.obs_ablation impor
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common import (
     AerialGymVecEnv as AerialGymVecEnvBase,
 )
+from aerial_gym.utils.env_flag_utils import read_env_bool
+from aerial_gym.utils.tensor_utils import has_invalid, sanitize_tensor
 
-VERBOSE = os.environ.get("TRAIN_VERBOSE", "false").lower() == "true"
+VERBOSE = read_env_bool("TRAIN_VERBOSE", default=False)
 
 
 class AerialGymVecEnvGate(AerialGymVecEnvBase):
@@ -138,11 +140,11 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
         transformed_obs["obs"] = self._obs_ablation.apply(transformed_obs["obs"])
         vec = transformed_obs["obs"]
         if isinstance(vec, torch.Tensor):
-            if not torch.isfinite(vec).all():
-                if os.environ.get("ABLATE_DEBUG", "false").lower() == "true":
+            if has_invalid(vec):
+                if read_env_bool("ABLATE_DEBUG", default=False):
                     n_bad = int((~torch.isfinite(vec)).sum().item())
                     print(f"[SANITIZE] replacing {n_bad} non-finite obs values with 0")
-            transformed_obs["obs"] = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
+            transformed_obs["obs"] = sanitize_tensor(vec)
         return transformed_obs
 
     def _handle_gif_episode_end(
@@ -226,11 +228,11 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
 
 def _sanitize_action(action: Tensor) -> Tensor:
     """Replace NaN/Inf with 0 and clamp to [-1, 1]."""
-    if isinstance(action, torch.Tensor) and not torch.isfinite(action).all():
-        if os.environ.get("ABLATE_DEBUG", "false").lower() == "true":
+    if isinstance(action, torch.Tensor) and has_invalid(action):
+        if read_env_bool("ABLATE_DEBUG", default=False):
             n_bad = int((~torch.isfinite(action)).sum().item())
             print(f"[SANITIZE][action] replacing {n_bad} non-finite action values with 0")
-        action = torch.nan_to_num(action, nan=0.0, posinf=0.0, neginf=0.0).clamp_(-1.0, 1.0)
+        action = sanitize_tensor(action).clamp_(-1.0, 1.0)
     return action
 
 

@@ -14,6 +14,7 @@ from sample_factory.model.encoder import (
 from sample_factory.utils.typing import Config
 
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.tensor_utils import sanitize_tensor
 
 logger = CustomLogger(__name__)
 
@@ -127,7 +128,7 @@ class DualFusionEncoder(Encoder):
         parts = ["[NAN_DIAG][encoder_in] non-finite detected or forced dump:"]
         for name, a, b in slices:
             s = x[..., a:b]
-            safe = torch.nan_to_num(s, nan=0.0, posinf=0.0, neginf=0.0)
+            safe = sanitize_tensor(s)
             bad = int((~torch.isfinite(s)).sum().item())
             parts.append(
                 f"{name}[{a}:{b}]: bad={bad}/{s.numel()} "
@@ -165,13 +166,13 @@ class DualFusionEncoder(Encoder):
         self, z_e: torch.Tensor, z_s: torch.Tensor, rest: torch.Tensor
     ) -> torch.Tensor:
         """Normal gated fusion (no ablations)."""
-        e = torch.nan_to_num(self.ego_proj(z_e), nan=0.0, posinf=0.0, neginf=0.0)
-        s = torch.nan_to_num(self.static_proj(z_s), nan=0.0, posinf=0.0, neginf=0.0)
+        e = sanitize_tensor(self.ego_proj(z_e))
+        s = sanitize_tensor(self.static_proj(z_s))
         g = torch.sigmoid(self.gate(torch.cat([e, s], dim=-1)))
         g = torch.nan_to_num(g, nan=0.5, posinf=1.0, neginf=0.0)
         if g.shape[-1] == 1:
             g = g.expand_as(e)
-        z = torch.nan_to_num(g * s + (1 - g) * e, nan=0.0, posinf=0.0, neginf=0.0)
+        z = sanitize_tensor(g * s + (1 - g) * e)
         fused = torch.cat([rest, z], dim=-1)
 
         self._fwd_count += 1
@@ -184,9 +185,7 @@ class DualFusionEncoder(Encoder):
         self, z_e: torch.Tensor, z_s: torch.Tensor, rest: torch.Tensor, x: torch.Tensor
     ) -> torch.Tensor:
         """Early concat baseline fusion."""
-        fused = torch.nan_to_num(
-            torch.cat([rest, z_e, z_s], dim=-1), nan=0.0, posinf=0.0, neginf=0.0
-        )
+        fused = sanitize_tensor(torch.cat([rest, z_e, z_s], dim=-1))
         self._fwd_count += 1
         if (self._fwd_count % 200) == 0:
             B = int(x.shape[0])
@@ -308,7 +307,7 @@ class DualFusionEncoder(Encoder):
     def forward(self, obs_dict: dict[str, torch.Tensor]) -> torch.Tensor:
         x = obs_dict["obs"]
         self._run_nan_diagnostics(x)
-        x = torch.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0)
+        x = sanitize_tensor(x)
         z_e, z_s = self._slice_latents(x)
         rest = self._remove_latents(x)
 

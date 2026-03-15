@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import os
-
 import torch
 
 from aerial_gym.task.base_navigation_task import BaseNavigationTask
 from aerial_gym.task.base_task import StepReturn
 from aerial_gym.task.task_config_protocol import TaskConfig
+from aerial_gym.utils.env_flag_utils import read_env_bool
 from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import *  # noqa: F401,F403
 
@@ -138,9 +137,7 @@ class NavigationTask(BaseNavigationTask):
         self.pos_error_vehicle_frame[:] = quat_rotate_inverse(
             robot_vehicle_orientation, (target_position - robot_position)
         )
-        disable_cm = (
-            str(os.environ.get("SF_DISABLE_CURRICULUM_MULTIPLIER", "false")).lower() == "true"
-        )
+        disable_cm = read_env_bool("SF_DISABLE_CURRICULUM_MULTIPLIER", default=False)
         frac_eff = 0.0 if disable_cm else float(self.curriculum_progress_fraction)
 
         return compute_reward(
