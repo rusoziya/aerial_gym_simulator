@@ -39,7 +39,7 @@ class CameraObservations:
         except (KeyError, TypeError):
             camera_noise_disabled = bool(self.task.disable_camera_noise_randomization)
         # Per-camera override: if set, apply to drone camera processing
-        drone_noise_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/drone_noise_disabled', False)) if hasattr(self.task.sim_env, 'global_tensor_dict') else False
+        drone_noise_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/drone_noise_disabled', False))
         if self.task.task_config.curriculum.enable_camera_noise:
             # Use current level when enabled; otherwise force minimum schedule (level 3)
             if not camera_noise_disabled and not drone_noise_override:
@@ -66,7 +66,7 @@ class CameraObservations:
             frame_dropout_disabled = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False))
         except (KeyError, TypeError):
             frame_dropout_disabled = bool(self.task.disable_camera_frame_dropout_randomization)
-        drone_fd_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/drone_frame_dropout_disabled', False)) if hasattr(self.task.sim_env, 'global_tensor_dict') else False
+        drone_fd_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/drone_frame_dropout_disabled', False))
         if self.task.task_config.curriculum.enable_camera_frame_dropout:
             # Use current level unless frame-dropout is disabled; noise flag should not affect frame dropout
             if not frame_dropout_disabled and not drone_fd_override:
@@ -176,8 +176,8 @@ class CameraObservations:
 
                 # Apply D455 camera noise if enabled and not ablated (operate on batched copy)
                 static_depth_noised = static_depth_clean_batched.copy() if isinstance(static_depth_clean_batched, np.ndarray) else static_depth_clean_batched.clone()
-                static_noise_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/static_noise_disabled', False)) if hasattr(self.task.sim_env, 'global_tensor_dict') else False
-                global_noise_disabled = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False)) if hasattr(self.task.sim_env, 'global_tensor_dict') else False
+                static_noise_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/static_noise_disabled', False))
+                global_noise_disabled = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/noise_disabled', False))
                 if self.task.task_config.curriculum.enable_camera_noise:
                     # Current level unless disabled -> then use level 3 minimum
                     if not global_noise_disabled and not static_noise_override:
@@ -204,8 +204,8 @@ class CameraObservations:
                         static_depth_noised = torch.clamp(static_depth_noised, 0.0, 1.0)
 
                 # Entire-frame dropout (curriculum-driven)
-                static_fd_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/static_frame_dropout_disabled', False)) if hasattr(self.task.sim_env, 'global_tensor_dict') else False
-                global_fd_disabled = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False)) if hasattr(self.task.sim_env, 'global_tensor_dict') else False
+                static_fd_override = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/static_frame_dropout_disabled', False))
+                global_fd_disabled = bool(self.task.sim_env.global_tensor_dict.get('camera_randomization/frame_dropout_disabled', False))
                 if self.task.task_config.curriculum.enable_camera_frame_dropout:
                     # Decouple from noise flag: only frame-dropout flags control this schedule
                     fd = self.task.task_config.curriculum.get_camera_frame_dropout(self.task.curriculum_level) if (not global_fd_disabled and not static_fd_override) else self.task.task_config.curriculum.get_camera_frame_dropout(3)
@@ -568,7 +568,7 @@ class CameraObservations:
         # Determine if dynamic camera following is effective (enabled and not disabled)
         dynamic_enabled = bool(self.task.task_config.curriculum.enable_dynamic_camera_following)
         try:
-            dyn_dis = bool(self.task.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False)) if hasattr(self.task.sim_env, 'global_tensor_dict') else False
+            dyn_dis = bool(self.task.sim_env.global_tensor_dict.get('dynamic_camera_following/disabled', False))
         except (KeyError, TypeError):
             dyn_dis = False
         # Arc-follow takes precedence if enabled

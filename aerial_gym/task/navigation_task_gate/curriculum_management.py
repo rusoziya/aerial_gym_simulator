@@ -90,8 +90,7 @@ class CurriculumManager:
                 max(self.task.curriculum_level, self.task.task_config.curriculum.min_level),
                 effective_max,
             )
-            if hasattr(self.task.sim_env, 'global_tensor_dict'):
-                self.task.sim_env.global_tensor_dict["curriculum_level"] = int(self.task.curriculum_level)
+            self.task.sim_env.global_tensor_dict["curriculum_level"] = int(self.task.curriculum_level)
             self.task.obs_dict["curriculum_level"] = self.task.curriculum_level
             self.task.max_curriculum_level_reached = max(self.task.max_curriculum_level_reached, self.task.curriculum_level)
             return
@@ -119,10 +118,7 @@ class CurriculumManager:
             if not True: self.task._curriculum_cooldown = 0
             self.task.log_curriculum_update(f"[CURRICULUM UPDATE]   Cooldown windows remaining: {self.task._curriculum_cooldown}")
             # Maintain per-window success history (trim to last 3 windows)
-            try:
-                sr_float = float(success_rate.item()) if hasattr(success_rate, 'item') else float(success_rate)
-            except (ValueError, TypeError):
-                sr_float = float(success_rate)
+            sr_float = float(success_rate.item())
             if not True:
                 self.task._success_window_history = []
             self.task._success_window_history.append(sr_float)
@@ -199,9 +195,8 @@ class CurriculumManager:
             self.task.obs_dict["curriculum_level"] = self.task.curriculum_level
 
             # Propagate curriculum level to env manager for gate unlocking
-            if hasattr(self.task.sim_env, 'global_tensor_dict'):
-                # Only update the value; gate selection will occur on reset_idx
-                self.task.sim_env.global_tensor_dict["curriculum_level"] = int(self.task.curriculum_level)
+            # Only update the value; gate selection will occur on reset_idx
+            self.task.sim_env.global_tensor_dict["curriculum_level"] = int(self.task.curriculum_level)
 
 
             # 1. OBSTACLE COUNT PROGRESSION: Apply new obstacle count behind gate
@@ -229,9 +224,8 @@ class CurriculumManager:
 
             # CRITICAL: Also update the environment manager's global tensor dict for asset management
             # This ensures the asset manager gets the updated obstacle count when environments reset
-            if hasattr(self.task.sim_env, 'global_tensor_dict'):
-                old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
-                self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
+            old_count = self.task.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
+            self.task.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
 
             # The asset manager may be caching the initial obstacle count, so we need to force it to update
             if hasattr(self.task.sim_env, 'asset_manager'):

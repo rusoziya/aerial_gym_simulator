@@ -103,68 +103,67 @@ class CurriculumLogging:
             self.task.log_curriculum_update(f"   4. CAMERA ANGLE: ±{self.task.max_camera_angle:.1f}deg max range, env0: {current_angle:.1f}deg (fixed per episode)")
 
         # 4. GATE SIZE UNLOCKS (Curriculum-gated randomization) or Fixed (ablation)
-        if hasattr(self.task.sim_env, 'global_tensor_dict'):
-            gate_names = []
-            if len(self.task.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])) > 0:
-                gate_names = self.task.sim_env.global_tensor_dict["gate_variant_names_per_env"][0]
-            # Report fixed mode if enabled
-            disable_flag = self.task.sim_env.global_tensor_dict.get('gate_randomization/disabled', False)
-            try:
-                if hasattr(disable_flag, 'item'):
-                    disable_flag = bool(disable_flag.item())
-                else:
-                    disable_flag = bool(disable_flag)
-            except (ValueError, TypeError, RuntimeError):
-                disable_flag = False
-            if disable_flag:
-                try:
-                    fixed_scale = self.task.sim_env.global_tensor_dict.get('gate_randomization/fixed_scale_percent', 100)
-                    if hasattr(fixed_scale, 'item'):
-                        fixed_scale = int(fixed_scale.item())
-                    else:
-                        fixed_scale = int(fixed_scale)
-                except (ValueError, TypeError):
-                    fixed_scale = 100
-                self.task.log_curriculum_update(f"   4. GATE SIZE: randomization disabled, fixed scale = {fixed_scale}%")
+        gate_names = []
+        if len(self.task.sim_env.global_tensor_dict.get("gate_variant_names_per_env", [])) > 0:
+            gate_names = self.task.sim_env.global_tensor_dict["gate_variant_names_per_env"][0]
+        # Report fixed mode if enabled
+        disable_flag = self.task.sim_env.global_tensor_dict.get('gate_randomization/disabled', False)
+        try:
+            if hasattr(disable_flag, 'item'):
+                disable_flag = bool(disable_flag.item())
             else:
-                # Compute linear threshold from 80 -> 60 over levels 3..23
-                # If EVAL_STRETCH_ENABLED, extend further to 50% by eval_end_level
-                stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
-                eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(self.task.task_config.curriculum.eval_stretch_end_level)))
-                level = int(self.task.curriculum_level)
-                if level <= 3:
-                    min_scale = 80
-                elif level <= 23:
-                    frac = (level - 3) / (23 - 3)
-                    raw = 80 - frac * (80 - 60)
-                    min_scale = int((int(raw) // 2) * 2)
-                elif stretch_enabled:
-                    # Extend 23->eval_end: 60% -> 50% linearly
-                    if level >= eval_end:
-                        min_scale = 50
-                    else:
-                        extra_frac = (level - 23) / max(1, (eval_end - 23))
-                        raw = 60 - extra_frac * (60 - 50)
-                        min_scale = int((int(raw) // 2) * 2)
+                disable_flag = bool(disable_flag)
+        except (ValueError, TypeError, RuntimeError):
+            disable_flag = False
+        if disable_flag:
+            try:
+                fixed_scale = self.task.sim_env.global_tensor_dict.get('gate_randomization/fixed_scale_percent', 100)
+                if hasattr(fixed_scale, 'item'):
+                    fixed_scale = int(fixed_scale.item())
                 else:
-                    min_scale = 60
-                if min_scale < 50:
+                    fixed_scale = int(fixed_scale)
+            except (ValueError, TypeError):
+                fixed_scale = 100
+            self.task.log_curriculum_update(f"   4. GATE SIZE: randomization disabled, fixed scale = {fixed_scale}%")
+        else:
+            # Compute linear threshold from 80 -> 60 over levels 3..23
+            # If EVAL_STRETCH_ENABLED, extend further to 50% by eval_end_level
+            stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in ("1", "true", "True")
+            eval_end = int(_os.environ.get("EVAL_STRETCH_END_LEVEL", str(self.task.task_config.curriculum.eval_stretch_end_level)))
+            level = int(self.task.curriculum_level)
+            if level <= 3:
+                min_scale = 80
+            elif level <= 23:
+                frac = (level - 3) / (23 - 3)
+                raw = 80 - frac * (80 - 60)
+                min_scale = int((int(raw) // 2) * 2)
+            elif stretch_enabled:
+                # Extend 23->eval_end: 60% -> 50% linearly
+                if level >= eval_end:
                     min_scale = 50
-                if min_scale > 100:
-                    min_scale = 100
-                # Collect scales meeting threshold
-                scales = []
-                for n in gate_names:
-                    if isinstance(n, str) and "gate_scale_" in n:
-                        try:
-                            s = int(n.replace("gate_scale_", ""))
-                            if s >= min_scale:
-                                scales.append(s)
-                        except (ValueError, TypeError):
-                            pass
-                # Report unique scales only (avoid duplicates from config classes)
-                scales = sorted(list(set(scales)), reverse=True)
-                self.task.log_curriculum_update(f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> {scales if scales else [100]} (uniform across unique scales)")
+                else:
+                    extra_frac = (level - 23) / max(1, (eval_end - 23))
+                    raw = 60 - extra_frac * (60 - 50)
+                    min_scale = int((int(raw) // 2) * 2)
+            else:
+                min_scale = 60
+            if min_scale < 50:
+                min_scale = 50
+            if min_scale > 100:
+                min_scale = 100
+            # Collect scales meeting threshold
+            scales = []
+            for n in gate_names:
+                if isinstance(n, str) and "gate_scale_" in n:
+                    try:
+                        s = int(n.replace("gate_scale_", ""))
+                        if s >= min_scale:
+                            scales.append(s)
+                    except (ValueError, TypeError):
+                        pass
+            # Report unique scales only (avoid duplicates from config classes)
+            scales = sorted(list(set(scales)), reverse=True)
+            self.task.log_curriculum_update(f"   4. GATE SIZE: unlocked scales >= {min_scale}% -> {scales if scales else [100]} (uniform across unique scales)")
 
         # 5. CAMERA NOISE PROGRESSION (D455 Simulation)
         camera_gaussian_std, camera_dropout_rate = self.task.task_config.curriculum.get_camera_noise(self.task.curriculum_level)
@@ -174,7 +173,7 @@ class CurriculumLogging:
             cam_noise_disabled = False
         # Per-camera overrides for noise (presence-based overrides)
         try:
-            gtd = getattr(self.task.sim_env, 'global_tensor_dict', {})
+            gtd = self.task.sim_env.global_tensor_dict
             drone_noise_key_present = 'camera_randomization/drone_noise_disabled' in gtd
             static_noise_key_present = 'camera_randomization/static_noise_disabled' in gtd
             drone_noise_flag = bool(gtd.get('camera_randomization/drone_noise_disabled', False)) if drone_noise_key_present else cam_noise_disabled
@@ -200,7 +199,7 @@ class CurriculumLogging:
             cam_fd_disabled = False
         # Per-camera overrides for frame dropout (presence-based overrides)
         try:
-            gtd = getattr(self.task.sim_env, 'global_tensor_dict', {})
+            gtd = self.task.sim_env.global_tensor_dict
             drone_fd_key_present = 'camera_randomization/drone_frame_dropout_disabled' in gtd
             static_fd_key_present = 'camera_randomization/static_frame_dropout_disabled' in gtd
             drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False)) if drone_fd_key_present else cam_fd_disabled
@@ -342,7 +341,7 @@ class CurriculumLogging:
         self.task.infos["curriculum/camera_gaussian_std"] = torch.as_tensor(camera_gaussian_std, dtype=torch.float32)
         self.task.infos["curriculum/camera_dropout_rate"] = torch.as_tensor(camera_dropout_rate, dtype=torch.float32)
         # Per-camera effective values (respecting per-camera disable overrides) — level-3 fallback when disabled
-        gtd = getattr(self.task.sim_env, 'global_tensor_dict', {})
+        gtd = self.task.sim_env.global_tensor_dict
         drone_noise_dis = bool(gtd.get('camera_randomization/drone_noise_disabled', False))
         static_noise_dis = bool(gtd.get('camera_randomization/static_noise_disabled', False))
         # Level-3 minimums
@@ -360,7 +359,7 @@ class CurriculumLogging:
         # Add camera frame dropout metrics (effective per-camera, with level-3 fallback when disabled)
         fd_sched = self.task.task_config.curriculum.get_camera_frame_dropout(self.task.curriculum_level)
         try:
-            gtd = getattr(self.task.sim_env, 'global_tensor_dict', {})
+            gtd = self.task.sim_env.global_tensor_dict
             drone_fd_flag = bool(gtd.get('camera_randomization/drone_frame_dropout_disabled', False))
             static_fd_flag = bool(gtd.get('camera_randomization/static_frame_dropout_disabled', False))
         except (KeyError, TypeError):
