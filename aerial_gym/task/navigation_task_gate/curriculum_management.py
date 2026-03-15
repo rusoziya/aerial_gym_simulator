@@ -296,8 +296,6 @@ class CurriculumManager:
                 f"Asset manager updated: {old_count} -> {total_obstacles_in_env}"
             )
 
-            self.task.sim_env.env_config.num_obstacles = total_obstacles_in_env
-
             # 2. STATIC CAMERA DIFFICULTY: Update camera parameters for NEW episodes only
             # Update max camera angle for logging (affects new episodes only)
             (
