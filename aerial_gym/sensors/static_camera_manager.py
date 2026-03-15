@@ -44,9 +44,7 @@ class StaticCameraManager:
         self.camera_handles: list = []
         self.camera_setup_success: bool = False
         self.use_synthetic_camera: bool = False
-        self.device: str | torch.device = getattr(
-            env_manager, "device", getattr(task_config, "device", "cpu")
-        )
+        self.device: str | torch.device = env_manager.device
 
         self.gate_position: list[float] = [0.0, 0.0, 0.0]
         self.env_bounds: list[list[float]] = [[-4.0, -4.0, 0.0], [4.0, 4.0, 4.0]]
@@ -61,21 +59,11 @@ class StaticCameraManager:
         ]
         self.last_angle_deg: list[float] = [0.0] * self.num_envs
 
-        self.static_cam_randomize: bool = bool(
-            getattr(task_config, "static_camera_randomize_placement", False)
-        )
-        self.static_cam_min_t: list[float] = list(
-            getattr(task_config, "static_camera_min_translation", [0.0, 0.0, 0.0])
-        )
-        self.static_cam_max_t: list[float] = list(
-            getattr(task_config, "static_camera_max_translation", [0.0, 0.0, 0.0])
-        )
-        self.static_cam_min_euler: list[float] = list(
-            getattr(task_config, "static_camera_min_euler_deg", [0.0, 0.0, 0.0])
-        )
-        self.static_cam_max_euler: list[float] = list(
-            getattr(task_config, "static_camera_max_euler_deg", [0.0, 0.0, 0.0])
-        )
+        self.static_cam_randomize: bool = bool(task_config.static_camera_randomize_placement)
+        self.static_cam_min_t: list[float] = list(task_config.static_camera_min_translation)
+        self.static_cam_max_t: list[float] = list(task_config.static_camera_max_translation)
+        self.static_cam_min_euler: list[float] = list(task_config.static_camera_min_euler_deg)
+        self.static_cam_max_euler: list[float] = list(task_config.static_camera_max_euler_deg)
         self._trans_jitter: list[tuple[float, float, float]] = [
             (0.0, 0.0, 0.0) for _ in range(self.num_envs)
         ]
@@ -143,20 +131,11 @@ class StaticCameraManager:
 
     def _resolve_initial_base_position(self) -> tuple[float, bool, float]:
         """Resolve base_y, adaptive_z flag, and base_z_value from config/env vars."""
-        try:
-            base_y = float(
-                getattr(
-                    self.task_config,
-                    "static_camera_base_y",
-                    float(os.environ.get("SF_STATIC_CAMERA_BASE_Y", -3.0)),
-                )
-            )
-        except (ValueError, TypeError):
-            base_y = -3.0
+        base_y = float(self.task_config.static_camera_base_y)
 
         adaptive_z = False
         base_z_value = 1.5
-        cfg_base_z = getattr(self.task_config, "static_camera_base_z", None)
+        cfg_base_z = self.task_config.static_camera_base_z
         if cfg_base_z is not None:
             if isinstance(cfg_base_z, str) and cfg_base_z.strip().lower() == "adaptive":
                 adaptive_z = True
