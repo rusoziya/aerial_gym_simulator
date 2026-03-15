@@ -1,49 +1,31 @@
 from __future__ import annotations
 
+from collections.abc import KeysView
+
 from aerial_gym.registry.controller_registry import controller_registry
 
 
 class RobotRegistry:
-    """
-    This class is used to keep track of the robots that are created.
-    New robots can be added to the registry and can be accessed by other classes.
-    This will allow the environment manager to create the robots and the robot manager
-    to access the robots.
-    """
+    """Registry mapping robot names to robot classes and configs."""
 
     def __init__(self) -> None:
-        self.robot_classes = {}
-        self.robot_configs = {}
+        self.robot_classes: dict[str, type] = {}
+        self.robot_configs: dict[str, type] = {}
 
-    def register(self, robot_name, robot_class, robot_config) -> None:
-        """
-        Add a robot to the robot dictionary.
-        """
+    def register(self, robot_name: str, robot_class: type, robot_config: type) -> None:
         self.robot_classes[robot_name] = robot_class
         self.robot_configs[robot_name] = robot_config
 
-    def get_robot_class(self, robot_name) -> None:
-        """
-        Get a robot from the robot dictionary.
-        """
+    def get_robot_class(self, robot_name: str) -> type:
         return self.robot_classes[robot_name]
 
-    def get_robot_config(self, robot_name) -> None:
-        """
-        Get a robot config from the robot dictionary.
-        """
+    def get_robot_config(self, robot_name: str) -> type:
         return self.robot_configs[robot_name]
 
-    def get_robot_names(self) -> None:
-        """
-        Get the robot names from the robot dictionary.
-        """
+    def get_robot_names(self) -> KeysView[str]:
         return self.robot_classes.keys()
 
-    def make_robot(self, robot_name, controller_name, env_config, device) -> None:
-        """
-        Make a robot from the robot dictionary.
-        """
+    def make_robot(self, robot_name: str, controller_name: str, env_config: object, device: str) -> tuple[object, type]:
         if robot_name not in self.robot_classes:
             raise ValueError(f"Robot {robot_name} not found in robot registry")
         return (
@@ -54,5 +36,4 @@ class RobotRegistry:
         )
 
 
-# create a global robot registry
 robot_registry = RobotRegistry()

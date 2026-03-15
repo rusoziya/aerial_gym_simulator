@@ -6,33 +6,30 @@ import torch
 
 
 class SimBuilder:
-    def __init__(self):
-        self.sim_name = None
-        self.env_name = None
-        self.robot_name = None
-        self.env = None
-        pass
+    def __init__(self) -> None:
+        self.sim_name: str | None = None
+        self.env_name: str | None = None
+        self.robot_name: str | None = None
+        self.env: EnvManager | None = None
 
     def delete_env(self) -> None:
-        # garbage cleanup for the environment
         del self.env
-        # make sure all cuda memory is freed
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
         self.env = None
 
     def build_env(
         self,
-        sim_name,
-        env_name,
-        robot_name,
-        controller_name,
-        device,
-        args=None,
-        num_envs=None,
-        use_warp=None,
-        headless=None,
-    ) -> None:
+        sim_name: str,
+        env_name: str,
+        robot_name: str,
+        controller_name: str,
+        device: str,
+        args: object = None,
+        num_envs: int | None = None,
+        use_warp: bool | None = None,
+        headless: bool | None = None,
+    ) -> EnvManager:
         self.sim_name = sim_name
         self.env_name = env_name
         self.robot_name = robot_name
