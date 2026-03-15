@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import os
 import torch
 import torch.nn as nn
@@ -571,11 +572,9 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
         
         return transformed_obs, infos
 
-    def step(self, action) -> Tuple[Dict[str, Tensor], Tensor, Tensor, Tensor, Dict]:
-        # FIXED: Direct 4D action pass-through for DCE gate navigation task
-        # Sample Factory now provides 4D actions directly matching DCE task expectations (x_vel, y_vel, z_vel, yaw_rate)
+    def _sanitize_action(self, action: Tensor) -> Tensor:
+        """Sanitize action tensor to replace NaN/Inf with 0 and clamp to [-1, 1]."""
         dce_action = action
-        # Sanitize action to avoid NaN/Inf entering physics
         try:
             if isinstance(dce_action, torch.Tensor):
                 if not torch.isfinite(dce_action).all():
@@ -586,367 +585,449 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 dce_action = torch.nan_to_num(dce_action, nan=0.0, posinf=0.0, neginf=0.0).clamp_(-1.0, 1.0)
         except (ValueError, TypeError):
             pass
-            
-        obs, rew, terminated, truncated, infos = self.env.step(dce_action)
-        
-        # Collect frames for GIF generation
-        if self.save_gifs:
-            self._collect_frames(obs)
-        
-        # Save GIFs when episodes terminate
-        if self.save_gifs and (torch.any(terminated) or torch.any(truncated)):
-            # Save GIFs for terminated/truncated environments (only save for env 0 to avoid spam)
-            reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-            if len(reset_ids) > 0 and 0 in reset_ids:  # Only save for first environment
-                # Only save if env_agents is 16
-                try:
-                    env_agents = int(os.environ.get('SF_ENV_AGENTS', '0'))
-                except (ValueError, TypeError):
-                    env_agents = 0
-                if env_agents != 16:
-                    # Clear frames and skip saving to control output volume
-                    self._clear_frames(env_id=0)
-                    self.episode_count += 1
-                    return transformed_obs, rew, terminated, truncated, infos
-                # End training latent logging when env0 resets once
-                if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true' and self._train_env0_log_state == 1:
-                    reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-                    if len(reset_ids) > 0 and 0 in reset_ids.tolist():
-                        self._train_env0_log_state = 2
-                        if VERBOSE:
-                            print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
-                if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and self._train_env0_obs_state == 1:
-                    reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-                    if len(reset_ids) > 0 and 0 in reset_ids.tolist():
-                        self._train_env0_obs_state = 2
-                        if VERBOSE:
-                            print(f"[TRAIN_ENV0_OBS] episode_end steps={self._train_env0_obs_step}")
-                # Save every 5 episodes for env 0
-                if self.episode_count % 5 == 0:
-                    if VERBOSE:
-                        if terminated[0]:
-                            print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 5 episodes)")
-                        elif truncated[0]:
-                            print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 5 episodes)")
-                    self._save_episode_gifs(env_id=0)
-                self._clear_frames(env_id=0)
-                
-                # Increment episode counter when first environment resets
-                self.episode_count += 1
-        
-        # Inject curriculum level into infos for learner-side W&B logging
+        return dce_action
+
+    def _handle_gif_episode_end(
+        self,
+        terminated: Tensor,
+        truncated: Tensor,
+        transformed_obs: dict[str, Tensor],
+        rew: Tensor,
+        infos: dict,
+    ) -> tuple[dict[str, Tensor], Tensor, Tensor, Tensor, dict] | None:
+        """Handle GIF saving and env0 logging on episode boundaries.
+
+        Returns a full step tuple for early-return when GIF saving is skipped
+        due to env_agents != 16, otherwise returns None to continue normally.
+        """
+        if not self.save_gifs or not (torch.any(terminated) or torch.any(truncated)):
+            return None
+
+        reset_ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+        if len(reset_ids) == 0 or 0 not in reset_ids:
+            return None
+
+        # Only save if env_agents is 16
         try:
-            if isinstance(infos, dict):
-                extra = infos.get('episode_extra_stats', {})
-                if not isinstance(extra, dict):
-                    extra = {}
-                ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-                if ids.numel() > 0:
-                    # Access underlying task to read curriculum level
-                    task = self.env
-                    curr_level = None
-                    if task is not None:
-                        curr_level = task.curriculum_level
-                        # Also pull step-averaged traj metrics directly if the task stashed them
-                        traj_avg = getattr(task, '_last_traj_metrics_avg', None)
-                        # NEW: Update running aggregates using per-env episode metrics when resets happen
-                        per_env = getattr(task, '_last_traj_metrics_per_env', None)
-                        if isinstance(per_env, dict):
-                            # Limit to environments that actually reset this step
-                            reset_ids = ids.detach().cpu().tolist()
-                            crossed_mask = per_env.get('crossed', None)
-                            def _to_list(t) -> None:
-                                return t.detach().cpu().tolist() if torch.is_tensor(t) else t
-                            if reset_ids is not None:
-                                for eid in reset_ids:
-                                    pe = float(per_env['path_efficiency'][eid].item())
-                                    mgd = float(per_env['min_gate_distance'][eid].item())
-                                    ttg = float(per_env['time_to_gate_steps'][eid].item())
-                                    co = float(per_env['center_offset_success'][eid].item())
-                                    ho = float(per_env['height_offset_success'][eid].item())
-                                    # Update totals
-                                    if math.isfinite(pe):
-                                        self._traj_running['path_efficiency_sum'] += pe
-                                        self._traj_running['path_efficiency_count'] += 1
-                                    if math.isfinite(mgd):
-                                        self._traj_running['min_gate_distance_sum'] += mgd
-                                        self._traj_running['min_gate_distance_count'] += 1
-                                    crossed = False
-                                    if isinstance(crossed_mask, torch.Tensor):
-                                        crossed = bool(crossed_mask[eid].item())
-                                    # Only update these when crossed (finite ttg/offsets expected)
-                                    if crossed and math.isfinite(ttg):
-                                        self._traj_running['time_to_gate_sum'] += ttg
-                                        self._traj_running['time_to_gate_count'] += 1
-                                    if crossed and math.isfinite(co):
-                                        self._traj_running['center_offset_sum'] += co
-                                        self._traj_running['center_offset_count'] += 1
-                                    if crossed and math.isfinite(ho):
-                                        self._traj_running['height_offset_sum'] += ho
-                                        self._traj_running['height_offset_count'] += 1
-                                    # Episode counters
-                                    self._traj_running['episodes_total'] += 1
-                                    if crossed:
-                                        self._traj_running['episodes_crossed'] += 1
-                    # Log a run-level stat (aggregated by SF) without per-env nesting
-                    extra['curriculum_level'] = float(curr_level) if curr_level is not None else -1.0
-                    # Also provide curriculum level - 1 for plotting convenience
-                    if curr_level is not None:
-                        extra['curriculum_level_minus_1'] = float(curr_level - 1)
-                    else:
-                        extra['curriculum_level_minus_1'] = -1.0
-                    # Inject traj metrics into episode_extra_stats following the same pattern
-                    if isinstance(traj_avg, dict):
-                        for k, v in traj_avg.items():
-                            extra[k] = float(v)
-                        # Also mirror last-position metrics when present
-                        for k in ('last_position_x','last_position_y','last_position_z','last_center_distance'):
-                            if k in traj_avg:
-                                extra[k] = float(traj_avg[k])
-                    # Pass-through any episode-level trajectory metrics already stored by env
-                    # They will be aggregated by SF and picked up by the learner later
-                    for k in ('path_efficiency','time_to_gate_steps','min_gate_distance','center_offset_success','height_offset_success','target_success_rate'):
-                        if k in extra:
-                            # ensure float cast
-                            extra[k] = float(extra[k])
-                    # Include last-position series if present (already floats)
-                    for k in ('last_position_x','last_position_y','last_position_z','last_center_distance'):
-                        if k in extra:
-                            extra[k] = float(extra[k])
-                    # Add running-mean episode-level metrics
-                    # For success-conditioned metrics (time_to_gate/offsets), return None when count==0
-                    def _safe_mean(sum_key, count_key, none_if_zero=False) -> None:
-                        s = self._traj_running.get(sum_key, 0.0)
-                        c = self._traj_running.get(count_key, 0)
-                        if c <= 0:
-                            return None if none_if_zero else float('nan')
-                        return float(s / c)
-                    extra['path_efficiency_running_mean'] = _safe_mean('path_efficiency_sum', 'path_efficiency_count')
-                    extra['min_gate_distance_running_mean'] = _safe_mean('min_gate_distance_sum', 'min_gate_distance_count')
-                    # Means conditioned on success: drop when no successes
-                    extra['time_to_gate_running_mean'] = _safe_mean('time_to_gate_sum', 'time_to_gate_count', none_if_zero=True)
-                    extra['center_offset_running_mean'] = _safe_mean('center_offset_sum', 'center_offset_count', none_if_zero=True)
-                    extra['height_offset_running_mean'] = _safe_mean('height_offset_sum', 'height_offset_count', none_if_zero=True)
-                    # Helpful counts
-                    extra['gate_pass_rate'] = float(self._traj_running['episodes_crossed']) / float(max(1, self._traj_running['episodes_total']))
-                    extra['episodes_total'] = float(self._traj_running['episodes_total'])
-                    extra['episodes_crossed'] = float(self._traj_running['episodes_crossed'])
+            env_agents = int(os.environ.get('SF_ENV_AGENTS', '0'))
+        except (ValueError, TypeError):
+            env_agents = 0
+        if env_agents != 16:
+            # Clear frames and skip saving to control output volume
+            self._clear_frames(env_id=0)
+            self.episode_count += 1
+            return transformed_obs, rew, terminated, truncated, infos
 
-                    # Curriculum (generic task) counters derived from infos flags
-                    # Sum over the envs that reset this step
-                    if isinstance(infos, dict) and 'successes' in infos and 'crashes' in infos and 'timeouts' in infos:
-                        ids = (terminated + truncated).nonzero(as_tuple=True)[0]
-                        if ids.numel() > 0:
-                            step_successes = int(infos['successes'][ids].sum().item())
-                            step_crashes = int(infos['crashes'][ids].sum().item())
-                            step_timeouts = int(infos['timeouts'][ids].sum().item())
-                            # Update running totals
-                            self._curriculum_totals['total_successes'] += step_successes
-                            self._curriculum_totals['total_crashes'] += step_crashes
-                            self._curriculum_totals['total_timeouts'] += step_timeouts
-                            # Expose per-episode counts for this step (averages not needed)
-                            extra['successes'] = float(step_successes)
-                            extra['crashes'] = float(step_crashes)
-                            extra['timeouts'] = float(step_timeouts)
-                            # Expose cumulative totals (curriculum namespace)
-                            extra['curriculum/total_successes'] = float(self._curriculum_totals['total_successes'])
-                            extra['curriculum/total_crashes'] = float(self._curriculum_totals['total_crashes'])
-                            extra['curriculum/total_timeouts'] = float(self._curriculum_totals['total_timeouts'])
+        # End training latent logging when env0 resets once
+        if os.environ.get('PRINT_ENV0_LATENTS_ONCE', 'false').lower() == 'true' and self._train_env0_log_state == 1:
+            reset_ids_list = (terminated + truncated).nonzero(as_tuple=True)[0]
+            if len(reset_ids_list) > 0 and 0 in reset_ids_list.tolist():
+                self._train_env0_log_state = 2
+                if VERBOSE:
+                    print(f"[TRAIN_ENV0_LATENTS] episode_end steps={self._train_env0_step}")
+        if os.environ.get('PRINT_ENV0_OBS_ONCE', 'false').lower() == 'true' and self._train_env0_obs_state == 1:
+            reset_ids_list = (terminated + truncated).nonzero(as_tuple=True)[0]
+            if len(reset_ids_list) > 0 and 0 in reset_ids_list.tolist():
+                self._train_env0_obs_state = 2
+                if VERBOSE:
+                    print(f"[TRAIN_ENV0_OBS] episode_end steps={self._train_env0_obs_step}")
 
-                    # Mirror curriculum/current_* using task attributes (fallback) so they always show up
-                    try:
-                        # Prefer values emitted by env in infos; otherwise fall back to task attributes
-                        # Move any current_* tensors into episode_extra_stats namespace
-                        cur_lvl_tensor = infos.get('curriculum/current_level', None)
-                        cur_prog_tensor = infos.get('curriculum/current_progress', None)
-                        if cur_lvl_tensor is not None:
-                            extra['episode_extra_stats/curriculum/current_level'] = float(cur_lvl_tensor.mean().item()) if hasattr(cur_lvl_tensor, 'mean') else float(cur_lvl_tensor)
-                            if 'curriculum/current_level' in infos:
-                                del infos['curriculum/current_level']
-                        else:
-                            if task is not None and hasattr(task, 'curriculum_level'):
-                                extra['episode_extra_stats/curriculum/current_level'] = float(task.curriculum_level)
-                        if cur_prog_tensor is not None:
-                            extra['episode_extra_stats/curriculum/current_progress'] = float(cur_prog_tensor.mean().item()) if hasattr(cur_prog_tensor, 'mean') else float(cur_prog_tensor)
-                            if 'curriculum/current_progress' in infos:
-                                del infos['curriculum/current_progress']
-                        else:
-                            if task is not None and hasattr(task, 'curriculum_progress_fraction'):
-                                extra['episode_extra_stats/curriculum/current_progress'] = float(task.curriculum_progress_fraction)
-                    except (ValueError, TypeError):
-                        pass
+        # Save every 5 episodes for env 0
+        if self.episode_count % 5 == 0:
+            if VERBOSE:
+                if terminated[0]:
+                    print(f"[GIF] Episode {self.episode_count} terminated - saving GIFs (every 5 episodes)")
+                elif truncated[0]:
+                    print(f"[GIF] Episode {self.episode_count} truncated - saving GIFs (every 5 episodes)")
+            self._save_episode_gifs(env_id=0)
+        self._clear_frames(env_id=0)
 
-                    # Gate/task-specific + camera alignment — mean across envs if present in infos
-                    gate_keys = (
-                        'gate/passed','gate/distance','gate/alignment',
-                        'camera/facing_alignment','camera/alignment_angle_deg','camera/alignment_category',
-                    )
-                    for key in gate_keys:
-                        val = infos.get(key, None)
-                        if val is not None:
-                            extra[key] = float(val.mean().item()) if hasattr(val, 'mean') else float(val)
+        # Increment episode counter when first environment resets
+        self.episode_count += 1
+        return None
 
-                    # Curriculum snapshot & progression (gate task)
-                    # 1) Mirror when the task provides them in infos; 2) Fallback to task attributes so they always appear
-                    try:
-                        # Mirror block (when present)
-                        snapshot_keys = (
-                            'curriculum/level','curriculum/progress','curriculum/success_rate',
-                            'curriculum/crash_rate','curriculum/timeout_rate',
-                            'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached',
-                            'curriculum/camera_gaussian_std','curriculum/camera_dropout_rate',
-                            'curriculum/camera_frame_dropout_drone_total','curriculum/camera_frame_dropout_static_total',
-                            'curriculum/camera_frame_freeze_drone','curriculum/camera_frame_blank_drone',
-                            'curriculum/camera_frame_freeze_static','curriculum/camera_frame_blank_static',
-                            'curriculum/camera_max_angle','curriculum/camera_current_angle',
-                            'curriculum/state_noise_drone_pos_std_m','curriculum/state_noise_drone_orient_std_deg',
-                            'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg',
-                        )
-                        mirrored = set()
-                        for key in snapshot_keys:
-                            val = infos.get(key, None)
-                            if val is not None:
-                                extra[key] = float(val.mean().item()) if hasattr(val, 'mean') else float(val)
-                                mirrored.add(key)
-                        # Fallback compute block (only for those not mirrored)
-                        if task is not None:
-                            # Current level/progress
-                            if 'curriculum/level' not in mirrored:
-                                extra['curriculum/level'] = float(task.curriculum_level)
-                            if 'curriculum/progress' not in mirrored:
-                                extra['curriculum/progress'] = float(task.curriculum_progress_fraction)
-                            # Environment totals
-                            try:
-                                cur_lvl_val = int(task.curriculum_level)
-                                curri = task.task_config.curriculum
-                                if curri is not None and hasattr(curri, 'get_obstacle_count_behind_gate'):
-                                    obg = int(curri.get_obstacle_count_behind_gate(cur_lvl_val))
-                                else:
-                                    obg = 0
-                            except (ValueError, TypeError):
-                                obg = 0
-                            if 'curriculum/obstacles_behind_gate' not in mirrored:
-                                extra['curriculum/obstacles_behind_gate'] = float(obg)
-                            # Visible fixed assets (1 gate + 6 walls)
-                            fixed_assets_visible = 1 + 6
-                            total_assets = fixed_assets_visible + obg
-                            if 'curriculum/total_assets' not in mirrored:
-                                extra['curriculum/total_assets'] = float(total_assets)
-                            if 'curriculum/max_level_reached' not in mirrored:
-                                extra['curriculum/max_level_reached'] = float(getattr(task, 'max_curriculum_level_reached', cur_lvl_val))
-                            # Camera noise
-                            try:
-                                if curri is not None and hasattr(curri, 'get_camera_noise'):
-                                    cstd, cdrop = curri.get_camera_noise(cur_lvl_val)
-                                else:
-                                    cstd, cdrop = 0.0, 0.0
-                            except Exception:
-                                cstd, cdrop = 0.0, 0.0
-                            if 'curriculum/camera_gaussian_std' not in mirrored:
-                                extra['curriculum/camera_gaussian_std'] = float(cstd)
-                            if 'curriculum/camera_dropout_rate' not in mirrored:
-                                extra['curriculum/camera_dropout_rate'] = float(cdrop)
-                            # Frame dropout
-                            try:
-                                if curri is not None and hasattr(curri, 'get_camera_frame_dropout'):
-                                    fd = curri.get_camera_frame_dropout(cur_lvl_val)
-                                else:
-                                    fd = {'drone_total':0.0,'static_total':0.0,'drone_freeze':0.0,'drone_blank':0.0,'static_freeze':0.0,'static_blank':0.0}
-                            except Exception:
-                                fd = {'drone_total':0.0,'static_total':0.0,'drone_freeze':0.0,'drone_blank':0.0,'static_freeze':0.0,'static_blank':0.0}
-                            def _put_if_missing(k) -> None:
-                                if k not in mirrored:
-                                    extra[k] = float(fd.get(k.split('/')[-1], 0.0)) if 'curriculum/' in k else float(fd.get(k, 0.0))
-                            _put_if_missing('curriculum/camera_frame_dropout_drone_total')
-                            _put_if_missing('curriculum/camera_frame_dropout_static_total')
-                            _put_if_missing('curriculum/camera_frame_freeze_drone')
-                            _put_if_missing('curriculum/camera_frame_blank_drone')
-                            _put_if_missing('curriculum/camera_frame_freeze_static')
-                            _put_if_missing('curriculum/camera_frame_blank_static')
-                            # Camera angles
-                            try:
-                                max_angle = getattr(task, 'max_camera_angle', None)
-                                if max_angle is None and curri is not None and hasattr(curri, 'get_static_camera_difficulty'):
-                                    max_angle, _, _ = curri.get_static_camera_difficulty(cur_lvl_val)
-                            except Exception:
-                                max_angle = 0.0
-                            if 'curriculum/camera_max_angle' not in mirrored:
-                                extra['curriculum/camera_max_angle'] = float(max_angle if max_angle is not None else 0.0)
-                            try:
-                                cur_angle = 0.0
-                                scm = getattr(task, 'static_camera_manager', None)
-                                if scm is not None and hasattr(scm, 'current_camera_angles') and scm.current_camera_angles:
-                                    cur_angle = float(scm.current_camera_angles[0])
-                            except (ValueError, TypeError):
-                                cur_angle = 0.0
-                            if 'curriculum/camera_current_angle' not in mirrored:
-                                extra['curriculum/camera_current_angle'] = float(cur_angle)
-                            # State noise
-                            sn = None
-                            if curri is not None and getattr(curri, 'enable_state_noise', False) and hasattr(curri, 'get_state_noise'):
-                                sn = curri.get_state_noise(cur_lvl_val)
-                            if sn is not None:
-                                extra.setdefault('curriculum/state_noise_drone_pos_std_m', float(sn.get('drone_pos_std_m', 0.0)))
-                                extra.setdefault('curriculum/state_noise_drone_orient_std_deg', float(sn.get('drone_orient_std_rad', 0.0) * 57.2958))
-                                extra.setdefault('curriculum/state_noise_static_pos_std_m', float(sn.get('static_pos_std_m', 0.0)))
-                                extra.setdefault('curriculum/state_noise_static_orient_std_deg', float(sn.get('static_orient_std_rad', 0.0) * 57.2958))
-                            # Success/Crash/Timeout rates (run-level, from running totals)
-                            tot_s = float(self._curriculum_totals['total_successes'])
-                            tot_c = float(self._curriculum_totals['total_crashes'])
-                            tot_t = float(self._curriculum_totals['total_timeouts'])
-                            total = max(1.0, tot_s + tot_c + tot_t)
-                            extra.setdefault('curriculum/success_rate', tot_s / total)
-                            extra.setdefault('curriculum/crash_rate', tot_c / total)
-                            extra.setdefault('curriculum/timeout_rate', tot_t / total)
-                    except (ValueError, TypeError):
-                        pass
-                    infos['episode_extra_stats'] = extra
-                    debug_groups = {
-                        'curriculum_current': [
-                            'curriculum/current_level','curriculum/current_progress'
-                        ],
-                        'curriculum_totals': [
-                            'curriculum/total_successes','curriculum/total_crashes','curriculum/total_timeouts'
-                        ],
-                        'per_episode_counts': [
-                            'successes','crashes','timeouts'
-                        ],
-                        'gate_camera': [
-                            'gate/passed','gate/distance','gate/alignment',
-                            'camera/facing_alignment','camera/alignment_angle_deg','camera/alignment_category'
-                        ],
-                        'curriculum_snapshot_core': [
-                            'curriculum/level','curriculum/progress','curriculum/success_rate',
-                            'curriculum/crash_rate','curriculum/timeout_rate'
-                        ],
-                        'curriculum_snapshot_env': [
-                            'curriculum/obstacles_behind_gate','curriculum/total_assets','curriculum/max_level_reached'
-                        ],
-                        'curriculum_snapshot_camera': [
-                            'curriculum/camera_gaussian_std','curriculum/camera_dropout_rate',
-                            'curriculum/camera_frame_dropout_drone_total','curriculum/camera_frame_dropout_static_total',
-                            'curriculum/camera_frame_freeze_drone','curriculum/camera_frame_blank_drone',
-                            'curriculum/camera_frame_freeze_static','curriculum/camera_frame_blank_static',
-                            'curriculum/camera_max_angle','curriculum/camera_current_angle'
-                        ],
-                        'curriculum_snapshot_state_noise': [
-                            'curriculum/state_noise_drone_pos_std_m','curriculum/state_noise_drone_orient_std_deg',
-                            'curriculum/state_noise_static_pos_std_m','curriculum/state_noise_static_orient_std_deg'
-                        ],
-                    }
-                    for group_name, keys in debug_groups.items():
-                        present = [k for k in keys if k in extra]
-                        if present:
-                            preview = {k: extra[k] for k in present}
+    def _update_trajectory_running_aggregates(self, reset_ids: list[int], task: object) -> None:
+        """Update running trajectory metric aggregates for environments that just reset."""
+        per_env = getattr(task, '_last_traj_metrics_per_env', None)
+        if not isinstance(per_env, dict):
+            return
+
+        crossed_mask = per_env.get('crossed', None)
+        for eid in reset_ids:
+            pe = float(per_env['path_efficiency'][eid].item())
+            mgd = float(per_env['min_gate_distance'][eid].item())
+            ttg = float(per_env['time_to_gate_steps'][eid].item())
+            co = float(per_env['center_offset_success'][eid].item())
+            ho = float(per_env['height_offset_success'][eid].item())
+            # Update totals
+            if math.isfinite(pe):
+                self._traj_running['path_efficiency_sum'] += pe
+                self._traj_running['path_efficiency_count'] += 1
+            if math.isfinite(mgd):
+                self._traj_running['min_gate_distance_sum'] += mgd
+                self._traj_running['min_gate_distance_count'] += 1
+            crossed = False
+            if isinstance(crossed_mask, torch.Tensor):
+                crossed = bool(crossed_mask[eid].item())
+            # Only update these when crossed (finite ttg/offsets expected)
+            if crossed and math.isfinite(ttg):
+                self._traj_running['time_to_gate_sum'] += ttg
+                self._traj_running['time_to_gate_count'] += 1
+            if crossed and math.isfinite(co):
+                self._traj_running['center_offset_sum'] += co
+                self._traj_running['center_offset_count'] += 1
+            if crossed and math.isfinite(ho):
+                self._traj_running['height_offset_sum'] += ho
+                self._traj_running['height_offset_count'] += 1
+            # Episode counters
+            self._traj_running['episodes_total'] += 1
+            if crossed:
+                self._traj_running['episodes_crossed'] += 1
+
+    def _inject_traj_and_level_stats(
+        self,
+        extra: dict[str, float],
+        task: object,
+        curr_level: float | None,
+    ) -> None:
+        """Inject curriculum level, trajectory averages, and running means into extra stats."""
+        # Log a run-level stat (aggregated by SF) without per-env nesting
+        extra['curriculum_level'] = float(curr_level) if curr_level is not None else -1.0
+        # Also provide curriculum level - 1 for plotting convenience
+        if curr_level is not None:
+            extra['curriculum_level_minus_1'] = float(curr_level - 1)
+        else:
+            extra['curriculum_level_minus_1'] = -1.0
+
+        # Inject traj metrics into episode_extra_stats following the same pattern
+        traj_avg = getattr(task, '_last_traj_metrics_avg', None)
+        if isinstance(traj_avg, dict):
+            for k, v in traj_avg.items():
+                extra[k] = float(v)
+            # Also mirror last-position metrics when present
+            for k in ('last_position_x', 'last_position_y', 'last_position_z', 'last_center_distance'):
+                if k in traj_avg:
+                    extra[k] = float(traj_avg[k])
+
+        # Pass-through any episode-level trajectory metrics already stored by env
+        for k in ('path_efficiency', 'time_to_gate_steps', 'min_gate_distance', 'center_offset_success', 'height_offset_success', 'target_success_rate'):
+            if k in extra:
+                extra[k] = float(extra[k])
+        # Include last-position series if present (already floats)
+        for k in ('last_position_x', 'last_position_y', 'last_position_z', 'last_center_distance'):
+            if k in extra:
+                extra[k] = float(extra[k])
+
+        # Add running-mean episode-level metrics
+        def _safe_mean(sum_key: str, count_key: str, none_if_zero: bool = False) -> float | None:
+            s = self._traj_running.get(sum_key, 0.0)
+            c = self._traj_running.get(count_key, 0)
+            if c <= 0:
+                return None if none_if_zero else float('nan')
+            return float(s / c)
+
+        extra['path_efficiency_running_mean'] = _safe_mean('path_efficiency_sum', 'path_efficiency_count')
+        extra['min_gate_distance_running_mean'] = _safe_mean('min_gate_distance_sum', 'min_gate_distance_count')
+        # Means conditioned on success: drop when no successes
+        extra['time_to_gate_running_mean'] = _safe_mean('time_to_gate_sum', 'time_to_gate_count', none_if_zero=True)
+        extra['center_offset_running_mean'] = _safe_mean('center_offset_sum', 'center_offset_count', none_if_zero=True)
+        extra['height_offset_running_mean'] = _safe_mean('height_offset_sum', 'height_offset_count', none_if_zero=True)
+        # Helpful counts
+        extra['gate_pass_rate'] = float(self._traj_running['episodes_crossed']) / float(max(1, self._traj_running['episodes_total']))
+        extra['episodes_total'] = float(self._traj_running['episodes_total'])
+        extra['episodes_crossed'] = float(self._traj_running['episodes_crossed'])
+
+    def _inject_curriculum_counters(
+        self,
+        extra: dict[str, float],
+        infos: dict,
+        terminated: Tensor,
+        truncated: Tensor,
+    ) -> None:
+        """Accumulate and inject success/crash/timeout counters into extra stats."""
+        if not (isinstance(infos, dict) and 'successes' in infos and 'crashes' in infos and 'timeouts' in infos):
+            return
+        ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+        if ids.numel() == 0:
+            return
+        step_successes = int(infos['successes'][ids].sum().item())
+        step_crashes = int(infos['crashes'][ids].sum().item())
+        step_timeouts = int(infos['timeouts'][ids].sum().item())
+        # Update running totals
+        self._curriculum_totals['total_successes'] += step_successes
+        self._curriculum_totals['total_crashes'] += step_crashes
+        self._curriculum_totals['total_timeouts'] += step_timeouts
+        # Expose per-episode counts for this step (averages not needed)
+        extra['successes'] = float(step_successes)
+        extra['crashes'] = float(step_crashes)
+        extra['timeouts'] = float(step_timeouts)
+        # Expose cumulative totals (curriculum namespace)
+        extra['curriculum/total_successes'] = float(self._curriculum_totals['total_successes'])
+        extra['curriculum/total_crashes'] = float(self._curriculum_totals['total_crashes'])
+        extra['curriculum/total_timeouts'] = float(self._curriculum_totals['total_timeouts'])
+
+    def _inject_curriculum_current_mirror(
+        self,
+        extra: dict[str, float],
+        infos: dict,
+        task: object,
+    ) -> None:
+        """Mirror curriculum/current_* using task attributes (fallback) so they always show up."""
+        try:
+            cur_lvl_tensor = infos.get('curriculum/current_level', None)
+            cur_prog_tensor = infos.get('curriculum/current_progress', None)
+            if cur_lvl_tensor is not None:
+                extra['episode_extra_stats/curriculum/current_level'] = float(cur_lvl_tensor.mean().item()) if hasattr(cur_lvl_tensor, 'mean') else float(cur_lvl_tensor)
+                if 'curriculum/current_level' in infos:
+                    del infos['curriculum/current_level']
+            else:
+                if task is not None and hasattr(task, 'curriculum_level'):
+                    extra['episode_extra_stats/curriculum/current_level'] = float(task.curriculum_level)
+            if cur_prog_tensor is not None:
+                extra['episode_extra_stats/curriculum/current_progress'] = float(cur_prog_tensor.mean().item()) if hasattr(cur_prog_tensor, 'mean') else float(cur_prog_tensor)
+                if 'curriculum/current_progress' in infos:
+                    del infos['curriculum/current_progress']
+            else:
+                if task is not None and hasattr(task, 'curriculum_progress_fraction'):
+                    extra['episode_extra_stats/curriculum/current_progress'] = float(task.curriculum_progress_fraction)
         except (ValueError, TypeError):
             pass
-        
-        # DYNAMIC OBSERVATION PROCESSING: Handle both standard DCE (81D) and gate navigation (145D)
-        # Task provides "observations" with correct dimensionality (81D or 145D) based on task type
-        # We pass this through as "obs" for Sample Factory
+
+    def _inject_gate_camera_stats(self, extra: dict[str, float], infos: dict) -> None:
+        """Inject gate/task-specific and camera alignment stats — mean across envs."""
+        gate_keys = (
+            'gate/passed', 'gate/distance', 'gate/alignment',
+            'camera/facing_alignment', 'camera/alignment_angle_deg', 'camera/alignment_category',
+        )
+        for key in gate_keys:
+            val = infos.get(key, None)
+            if val is not None:
+                extra[key] = float(val.mean().item()) if hasattr(val, 'mean') else float(val)
+
+    def _inject_curriculum_snapshot(
+        self,
+        extra: dict[str, float],
+        infos: dict,
+        task: object,
+    ) -> None:
+        """Inject curriculum snapshot & progression stats (gate task).
+
+        1) Mirror when the task provides them in infos.
+        2) Fallback to task attributes so they always appear.
+        """
+        try:
+            snapshot_keys = (
+                'curriculum/level', 'curriculum/progress', 'curriculum/success_rate',
+                'curriculum/crash_rate', 'curriculum/timeout_rate',
+                'curriculum/obstacles_behind_gate', 'curriculum/total_assets', 'curriculum/max_level_reached',
+                'curriculum/camera_gaussian_std', 'curriculum/camera_dropout_rate',
+                'curriculum/camera_frame_dropout_drone_total', 'curriculum/camera_frame_dropout_static_total',
+                'curriculum/camera_frame_freeze_drone', 'curriculum/camera_frame_blank_drone',
+                'curriculum/camera_frame_freeze_static', 'curriculum/camera_frame_blank_static',
+                'curriculum/camera_max_angle', 'curriculum/camera_current_angle',
+                'curriculum/state_noise_drone_pos_std_m', 'curriculum/state_noise_drone_orient_std_deg',
+                'curriculum/state_noise_static_pos_std_m', 'curriculum/state_noise_static_orient_std_deg',
+            )
+            mirrored: set[str] = set()
+            for key in snapshot_keys:
+                val = infos.get(key, None)
+                if val is not None:
+                    extra[key] = float(val.mean().item()) if hasattr(val, 'mean') else float(val)
+                    mirrored.add(key)
+            # Fallback compute block (only for those not mirrored)
+            if task is not None:
+                self._inject_curriculum_snapshot_fallback(extra, task, mirrored)
+        except (ValueError, TypeError):
+            pass
+
+    def _inject_curriculum_snapshot_fallback(
+        self,
+        extra: dict[str, float],
+        task: object,
+        mirrored: set[str],
+    ) -> None:
+        """Compute fallback curriculum snapshot values from task attributes."""
+        # Current level/progress
+        if 'curriculum/level' not in mirrored:
+            extra['curriculum/level'] = float(task.curriculum_level)
+        if 'curriculum/progress' not in mirrored:
+            extra['curriculum/progress'] = float(task.curriculum_progress_fraction)
+        # Environment totals
+        try:
+            cur_lvl_val = int(task.curriculum_level)
+            curri = task.task_config.curriculum
+            if curri is not None and hasattr(curri, 'get_obstacle_count_behind_gate'):
+                obg = int(curri.get_obstacle_count_behind_gate(cur_lvl_val))
+            else:
+                obg = 0
+        except (ValueError, TypeError):
+            obg = 0
+        if 'curriculum/obstacles_behind_gate' not in mirrored:
+            extra['curriculum/obstacles_behind_gate'] = float(obg)
+        # Visible fixed assets (1 gate + 6 walls)
+        fixed_assets_visible = 1 + 6
+        total_assets = fixed_assets_visible + obg
+        if 'curriculum/total_assets' not in mirrored:
+            extra['curriculum/total_assets'] = float(total_assets)
+        if 'curriculum/max_level_reached' not in mirrored:
+            extra['curriculum/max_level_reached'] = float(getattr(task, 'max_curriculum_level_reached', cur_lvl_val))
+        # Camera noise
+        try:
+            curri = task.task_config.curriculum
+            cur_lvl_val = int(task.curriculum_level)
+            if curri is not None and hasattr(curri, 'get_camera_noise'):
+                cstd, cdrop = curri.get_camera_noise(cur_lvl_val)
+            else:
+                cstd, cdrop = 0.0, 0.0
+        except Exception:
+            cstd, cdrop = 0.0, 0.0
+        if 'curriculum/camera_gaussian_std' not in mirrored:
+            extra['curriculum/camera_gaussian_std'] = float(cstd)
+        if 'curriculum/camera_dropout_rate' not in mirrored:
+            extra['curriculum/camera_dropout_rate'] = float(cdrop)
+        # Frame dropout
+        try:
+            curri = task.task_config.curriculum
+            cur_lvl_val = int(task.curriculum_level)
+            if curri is not None and hasattr(curri, 'get_camera_frame_dropout'):
+                fd = curri.get_camera_frame_dropout(cur_lvl_val)
+            else:
+                fd = {'drone_total': 0.0, 'static_total': 0.0, 'drone_freeze': 0.0, 'drone_blank': 0.0, 'static_freeze': 0.0, 'static_blank': 0.0}
+        except Exception:
+            fd = {'drone_total': 0.0, 'static_total': 0.0, 'drone_freeze': 0.0, 'drone_blank': 0.0, 'static_freeze': 0.0, 'static_blank': 0.0}
+
+        def _put_if_missing(k: str) -> None:
+            if k not in mirrored:
+                extra[k] = float(fd.get(k.split('/')[-1], 0.0)) if 'curriculum/' in k else float(fd.get(k, 0.0))
+
+        _put_if_missing('curriculum/camera_frame_dropout_drone_total')
+        _put_if_missing('curriculum/camera_frame_dropout_static_total')
+        _put_if_missing('curriculum/camera_frame_freeze_drone')
+        _put_if_missing('curriculum/camera_frame_blank_drone')
+        _put_if_missing('curriculum/camera_frame_freeze_static')
+        _put_if_missing('curriculum/camera_frame_blank_static')
+        # Camera angles
+        try:
+            curri = task.task_config.curriculum
+            cur_lvl_val = int(task.curriculum_level)
+            max_angle = getattr(task, 'max_camera_angle', None)
+            if max_angle is None and curri is not None and hasattr(curri, 'get_static_camera_difficulty'):
+                max_angle, _, _ = curri.get_static_camera_difficulty(cur_lvl_val)
+        except Exception:
+            max_angle = 0.0
+        if 'curriculum/camera_max_angle' not in mirrored:
+            extra['curriculum/camera_max_angle'] = float(max_angle if max_angle is not None else 0.0)
+        try:
+            cur_angle = 0.0
+            scm = getattr(task, 'static_camera_manager', None)
+            if scm is not None and hasattr(scm, 'current_camera_angles') and scm.current_camera_angles:
+                cur_angle = float(scm.current_camera_angles[0])
+        except (ValueError, TypeError):
+            cur_angle = 0.0
+        if 'curriculum/camera_current_angle' not in mirrored:
+            extra['curriculum/camera_current_angle'] = float(cur_angle)
+        # State noise
+        try:
+            curri = task.task_config.curriculum
+            cur_lvl_val = int(task.curriculum_level)
+            sn = None
+            if curri is not None and getattr(curri, 'enable_state_noise', False) and hasattr(curri, 'get_state_noise'):
+                sn = curri.get_state_noise(cur_lvl_val)
+        except Exception:
+            sn = None
+        if sn is not None:
+            extra.setdefault('curriculum/state_noise_drone_pos_std_m', float(sn.get('drone_pos_std_m', 0.0)))
+            extra.setdefault('curriculum/state_noise_drone_orient_std_deg', float(sn.get('drone_orient_std_rad', 0.0) * 57.2958))
+            extra.setdefault('curriculum/state_noise_static_pos_std_m', float(sn.get('static_pos_std_m', 0.0)))
+            extra.setdefault('curriculum/state_noise_static_orient_std_deg', float(sn.get('static_orient_std_rad', 0.0) * 57.2958))
+        # Success/Crash/Timeout rates (run-level, from running totals)
+        tot_s = float(self._curriculum_totals['total_successes'])
+        tot_c = float(self._curriculum_totals['total_crashes'])
+        tot_t = float(self._curriculum_totals['total_timeouts'])
+        total = max(1.0, tot_s + tot_c + tot_t)
+        extra.setdefault('curriculum/success_rate', tot_s / total)
+        extra.setdefault('curriculum/crash_rate', tot_c / total)
+        extra.setdefault('curriculum/timeout_rate', tot_t / total)
+
+    def _inject_episode_extra_stats(
+        self,
+        infos: dict,
+        terminated: Tensor,
+        truncated: Tensor,
+    ) -> None:
+        """Inject curriculum level, trajectory, and curriculum stats into infos for W&B logging."""
+        try:
+            if not isinstance(infos, dict):
+                return
+            extra = infos.get('episode_extra_stats', {})
+            if not isinstance(extra, dict):
+                extra = {}
+            ids = (terminated + truncated).nonzero(as_tuple=True)[0]
+            if ids.numel() == 0:
+                return
+
+            # Access underlying task to read curriculum level
+            task = self.env
+            curr_level = None
+            if task is not None:
+                curr_level = task.curriculum_level
+                # Update running aggregates using per-env episode metrics when resets happen
+                reset_ids = ids.detach().cpu().tolist()
+                self._update_trajectory_running_aggregates(reset_ids, task)
+
+            self._inject_traj_and_level_stats(extra, task, curr_level)
+            self._inject_curriculum_counters(extra, infos, terminated, truncated)
+            self._inject_curriculum_current_mirror(extra, infos, task)
+            self._inject_gate_camera_stats(extra, infos)
+            self._inject_curriculum_snapshot(extra, infos, task)
+
+            infos['episode_extra_stats'] = extra
+            # Debug groups kept for diagnostic use (values computed but not logged elsewhere)
+            debug_groups = {
+                'curriculum_current': [
+                    'curriculum/current_level', 'curriculum/current_progress'
+                ],
+                'curriculum_totals': [
+                    'curriculum/total_successes', 'curriculum/total_crashes', 'curriculum/total_timeouts'
+                ],
+                'per_episode_counts': [
+                    'successes', 'crashes', 'timeouts'
+                ],
+                'gate_camera': [
+                    'gate/passed', 'gate/distance', 'gate/alignment',
+                    'camera/facing_alignment', 'camera/alignment_angle_deg', 'camera/alignment_category'
+                ],
+                'curriculum_snapshot_core': [
+                    'curriculum/level', 'curriculum/progress', 'curriculum/success_rate',
+                    'curriculum/crash_rate', 'curriculum/timeout_rate'
+                ],
+                'curriculum_snapshot_env': [
+                    'curriculum/obstacles_behind_gate', 'curriculum/total_assets', 'curriculum/max_level_reached'
+                ],
+                'curriculum_snapshot_camera': [
+                    'curriculum/camera_gaussian_std', 'curriculum/camera_dropout_rate',
+                    'curriculum/camera_frame_dropout_drone_total', 'curriculum/camera_frame_dropout_static_total',
+                    'curriculum/camera_frame_freeze_drone', 'curriculum/camera_frame_blank_drone',
+                    'curriculum/camera_frame_freeze_static', 'curriculum/camera_frame_blank_static',
+                    'curriculum/camera_max_angle', 'curriculum/camera_current_angle'
+                ],
+                'curriculum_snapshot_state_noise': [
+                    'curriculum/state_noise_drone_pos_std_m', 'curriculum/state_noise_drone_orient_std_deg',
+                    'curriculum/state_noise_static_pos_std_m', 'curriculum/state_noise_static_orient_std_deg'
+                ],
+            }
+            for group_name, keys in debug_groups.items():
+                present = [k for k in keys if k in extra]
+                if present:
+                    preview = {k: extra[k] for k in present}
+        except (ValueError, TypeError):
+            pass
+
+    def _transform_and_sanitize_obs(self, obs: dict[str, Tensor]) -> dict[str, Tensor]:
+        """Transform raw obs into Sample Factory format and sanitize non-finite values."""
         transformed_obs = {"obs": obs["observations"]}
         # Apply return-drop ablation if requested
-        transformed_obs["obs"] = self._apply_obs_ablation(transformed_obs["obs"]) 
+        transformed_obs["obs"] = self._apply_obs_ablation(transformed_obs["obs"])
         # Sanitize non-finite values BEFORE Sample Factory normalization
         try:
             vec = transformed_obs.get('obs', None)
@@ -959,10 +1040,32 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 transformed_obs['obs'] = torch.nan_to_num(vec, nan=0.0, posinf=0.0, neginf=0.0)
         except (ValueError, TypeError):
             pass
-        
+        return transformed_obs
+
+    def step(self, action) -> Tuple[Dict[str, Tensor], Tensor, Tensor, Tensor, Dict]:
+        # Sanitize action to avoid NaN/Inf entering physics
+        dce_action = self._sanitize_action(action)
+
+        obs, rew, terminated, truncated, infos = self.env.step(dce_action)
+
+        # Collect frames for GIF generation
+        if self.save_gifs:
+            self._collect_frames(obs)
+
+        # Transform observations early so the GIF early-return path can use them
+        transformed_obs = self._transform_and_sanitize_obs(obs)
+
+        # Handle GIF saving on episode boundaries (may early-return)
+        early_return = self._handle_gif_episode_end(
+            terminated, truncated, transformed_obs, rew, infos,
+        )
+        if early_return is not None:
+            return early_return
+
+        # Inject curriculum / trajectory / episode stats into infos for W&B logging
+        self._inject_episode_extra_stats(infos, terminated, truncated)
+
         self.step_count += 1
-        # Removed step-based GIF debugging - now using episode-based saving every 50 episodes
-        
         return transformed_obs, rew, terminated, truncated, infos
 
     def render(self) -> None:
