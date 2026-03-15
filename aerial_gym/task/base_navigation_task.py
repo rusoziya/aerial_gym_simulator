@@ -145,9 +145,7 @@ class BaseNavigationTask(BaseTask):
         # Info dict (populated each step)
         self.infos = {}
 
-    # ------------------------------------------------------------------
     # Private init helpers
-    # ------------------------------------------------------------------
 
     def _init_vae(self) -> None:
         """Set up VAE encoder (or identity fallback) and latent buffers."""
@@ -210,9 +208,7 @@ class BaseNavigationTask(BaseTask):
             ),
         }
 
-    # ------------------------------------------------------------------
     # Common methods
-    # ------------------------------------------------------------------
 
     def close(self) -> None:
         self.sim_env.delete_env()

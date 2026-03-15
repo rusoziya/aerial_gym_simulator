@@ -12,9 +12,7 @@ from dataclasses import dataclass, field
 import torch
 
 
-# ---------------------------------------------------------------------------
 # Observation Layout — describes the 150D gate navigation observation vector
-# ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class ObservationLayout:
@@ -43,9 +41,7 @@ class ObservationLayout:
 GATE_OBS_LAYOUT = ObservationLayout()
 
 
-# ---------------------------------------------------------------------------
 # Episode Reward Tracking — replaces 12+ separate self.episode_* tensors
-# ---------------------------------------------------------------------------
 
 @dataclass
 class EpisodeRewardAccumulators:
@@ -111,9 +107,7 @@ class EpisodeRewardAccumulators:
         self.lengths[env_ids] = 0
 
 
-# ---------------------------------------------------------------------------
 # Episode Trajectory State — replaces scattered _ep_* tensors
-# ---------------------------------------------------------------------------
 
 @dataclass
 class EpisodeTrajectoryState:

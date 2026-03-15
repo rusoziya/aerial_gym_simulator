@@ -360,7 +360,6 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
             # Access camera data directly from the underlying task
             task = self.env
             
-            # === CLEAN DRONE CAMERA IMAGES ===
             # Get drone camera depth image from task's obs_dict (original clean version)
             if "depth_range_pixels" in task.obs_dict:
                 drone_depth = task.obs_dict["depth_range_pixels"][0, 0]  # First env, first camera
@@ -373,14 +372,12 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 drone_seg_img = self._process_camera_image(drone_seg, "segmentation")
                 self.drone_seg_frames[0].append(drone_seg_img)
             
-            # === D455 NOISED DRONE CAMERA IMAGES ===
             # Get noised drone camera depth image (with D455 noise applied)
             if "depth_range_pixels_noised" in task.obs_dict:
                 drone_depth_noised = task.obs_dict["depth_range_pixels_noised"][0, 0]  # First env, first camera
                 drone_depth_noised_img = self._process_camera_image(drone_depth_noised, "depth")
                 self.drone_depth_noised_frames[0].append(drone_depth_noised_img)
             
-            # === CLEAN STATIC CAMERA IMAGES ===
             # Get static camera images from stored clean versions
             if "static_depth_clean" in task.obs_dict:
                 static_depth = task.obs_dict["static_depth_clean"]
@@ -417,7 +414,6 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     static_seg_img = self._process_camera_image(static_seg_tensor, "segmentation")
                     self.static_seg_frames[0].append(static_seg_img)
                 
-            # === D455 NOISED STATIC CAMERA IMAGES ===
             # Get noised static camera depth image (with D455 noise applied)
             if "static_depth_noised" in task.obs_dict:
                 static_depth_noised = task.obs_dict["static_depth_noised"]
@@ -437,7 +433,6 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     static_depth_noised_img = self._process_camera_image(static_depth_noised_tensor, "depth")
                     self.static_depth_noised_frames[0].append(static_depth_noised_img)
             
-            # === MERGED CLEAN IMAGES (drone + static side by side) ===
             if (len(self.drone_depth_frames[0]) > 0 and len(self.static_depth_frames[0]) > 0 and 
                 len(self.drone_depth_frames[0]) == len(self.static_depth_frames[0])):
                 drone_img = self.drone_depth_frames[0][-1]
@@ -458,7 +453,6 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                 merged_img = Image.fromarray(merged_array)
                 self.merged_frames[0].append(merged_img)
             
-            # === MERGED NOISED IMAGES (drone + static side by side) ===
             if (len(self.drone_depth_noised_frames[0]) > 0 and len(self.static_depth_noised_frames[0]) > 0 and 
                 len(self.drone_depth_noised_frames[0]) == len(self.static_depth_noised_frames[0])):
                 drone_noised_img = self.drone_depth_noised_frames[0][-1]
@@ -524,7 +518,6 @@ class AerialGymVecEnvGate(AerialGymVecEnvBase):
                     print(f"[GIF] Saved static segmentation: {gif_path}")
             
             
-            # === D455 NOISED CAMERA GIFS ===
             # Save drone camera noised GIFs
             if len(self.drone_depth_noised_frames[env_id]) > 0:
                 gif_path = os.path.join(self.gif_output_dir, f"episode_{episode_num:04d}_drone_depth_D455_NOISED{level_suffix}.gif")

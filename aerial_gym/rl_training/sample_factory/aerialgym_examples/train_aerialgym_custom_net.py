@@ -31,9 +31,7 @@ from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_common impor
 )
 
 
-# ---------------------------------------------------------------------------
 # Environment factory
-# ---------------------------------------------------------------------------
 
 
 def make_aerialgym_env(
@@ -58,9 +56,7 @@ def make_aerialgym_env(
     return env
 
 
-# ---------------------------------------------------------------------------
 # CLI parameters
-# ---------------------------------------------------------------------------
 
 
 def add_extra_params_func(parser: object) -> None:
@@ -79,9 +75,7 @@ def override_default_params_func(env: str, parser: object) -> None:
     override_default_params(env, parser, env_configs)
 
 
-# ---------------------------------------------------------------------------
 # Per-environment config overrides
-# ---------------------------------------------------------------------------
 
 env_configs: dict[str, dict[str, object]] = {
     **BASE_ENV_CONFIGS,
@@ -102,9 +96,7 @@ env_configs: dict[str, dict[str, object]] = {
 }
 
 
-# ---------------------------------------------------------------------------
 # Component registration
-# ---------------------------------------------------------------------------
 
 
 def register_aerialgym_custom_components() -> None:
@@ -137,9 +129,7 @@ def register_aerialgym_custom_components() -> None:
         register_env(env_name, make_aerialgym_env)
 
 
-# ---------------------------------------------------------------------------
 # Entry point
-# ---------------------------------------------------------------------------
 
 
 def parse_aerialgym_cfg(evaluation: bool = False) -> Config:

@@ -311,19 +311,16 @@ env_configs = dict(
     ),
 )
 
-# =============================================================================
 # DCE CONFIGURATION SCALING COMPARISON
 # Current config above uses MAXIMUM PARALLELIZATION DCE CONFIG (128 environments)
 # 
 # CONFIGURATION COMPARISON TABLE:
 # Config Name              | Envs | Batch Size | Accumulate | Effective Batch | Memory
-# -------------------------|------|------------|------------|-----------------|--------
 # ORIGINAL DCE (1333.322) | 16   | 2048       | 2          | 4096           | Low
 # UPDATED DCE              | 32   | 4096       | 2          | 8192           | Medium  
 # MAXIMUM DCE (Current)    | 128  | 16384      | 1          | 16384          | High
 # 
 # All configurations maintain the same core training parameters (3D actions, 81D obs, etc.)
-# =============================================================================
 #
 # CURRENT ACTIVE CONFIG (128 environments) - MAXIMUM PARALLELIZATION DCE CONFIG:
 # env_agents=128             # 128 environments (8x original for maximum parallelization)

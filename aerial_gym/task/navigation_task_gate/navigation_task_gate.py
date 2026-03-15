@@ -36,8 +36,6 @@ from aerial_gym.utils.env_flag_utils import (
 
 logger = CustomLogger("navigation_task_gate")
 
-# VERSION: 2025.01.09_v2 - Fixed AttributeError curriculum_log_file in subprocesses
-# Added robust curriculum logging with proper hasattr() checks
 
 def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
@@ -105,7 +103,6 @@ class NavigationTaskGate(BaseTask):
             )
         )
 
-        # CRITICAL FIX: Set curriculum level and obstacle count BEFORE building environment
         # This ensures the asset manager gets the correct count from the start
         self.curriculum_level = self.task_config.curriculum.min_level
         # Obstacle ablation: if disabled, force to fixed count (default 0)
@@ -120,7 +117,6 @@ class NavigationTaskGate(BaseTask):
         else:
             obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
         
-        # FIXED: Calculate visible assets: 1 visible gate + walls (6) + curriculum obstacles + robot (1)
         # NOTE: Even though 11 gate variants are loaded, only 1 will be visible at any time
         # The other 10 gates are hidden by moving them to (-1000, -1000, -1000)
         visible_gates = 0  # Only 1 gate visible at a time (others hidden by gate selection system)
@@ -172,7 +168,6 @@ class NavigationTaskGate(BaseTask):
             logger.warning("[GateVariant] Initial selection after build (one-time)")
             self.sim_env.apply_gate_variant_selection(env_ids=torch.arange(self.sim_env.num_envs, device=self.device))
         
-        # CRITICAL FIX: Immediately update the environment's obstacle count after creation
         if hasattr(self.sim_env, 'global_tensor_dict'):
             # Override count if obstacle randomization disabled
             try:
@@ -193,7 +188,6 @@ class NavigationTaskGate(BaseTask):
             (self.sim_env.num_envs, 3), device=self.device, requires_grad=False
         )
 
-        # REMOVED: target_min_ratio and target_max_ratio sampling logic
         # Target position is now always set to adaptive gate center instead of random sampling
 
         self.success_aggregate = 0
@@ -288,7 +282,6 @@ class NavigationTaskGate(BaseTask):
         # Track maximum curriculum level reached (for no-decrease policy)
         self.max_curriculum_level_reached = self.curriculum_level
         
-        # ===== CURRICULUM PARAMETER INITIALIZATION =====
         # Get obstacle count using the already-set curriculum level
         obstacles_behind_gate = self.task_config.curriculum.get_obstacle_count_behind_gate(self.curriculum_level)
         
@@ -326,7 +319,6 @@ class NavigationTaskGate(BaseTask):
         # Initialize camera difficulty parameters (only static camera curriculum remains)
         self.max_camera_angle, self.camera_height_offset, self.camera_distance_offset = self.task_config.curriculum.get_static_camera_difficulty(self.curriculum_level)
         
-        # ===== CURRICULUM LOGGING =====
         logger.info(f"INITIAL CURRICULUM (Level {self.curriculum_level}):")
         logger.info(f"   1. OBSTACLES: {obstacles_behind_gate} behind gate (total assets: {total_obstacles_in_env} = {fixed_assets_visible} visible + {obstacles_behind_gate} curriculum)")
         try:
@@ -492,9 +484,7 @@ class NavigationTaskGate(BaseTask):
         # Ensure infos survive resets for logging back to the learner
         self._infos_to_return = None
 
-    # ------------------------------------------------------------------
     # Private init helpers (extracted from __init__ for readability)
-    # ------------------------------------------------------------------
 
     def _init_gate_tracking_tensors(self) -> None:
         """Initialise gate-specific tracking tensors and adaptive dimensions."""
@@ -761,7 +751,6 @@ class NavigationTaskGate(BaseTask):
         - ±45° orientation randomization  
         - Minimal initial velocity for randomization
         """
-        # UPDATED: Set target position to adaptive gate center instead of random sampling
         # This ensures "Getting Closer" and "position reward" are consistently aimed at the gate center
         # Gate position comes from obs_dict["env_bounds_min/max"] or is set by environment
         # We need to get gate position from observations after environment reset
@@ -1000,7 +989,6 @@ class NavigationTaskGate(BaseTask):
         if hasattr(self.sim_env, 'global_tensor_dict'):
             self.sim_env.global_tensor_dict['gate/center_height_per_env'] = self.gate_center_height.detach().clone()
     
-    # REMOVED: _apply_curriculum_drone_spawning and _apply_curriculum_orientation_randomization
     # These methods have been removed as we now use fixed parameters from LMF2 config
     # The normal Isaac Gym reset mechanism handles spawning using min_init_state/max_init_state
 
@@ -1108,7 +1096,6 @@ class NavigationTaskGate(BaseTask):
                 _ids = torch.nonzero(nan_trunc_mask, as_tuple=False).squeeze(-1).tolist()
                 logger.warning(f"[NaNGuard] Truncating envs due to NaN/Inf: {_ids}")
 
-        # ===== SIMPLE GATE PASSAGE SUCCESS CRITERIA =====
         # Success = simply passing through the gate boundary (any part of the gate opening)
         # More forgiving than target-based or centered passage requirements
         robot_position = self.obs_dict["robot_position"]
@@ -1166,7 +1153,6 @@ class NavigationTaskGate(BaseTask):
         # Training success remains gate passage only; target success is for logging metrics only
 
 
-        # ===== END SIMPLE GATE PASSAGE SUCCESS =====
         timeouts = torch.where(
             self.truncations > 0, torch.logical_not(successes), torch.zeros_like(successes)
         )
@@ -1533,7 +1519,6 @@ class NavigationTaskGate(BaseTask):
                         img = img.unsqueeze(0).unsqueeze(0).expand(self.sim_env.num_envs, -1, -1)
                     elif img.dim() == 3:
                         img = img.unsqueeze(1)
-                    # if 4D, assume (N, C, H, W)
                 else:
                     # Fallback: convert numpy to tensor
                     if isinstance(img, np.ndarray):
@@ -1664,7 +1649,6 @@ class NavigationTaskGate(BaseTask):
                 self.obs_dict["static_depth_noised"] = static_depth_noised[0] if (hasattr(static_depth_noised, 'ndim') and (getattr(static_depth_noised, 'ndim') == 3)) else static_depth_noised
                 self.obs_dict["static_seg"] = static_seg
                 
-                # CRITICAL FIX: Enhanced VAE encoding with detailed debugging
                 try:
                     # Convert to tensor and process through VAE (use noised version for training)
                     if isinstance(static_depth_noised, np.ndarray):
@@ -2260,11 +2244,8 @@ class NavigationTaskGate(BaseTask):
         - 22-86: Drone camera VAE latents (64D)
         - 86-150: Static camera VAE latents (64D)
         """
-        # MODIFIED: Include drone absolute position and full orientation sensing
         # This provides the agent with complete spatial awareness of its state and static camera relative position
         
-        # ===== DRONE ABSOLUTE POSITION OBSERVATIONS (3D) =====
-        # [0:3] = Drone absolute position in world coordinates (x, y, z)
         drone_pos_clean = self.obs_dict["robot_position"]
         # Apply curriculum-driven state noise (drone position)
         if self.task_config.curriculum.enable_state_noise and not bool(self.sim_env.global_tensor_dict.get('state_randomization/noise_disabled', False)):
@@ -2339,7 +2320,6 @@ class NavigationTaskGate(BaseTask):
             robot_vehicle_orientation, (target_position - robot_position)
         )
         
-        # CRITICAL FIX: Clone action tensors to break reference dependency
         # obs_dict contains direct references to global tensors that get updated simultaneously
         current_actions = obs_dict["robot_actions"].clone()
         previous_actions = obs_dict["robot_prev_actions"].clone()
@@ -2711,7 +2691,6 @@ class NavigationTaskGate(BaseTask):
                 self.task_config.reward_parameters["x_action_diff_penalty_exponent"],
                 action_diff[:, 0],
             )
-            # FIXED: Added missing Y-action difference penalty for debugging
             y_diff_penalty = exponential_penalty_function(
                 self.task_config.reward_parameters["y_action_diff_penalty_magnitude"],
                 self.task_config.reward_parameters["y_action_diff_penalty_exponent"],
@@ -2728,7 +2707,6 @@ class NavigationTaskGate(BaseTask):
                 action_diff[:, 3],
             )
             
-            # CRITICAL FIX: Add missing absolute penalties in debugging section
             x_absolute_penalty = exponential_penalty_function(
                 self.task_config.reward_parameters["x_absolute_action_penalty_magnitude"],
                 self.task_config.reward_parameters["x_absolute_action_penalty_exponent"],
@@ -3015,7 +2993,6 @@ class NavigationTaskGate(BaseTask):
         total_obstacles_in_env: int,
     ) -> None:
         """Log comprehensive curriculum state after level update."""
-        # ===== COMPREHENSIVE CURRICULUM LOGGING =====
         self.log_curriculum_update(f"Gate Navigation Curriculum Level: {self.curriculum_level}, Progress: {self.curriculum_progress_fraction:.3f}")
         self.log_curriculum_update(f"\nSuccess Rate: {success_rate:.3f}\nCrash Rate: {crash_rate:.3f}\nTimeout Rate: {timeout_rate:.3f}")
         
@@ -3262,7 +3239,6 @@ class NavigationTaskGate(BaseTask):
         factor = 1.0 + 0.5 * frac_eff
         self.log_curriculum_update(f"   8. CURRICULUM MULTIPLIER: {'DISABLED' if cm_disabled else 'ENABLED'} (factor={factor:.3f})")
         
-        # ===== CURRICULUM DEBUGGING: Final state after update =====
         self.log_curriculum_update(f"[CURRICULUM UPDATE] FINAL STATE:")
         self.log_curriculum_update(f"[CURRICULUM UPDATE]   Level: {self.curriculum_level} (range: {self.task_config.curriculum.min_level}-{self.task_config.curriculum.max_level})")
         self.log_curriculum_update(f"[CURRICULUM UPDATE]   Max level reached: {self.max_curriculum_level_reached} (DECREASE ENABLED)")
@@ -3312,7 +3288,6 @@ class NavigationTaskGate(BaseTask):
         else:
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Camera angle: ±{self.max_camera_angle:.1f}deg max range (randomized per episode reset, fixed during episode)")
         
-        # ===== END CURRICULUM DEBUGGING =====
 
     def _populate_curriculum_infos(
         self,
@@ -3444,7 +3419,6 @@ class NavigationTaskGate(BaseTask):
             crash_rate = self.crashes_aggregate / instances
             timeout_rate = self.timeouts_aggregate / instances
             
-            # ===== CURRICULUM DEBUGGING: Log curriculum evaluation =====
             old_level = self.curriculum_level
             self.log_curriculum_update(f"[CURRICULUM UPDATE] EVALUATING curriculum after {instances} instances:")
             self.log_curriculum_update(f"[CURRICULUM UPDATE]   Success rate: {success_rate:.3f}")
@@ -3540,7 +3514,6 @@ class NavigationTaskGate(BaseTask):
                 # Only update the value; gate selection will occur on reset_idx
                 self.sim_env.global_tensor_dict["curriculum_level"] = int(self.curriculum_level)
             
-            # ===== MULTI-ASPECT CURRICULUM APPLICATION =====
             
             # 1. OBSTACLE COUNT PROGRESSION: Apply new obstacle count behind gate
             try:
@@ -3571,7 +3544,6 @@ class NavigationTaskGate(BaseTask):
                 old_count = self.sim_env.global_tensor_dict.get("num_obstacles_in_env", 0)
                 self.sim_env.global_tensor_dict["num_obstacles_in_env"] = total_obstacles_in_env
             
-            # CRITICAL FIX: Force asset manager to update obstacle count
             # The asset manager may be caching the initial obstacle count, so we need to force it to update
             if hasattr(self.sim_env, 'asset_manager'):
                 try:
@@ -3625,7 +3597,6 @@ class NavigationTaskGate(BaseTask):
         # Calculate individual reward components (same as in compute_rewards_and_crashes)
         dist = torch.norm(self.pos_error_vehicle_frame, dim=1)
         prev_dist = torch.norm(self.pos_error_vehicle_frame_prev, dim=1)
-        # CRITICAL FIX: Clone action tensors here too for consistency
         action = obs_dict["robot_actions"].clone()
         prev_action = obs_dict["robot_prev_actions"].clone()
         
@@ -3717,7 +3688,6 @@ class NavigationTaskGate(BaseTask):
             self.task_config.reward_parameters["x_action_diff_penalty_exponent"],
             action_diff[:, 0],
         )
-        # FIXED: Added missing Y-action difference penalty for episode tracking
         y_diff_penalty = exponential_penalty_function(
             self.task_config.reward_parameters["y_action_diff_penalty_magnitude"],
             self.task_config.reward_parameters["y_action_diff_penalty_exponent"],
@@ -3734,7 +3704,6 @@ class NavigationTaskGate(BaseTask):
             action_diff[:, 3],
         )
         
-        # CRITICAL FIX: Add missing absolute penalties in episode tracking
         x_absolute_penalty = exponential_penalty_function(
             self.task_config.reward_parameters["x_absolute_action_penalty_magnitude"],
             self.task_config.reward_parameters["x_absolute_action_penalty_exponent"],
@@ -3806,7 +3775,6 @@ class NavigationTaskGate(BaseTask):
             torch.zeros_like(gate_passed_this_step, dtype=torch.float32),
         )
         
-        # CRITICAL FIX: Update gate_passed flag to prevent multiple detections in same episode
         self.gate_passed = self.gate_passed | gate_passed_this_step
         
         # Track total gate passage rewards (basic + center bonus)
@@ -3976,7 +3944,6 @@ def compute_gate_reward(
         parameter_dict["x_action_diff_penalty_exponent"],
         action_diff[:, 0],
     )
-    # FIXED: Added missing Y-action difference penalty for 4D action space [x_vel, y_vel, z_vel, yaw_rate]
     y_diff_penalty = exponential_penalty_function(
         parameter_dict["y_action_diff_penalty_magnitude"],
         parameter_dict["y_action_diff_penalty_exponent"],
@@ -4001,7 +3968,6 @@ def compute_gate_reward(
         parameter_dict["x_absolute_action_penalty_exponent"],
         action[:, 0],
     )
-    # FIXED: Added missing Y-action absolute penalty for 4D action space
     y_absolute_penalty = exponential_penalty_function(
         parameter_dict["y_absolute_action_penalty_magnitude"],
         parameter_dict["y_absolute_action_penalty_exponent"],
@@ -4171,7 +4137,6 @@ def compute_gate_reward(
     # Update gate passed status
     gate_passed = gate_passed | just_passed_gate
 
-    # NEW: Altitude maintenance reward to encourage optimal gate-level flying
     optimal_altitude_min = 1.4  # meters
     optimal_altitude_max = 1.6  # meters  
     current_altitude = robot_position[:, 2]

@@ -28,9 +28,7 @@ from sample_factory.utils.utils import str2bool
 from aerial_gym.registry.task_registry import task_registry
 
 
-# ---------------------------------------------------------------------------
 # Base environment wrapper
-# ---------------------------------------------------------------------------
 
 
 class AerialGymVecEnv(gym.Env):
@@ -95,9 +93,7 @@ class AerialGymVecEnv(gym.Env):
         pass
 
 
-# ---------------------------------------------------------------------------
 # Shared default hyperparameters
-# ---------------------------------------------------------------------------
 
 
 def override_default_params(
@@ -153,9 +149,7 @@ def override_default_params(
         parser.set_defaults(**env_configs[env])
 
 
-# ---------------------------------------------------------------------------
 # Shared env_configs (position_setpoint, navigation baseline)
-# ---------------------------------------------------------------------------
 
 BASE_ENV_CONFIGS: dict[str, dict[str, object]] = {
     "position_setpoint_task": {
@@ -181,9 +175,7 @@ BASE_ENV_CONFIGS: dict[str, dict[str, object]] = {
 }
 
 
-# ---------------------------------------------------------------------------
 # Shared registration helpers
-# ---------------------------------------------------------------------------
 
 
 def clear_sf_cache(pattern: str = "quad_with_obstacles") -> None:
