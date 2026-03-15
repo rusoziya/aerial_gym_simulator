@@ -8,6 +8,7 @@ module lazily imports Isaac Lab symbols inside methods that need them.
 from __future__ import annotations
 
 import sys
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, Tuple
 
 import torch
@@ -21,6 +22,17 @@ if TYPE_CHECKING:
     from aerial_gym.env_manager.tensor_state import TensorState
 
 logger = CustomLogger("IsaacLabEnvManager")
+
+
+@dataclass
+class _PendingAsset:
+    """Metadata for an asset registered during add_asset_to_env, awaiting scene build."""
+
+    prim_path: str
+    asset_info_dict: dict[str, object]
+    is_robot: bool
+    global_asset_counter: int
+
 
 _ISAAC_LAB_SRC_PATH = (
     "/home/ziyar/miniforge3/envs/isaaclab/lib/python3.11/site-packages/isaaclab/source/isaaclab"
@@ -68,6 +80,12 @@ class IsaacLabEnv(BaseManager):
         self._asset_prim_paths: list[str] = []
         self._robot_articulation: Optional[object] = None
         self._asset_rigid_objects: list[object] = []
+
+        # Pending assets collected during add_asset_to_env for deferred scene build
+        self._pending_assets: list[_PendingAsset] = []
+        from aerial_gym.utils.urdf_to_usd import UrdfToUsdConverter
+
+        self._urdf_converter = UrdfToUsdConverter()
 
         logger.info("Creating Isaac Lab Environment")
 
@@ -158,15 +176,25 @@ class IsaacLabEnv(BaseManager):
 
         is_robot = asset_info_dict["asset_type"] == "robot"
 
-        # Only record prim paths for the prototype environment (env 0)
+        # Only record prim paths and pending assets for the prototype environment (env 0)
         if env_id == 0:
             if is_robot:
-                self._robot_prim_paths.append(f"/World/envs/env_.*/robot_{global_asset_counter}")
+                prim_path = f"/World/envs/env_.*/robot_{global_asset_counter}"
+                self._robot_prim_paths.append(prim_path)
             else:
-                self._asset_prim_paths.append(f"/World/envs/env_.*/asset_{global_asset_counter}")
+                prim_path = f"/World/envs/env_.*/asset_{global_asset_counter}"
+                self._asset_prim_paths.append(prim_path)
+
+            self._pending_assets.append(
+                _PendingAsset(
+                    prim_path=prim_path,
+                    asset_info_dict=asset_info_dict,
+                    is_robot=is_robot,
+                    global_asset_counter=global_asset_counter,
+                )
+            )
 
         if is_robot:
-            # TODO: query actual rigid body count from the URDF/USD asset
             self.num_rigid_bodies_robot = 1
 
         seg_increment = 1
@@ -203,25 +231,60 @@ class IsaacLabEnv(BaseManager):
         Isaac Lab clones the prototype environment across num_envs automatically
         when using regex prim paths like ``/World/envs/env_.*/...``.
         """
+        from isaaclab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg
+        from isaaclab.sim import schemas as sim_utils
 
-        # TODO: Build ArticulationCfg from the robot's URDF/USD path and config.
-        # For now we create a minimal placeholder that downstream code must configure.
-        if self._robot_prim_paths:
-            prim_path = self._robot_prim_paths[0]
-            logger.info(f"TODO: Spawn robot articulation at '{prim_path}' from robot config URDF")
-            # Example (requires robot-specific USD/URDF path):
-            # robot_cfg = ArticulationCfg(
-            #     prim_path=prim_path,
-            #     spawn=sim_utils.UsdFileCfg(usd_path="..."),
-            #     init_state=ArticulationCfg.InitialStateCfg(pos=(0, 0, 1.0)),
-            # )
-            # self._robot_articulation = Articulation(robot_cfg)
+        for pending in self._pending_assets:
+            usd_path = self._urdf_converter.resolve_usd_path(pending.asset_info_dict)
+            if usd_path is None:
+                logger.warning(
+                    f"Could not resolve USD for asset at '{pending.prim_path}', skipping"
+                )
+                continue
 
-        for i, prim_path in enumerate(self._asset_prim_paths):
-            logger.info(f"TODO: Spawn rigid object {i} at '{prim_path}' from asset config")
-            # Example:
-            # obj_cfg = RigidObjectCfg(prim_path=prim_path, ...)
-            # self._asset_rigid_objects.append(RigidObject(obj_cfg))
+            if pending.is_robot:
+                self._spawn_robot(pending, usd_path, ArticulationCfg, Articulation, sim_utils)
+            else:
+                self._spawn_obstacle(pending, usd_path, RigidObjectCfg, RigidObject, sim_utils)
+
+    def _spawn_robot(
+        self,
+        pending: _PendingAsset,
+        usd_path: str,
+        articulation_cfg_cls: type,
+        articulation_cls: type,
+        sim_utils: object,
+    ) -> None:
+        """Create and register an ArticulationCfg for the robot."""
+        robot_cfg = articulation_cfg_cls(
+            prim_path=pending.prim_path,
+            spawn=sim_utils.UsdFileCfg(usd_path=usd_path),
+            init_state=articulation_cfg_cls.InitialStateCfg(
+                pos=(0.0, 0.0, 1.0),
+            ),
+        )
+        self._robot_articulation = articulation_cls(robot_cfg)
+        logger.info(f"Robot articulation spawned at '{pending.prim_path}' from {usd_path}")
+
+    def _spawn_obstacle(
+        self,
+        pending: _PendingAsset,
+        usd_path: str,
+        rigid_object_cfg_cls: type,
+        rigid_object_cls: type,
+        sim_utils: object,
+    ) -> None:
+        """Create and register a RigidObjectCfg for a static/dynamic obstacle."""
+        obj_cfg = rigid_object_cfg_cls(
+            prim_path=pending.prim_path,
+            spawn=sim_utils.UsdFileCfg(usd_path=usd_path),
+            init_state=rigid_object_cfg_cls.InitialStateCfg(
+                pos=(0.0, 0.0, 0.0),
+            ),
+        )
+        rigid_obj = rigid_object_cls(obj_cfg)
+        self._asset_rigid_objects.append(rigid_obj)
+        logger.info(f"Rigid object spawned at '{pending.prim_path}' from {usd_path}")
 
     def _populate_state_tensors(self) -> None:
         """Fill global_tensor_dict with root state tensors from the Isaac Lab scene."""
