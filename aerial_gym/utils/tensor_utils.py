@@ -28,7 +28,8 @@ def invalid_mask_per_env(t: torch.Tensor) -> torch.Tensor:
     """
     bad = torch.isnan(t) | torch.isinf(t)
     if bad.ndim > 1:
-        return torch.any(bad, dim=tuple(range(1, bad.ndim)))
+        # Flatten all dims except the first, then reduce — PyTorch 1.13 doesn't support dim=tuple
+        return torch.any(bad.flatten(start_dim=1), dim=1)
     return bad
 
 
