@@ -1,0 +1,33 @@
+# Conda environment for Aerial Gym Simulator
+# Usage: conda env create -f environment.yml
+# Then:  conda activate aerialgym && pip install -e .
+name: aerialgym
+channels:
+  - pytorch
+  - pytorch3d
+  - conda-forge
+  - nvidia
+  - defaults
+dependencies:
+  - python=3.8
+  - pytorch=1.13.1
+  - torchvision=0.14.1
+  - torchaudio=0.13.1
+  - pytorch-cuda=11.7
+  - pytorch3d=0.7.5
+  - pyyaml=6.0
+  - tensorboard=2.13.0
+  - pillow>=9.4
+  - pip
+  - pip:
+    - numpy==1.23.0
+    - scipy>=1.10
+    - matplotlib>=3.7
+    - networkx==2.2
+    - warp-lang==1.0.0
+    - trimesh
+    - urdfpy
+    - gymnasium
+    - wandb
+    - pytest
+    - pytest-mock

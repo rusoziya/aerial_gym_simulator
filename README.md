@@ -117,3 +117,32 @@ This repository utilizes some of the code and helper scripts from [https://githu
 ## FAQs and Troubleshooting 
 
 Please refer to our [website](https://ntnu-arl.github.io/aerial_gym_simulator/7_FAQ_and_troubleshooting/) or to the [Issues](https://github.com/ntnu-arl/aerial_gym_simulator/issues) section in the GitHub repository for more information.
+
+---
+
+## Gate Navigation Task
+
+This fork extends the Aerial Gym Simulator with a gate navigation task for autonomous drone flight through gates using dual-camera visual observations.
+
+### Overview
+
+- **150D observation space**: drone position (3D) + static camera pose (6D) + orientation (3D) + velocities (6D) + actions (4D) + dual VAE latents (128D)
+- **4D velocity control**: x_vel, y_vel, z_vel, yaw_rate
+- **Curriculum learning**: 21 levels (3-23) controlling obstacle count, spawn range, camera noise, frame dropout, and state noise
+- **Gate-adaptive rewards**: passage detection, center alignment bonus, camera facing, boundary violation penalties
+
+### Training (Sample Factory)
+
+```bash
+cd aerial_gym/rl_training/sample_factory
+python aerialgym_examples/train_aerialgym_custom_net_gate.py --env=quad_with_obstacles_gate --env_agents=16
+```
+
+### Tests
+
+```bash
+conda activate aerialgym
+python -m pytest tests/ -v          # Run all behavior-capture tests (~10s)
+python -m pytest tests/ -k reward   # Run reward tests only
+python -m pytest tests/ -k config   # Run config tests only
+```
