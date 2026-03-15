@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import random
 from typing import TYPE_CHECKING
 
@@ -79,24 +80,34 @@ class EnvManager(BaseManager):
 
     def create_sim(self, env_cfg: type, sim_cfg: type) -> None:
         logger.info("Creating simulation instance.")
-        logger.info("Instantiating IGE object.")
 
-        has_IGE_cameras = False
+        has_cameras = False
         robot_config = robot_registry.get_robot_config(self.robot_name)
         if robot_config.sensor_config.enable_camera and not self.use_warp:
-            has_IGE_cameras = True
+            has_cameras = True
 
-        self.IGE_env = IsaacGymEnv(env_cfg, sim_cfg, has_IGE_cameras, self.device)
+        # Backend selection: Isaac Gym (default) or Isaac Lab (future)
+        backend = os.environ.get("AERIAL_GYM_BACKEND", "isaacgym").lower()
+        if backend == "isaaclab":
+            from aerial_gym.env_manager.isaac_lab_env_manager import IsaacLabEnv
 
+            logger.info("Using Isaac Lab physics backend")
+            self.IGE_env = IsaacLabEnv(env_cfg, sim_cfg, has_cameras, self.device)
+        else:
+            logger.info("Using Isaac Gym physics backend")
+            self.IGE_env = IsaacGymEnv(env_cfg, sim_cfg, has_cameras, self.device)
+
+        # Populate global simulation dict
         self.global_sim_dict: GlobalSimDict = {}
-        self.global_sim_dict["gym"] = self.IGE_env.gym
-        self.global_sim_dict["sim"] = self.IGE_env.sim
+        if hasattr(self.IGE_env, "gym"):
+            self.global_sim_dict["gym"] = self.IGE_env.gym
+            self.global_sim_dict["sim"] = self.IGE_env.sim
         self.global_sim_dict["env_cfg"] = self.cfg
         self.global_sim_dict["use_warp"] = self.IGE_env.cfg.env.use_warp
         self.global_sim_dict["num_envs"] = self.IGE_env.cfg.env.num_envs
         self.global_sim_dict["sim_cfg"] = sim_cfg
 
-        logger.info("IGE object instantiated.")
+        logger.info(f"Physics backend initialized: {backend}")
 
         if self.cfg.env.use_warp:
             logger.info("Creating warp environment.")
