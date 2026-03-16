@@ -71,7 +71,7 @@ def _print_config_summary(cfg: RunConfig) -> None:
     print("Aerial Gym — Run Configuration")
     print("=" * 60)
     print(f"  Mode:        {cfg.mode.value}")
-    print(f"  Task:        {cfg.common.task}")
+    print(f"  Task:        {cfg.common.task.value}")
     print(f"  Num envs:    {cfg.common.num_envs}")
     print(f"  Device:      {cfg.common.device}")
     print(f"  Headless:    {cfg.common.headless}")
@@ -230,13 +230,13 @@ def _build_train_args(cfg: RunConfig) -> List[str]:
     args: List[str] = [sys.executable, _get_sf_train_script(cfg)]
     args.extend(
         [
-            f"--env={sf.env_name}",
+            f"--env={sf.env_name.value}",
             f"--experiment={sf.experiment_name}",
             f"--train_dir={sf.train_dir}",
             f"--num_workers={sf.num_workers}",
             f"--num_envs_per_worker={sf.num_envs_per_worker}",
             f"--env_agents={c.num_envs}",
-            f"--obs_key={sf.obs_key}",
+            f"--obs_key={sf.obs_key.value}",
             f"--batch_size={t.batch_size}",
             f"--num_batches_to_accumulate={sf.num_batches_to_accumulate}",
             f"--num_batches_per_epoch={sf.num_batches_per_epoch}",
@@ -279,7 +279,7 @@ def _build_train_args(cfg: RunConfig) -> List[str]:
             f"--serial_mode={str(sf.serial_mode).lower()}",
             f"--policy_workers_per_policy={sf.policy_workers_per_policy}",
             f"--headless={str(c.headless).lower()}",
-            f"--fusion={sf.fusion}",
+            f"--fusion={sf.fusion.value}",
             f"--gate_per_feature={'1' if sf.gate_per_feature else '0'}",
         ]
     )
@@ -303,7 +303,7 @@ def _build_eval_args(cfg: RunConfig) -> List[str]:
 
     sf = cfg.sample_factory
     c = cfg.common
-    args.extend([f"--env={sf.env_name}", f"--env_agents={c.num_envs}"])
+    args.extend([f"--env={sf.env_name.value}", f"--env_agents={c.num_envs}"])
     args.extend([f"--headless={str(c.headless).lower()}"])
 
     if cfg.eval is not None:
