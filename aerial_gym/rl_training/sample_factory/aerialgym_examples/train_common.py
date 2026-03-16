@@ -12,7 +12,9 @@ import os
 from typing import Callable
 
 import gymnasium as gym
-import isaacgym  # noqa: F401 — must import before torch
+
+if os.environ.get("AERIAL_GYM_BACKEND", "isaacgym").lower() != "isaaclab":
+    import isaacgym  # noqa: F401 — must import before torch
 import numpy as np
 import torch
 from sample_factory.algo.utils.gymnasium_utils import convert_space

@@ -5,7 +5,9 @@ import sys
 from typing import Optional
 
 import gymnasium as gym
-import isaacgym  # noqa: F401 — must import before PyTorch
+
+if os.environ.get("AERIAL_GYM_BACKEND", "isaacgym").lower() != "isaaclab":
+    import isaacgym  # noqa: F401 — must import before PyTorch
 import numpy as np
 import torch
 from sample_factory.algo.utils.context import global_model_factory
