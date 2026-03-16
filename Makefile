@@ -2,8 +2,14 @@
 # Usage: make train CONFIG=configs/train_gate_sf.yaml
 
 CONFIG ?= configs/train_gate_sf.yaml
+
+# Isaac Gym env (Python 3.8)
 CONDA_PREFIX ?= $(HOME)/miniforge3/envs/aerialgym
 PYTHON ?= LD_LIBRARY_PATH=$(CONDA_PREFIX)/lib $(CONDA_PREFIX)/bin/python
+
+# Isaac Lab env (Python 3.11)
+ISAACLAB_PREFIX ?= $(HOME)/miniforge3/envs/isaaclab
+ISAACLAB_PYTHON ?= PYTHONPATH=$(ISAACLAB_PREFIX)/lib/python3.11/site-packages/isaaclab/source/isaaclab:$$PYTHONPATH OMNI_KIT_ACCEPT_EULA=yes LD_LIBRARY_PATH=$(ISAACLAB_PREFIX)/lib $(ISAACLAB_PREFIX)/bin/python
 
 # ─── Training & Evaluation ───────────────────────────────────────
 .PHONY: train eval play validate-config dry-run
@@ -65,10 +71,10 @@ eval-all-modalities:
 .PHONY: train-gate-lab eval-gate-lab
 
 train-gate-lab:
-	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf_isaaclab.yaml --log
+	$(ISAACLAB_PYTHON) -m aerial_gym.run --config configs/train_gate_sf_isaaclab.yaml --log
 
 eval-gate-lab:
-	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_drone_only.yaml --set common.backend=isaaclab
+	$(ISAACLAB_PYTHON) -m aerial_gym.run --config configs/eval_gate_drone_only.yaml --set common.backend=isaaclab
 
 # ─── Development ─────────────────────────────────────────────────
 .PHONY: lint format test pre-commit
