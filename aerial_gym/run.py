@@ -83,7 +83,7 @@ def _print_config_summary(cfg: RunConfig) -> None:
         print(f"  Batch size:  {cfg.training.batch_size}")
         print(f"  LR:          {cfg.training.learning_rate}")
         print(f"  Gamma:       {cfg.training.gamma}")
-        print(f"  Fusion:      {cfg.sample_factory.fusion}")
+        print(f"  Fusion:      {cfg.sample_factory.fusion.value}")
         print(f"  Checkpoint:  {cfg.training.checkpoint_dir}")
     if cfg.mode in (Mode.eval, Mode.play) and cfg.eval is not None:
         print(f"  Checkpoint:  {cfg.eval.checkpoint}")

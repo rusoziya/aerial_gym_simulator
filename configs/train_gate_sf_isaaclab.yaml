@@ -1,0 +1,84 @@
+# Isaac Lab backend — gate navigation training
+#
+# Same as train_gate_sf.yaml but uses Isaac Lab (Isaac Sim 5.1.0) instead of
+# Isaac Gym Preview 4. Requires the isaaclab conda env (Python 3.11).
+#
+# Usage:
+#   make train-gate-lab
+#   # OR: python -m aerial_gym.run --config configs/train_gate_sf_isaaclab.yaml
+
+mode: train
+
+common:
+  task: navigation_task_gate
+  num_envs: 256
+  seed: 42
+  device: "cuda:0"
+  headless: true
+  use_warp: true
+  backend: isaaclab  # ← Isaac Lab backend (Isaac Sim 5.1.0 + PhysX 5)
+
+training:
+  total_steps: 1_212_416
+  batch_size: 8192
+  learning_rate: 0.0003
+  gamma: 0.98
+  rollout_horizon: 32
+  max_grad_norm: 1.0
+  num_epochs: 4
+  checkpoint_interval: 5_000_000
+  checkpoint_dir: "./train_dir"
+
+sample_factory:
+  env_name: quad_with_obstacles_gate
+  experiment_name: ""
+  train_dir: "./train_dir"
+  num_workers: 1
+  num_envs_per_worker: 1
+  use_rnn: true
+  rnn_size: 64
+  rnn_type: gru
+  rnn_num_layers: 1
+  encoder_mlp_layers: [512, 256, 64]
+  fusion: gated
+  gate_per_feature: true
+  num_batches_per_epoch: 8
+  num_batches_to_accumulate: 2
+  save_best_after: 1_000_000
+  async_rl: false
+  serial_mode: true
+  batched_sampling: true
+  adaptive_stddev: true
+  reward_scale: 0.1
+  ppo_clip_ratio: 0.2
+  value_loss_coeff: 2.0
+  exploration_loss_coeff: 0.001
+  nonlinearity: elu
+  lr_schedule: kl_adaptive_epoch
+  lr_schedule_kl_threshold: 0.016
+  normalize_input: true
+  normalize_returns: true
+  kl_loss_coeff: 0.1
+  restart_behavior: resume
+  save_every_sec: 1800
+  save_best_every_sec: 500
+  obs_key: observations
+  gae_lambda: 0.95
+  with_vtrace: false
+  value_bootstrap: true
+
+wandb:
+  enabled: true
+  project: aerial-gym-gate-isaaclab
+  entity: ""
+  user: "ziya-ruso-ucl"
+  group: gate_navigation_isaaclab
+  tags: [aerial_gym, gate_navigation, dual_camera, isaac_lab, python311]
+
+curriculum:
+  min_level: 3
+  max_level: 23
+
+camera:
+  static_camera_base_y: -2.0
+  static_camera_base_z: adaptive

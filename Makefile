@@ -65,7 +65,7 @@ eval-all-modalities:
 .PHONY: train-gate-lab eval-gate-lab
 
 train-gate-lab:
-	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf.yaml --set common.backend=isaaclab --log
+	$(PYTHON) -m aerial_gym.run --config configs/train_gate_sf_isaaclab.yaml --log
 
 eval-gate-lab:
 	$(PYTHON) -m aerial_gym.run --config configs/eval_gate_drone_only.yaml --set common.backend=isaaclab
