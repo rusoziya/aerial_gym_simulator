@@ -225,14 +225,37 @@ class IsaacLabEnv(BaseManager):
         self.create_viewer(env_manager)
         return True
 
+    def _create_env_prims(self) -> None:
+        """Create the /World/envs/env_N prim hierarchy on the USD stage.
+
+        Isaac Lab's regex prim paths (``/World/envs/env_.*/...``) require these
+        Xform prims to exist before assets can be spawned into them.
+        """
+        import omni.usd
+        from pxr import UsdGeom
+
+        stage = omni.usd.get_context().get_stage()
+        envs_path = "/World/envs"
+        if not stage.GetPrimAtPath(envs_path).IsValid():
+            UsdGeom.Xform.Define(stage, envs_path)
+
+        for i in range(self.num_envs):
+            env_path = f"{envs_path}/env_{i}"
+            if not stage.GetPrimAtPath(env_path).IsValid():
+                UsdGeom.Xform.Define(stage, env_path)
+
+        logger.info(f"Created {self.num_envs} env prims under {envs_path}")
+
     def _build_scene(self) -> None:
         """Spawn the robot articulation and obstacle rigid objects into the USD stage.
 
         Isaac Lab clones the prototype environment across num_envs automatically
         when using regex prim paths like ``/World/envs/env_.*/...``.
         """
+        import isaaclab.sim as sim_utils
         from isaaclab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg
-        from isaaclab.sim import schemas as sim_utils
+
+        self._create_env_prims()
 
         for pending in self._pending_assets:
             usd_path = self._urdf_converter.resolve_usd_path(pending.asset_info_dict)
@@ -275,9 +298,14 @@ class IsaacLabEnv(BaseManager):
         sim_utils: object,
     ) -> None:
         """Create and register a RigidObjectCfg for a static/dynamic obstacle."""
+        from isaaclab.sim.schemas import ArticulationRootPropertiesCfg
+
         obj_cfg = rigid_object_cfg_cls(
             prim_path=pending.prim_path,
-            spawn=sim_utils.UsdFileCfg(usd_path=usd_path),
+            spawn=sim_utils.UsdFileCfg(
+                usd_path=usd_path,
+                articulation_props=ArticulationRootPropertiesCfg(articulation_enabled=False),
+            ),
             init_state=rigid_object_cfg_cls.InitialStateCfg(
                 pos=(0.0, 0.0, 0.0),
             ),
