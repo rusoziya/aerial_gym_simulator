@@ -9,7 +9,7 @@ PYTHON ?= LD_LIBRARY_PATH=$(CONDA_PREFIX)/lib $(CONDA_PREFIX)/bin/python
 
 # Isaac Lab env (Python 3.11)
 ISAACLAB_PREFIX ?= $(HOME)/miniforge3/envs/isaaclab
-ISAACLAB_PYTHON ?= PYTHONPATH=$(ISAACLAB_PREFIX)/lib/python3.11/site-packages/isaaclab/source/isaaclab:$$PYTHONPATH OMNI_KIT_ACCEPT_EULA=yes LD_LIBRARY_PATH=$(ISAACLAB_PREFIX)/lib $(ISAACLAB_PREFIX)/bin/python
+ISAACLAB_PYTHON ?= AERIAL_GYM_BACKEND=isaaclab PYTHONPATH=$(ISAACLAB_PREFIX)/lib/python3.11/site-packages/isaaclab/source/isaaclab:$$PYTHONPATH OMNI_KIT_ACCEPT_EULA=yes LD_LIBRARY_PATH=$(ISAACLAB_PREFIX)/lib $(ISAACLAB_PREFIX)/bin/python
 
 # ─── Training & Evaluation ───────────────────────────────────────
 .PHONY: train eval play validate-config dry-run
