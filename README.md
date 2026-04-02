@@ -4,6 +4,27 @@
 
 Welcome to the [Aerial Gym Simulator](https://www.github.com/ntnu-arl/aerial_gym_simulator) repository. Please refer to our [documentation](https://ntnu-arl.github.io/aerial_gym_simulator/) for detailed information on how to get started with the simulator, and how to use it for your research.
 
+## Fast clone / lightweight repo
+
+This repository intentionally does **not** track experiment outputs (training runs, large checkpoint dumps, and example GIF rollouts) to keep `git clone` fast and reliable.
+
+The only shipped model weights in the repo are:
+
+- `aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth`
+- `aerial_gym/examples/dce_rl_navigation/TRAINED/HIGH_CONFIG_16ENV_2/checkpoint_p0/HIGH_CONFIG_16ENV_2_best_000025464_13041664_reward_1463.917.pth`
+
+Recommended clone command (smaller transfer on flaky networks):
+
+```bash
+git clone --filter=blob:none --depth=1 https://github.com/ntnu-arl/aerial_gym_simulator.git
+```
+
+If you need full history later:
+
+```bash
+git fetch --unshallow --tags
+```
+
 The Aerial Gym Simulator is a high-fidelity physics-based simulator for training Micro Aerial Vehicle (MAV) platforms such as multirotors to learn to fly and navigate cluttered environments using learning-based methods. The environments are built upon the underlying [NVIDIA Isaac Gym](https://developer.nvidia.com/isaac-gym) simulator. We offer aerial robot models for standard planar quadrotor platforms, as well as fully-actuated platforms and multirotors with arbitrary configurations. These configurations are supported with low-level and high-level geometric controllers that reside on the GPU and provide parallelization for the simultaneous control of thousands of multirotors.
 
 This is the *second release* of the simulator and includes a variety of new features and improvements. Task definition and environment configuration allow for fine-grained customization of all the environment entities without having to deal with large monolithic environment files. A custom rendering framework allows obtaining depth, and segmentation images at high speeds and can be used to simulate custom sensors such as LiDARs with varying properties. The simulator is open-source and is released under the [BSD-3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
