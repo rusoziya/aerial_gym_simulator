@@ -16,7 +16,7 @@ The only shipped model weights in the repo are:
 Recommended clone command (smaller transfer on flaky networks):
 
 ```bash
-git clone --filter=blob:none --depth=1 https://github.com/ntnu-arl/aerial_gym_simulator.git
+git clone --filter=blob:none --depth=1 https://github.com/rusoziya/aerial_gym_simulator.git
 ```
 
 If you need full history later:
