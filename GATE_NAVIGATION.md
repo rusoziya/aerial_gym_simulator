@@ -29,6 +29,36 @@ The gate navigation task trains a quadrotor equipped with **dual RGB-D cameras**
 
 ---
 
+## 0. Prerequisites & Setup
+
+Before training the gate navigation task, ensure you have:
+
+| Dependency | Version | Notes |
+|------------|---------|-------|
+| **NVIDIA GPU** | CUDA 11.7+ | Isaac Gym requires GPU for physics |
+| **Conda** | any | Miniforge or Miniconda |
+| **Isaac Gym** | Preview 4 | Manual download from [NVIDIA](https://developer.nvidia.com/isaac-gym) |
+| **Sample Factory** | ≥2.0 | `pip install sample-factory` |
+| **Python** | 3.8 | Pinned for Isaac Gym compatibility |
+| **PyTorch** | 1.13.1 | With CUDA 11.7 (via conda) |
+
+```bash
+# Full setup
+conda env create -f environment.yml
+conda activate aerialgym
+cd /path/to/isaacgym/python && pip install -e . && cd -
+pip install sample-factory
+pip install -e .
+
+# Verify config loads
+python -m aerial_gym.run --config configs/train_gate_sf.yaml --validate-only
+
+# Dry run (shows the full command without executing)
+python -m aerial_gym.run --config configs/train_gate_sf.yaml --dry-run
+```
+
+---
+
 ## 1. Observation Space (150D)
 
 The agent receives a 150-dimensional observation vector every step, defined in `aerial_gym/task/schemas.py` via `GATE_OBS_LAYOUT`:

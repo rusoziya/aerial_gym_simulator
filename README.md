@@ -136,6 +136,47 @@ This repository utilizes some of the code and helper scripts from [https://githu
 
 
 
+## Installation
+
+### Prerequisites
+
+- **NVIDIA GPU** with CUDA 11.7+ (Isaac Gym requires a GPU for physics simulation)
+- **Conda** (Miniforge or Miniconda)
+- **NVIDIA Isaac Gym** (manual download from [NVIDIA](https://developer.nvidia.com/isaac-gym))
+
+### Setup
+
+```bash
+# 1. Clone the repo
+git clone --depth=1 https://github.com/rusoziya/aerial_gym_simulator.git
+cd aerial_gym_simulator
+
+# 2. Create conda environment (Python 3.8, PyTorch 1.13.1, CUDA 11.7)
+conda env create -f environment.yml
+conda activate aerialgym
+
+# 3. Install Isaac Gym (download from NVIDIA, then):
+cd /path/to/isaacgym/python && pip install -e .
+cd -
+
+# 4. Install Sample Factory (RL framework)
+pip install sample-factory
+
+# 5. Install aerial_gym in editable mode
+pip install -e .
+
+# 6. Verify installation
+python -m aerial_gym.run --config configs/train_gate_sf.yaml --validate-only
+```
+
+### Quick Verify (no GPU needed)
+
+```bash
+python -m pytest tests/ -v          # Run all tests (~10s, no GPU required)
+```
+
+---
+
 ## Development Workflow
 
 ### Makefile Commands

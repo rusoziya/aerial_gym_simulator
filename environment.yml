@@ -29,5 +29,7 @@ dependencies:
     - urdfpy
     - gymnasium
     - wandb
+    - sample-factory>=2.0
+    - pydantic>=2.0
     - pytest
     - pytest-mock
