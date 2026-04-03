@@ -2,9 +2,63 @@
 
 # [Aerial Gym Simulator](index.md)
 
+## Cooperative Multi-View Gate Navigation
+
+![Cooperative multi-view gate navigation](docs/gate_navigation_thesis/figures/fig1_1_system_concept.png)
+
+This fork extends the Aerial Gym Simulator with a **cooperative multi-view gate navigation** task: a quadrotor learns to fly through gates using dual depth cameras (onboard + static/peer) fused via a learned gating mechanism, trained end-to-end with PPO in simulation.
+
+- **150D observation space**: drone proprioception (22D) + dual VAE-encoded depth latents (128D)
+- **4D velocity control**: x_vel, y_vel, z_vel, yaw_rate via SE(3) geometric controller
+- **Gated dual-fusion encoder**: per-feature learned gating between ego and exo camera streams
+- **Curriculum learning**: 21 levels (3-23) controlling obstacle count, gate size, spawn range, camera noise, and frame dropout
+- **6 camera modes**: FixedYaw, YawSweep, LockedFollow, DynFollow, ArcFollow, DroneOnly
+
+### Quick Start
+
+```bash
+# Clone
+git clone --depth=1 https://github.com/rusoziya/aerial_gym_simulator.git
+cd aerial_gym_simulator
+
+# Setup (requires NVIDIA GPU + Isaac Gym)
+conda env create -f environment.yml && conda activate aerialgym
+pip install sample-factory && pip install -e .
+
+# Train gate navigation
+python -m aerial_gym.run --config configs/train_gate_sf.yaml --log
+```
+
+### Documentation
+
+See **[GATE_NAVIGATION.md](GATE_NAVIGATION.md)** for the full end-to-end guide. Detailed subsystem docs:
+
+| Document | Content |
+|----------|---------|
+| [Environment Specification](docs/gate_navigation_thesis/environment_specification.md) | Simulator stack, workspace geometry, coordinate frames, assets |
+| [Robot Platform & Control](docs/gate_navigation_thesis/robot_platform.md) | X500 specs, motor model, SE(3) controller |
+| [Visual Pipeline & Fusion](docs/gate_navigation_thesis/visual_pipeline.md) | VAE architecture, gated/concat fusion, MLP+GRU encoder |
+| [Reward Shaping](docs/gate_navigation_thesis/reward_shaping.md) | All reward components with equations and design rationale |
+| [Curriculum Learning](docs/gate_navigation_thesis/curriculum.md) | Full curriculum tables, domain randomization schedules |
+| [Camera Modes](docs/gate_navigation_thesis/camera_modes.md) | 6 exocentric camera modes with equations |
+| [Methodology](docs/gate_navigation_thesis/methodology.md) | Experimental design, PPO config, metrics |
+| [Results Summary](docs/gate_navigation_thesis/results_summary.md) | Key findings per research question |
+| [Sim-to-Real](docs/gate_navigation_thesis/sim2real.md) | Hardware platform, deployment architecture, ROS node |
+| [Future Work](docs/gate_navigation_thesis/future_work.md) | Planned extensions and research directions |
+
+### Contact (Gate Navigation)
+
+Ziya Ruso &nbsp;&nbsp;&nbsp; [Email](mailto:ziya.ruso@gmail.com) &nbsp; [GitHub](https://github.com/rusoziya) &nbsp; [LinkedIn](https://www.linkedin.com/in/ziya-ruso/)
+
+MSc Robotics and Artificial Intelligence, University College London (UCL)
+
+---
+
+## Aerial Gym Simulator
+
 Welcome to the [Aerial Gym Simulator](https://www.github.com/ntnu-arl/aerial_gym_simulator) repository. Please refer to our [documentation](https://ntnu-arl.github.io/aerial_gym_simulator/) for detailed information on how to get started with the simulator, and how to use it for your research.
 
-## Fast clone / lightweight repo
+### Fast clone / lightweight repo
 
 This repository intentionally does **not** track experiment outputs (training runs, large checkpoint dumps, and example GIF rollouts) to keep `git clone` fast and reliable.
 
@@ -129,11 +183,13 @@ For your convenience, here are some quick links to the most important sections o
 
 ## Contact
 
+Ziya Ruso &nbsp;&nbsp;&nbsp; [Email](mailto:ziya.ruso@gmail.com) &nbsp; [GitHub](https://github.com/rusoziya) &nbsp; [LinkedIn](https://www.linkedin.com/in/ziya-ruso/)
+
 Mihir Kulkarni  &nbsp;&nbsp;&nbsp; [Email](mailto:mihirk284@gmail.com) &nbsp; [GitHub](https://github.com/mihirk284) &nbsp; [LinkedIn](https://www.linkedin.com/in/mihir-kulkarni-6070b6135/) &nbsp; [X (formerly Twitter)](https://twitter.com/mihirk284)
 
 Welf Rehberg &nbsp;&nbsp;&nbsp;&nbsp; [Email](mailto:welf.rehberg@ntnu.no) &nbsp; [GitHub](https://github.com/Zwoelf12) &nbsp; [LinkedIn](https://www.linkedin.com/in/welfrehberg/)
 
-Theodor J. L. Forgaard &nbsp;&nbsp;&nbsp; [Email](mailto:tjforgaa@stud.ntnu.no) &nbsp; [GitHb](https://github.com/tforgaard) &nbsp; [LinkedIn](https://www.linkedin.com/in/theodor-johannes-line-forgaard-665b5311a/)
+Theodor J. L. Forgaard &nbsp;&nbsp;&nbsp; [Email](mailto:tjforgaa@stud.ntnu.no) &nbsp; [GitHub](https://github.com/tforgaard) &nbsp; [LinkedIn](https://www.linkedin.com/in/theodor-johannes-line-forgaard-665b5311a/)
 
 Kostas Alexis &nbsp;&nbsp;&nbsp;&nbsp; [Email](mailto:konstantinos.alexis@ntnu.no) &nbsp;  [GitHub](https://github.com/kostas-alexis) &nbsp;
  [LinkedIn](https://www.linkedin.com/in/kostas-alexis-67713918/) &nbsp; [X (formerly Twitter)](https://twitter.com/arlteam)
@@ -241,51 +297,3 @@ unknown keys are accepted.
 ## FAQs and Troubleshooting
 
 Please refer to our [website](https://ntnu-arl.github.io/aerial_gym_simulator/7_FAQ_and_troubleshooting/) or to the [Issues](https://github.com/ntnu-arl/aerial_gym_simulator/issues) section in the GitHub repository for more information.
-
----
-
-## Gate Navigation Task
-
-![Cooperative multi-view gate navigation](docs/gate_navigation_thesis/figures/fig1_1_system_concept.png)
-
-This fork extends the Aerial Gym Simulator with a **cooperative multi-view gate navigation** task: a quadrotor learns to fly through gates using dual depth cameras (onboard + static/peer) fused via a learned gating mechanism, trained end-to-end with PPO in simulation.
-
-### Overview
-
-- **150D observation space**: drone position (3D) + static camera pose (6D) + orientation (3D) + velocities (6D) + actions (4D) + dual VAE latents (128D)
-- **4D velocity control**: x_vel, y_vel, z_vel, yaw_rate
-- **Curriculum learning**: 21 levels (3-23) controlling obstacle count, spawn range, camera noise, frame dropout, and state noise
-- **Gate-adaptive rewards**: passage detection, center alignment bonus, camera facing, boundary violation penalties
-
-### Training (Sample Factory)
-
-```bash
-cd aerial_gym/rl_training/sample_factory
-python aerialgym_examples/train_aerialgym_custom_net_gate.py --env=quad_with_obstacles_gate --env_agents=16
-```
-
-### Tests
-
-```bash
-conda activate aerialgym
-python -m pytest tests/ -v          # Run all behavior-capture tests (~10s)
-python -m pytest tests/ -k reward   # Run reward tests only
-python -m pytest tests/ -k config   # Run config tests only
-```
-
-### Documentation
-
-See **[GATE_NAVIGATION.md](GATE_NAVIGATION.md)** for the full end-to-end guide. Detailed subsystem docs:
-
-| Document | Content |
-|----------|---------|
-| [Environment Specification](docs/gate_navigation_thesis/environment_specification.md) | Simulator stack, workspace geometry, coordinate frames, assets |
-| [Robot Platform & Control](docs/gate_navigation_thesis/robot_platform.md) | X500 specs, motor model, SE(3) controller |
-| [Visual Pipeline & Fusion](docs/gate_navigation_thesis/visual_pipeline.md) | VAE architecture, gated/concat fusion, MLP+GRU encoder |
-| [Reward Shaping](docs/gate_navigation_thesis/reward_shaping.md) | All reward components with equations and design rationale |
-| [Curriculum Learning](docs/gate_navigation_thesis/curriculum.md) | Full curriculum tables, domain randomization schedules |
-| [Camera Modes](docs/gate_navigation_thesis/camera_modes.md) | 6 exocentric camera modes with equations |
-| [Methodology](docs/gate_navigation_thesis/methodology.md) | Experimental design, PPO config, metrics |
-| [Results Summary](docs/gate_navigation_thesis/results_summary.md) | Key findings per research question |
-| [Sim-to-Real](docs/gate_navigation_thesis/sim2real.md) | Hardware platform, deployment architecture, ROS node |
-| [Future Work](docs/gate_navigation_thesis/future_work.md) | Planned extensions and research directions |
