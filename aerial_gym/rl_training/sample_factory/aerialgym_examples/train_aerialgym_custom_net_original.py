@@ -7,25 +7,20 @@
 import sys
 from typing import Dict, Optional, Tuple
 
-
-import isaacgym
 import gymnasium as gym
+import numpy as np
 import torch
-
-
-from torch import Tensor
 from sample_factory.algo.utils.context import global_model_factory
-from sample_factory.model.encoder import *
 from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
 from sample_factory.envs.env_utils import register_env
+from sample_factory.model.encoder import *
 from sample_factory.train import run_rl
 from sample_factory.utils.typing import Config, Env
 from sample_factory.utils.utils import str2bool
+from torch import Tensor
 
 from aerial_gym.registry.task_registry import task_registry
-
-import numpy as np
 
 
 class AerialGymVecEnv(gym.Env):

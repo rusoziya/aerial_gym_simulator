@@ -8,31 +8,28 @@ Based on train_aerialgym_custom_net.py but specifically configured for DCE navig
 """
 
 # Import isaacgym first to avoid conflicts
-import isaacgym
 import sys
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import gymnasium as gym
+import numpy as np
 import torch
-from torch import Tensor
-
+import torch.nn as nn
+from gymnasium import spaces
 from sample_factory.algo.utils.context import global_model_factory
-from sample_factory.model.encoder import *
 from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
 from sample_factory.envs.env_utils import register_env
+from sample_factory.model.encoder import *
 from sample_factory.train import run_rl
 from sample_factory.utils.typing import Config, Env
 from sample_factory.utils.utils import str2bool
+from torch import Tensor
+
+from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
 
 # Import aerial gym components
 from aerial_gym.registry.task_registry import task_registry
-from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
-
-import numpy as np
-import torch.nn as nn
-from gymnasium import spaces
-from typing import List
 
 
 class AerialGymVecEnv(gym.Env):
@@ -79,7 +76,7 @@ def make_aerialgym_env(
             task_class=DCE_RL_Navigation_Task,
             task_config=task_registry.get_task_config("navigation_task"),
         )
-    
+
     return AerialGymVecEnv(task_registry.make_task(task_name=full_task_name), "obs")
 
 
@@ -134,7 +131,6 @@ def override_default_params_func(env, parser):
         worker_num_splits=1,
         actor_worker_gpus=[0],
         train_for_env_steps=10000000,  # 10M steps for DCE navigation
-        
         # Network architecture for image processing
         use_rnn=True,
         encoder_conv_architecture="convnet_simple",  # Enable conv encoder for images
@@ -142,7 +138,6 @@ def override_default_params_func(env, parser):
         rnn_num_layers=1,
         rnn_size=64,
         rnn_type="gru",
-        
         # Training hyperparameters optimized for DCE navigation
         adaptive_stddev=True,
         policy_initialization="torch_default",
@@ -173,8 +168,7 @@ def override_default_params_func(env, parser):
         use_env_info_cache=False,
         kl_loss_coeff=0.1,
         restart_behavior="overwrite",
-        
-        # Logging and experiment tracking  
+        # Logging and experiment tracking
         with_wandb=False,
         wandb_project="dce_navigation",
         wandb_user="aerial_gym",
@@ -226,37 +220,37 @@ def parse_aerialgym_cfg(evaluation=False):
     add_extra_params_func(parser)
     override_default_params_func("dce_navigation_task", parser)
     cfg = parse_full_cfg(parser)
-    
+
     # Set experiment directory
     cfg.train_dir = "./train_dir/dce_navigation"
     cfg.experiment = "dce_navigation_experiment"
-    
+
     return cfg
 
 
 def main():
     """Main entry point for DCE navigation training."""
-    
+
     # Register the DCE navigation task
     task_registry.register_task(
         task_name="dce_navigation_task",
         task_class=DCE_RL_Navigation_Task,
         task_config=task_registry.get_task_config("navigation_task"),
     )
-    
+
     # Register custom components
     register_aerialgym_custom_components()
-    
+
     # Parse configuration
     cfg = parse_aerialgym_cfg()
-    
+
     # Set the environment name
     cfg.env = "dce_navigation_task"
-    
+
     # Start training
     status = run_rl(cfg)
     return status
 
 
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

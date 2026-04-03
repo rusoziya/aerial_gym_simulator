@@ -3,8 +3,9 @@ from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
 
-from aerial_gym.utils.math import quat_rotate_inverse, get_euler_xyz_tensor
 import torch
+
+from aerial_gym.utils.math import get_euler_xyz_tensor, quat_rotate_inverse
 
 
 class DCE_RL_Navigation_Task(NavigationTask):
@@ -23,16 +24,16 @@ class DCE_RL_Navigation_Task(NavigationTask):
 
         # Configure the drone model to match save_camera_stream.py
         # task_config.robot_name = "base_quadrotor_with_stereo_camera"
-        # task_config.controller_name = "lmf2_velocity_control" 
+        # task_config.controller_name = "lmf2_velocity_control"
 
         # task_config.controller_name = "lee_velocity_control"
         task_config.robot_name = "lmf2"
         task_config.controller_name = "lmf2_velocity_control"
-        
+
         # Enable viewer for visual training feedback
         task_config.headless = True
         logger.critical("Enabling viewer for visual training feedback.")
-        
+
         super().__init__(task_config=task_config, **kwargs)
 
     # just changing how the observations are returned for the code to work
@@ -53,7 +54,7 @@ class DCE_RL_Navigation_Task(NavigationTask):
         self.task_obs["observations"][:, 10:13] = self.obs_dict["robot_body_angvel"]
         self.task_obs["observations"][:, 13:17] = self.obs_dict["robot_actions"]
         # Only use image latents if VAE is enabled
-        if hasattr(self, 'image_latents') and self.task_config.vae_config.use_vae:
+        if hasattr(self, "image_latents") and self.task_config.vae_config.use_vae:
             self.task_obs["observations"][:, 17:81] = self.image_latents
 
 

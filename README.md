@@ -104,6 +104,7 @@ If you use the reinforcement learning policy provided alongside this simulator f
 ## Quick Links
 For your convenience, here are some quick links to the most important sections of the documentation:
 
+- **[Gate Navigation Task — End-to-End Guide](GATE_NAVIGATION.md)** — detailed walkthrough of the DCE RL gate navigation pipeline
 - [Installation](https://ntnu-arl.github.io/aerial_gym_simulator/2_getting_started/#installation)
 - [Robots and Controllers](https://ntnu-arl.github.io/aerial_gym_simulator/3_robots_and_controllers)
 - [Sensors and Rendering Capabilities](https://ntnu-arl.github.io/aerial_gym_simulator/8_sensors_and_rendering)

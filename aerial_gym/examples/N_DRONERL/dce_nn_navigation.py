@@ -1,40 +1,38 @@
+import os
 import time
-import isaacgym
+from datetime import datetime
+from typing import List
+
+import cv2  # Import OpenCV for real-time display
+import matplotlib
+import numpy as np
 
 # isort: on
 import torch
+from PIL import Image
+
+from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
+from aerial_gym.examples.dce_rl_navigation.sf_inference_class import NN_Inference_Class
+from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net import (
     parse_aerialgym_cfg,
 )
 from aerial_gym.utils import get_args
-from aerial_gym.registry.task_registry import task_registry
-
-
-from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
-from aerial_gym.examples.dce_rl_navigation.sf_inference_class import NN_Inference_Class
-
-import matplotlib
-import numpy as np
-from PIL import Image
-import os
-import cv2  # Import OpenCV for real-time display
-from datetime import datetime
-from typing import List
 
 
 def sample_command(args):
     use_warp = True
     # Enable viewing by default for inference - user can override with --headless
-    headless = getattr(args, 'headless', False)  # Default to False (viewing enabled)
+    headless = getattr(args, "headless", False)  # Default to False (viewing enabled)
     print(f"N_DRONERL Inference - Headless mode: {headless}")
-    
+
     # Flag to enable real-time visualization
     show_realtime = not headless
-    
+
     # 1) pick an output folder (side-by-side with your script)
     output_dir = os.path.join(os.getcwd(), "gifs")
     os.makedirs(output_dir, exist_ok=True)
-    
+
     # 2) your frame buffers
     # seg_frames: List[Image.Image] = []
     # depth_frames: List[Image.Image] = []
@@ -42,10 +40,7 @@ def sample_command(args):
 
     # Create task with minimal parameters
     rl_task = task_registry.make_task(
-        "dce_navigation_task", 
-        seed=42, 
-        use_warp=use_warp, 
-        headless=headless
+        "dce_navigation_task", seed=42, use_warp=use_warp, headless=headless
     )
     print("Number of environments", rl_task.num_envs)
     command_actions = torch.zeros((rl_task.num_envs, rl_task.task_config.action_space_dim))
@@ -56,7 +51,7 @@ def sample_command(args):
     nn_model.eval()
     nn_model.reset(torch.arange(rl_task.num_envs))
     rl_task.reset()
-    
+
     # Create window for real-time display if not headless
     if show_realtime:
         # cv2.namedWindow("Depth Camera", cv2.WINDOW_NORMAL)
@@ -67,7 +62,7 @@ def sample_command(args):
         # cv2.resizeWindow("Segmentation Camera", 480, 270)
         cv2.resizeWindow("Combined View", 480, 540)
         print("Real-time camera view enabled. Press 'q' to exit.")
-        
+
     for i in range(0, 50000):
         start_time = time.time()
         obs, rewards, termination, truncation, infos = rl_task.step(command_actions)
@@ -89,11 +84,11 @@ def sample_command(args):
         nn_model.reset(reset_ids)
 
         # Capture frames for visualization
-        image1 = (
-            255.0 * rl_task.obs_dict["depth_range_pixels"][0, 0].cpu().numpy()
-        ).astype(np.uint8)
+        image1 = (255.0 * rl_task.obs_dict["depth_range_pixels"][0, 0].cpu().numpy()).astype(
+            np.uint8
+        )
         seg_image1 = rl_task.obs_dict["segmentation_pixels"][0, 0].cpu().numpy()
-        
+
         # Fix the error when there are no positive values in the segmentation image
         if np.any(seg_image1 > 0):
             min_positive = seg_image1[seg_image1 > 0].min()
@@ -101,7 +96,7 @@ def sample_command(args):
         else:
             # If no positive values, set all to a small positive value
             seg_image1[:] = 0.1
-            
+
         seg_image1_normalized = (seg_image1 - seg_image1.min()) / (
             seg_image1.max() - seg_image1.min() + 1e-8
         )
@@ -117,35 +112,35 @@ def sample_command(args):
         image_4d[:, :, 2] = image1
         image_4d[:, :, 3] = 255.0
         merged_image = np.concatenate((image_4d, seg_image1_normalized_plasma * 255.0), axis=0)
-        
+
         # Save frames to array for GIF creation - only keeping merged image
         # seg_frames.append(seg_image1_pil)
         # depth_frames.append(depth_image1_pil)
         merged_image_frames.append(Image.fromarray(merged_image.astype(np.uint8)))
-        
+
         # Display frames in real-time windows
         if show_realtime:
             # Convert PIL images to OpenCV format (RGB to BGR)
             # depth_cv = cv2.cvtColor(np.array(depth_image1_pil), cv2.COLOR_RGB2BGR)
             # seg_cv = cv2.cvtColor(np.array(seg_image1_pil), cv2.COLOR_RGBA2BGR)
-            merged_cv = cv2.cvtColor(merged_image[:,:,0:3].astype(np.uint8), cv2.COLOR_RGB2BGR)
-            
+            merged_cv = cv2.cvtColor(merged_image[:, :, 0:3].astype(np.uint8), cv2.COLOR_RGB2BGR)
+
             # Display images
             # cv2.imshow("Depth Camera", depth_cv)
             # cv2.imshow("Segmentation Camera", seg_cv)
             cv2.imshow("Combined View", merged_cv)
-            
+
             # Break loop if 'q' is pressed
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord("q"):
                 print("User requested exit")
                 break
-        
+
         # 3) detect end of episode
         if termination[0] or truncation[0]:
             # build a unique file-stem (episode index + timestamp)
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
             stem = f"epi{i}_{ts}"
-            
+
             # 4) save only the merged GIF
             # seg_frames[0].save(
             #     os.path.join(output_dir, f"{stem}_seg.gif"),
@@ -168,7 +163,7 @@ def sample_command(args):
                 duration=100,
                 loop=0,
             )
-            
+
             # 5) reset buffers and environments
             # seg_frames.clear()
             # depth_frames.clear()

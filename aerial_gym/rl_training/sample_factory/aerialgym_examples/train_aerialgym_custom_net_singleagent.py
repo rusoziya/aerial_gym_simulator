@@ -7,25 +7,18 @@
 import sys
 from typing import Dict, Optional, Tuple
 
-
-import isaacgym
 import gymnasium as gym
+import numpy as np
 import torch
-
-
-from torch import Tensor
 from sample_factory.algo.utils.context import global_model_factory
-from sample_factory.model.encoder import *
 from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.cfg.arguments import parse_full_cfg, parse_sf_args
 from sample_factory.envs.env_utils import register_env
+from sample_factory.model.encoder import *
 from sample_factory.train import run_rl
 from sample_factory.utils.typing import Config, Env
 from sample_factory.utils.utils import str2bool
-
-from aerial_gym.registry.task_registry import task_registry
-
-import numpy as np
+from torch import Tensor
 
 
 class AerialGymVecEnv(gym.Env):
@@ -36,7 +29,9 @@ class AerialGymVecEnv(gym.Env):
     def __init__(self, aerialgym_env, obs_key):
         self.env = aerialgym_env
         self.num_agents = self.env.num_envs
-        self.is_multiagent = True  # Fix: bypass BatchedMultiAgentWrapper to avoid tensor conversion error
+        self.is_multiagent = (
+            True  # Fix: bypass BatchedMultiAgentWrapper to avoid tensor conversion error
+        )
         self.action_space = convert_space(self.env.action_space)
 
         # Aerial Gym examples environments actually return dicts
@@ -66,10 +61,10 @@ def make_aerialgym_env(
     _env_config=None,
     render_mode: Optional[str] = None,
 ) -> Env:
-    
+
     # Import task_registry for this function
     from aerial_gym.registry.task_registry import task_registry
-    
+
     # Ensure DCE navigation task is registered in this subprocess
     if full_task_name == "dce_navigation_task":
         try:
@@ -78,12 +73,16 @@ def make_aerialgym_env(
         except KeyError:
             # Task not registered, register it now
             try:
-                from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
                 from aerial_gym.config.task_config.navigation_task_config import task_config
-                
+                from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import (
+                    DCE_RL_Navigation_Task,
+                )
+
                 dce_config = task_config()
-                task_registry.register_task("dce_navigation_task", DCE_RL_Navigation_Task, dce_config)
-                print(f"Registered dce_navigation_task in subprocess")
+                task_registry.register_task(
+                    "dce_navigation_task", DCE_RL_Navigation_Task, dce_config
+                )
+                print("Registered dce_navigation_task in subprocess")
             except Exception as e:
                 print(f"Failed to register dce_navigation_task in subprocess: {e}")
 
@@ -283,17 +282,17 @@ def make_custom_encoder(cfg: Config, obs_space: ObsSpace) -> Encoder:
 def register_aerialgym_custom_components():
     # Register DCE navigation task
     try:
-        from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
         from aerial_gym.config.task_config.navigation_task_config import task_config
+        from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
         from aerial_gym.registry.task_registry import task_registry
-        
+
         # Use navigation task config as base for DCE navigation
         dce_config = task_config()
         task_registry.register_task("dce_navigation_task", DCE_RL_Navigation_Task, dce_config)
         print("Successfully registered dce_navigation_task")
     except Exception as e:
         print(f"Warning: Could not register dce_navigation_task: {e}")
-    
+
     for env_name in env_configs:
         register_env(env_name, make_aerialgym_env)
 
