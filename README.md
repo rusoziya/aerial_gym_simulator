@@ -101,6 +101,18 @@ If you use the reinforcement learning policy provided alongside this simulator f
 
 ```
 
+If you use the cooperative multi-view gate navigation framework from this fork, please cite:
+
+```bibtex
+@mastersthesis{ruso2025multiview,
+  author={Ruso, Ziya},
+  title={Reinforcement Learning for Cooperative Multi-View Depth-Based Perception in Autonomous {UAV} Navigation},
+  school={University College London},
+  year={2025},
+  month={September},
+  type={MSc Thesis}}
+```
+
 ## Quick Links
 For your convenience, here are some quick links to the most important sections of the documentation:
 
