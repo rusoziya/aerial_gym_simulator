@@ -638,7 +638,22 @@ This codebase implements the experiments described in the MSc thesis. This secti
 
 ---
 
-## 13. References
+## 13. Detailed Documentation
+
+For deeper technical detail on individual subsystems, see these companion documents:
+
+| Document | Content |
+|----------|---------|
+| [Environment Specification](docs/environment_specification.md) | Simulator stack, workspace geometry, coordinate frames, assets, parallelization, determinism |
+| [Robot Platform & Control](docs/robot_platform.md) | X500 quadrotor specs, motor model, SE(3) controller, wrench allocation, spawn states |
+| [Reward Shaping](docs/reward_shaping.md) | All reward components with equations, parameters, design rationale, scaling rules |
+| [Curriculum Learning](docs/curriculum.md) | Full curriculum tables, progression rules, domain randomization schedules, ablation toggles |
+| [Camera Modes](docs/camera_modes.md) | All 6 exocentric camera modes with equations, fusion regimes, configuration |
+| [Experimental Methodology](docs/methodology.md) | Research questions, experimental design, training/eval protocol, PPO config, metrics, reproducibility |
+
+---
+
+## 14. References
 
 - **Thesis:** Z. Ruso, "Reinforcement Learning for Cooperative Multi-View Depth-Based Perception in Autonomous UAV Navigation," MSc Thesis, University College London, September 2025
 - **Aerial Gym Simulator:** Kulkarni, Rehberg & Alexis, "Aerial Gym Simulator: A Framework for Highly Parallelized Simulation of Aerial Robots," IEEE RA-L 2025 — [arxiv.org/abs/2305.16510](https://arxiv.org/abs/2305.16510)
