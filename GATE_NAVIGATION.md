@@ -4,6 +4,8 @@ This document provides a complete technical walkthrough of the **gate navigation
 
 > **Thesis reference:** Z. Ruso, *"Reinforcement Learning for Cooperative Multi-View Depth-Based Perception in Autonomous UAV Navigation,"* MSc Thesis, University College London, September 2025.
 
+![Cooperative multi-view gate navigation](docs/gate_navigation_thesis/figures/fig1_thesis_overview_banner.png)
+
 ---
 
 ## Overview
@@ -28,6 +30,9 @@ The gate navigation task trains a quadrotor equipped with **dual RGB-D cameras**
 │  Physics + Rendering (Isaac Gym/Warp)   │  Parallelized simulation + sensors
 └─────────────────────────────────────────┘
 ```
+
+![RL closed-loop stack](docs/gate_navigation_thesis/figures/fig4_1_rl_closed_loop_stack.png)
+*Closed-loop RL stack: the simulator outputs depth images and state; the DCE encoder produces latents that, with proprioceptive state, feed PPO to yield velocity commands.*
 
 ---
 
@@ -96,6 +101,9 @@ Actions are sanitized (NaN to 0, clamped), scaled to body-frame velocity setpoin
 
 ## 3. Deep Collision Encoding (VAE)
 
+![Ego clean depth](docs/gate_navigation_thesis/figures/fig3_6a_ego_clean_depth.png) ![Exo clean depth](docs/gate_navigation_thesis/figures/fig3_6b_exo_clean_depth.png)
+*Egocentric (drone) and exocentric (static) depth views — the two visual inputs fused by the policy.*
+
 ### Depth Sensor: Intel RealSense D455
 
 Both the onboard (egocentric) and static (exocentric) cameras are modeled as D455 depth sensors with identical intrinsics:
@@ -163,6 +171,8 @@ Both the drone camera and static camera go through this pipeline independently, 
 ---
 
 ## 4. Dual Fusion Encoder
+
+![Dual fusion encoder](docs/gate_navigation_thesis/figures/fig4_5_dual_fusion_encoder.png)
 
 `aerial_gym/rl_training/sample_factory/aerialgym_examples/dual_fusion_encoder.py`
 
@@ -454,6 +464,9 @@ Set `--save_gifs=true` during evaluation. Episodes are saved to `./gif_episodes/
 ---
 
 ## 10. Environment & Physics Specification
+
+![3D gate navigation scene](docs/gate_navigation_thesis/figures/fig4_9_3d_gate_navigation_scene.png)
+*3D overview: red frame — gate; black triangle — exocentric camera; colored panels — drone spawn zones across curriculum levels; purple cubes — obstacle region.*
 
 ### Workspace & Gate Geometry
 
