@@ -14,7 +14,7 @@
 #
 # Examples:
 #   ./train_with_monitoring.sh                           # Headless training
-#   ./train_with_monitoring.sh --view                    # Training with visualization  
+#   ./train_with_monitoring.sh --view                    # Training with visualization
 #   ./train_with_monitoring.sh my_experiment             # Headless with custom name
 #   ./train_with_monitoring.sh my_experiment --view      # Viewing with custom name
 
@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "This script uses the ORIGINAL DCE configuration:"
             echo "  - 16 parallel environments"
-            echo "  - 2048 batch size"  
+            echo "  - 2048 batch size"
             echo "  - Maximum performance (requires high VRAM)"
             echo ""
             echo "Arguments:"
@@ -174,7 +174,7 @@ echo "Set SF_ENV_AGENTS=${ENV_AGENTS} environment variable for all processes (OR
 
 # Run training with error handling
 if $TRAIN_CMD; then
-    
+
     echo -e "\n${GREEN}Training completed successfully!${NC}"
     echo -e "${BLUE}GPU usage log saved to: $GPU_LOG_FILE${NC}"
 else
@@ -183,5 +183,4 @@ else
     exit 1
 fi
 
-echo -e "\n${GREEN}All processes completed${NC}" 
- 
+echo -e "\n${GREEN}All processes completed${NC}"

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import torch
+
 from aerial_gym.utils.math import torch_interpolate_ratio
 
 
@@ -27,27 +30,16 @@ class task_config:
         "crash_penalty": -100,
     }
 
-    # robot_name = "morphy_stiff"
-    # num_joints = 0
-    # num_motors = 4
-    # action_space_dim = 4
-    # observation_space_dim = 13+action_space_dim+num_joints*2
-    # privileged_observation_space_dim = 0
-    # # # for velocity targets
-    # action_limit_max = [2.0]*num_motors
-    # action_limit_min = [0.0]*num_motors
-
     robot_name = "morphy"
     num_joints = 8
     num_motors = 4
     action_space_dim = 4
     observation_space_dim = 13 + action_space_dim + num_joints * 2
     privileged_observation_space_dim = 0
-    # # for velocity targets
     action_limit_max = [2.0] * num_motors
     action_limit_min = [0.0] * num_motors
 
-    def process_actions_for_task(actions, min_limit, max_limit):
+    def process_actions_for_task(actions, min_limit, max_limit) -> None:
         actions_clipped = torch.clamp(actions, 0, 1)
         scaled_actions = torch_interpolate_ratio(
             min=min_limit, max=max_limit, ratio=actions_clipped

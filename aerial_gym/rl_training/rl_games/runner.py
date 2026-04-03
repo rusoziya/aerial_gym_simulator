@@ -1,37 +1,30 @@
-import numpy as np
+from __future__ import annotations
+
+import distutils
 import os
+
+import gym
+import numpy as np
+import torch
 import yaml
-
-
-import isaacgym
-
+from gym import spaces
+from rl_games.common import env_configurations, vecenv
 
 from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.utils.helpers import parse_arguments
 
-import gym
-from gym import spaces
-from argparse import Namespace
-
-from rl_games.common import env_configurations, vecenv
-
-import torch
-import distutils
-
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-# import warnings
-# warnings.filterwarnings("error")
 
 
 class ExtractObsWrapper(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
 
-    def reset(self, **kwargs):
+    def reset(self, **kwargs) -> None:
         observations, *_ = super().reset(**kwargs)
         return observations["observations"]
 
-    def step(self, action):
+    def step(self, action) -> None:
         observations, rewards, terminated, truncated, infos = super().step(action)
 
         dones = torch.where(
@@ -53,19 +46,19 @@ class AERIALRLGPUEnv(vecenv.IVecEnv):
         self.env = env_configurations.configurations[config_name]["env_creator"](**kwargs)
         self.env = ExtractObsWrapper(self.env)
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         return self.env.step(actions)
 
-    def reset(self):
+    def reset(self) -> None:
         return self.env.reset()
 
-    def reset_done(self):
+    def reset_done(self) -> None:
         return self.env.reset_done()
 
-    def get_number_of_agents(self):
+    def get_number_of_agents(self) -> None:
         return self.env.get_number_of_agents()
 
-    def get_env_info(self):
+    def get_env_info(self) -> None:
         info = {}
         info["action_space"] = spaces.Box(
             -np.ones(self.env.task_config.action_space_dim),
@@ -151,9 +144,7 @@ vecenv.register(
 )
 
 
-def get_args():
-    from isaacgym import gymutil
-
+def get_args() -> None:
     custom_parameters = [
         {
             "name": "--seed",
@@ -270,8 +261,7 @@ def get_args():
     return args
 
 
-def update_config(config, args):
-
+def update_config(config, args) -> None:
     if args["task"] is not None:
         config["params"]["config"]["env_name"] = args["task"]
     if args["experiment_name"] is not None:
@@ -300,7 +290,7 @@ if __name__ == "__main__":
     config_name = args["file"]
 
     print("Loading config: ", config_name)
-    with open(config_name, "r") as stream:
+    with open(config_name) as stream:
         config = yaml.safe_load(stream)
 
         config = update_config(config, args)

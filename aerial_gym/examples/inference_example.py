@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import time
-from aerial_gym.utils.logging import CustomLogger
 
 from aerial_gym.sim2real.sample_factory_inference import RL_Nav_Interface
+from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.registry.task_registry import task_registry
 import torch
+
+from aerial_gym.registry.task_registry import task_registry
 
 
 class EMA:
@@ -13,7 +16,7 @@ class EMA:
         self.beta = beta
         self.average = None
 
-    def update(self, value):
+    def update(self, value) -> None:
         if self.average is None:
             self.average = value
         else:
@@ -26,7 +29,6 @@ num_envs = 16
 if __name__ == "__main__":
     start = time.time()
     rl_task_env = task_registry.make_task("navigation_task", headless=False, num_envs=num_envs)
-
 
     logger.warning(
         "\n\nExample file simulating a Sample Factory trained policy in cluttered environments using a Task Definition for navigation."

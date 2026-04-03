@@ -1,14 +1,17 @@
-import torch
+from __future__ import annotations
+
 import math
 
-# import nvtx
+import torch
 import warp as wp
 
 from aerial_gym.sensors.warp.warp_kernels.warp_lidar_kernels import LidarWarpKernels
 
 
 class WarpNormalFaceIDLidar:
-    def __init__(self, num_envs, config, mesh_ids_array, device="cuda:0"):
+    def __init__(
+        self, num_envs: int, config: object, mesh_ids_array: object, device: str = "cuda:0"
+    ) -> None:
         self.cfg = config
         self.num_envs = num_envs
         self.num_sensors = self.cfg.num_sensors
@@ -42,7 +45,7 @@ class WarpNormalFaceIDLidar:
 
         self.initialize_ray_vectors()
 
-    def initialize_ray_vectors(self):
+    def initialize_ray_vectors(self) -> None:
         # populate a 2D torch array with the ray vectors that are 2d arrays of wp.vec3
         ray_vectors = torch.zeros(
             (self.num_scan_lines, self.num_points_per_line, 3),
@@ -68,9 +71,9 @@ class WarpNormalFaceIDLidar:
         # recast as 2D warp array of vec3
         self.ray_vectors = wp.from_torch(ray_vectors, dtype=wp.vec3)
 
-    def create_render_graph_pointcloud(self, debug=False):
+    def create_render_graph_pointcloud(self, debug: bool = False) -> None:
         if not debug:
-            print(f"creating render graph")
+            print("creating render graph")
             wp.capture_begin(device=self.device)
         wp.launch(
             kernel=LidarWarpKernels.draw_optimized_kernel_normal_faceID,
@@ -93,20 +96,22 @@ class WarpNormalFaceIDLidar:
             device=self.device,
         )
         if not debug:
-            print(f"finishing capture of render graph")
+            print("finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
-    def set_image_tensors(self, pixels, segmentation_pixels=None):
+    def set_image_tensors(
+        self, pixels: torch.Tensor, segmentation_pixels: torch.Tensor | None = None
+    ) -> None:
         # init buffers. None when uninitialized
         self.pixels = wp.from_torch(pixels, dtype=wp.vec3)
         self.face_pixels = wp.from_torch(segmentation_pixels, dtype=wp.int32)
 
-    def set_pose_tensor(self, positions, orientations):
+    def set_pose_tensor(self, positions: torch.Tensor, orientations: torch.Tensor) -> None:
         self.lidar_position_array = wp.from_torch(positions, dtype=wp.vec3)
         self.lidar_quat_array = wp.from_torch(orientations, dtype=wp.quat)
 
     # @nvtx.annotate()
-    def capture(self, debug=False):
+    def capture(self, debug: bool = False) -> torch.Tensor:
         if self.graph is None:
             self.create_render_graph_pointcloud(debug)
         if self.graph is not None:

@@ -1,32 +1,36 @@
-from isaacgym import gymapi
-from isaacgym import gymtorch
+from __future__ import annotations
 
-from isaacgym import gymutil
+from typing import TYPE_CHECKING
+
+import numpy as np
+import torch
+from isaacgym import gymapi, gymtorch, gymutil
 
 from aerial_gym.env_manager.base_env_manager import BaseManager
-from aerial_gym.env_manager.asset_manager import AssetManager
 from aerial_gym.env_manager.IGE_viewer_control import IGEViewerControl
-import torch
-
-import os
-
-
+from aerial_gym.env_manager.tensor_population import (
+    populate_force_tensors,
+    populate_obstacle_tensors,
+    populate_robot_tensors,
+)
+from aerial_gym.utils.helpers import (
+    class_to_dict,
+    get_args,
+    parse_sim_params,
+    update_cfg_from_args,
+)
+from aerial_gym.utils.logging import CustomLogger
 from aerial_gym.utils.math import torch_rand_float_tensor
 
-from aerial_gym.utils.helpers import (
-    get_args,
-    update_cfg_from_args,
-    class_to_dict,
-    parse_sim_params,
-)
-import numpy as np
-from aerial_gym.utils.logging import CustomLogger
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.env_manager import EnvManager
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 
 logger = CustomLogger("IsaacGymEnvManager")
 
 
 class IsaacGymEnv(BaseManager):
-    def __init__(self, config, sim_config, has_IGE_cameras, device):
+    def __init__(self, config: type, sim_config: type, has_IGE_cameras: bool, device: str) -> None:
         super().__init__(config, device)
         self.sim_config = sim_config
         self.env_tensor_bounds_min = None
@@ -35,6 +39,7 @@ class IsaacGymEnv(BaseManager):
         self.env_handles = []
         self.num_rigid_bodies_robot = None
         self.has_IGE_cameras = has_IGE_cameras
+        self.num_assets_per_env: int | list[int] = 0
         self.sim_has_dof = False
         self.dof_control_mode = "none"
 
@@ -66,7 +71,7 @@ class IsaacGymEnv(BaseManager):
         self.viewer = None
         self.graphics_are_stepped = True
 
-    def create_sim(self):
+    def create_sim(self) -> tuple[gymapi.Gym, gymapi.Sim]:
         """
         Create a gym object and initialize with the appropriate simulation parameters
         """
@@ -89,34 +94,20 @@ class IsaacGymEnv(BaseManager):
         logger.info("Fixing devices")
         args.sim_device = self.device
         self.sim_device_type, self.sim_device_id = gymutil.parse_device_str(args.sim_device)
-        if self.sim_device_type == "cpu" and self.simulator_params.use_gpu_pipeline == True:
+        if self.sim_device_type == "cpu" and self.simulator_params.use_gpu_pipeline:
             logger.warning(
                 "The use_gpu_pipeline is set to True in the sim_config, but the device is set to CPU. Running the simulation on the CPU."
             )
             self.simulator_params.use_gpu_pipeline = False
-        if self.simulator_params.use_gpu_pipeline == False:
+        if not self.simulator_params.use_gpu_pipeline:
             logger.critical(
                 "The use_gpu_pipeline is set to False, this will result in slower simulation times"
             )
         else:
-            logger.info(
-                "Using GPU pipeline for simulation."
-            )
-        logger.info(
-            "Sim Device type: {}, Sim Device ID: {}".format(
-                self.sim_device_type, self.sim_device_id
-            )
-        )
-        if self.sim_config.viewer.headless and not self.has_IGE_cameras:
-            self.graphics_device_id = -1
-            logger.critical(
-                "\n Setting graphics device to -1."
-                + "\n This is done because the simulation is run in headless mode and no Isaac Gym cameras are used."
-                + "\n No need to worry. The simulation and warp rendering will work as expected."
-            )
-        else:
-            self.graphics_device_id = self.sim_device_id
-        logger.info("Graphics Device ID: {}".format(self.graphics_device_id))
+            logger.info("Using GPU pipeline for simulation.")
+        logger.info(f"Sim Device type: {self.sim_device_type}, Sim Device ID: {self.sim_device_id}")
+        self.graphics_device_id = self._resolve_graphics_device()
+        logger.info(f"Graphics Device ID: {self.graphics_device_id}")
         logger.info("Creating Isaac Gym Simulation Object")
         warn_msg1 = (
             "If you have set the CUDA_VISIBLE_DEVICES environment variable, please ensure that you set it\n"
@@ -136,13 +127,30 @@ class IsaacGymEnv(BaseManager):
         logger.info("Created Isaac Gym Simulation Object")
         return self.gym, self.sim
 
-    def create_ground_plane(self):
+    def _resolve_graphics_device(self) -> int:
+        """Determine the graphics device ID based on headless mode and camera usage."""
+        from aerial_gym.utils.env_flag_utils import read_env_bool
+
+        _use_graphics = read_env_bool("SF_HEADLESS_USE_GRAPHICS", default=True)
+
+        if self.sim_config.viewer.headless:
+            if _use_graphics or self.has_IGE_cameras:
+                logger.info("Headless mode with graphics enabled (EGL) for camera sensors.")
+                return self.sim_device_id
+            logger.critical(
+                "\n Setting graphics device to -1."
+                + "\n This is done because the simulation is run in headless mode and no Isaac Gym cameras are used."
+                + "\n No need to worry. The simulation and warp rendering will work as expected."
+            )
+            return -1
+        return self.sim_device_id
+
+    def create_ground_plane(self) -> None:
         plane_params = gymapi.PlaneParams()
         plane_params.normal = gymapi.Vec3(0.0, 0.0, 1.0)
         self.gym.add_ground(self.sim, plane_params)
-        return
 
-    def create_env(self, env_id):
+    def create_env(self, env_id: int) -> gymapi.Env:
         """
         Create an environment with the given id
         """
@@ -169,18 +177,17 @@ class IsaacGymEnv(BaseManager):
             raise ValueError("Environment already exists")
         return env_handle
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(torch.arange(self.num_envs, device=self.device))
 
     def add_asset_to_env(
         self,
-        asset_info_dict,
-        env_handle,
-        env_id,
-        global_asset_counter,
-        segmentation_counter,
-    ):
-
+        asset_info_dict: dict[str, int | str | bool | list[float] | None],
+        env_handle: gymapi.Env,
+        env_id: int,
+        global_asset_counter: int,
+        segmentation_counter: int,
+    ) -> tuple[int, int]:
         local_segmentation_ctr_for_isaacgym_asset = segmentation_counter
         if asset_info_dict["semantic_id"] < 0:
             asset_segmentation_id = local_segmentation_ctr_for_isaacgym_asset
@@ -207,7 +214,7 @@ class IsaacGymEnv(BaseManager):
         if asset_info_dict["per_link_semantic"]:
             rigid_body_names_all = self.gym.get_actor_rigid_body_names(env_handle, asset_handle)
 
-            if not type(asset_info_dict["semantic_masked_links"]) == dict:
+            if not isinstance(asset_info_dict["semantic_masked_links"], dict):
                 raise ValueError("semantic_masked_links should be a dictionary")
 
             links_to_label = asset_info_dict["semantic_masked_links"].keys()
@@ -215,7 +222,6 @@ class IsaacGymEnv(BaseManager):
                 links_to_label = rigid_body_names_all
 
             for name in rigid_body_names_all:
-
                 # Skip the values that are already in the dictionary which are predefined for objects of interest
                 while (
                     local_segmentation_ctr_for_isaacgym_asset
@@ -239,17 +245,19 @@ class IsaacGymEnv(BaseManager):
                     env_handle, asset_handle, index, segmentation_value
                 )
 
-        color = asset_info_dict["color"]
-        if asset_info_dict["color"] is None:
-            color = np.random.randint(low=50, high=200, size=3)
-
-        self.gym.set_rigid_body_color(
-            env_handle,
-            asset_handle,
-            0,
-            gymapi.MESH_VISUAL,
-            gymapi.Vec3(color[0] / 255, color[1] / 255, color[2] / 255),
-        )
+        # Respect URDF material colors for dynamic objects; only override color for non-object assets
+        asset_type = asset_info_dict.get("asset_type", "")
+        if asset_type not in ["objects", "object", "objects_gate"]:
+            color = asset_info_dict["color"]
+            if asset_info_dict["color"] is None:
+                color = np.random.randint(low=50, high=200, size=3)
+            self.gym.set_rigid_body_color(
+                env_handle,
+                asset_handle,
+                0,
+                gymapi.MESH_VISUAL,
+                gymapi.Vec3(color[0] / 255, color[1] / 255, color[2] / 255),
+            )
 
         self.asset_handles[env_id].append(asset_handle)
         return (
@@ -257,7 +265,11 @@ class IsaacGymEnv(BaseManager):
             local_segmentation_ctr_for_isaacgym_asset - segmentation_counter,
         )
 
-    def prepare_for_simulation(self, env_manager, global_tensor_dict):
+    def prepare_for_simulation(
+        self,
+        env_manager: EnvManager,
+        global_tensor_dict: GlobalTensorDict,
+    ) -> bool:
         if not self.gym.prepare_sim(self.sim):
             raise RuntimeError("Failed to prepare Isaac Gym Environment")
 
@@ -302,124 +314,69 @@ class IsaacGymEnv(BaseManager):
             self.num_envs, self.num_assets_per_env, -1
         )
 
-        self.global_tensor_dict = global_tensor_dict
+        self.global_tensor_dict: GlobalTensorDict = global_tensor_dict
 
-        # Populate all common environment tensors
-        self.global_tensor_dict["vec_root_tensor"] = self.vec_root_tensor
-        # In case your simulation has multiple robots, use more than just index 0
-        self.global_tensor_dict["robot_state_tensor"] = self.vec_root_tensor[:, 0, :]
-        self.global_tensor_dict["env_asset_state_tensor"] = self.vec_root_tensor[:, 1:, :]
-        self.global_tensor_dict["unfolded_env_asset_state_tensor"] = self.unfolded_vec_root_tensor
-        self.global_tensor_dict["unfolded_env_asset_state_tensor_const"] = self.global_tensor_dict[
-            "unfolded_env_asset_state_tensor"
-        ].clone()
-
-        self.global_tensor_dict["rigid_body_state_tensor"] = gymtorch.wrap_tensor(
-            self.gym.acquire_rigid_body_state_tensor(self.sim)
+        self._populate_root_state_tensors()
+        populate_force_tensors(
+            self.global_tensor_dict,
+            self.gym,
+            self.sim,
+            self.num_envs,
+            self.num_rigid_bodies_per_env,
+            self.num_rigid_bodies_robot,
+            self.device,
         )
-        self.global_tensor_dict["global_force_tensor"] = torch.zeros(
-            (self.global_tensor_dict["rigid_body_state_tensor"].shape[0], 3),
-            device=self.device,
-            requires_grad=False,
-        )
-        self.global_tensor_dict["global_torque_tensor"] = torch.zeros(
-            (self.global_tensor_dict["rigid_body_state_tensor"].shape[0], 3),
-            device=self.device,
-            requires_grad=False,
-        )
-
-        self.global_tensor_dict["unfolded_dof_state_tensor"] = gymtorch.wrap_tensor(
-            self.gym.acquire_dof_state_tensor(self.sim)
-        )
-        # if not None, view the tensor as (num_envs, num_dofs, 2)
-        if not self.global_tensor_dict["unfolded_dof_state_tensor"] is None:
-            self.sim_has_dof = True
-            self.global_tensor_dict["dof_state_tensor"] = self.global_tensor_dict[
-                "unfolded_dof_state_tensor"
-            ].view(self.num_envs, -1, 2)
-
-        self.global_tensor_dict["global_contact_force_tensor"] = self.global_contact_force_tensor
-        self.global_tensor_dict["robot_contact_force_tensor"] = self.global_contact_force_tensor[
-            :, 0, :
-        ]
-
-        # Populate robot tensors
-        self.global_tensor_dict["robot_position"] = self.global_tensor_dict["robot_state_tensor"][
-            :, :3
-        ]
-        self.global_tensor_dict["robot_orientation"] = self.global_tensor_dict[
-            "robot_state_tensor"
-        ][:, 3:7]
-        self.global_tensor_dict["robot_linvel"] = self.global_tensor_dict["robot_state_tensor"][
-            :, 7:10
-        ]
-        self.global_tensor_dict["robot_angvel"] = self.global_tensor_dict["robot_state_tensor"][
-            :, 10:
-        ]
-        self.global_tensor_dict["robot_body_angvel"] = torch.zeros_like(
-            self.global_tensor_dict["robot_state_tensor"][:, 10:13]
-        )
-        self.global_tensor_dict["robot_body_linvel"] = torch.zeros_like(
-            self.global_tensor_dict["robot_state_tensor"][:, 7:10]
-        )
-        self.global_tensor_dict["robot_euler_angles"] = torch.zeros_like(
-            self.global_tensor_dict["robot_state_tensor"][:, 7:10]
-        )
-
-        idx = self.num_rigid_bodies_robot
-        self.global_tensor_dict["robot_force_tensor"] = self.global_tensor_dict[
-            "global_force_tensor"
-        ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, :idx, :]
-
-        self.global_tensor_dict["robot_torque_tensor"] = self.global_tensor_dict[
-            "global_torque_tensor"
-        ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, :idx, :]
-
-        # ==============================
-        # Populate obstacle tensors
+        self._populate_dof_and_contact_tensors()
+        populate_robot_tensors(self.global_tensor_dict)
         if self.num_assets_per_env > 0:
-            self.global_tensor_dict["obstacle_position"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 0:3]
-            self.global_tensor_dict["obstacle_orientation"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 3:7]
-            self.global_tensor_dict["obstacle_linvel"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 7:10]
-            self.global_tensor_dict["obstacle_angvel"] = self.global_tensor_dict[
-                "env_asset_state_tensor"
-            ][:, :, 10:]
-            self.global_tensor_dict["obstacle_body_angvel"] = torch.zeros_like(
-                self.global_tensor_dict["env_asset_state_tensor"][:, :, 10:13]
+            populate_obstacle_tensors(
+                self.global_tensor_dict,
+                self.num_envs,
+                self.num_rigid_bodies_per_env,
+                self.num_rigid_bodies_robot,
+                self.device,
             )
-            self.global_tensor_dict["obstacle_body_linvel"] = torch.zeros_like(
-                self.global_tensor_dict["env_asset_state_tensor"][:, :, 7:10]
-            )
-            self.global_tensor_dict["obstacle_euler_angles"] = torch.zeros_like(
-                self.global_tensor_dict["env_asset_state_tensor"][:, :, 7:10]
-            )
-
-            # assume that each obstacle is collapsed to a single base link
-            self.global_tensor_dict["obstacle_force_tensor"] = self.global_tensor_dict[
-                "global_force_tensor"
-            ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, idx:, :]
-
-            self.global_tensor_dict["obstacle_torque_tensor"] = self.global_tensor_dict[
-                "global_torque_tensor"
-            ].view(self.num_envs, self.num_rigid_bodies_per_env, 3)[:, idx:, :]
-
-        self.global_tensor_dict["env_bounds_max"] = self.env_upper_bound
-        self.global_tensor_dict["env_bounds_min"] = self.env_lower_bound
-        self.global_tensor_dict["gravity"] = torch.tensor(
-            self.sim_config.sim.gravity, device=self.device, requires_grad=False
-        ).expand(self.num_envs, -1)
-        self.global_tensor_dict["dt"] = self.sim_config.sim.dt
+        self._populate_env_metadata()
         if self.viewer is not None:
             self.viewer.init_tensors(global_tensor_dict)
         return True
 
-    def create_viewer(self, env_manager):
+    def _populate_root_state_tensors(self) -> None:
+        """Set up root state, robot state, and environment asset state tensors."""
+        self.global_tensor_dict.vec_root_tensor = self.vec_root_tensor
+        self.global_tensor_dict.robot_state_tensor = self.vec_root_tensor[:, 0, :]
+        self.global_tensor_dict.env_asset_state_tensor = self.vec_root_tensor[:, 1:, :]
+        self.global_tensor_dict.unfolded_env_asset_state_tensor = self.unfolded_vec_root_tensor
+        self.global_tensor_dict.unfolded_env_asset_state_tensor_const = (
+            self.global_tensor_dict.unfolded_env_asset_state_tensor.clone()
+        )
+
+    def _populate_dof_and_contact_tensors(self) -> None:
+        """Set up DOF state and contact force tensors."""
+        self.global_tensor_dict.unfolded_dof_state_tensor = gymtorch.wrap_tensor(
+            self.gym.acquire_dof_state_tensor(self.sim)
+        )
+        if self.global_tensor_dict.unfolded_dof_state_tensor is not None:
+            self.sim_has_dof = True
+            self.global_tensor_dict.dof_state_tensor = (
+                self.global_tensor_dict.unfolded_dof_state_tensor.view(self.num_envs, -1, 2)
+            )
+
+        self.global_tensor_dict.global_contact_force_tensor = self.global_contact_force_tensor
+        self.global_tensor_dict.robot_contact_force_tensor = self.global_contact_force_tensor[
+            :, 0, :
+        ]
+
+    def _populate_env_metadata(self) -> None:
+        """Set up environment bounds, gravity, and time step tensors."""
+        self.global_tensor_dict.env_bounds_max = self.env_upper_bound
+        self.global_tensor_dict.env_bounds_min = self.env_lower_bound
+        self.global_tensor_dict.gravity = torch.tensor(
+            self.sim_config.sim.gravity, device=self.device, requires_grad=False
+        ).expand(self.num_envs, -1)
+        self.global_tensor_dict.dt = self.sim_config.sim.dt
+
+    def create_viewer(self, env_manager: EnvManager) -> None:
         self.robot_handles = [ah[0] for ah in self.asset_handles]
         logger.warning(f"Headless: {self.sim_config.viewer.headless}")
         if not self.sim_config.viewer.headless:
@@ -432,9 +389,8 @@ class IsaacGymEnv(BaseManager):
             logger.info("Created viewer")
         else:
             logger.info("Headless mode. Viewer not created.")
-        return
 
-    def pre_physics_step(self, actions):
+    def pre_physics_step(self, actions: torch.Tensor) -> None:
         """
         Perform any necessary operations before the physics step
         """
@@ -443,74 +399,67 @@ class IsaacGymEnv(BaseManager):
             self.write_to_sim()
         self.gym.apply_rigid_body_force_tensors(
             self.sim,
-            gymtorch.unwrap_tensor(self.global_tensor_dict["global_force_tensor"]),
-            gymtorch.unwrap_tensor(self.global_tensor_dict["global_torque_tensor"]),
+            gymtorch.unwrap_tensor(self.global_tensor_dict.global_force_tensor),
+            gymtorch.unwrap_tensor(self.global_tensor_dict.global_torque_tensor),
             gymapi.LOCAL_SPACE,
         )
         if self.sim_has_dof:
-            self.dof_control_mode = self.global_tensor_dict["dof_control_mode"]
+            self.dof_control_mode = self.global_tensor_dict.dof_control_mode
 
             if self.dof_control_mode == "position":
                 self.dof_application_function = self.gym.set_dof_position_target_tensor
                 self.dof_application_tensor = gymtorch.unwrap_tensor(
-                    self.global_tensor_dict["dof_position_setpoint_tensor"]
+                    self.global_tensor_dict.dof_position_setpoint_tensor
                 )
             elif self.dof_control_mode == "velocity":
                 self.dof_application_function = self.gym.set_dof_velocity_target_tensor
                 self.dof_application_tensor = gymtorch.unwrap_tensor(
-                    self.global_tensor_dict["dof_velocity_setpoint_tensor"]
+                    self.global_tensor_dict.dof_velocity_setpoint_tensor
                 )
             elif self.dof_control_mode == "effort":
                 self.dof_application_function = self.gym.set_dof_actuation_force_tensor
                 self.dof_application_tensor = gymtorch.unwrap_tensor(
-                    self.global_tensor_dict["dof_effort_tensor"]
+                    self.global_tensor_dict.dof_effort_tensor
                 )
             else:
                 raise ValueError("Invalid dof control mode")
             self.dof_application_function(self.sim, self.dof_application_tensor)
-        return
 
-    def physics_step(self):
+    def physics_step(self) -> None:
         """
         Perform the physics step
         """
         self.gym.simulate(self.sim)
         self.graphics_are_stepped = False
-        return
 
-    def post_physics_step(self):
+    def post_physics_step(self) -> None:
         """
         Perform any necessary operations after the physics step
         """
         # update the state tensors
         self.gym.fetch_results(self.sim, True)
         self.refresh_tensors()
-        return
 
-    def refresh_tensors(self):
+    def refresh_tensors(self) -> None:
         self.gym.refresh_rigid_body_state_tensor(self.sim)
         self.gym.refresh_force_sensor_tensor(self.sim)
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
 
-    def step_graphics(self):
+    def step_graphics(self) -> None:
         if not self.graphics_are_stepped:
             self.gym.step_graphics(self.sim)
             self.graphics_are_stepped = True
 
-    def render_viewer(self):
+    def render_viewer(self) -> None:
         if self.viewer is not None:
             # do not waste time stepping graphics if the viewer is not going to update anyways
             if not self.graphics_are_stepped and self.viewer.enable_viewer_sync:
                 self.step_graphics()
             self.viewer.render()
-        return
 
-    def reset(self):
-        self.reset_idx(torch.arange(self.num_envs, device=self.device))
-
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         self.env_lower_bound[env_ids, :] = torch_rand_float_tensor(
             self.env_lower_bound_min, self.env_lower_bound_max
         )[env_ids]
@@ -518,17 +467,16 @@ class IsaacGymEnv(BaseManager):
             self.env_upper_bound_min, self.env_upper_bound_max
         )[env_ids]
 
-    def write_to_sim(self):
+    def write_to_sim(self) -> None:
         """
         Write the tensors to the simulation
         """
         self.gym.set_actor_root_state_tensor(
             self.sim,
-            gymtorch.unwrap_tensor(self.global_tensor_dict["unfolded_env_asset_state_tensor"]),
+            gymtorch.unwrap_tensor(self.global_tensor_dict.unfolded_env_asset_state_tensor),
         )
         if self.sim_has_dof:
             self.gym.set_dof_state_tensor(
                 self.sim,
-                gymtorch.unwrap_tensor(self.global_tensor_dict["unfolded_dof_state_tensor"]),
+                gymtorch.unwrap_tensor(self.global_tensor_dict.unfolded_dof_state_tensor),
             )
-        return

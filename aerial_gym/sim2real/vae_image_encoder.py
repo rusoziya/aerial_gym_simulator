@@ -1,9 +1,12 @@
-import torch
+from __future__ import annotations
+
 import os
+
+import torch
 from vae import VAE
 
 
-def clean_state_dict(state_dict):
+def clean_state_dict(state_dict) -> None:
     clean_dict = {}
     for key, value in state_dict.items():
         if "module." in key:
@@ -30,14 +33,14 @@ class VAEImageEncoder:
         self.vae_model.load_state_dict(state_dict)
         self.vae_model.eval()
 
-    def encode(self, image_tensors):
+    def encode(self, image_tensors) -> None:
         """
         Class to encode the set of images to a latent space. We can return both the means and sampled latent space variables.
         """
         with torch.no_grad():
             # Handle different input tensor shapes more robustly
             original_shape = image_tensors.shape
-            
+
             # If the tensor is 3D [batch, height, width], add channel dimension
             if len(original_shape) == 3:
                 image_tensors = image_tensors.unsqueeze(1)  # Add channel dimension
@@ -48,15 +51,19 @@ class VAEImageEncoder:
             elif len(original_shape) == 4:
                 pass
             else:
-                raise ValueError(f"Unexpected tensor shape: {original_shape}. Expected 2D, 3D, or 4D tensor.")
-            
+                raise ValueError(
+                    f"Unexpected tensor shape: {original_shape}. Expected 2D, 3D, or 4D tensor."
+                )
+
             # Ensure we have the expected dimensions: [batch, channels, height, width]
             if len(image_tensors.shape) != 4:
-                raise ValueError(f"After processing, expected 4D tensor, got shape: {image_tensors.shape}")
-            
+                raise ValueError(
+                    f"After processing, expected 4D tensor, got shape: {image_tensors.shape}"
+                )
+
             # Get actual image dimensions
             batch_size, channels, x_res, y_res = image_tensors.shape
-            
+
             # Check if we need to interpolate to match expected resolution
             if self.config.image_res != (x_res, y_res):
                 interpolated_image = torch.nn.functional.interpolate(
@@ -66,7 +73,7 @@ class VAEImageEncoder:
                 )
             else:
                 interpolated_image = image_tensors
-            
+
             z_sampled, means, *_ = self.vae_model.encode(interpolated_image)
         if self.config.return_sampled_latent:
             returned_val = z_sampled
@@ -74,7 +81,7 @@ class VAEImageEncoder:
             returned_val = means
         return returned_val
 
-    def decode(self, latent_spaces):
+    def decode(self, latent_spaces) -> None:
         """
         Decode a latent space to reconstruct full images
         """
@@ -86,7 +93,7 @@ class VAEImageEncoder:
             decoded_image = self.vae_model.decode(latent_spaces)
         return decoded_image
 
-    def get_latent_dims_size(self):
+    def get_latent_dims_size(self) -> None:
         """
         Function to get latent space dims
         """

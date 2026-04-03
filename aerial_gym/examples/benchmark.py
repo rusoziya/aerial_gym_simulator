@@ -1,17 +1,16 @@
+from __future__ import annotations
+
 import time
+
 import numpy as np
 
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
 
+import torch
+
 from aerial_gym.sim.sim_builder import SimBuilder
-
-import torch
-import numpy as np
-
-from PIL import Image
-import torch
 
 if __name__ == "__main__":
     start = time.time()
@@ -28,7 +27,7 @@ if __name__ == "__main__":
         "\n\n\nThe rendering benchmark will run by default. Please set rendering_benchmark = False to run the physics benchmark. \n\n\n"
     )
 
-    if rendering_benchmark == True:
+    if rendering_benchmark:
         env_manager = SimBuilder().build_env(
             sim_name="base_sim",
             env_name="env_with_obstacles",
@@ -40,7 +39,7 @@ if __name__ == "__main__":
             headless=True,
             use_warp=True,
         )
-        if env_manager.robot_manager.robot.cfg.sensor_config.enable_camera == False:
+        if not env_manager.robot_manager.robot.cfg.sensor_config.enable_camera:
             logger.error(
                 "The camera is disabled for this environment. The rendering benchmark will not work."
             )
@@ -57,7 +56,7 @@ if __name__ == "__main__":
             headless=True,
             use_warp=True,
         )
-        if env_manager.robot_manager.robot.cfg.sensor_config.enable_camera == True:
+        if env_manager.robot_manager.robot.cfg.sensor_config.enable_camera:
             logger.critical(
                 "The camera is enabled for this environment. The This will cause the benchmark to be slower than expected. Please disable the camera for a more accurate benchmark."
             )
@@ -72,7 +71,7 @@ if __name__ == "__main__":
                 start = time.time()
                 elapsed_steps = 0
             env_manager.step(actions=actions)
-            if rendering_benchmark == True:
+            if rendering_benchmark:
                 env_manager.render(render_components="sensor")
             elapsed_steps += 1
             if i % 50 == 0:

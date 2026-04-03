@@ -1,6 +1,14 @@
-from aerial_gym.config.asset_config.dynamic_env_object_config import *
+from __future__ import annotations
 
-import numpy as np
+from aerial_gym.config.asset_config.dynamic_env_object_config import *  # noqa: F401,F403
+from aerial_gym.config.asset_config.dynamic_wall_config import (
+    back_wall,
+    bottom_wall,
+    front_wall,
+    left_wall,
+    right_wall,
+    top_wall,
+)
 
 
 class DynamicEnvironmentCfg:

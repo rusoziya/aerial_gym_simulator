@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from aerial_gym.robots.base_reconfigurable import BaseReconfigurable
 from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.math import pd_control
 
 logger = CustomLogger("morphy_robot_class")
 import torch
@@ -15,7 +16,7 @@ class Morphy(BaseReconfigurable):
             device=device,
         )
 
-    def init_joint_response_params(self, cfg):
+    def init_joint_response_params(self, cfg) -> None:
         self.joint_stiffness = torch.tensor(
             cfg.reconfiguration_config.stiffness, device=self.device, dtype=torch.float32
         ).expand(self.num_envs, -1)
@@ -25,7 +26,7 @@ class Morphy(BaseReconfigurable):
         self.stiffness_param = cfg.reconfiguration_config.custom_nonlinear_stiffness
         self.damping_param = cfg.reconfiguration_config.custom_linear_damping
 
-    def call_arm_controller(self):
+    def call_arm_controller(self) -> None:
         """
         Call the controller for the arm of the quadrotor. This function is called every simulation step.
         """

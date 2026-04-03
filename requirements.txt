@@ -1,6 +1,17 @@
+# Core dependencies (install after conda env and isaacgym)
+numpy==1.23.0
+scipy>=1.10
+matplotlib>=3.7
+networkx==2.2
 warp-lang==1.0.0
-urdfpy=0.0.22
-networkx==3.1
-scipy
-numpy==1.23
-matplotlib
+trimesh
+urdfpy
+gymnasium
+pillow>=9.4
+pyyaml>=6.0
+tensorboard>=2.13
+wandb
+
+# Testing
+pytest>=8.0
+pytest-mock>=3.14

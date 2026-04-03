@@ -1,7 +1,4 @@
-from urdfpy import URDF
-import numpy as np
-
-import trimesh as tm
+from __future__ import annotations
 
 from isaacgym import gymapi
 
@@ -15,7 +12,7 @@ class IsaacGymAsset(BaseAsset):
         self.sim = sim
         self.load_from_file(self.file)
 
-    def load_from_file(self, asset_file):
+    def load_from_file(self, asset_file) -> None:
         file = asset_file.split("/")[-1]
         self.asset = self.gym.load_asset(
             self.sim, self.options.asset_folder, file, self.options.asset_options

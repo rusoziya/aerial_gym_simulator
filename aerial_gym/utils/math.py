@@ -27,8 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import torch
-from torch import Tensor
-from pytorch3d.transforms import matrix_to_quaternion
 
 
 @torch.jit.script
@@ -77,7 +75,9 @@ def quat_axis(q, axis=0):
 def exponential_reward_function(
     magnitude: float, base_width: float, value: torch.Tensor
 ) -> torch.Tensor:
-    """Exponential reward function"""
+    """Exponential reward function: magnitude * exp(-value^2 / base_width)"""
+    if base_width == 0.0:
+        return magnitude * torch.ones_like(value)
     return magnitude * torch.exp(-(value * value) / base_width)
 
 
@@ -85,7 +85,9 @@ def exponential_reward_function(
 def exponential_penalty_function(
     magnitude: float, base_width: float, value: torch.Tensor
 ) -> torch.Tensor:
-    """Exponential reward function"""
+    """Exponential penalty function: magnitude * (exp(-value^2 / base_width) - 1)"""
+    if base_width == 0.0:
+        return torch.zeros_like(value)
     return magnitude * (torch.exp(-(value * value) / base_width) - 1.0)
 
 

@@ -1,19 +1,47 @@
+from __future__ import annotations
+
 import os
+import os.path
 import random
-
-from isaacgym import gymapi
-from aerial_gym.assets.warp_asset import WarpAsset
-from aerial_gym.assets.isaacgym_asset import IsaacGymAsset
-
 from collections import deque
 
+from isaacgym import gymapi
 
+from aerial_gym.assets.isaacgym_asset import IsaacGymAsset
+from aerial_gym.assets.warp_asset import WarpAsset
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("asset_loader")
 
 
-def asset_class_to_AssetOptions(asset_class):
+# Deterministic allowed obstacle files for gate environment
+# Only these objects will be considered from the objects_gate folder and in this exact order
+DETERMINISTIC_GATE_OBJECTS = [
+    "triangular_prism_1x.urdf",
+    "cylinder_2x.urdf",
+    "rectangular_box_1_5x.urdf",
+    "trapezoid_1_5x.urdf",
+    "sphere_1x.urdf",
+    "rectangular_box_2x.urdf",
+    "cuboidal_rod.urdf",
+    "small_cube_1_5x.urdf",
+    "triangular_prism_2x.urdf",
+    "cylinder_1x.urdf",
+    "trapezoid_2x.urdf",
+    "sphere_2x.urdf",
+    "rectangular_box_1x.urdf",
+    "triangular_prism_1_5x.urdf",
+    "cuboidal_rod_2x.urdf",
+    "sphere_1_5x.urdf",
+    "cuboidal_rod_1_5x.urdf",
+    "small_cube.urdf",
+    "trapezoid_1x.urdf",
+    "small_cube_2x.urdf",
+    "cylinder_1_5x.urdf",
+]
+
+
+def asset_class_to_AssetOptions(asset_class: object) -> gymapi.AssetOptions:
     asset_options = gymapi.AssetOptions()
     asset_options.collapse_fixed_joints = asset_class.collapse_fixed_joints
     asset_options.replace_cylinder_with_capsule = asset_class.replace_cylinder_with_capsule
@@ -29,7 +57,7 @@ def asset_class_to_AssetOptions(asset_class):
 
 
 class AssetLoader:
-    def __init__(self, global_sim_dict, device):
+    def __init__(self, global_sim_dict: dict[str, object], device: str) -> None:
         self.global_sim_dict = global_sim_dict
         self.gym = self.global_sim_dict["gym"]
         self.sim = self.global_sim_dict["sim"]
@@ -43,23 +71,58 @@ class AssetLoader:
 
         self.max_loaded_semantic_id = 0
 
-    def randomly_pick_assets_from_folder(self, folder, num_assets=0):
-        # pick files that are URDF files from the folder
-        available_assets = []
-        for file in os.listdir(folder):
-            if file.endswith(".urdf"):
-                available_assets.append(file)
+    def randomly_pick_assets_from_folder(self, folder: str, num_assets: int = 0) -> list[str]:
+        # Pick files that are URDF files from the folder
+        try:
+            folder_files = os.listdir(folder)
+        except (FileNotFoundError, PermissionError):
+            folder_files = []
 
-        if num_assets == 0:
+        available_assets = [file for file in folder_files if file.endswith(".urdf")]
+
+        # If this is the gate objects folder, enforce deterministic allowed list and order
+        folder_basename = os.path.basename(folder.rstrip(os.sep))
+        if folder_basename == "objects_gate":
+            # Keep only whitelisted files, in the specified order
+            present = set(available_assets)
+            deterministic_order = [f for f in DETERMINISTIC_GATE_OBJECTS if f in present]
+            available_assets = deterministic_order
+        elif folder_basename.lower() == "smaller gates":
+            # Only load smaller gates (<= 58%, down to 50%) during eval stretch
+            import os as _os
+
+            stretch_enabled = _os.environ.get("EVAL_STRETCH_ENABLED", "0").strip() in (
+                "1",
+                "true",
+                "True",
+            )
+            if not stretch_enabled:
+                return []
+            # Deterministic ordering and filter to expected names gate_scale_050..gate_scale_058
+            available_assets = [f for f in available_assets if f.startswith("gate_scale_")]
+            available_assets.sort()
+        else:
+            # Deterministic ordering for reproducibility across envs
+            available_assets.sort()
+
+        if num_assets <= 0:
             return []
 
-        selected_files = random.choices(available_assets, k=num_assets)
+        # Ensure we don't pick duplicates: if requesting >= available, return all
+        if num_assets >= len(available_assets):
+            return list(available_assets)
+
+        # Deterministic selection: take the first K in the deterministic order
+        selected_files = available_assets[:num_assets]
         return selected_files
 
     def load_selected_file_from_config(
-        self, asset_type, asset_class_config, selected_file, is_robot=False
-    ):
-
+        self,
+        asset_type: str,
+        asset_class_config: object,
+        selected_file: str,
+        is_robot: bool = False,
+    ) -> dict[str, object]:
         asset_options_for_class = asset_class_to_AssetOptions(asset_class_config)
         filepath = os.path.join(asset_class_config.asset_folder, selected_file)
 
@@ -68,9 +131,7 @@ class AssetLoader:
         if filepath in self.asset_buffer:
             return self.asset_buffer[filepath]
 
-        logger.info(
-            f"Loading asset: {selected_file} for the first time. Next use of this asset will be via the asset buffer."
-        )
+        logger.debug(f"Loading asset: {selected_file} (first load, buffered for reuse)")
 
         asset_class_dict = {
             "asset_type": asset_type,
@@ -89,6 +150,11 @@ class AssetLoader:
             "force_sensor_parent_link": asset_class_config.force_sensor_parent_link,
             "force_sensor_transform": asset_class_config.force_sensor_transform,
             "use_collision_mesh_instead_of_visual": asset_class_config.use_collision_mesh_instead_of_visual,
+            # Gate variant marking for random selection
+            "is_gate_variant": "gate_scale_" in selected_file,
+            "gate_variant_name": os.path.splitext(selected_file)[0]
+            if "gate_scale_" in selected_file
+            else None,
             # do stuff with position, randomization, etc
         }
         max_list_vals = 0
@@ -109,7 +175,7 @@ class AssetLoader:
             else False
         )
 
-        if is_robot == False:
+        if not is_robot:
             if self.cfg.env.use_warp:
                 warp_asset = WarpAsset(asset_name, filepath, asset_class_dict)
                 asset_class_dict["warp_asset"] = warp_asset
@@ -144,7 +210,7 @@ class AssetLoader:
         self.asset_buffer[filepath] = asset_class_dict
         return asset_class_dict
 
-    def select_and_order_assets(self):
+    def select_and_order_assets(self) -> tuple[list[dict[str, object]], int]:
         ordered_asset_list = deque()
         keep_in_env_num = 0
         for (
@@ -154,7 +220,7 @@ class AssetLoader:
             num_assets = asset_class_config.num_assets
             if (
                 asset_type in self.env_config.include_asset_type
-                and self.env_config.include_asset_type[asset_type] == False
+                and not self.env_config.include_asset_type[asset_type]
             ):
                 continue
             if num_assets > 0:
@@ -176,14 +242,19 @@ class AssetLoader:
                     else:
                         ordered_asset_list.append(asset_info_dict)
 
-        # shuffle assets that are not necessarily kept in the environment
+        # Deterministic ordering of obstacles: keep obstacle ('objects') ordering stable,
+        # optionally shuffle other non-fixed assets for diversity.
         ordered_asset_list = list(ordered_asset_list)
-        shuffle_subset = ordered_asset_list[keep_in_env_num:]
-        random.shuffle(shuffle_subset)
-        ordered_asset_list[keep_in_env_num:] = shuffle_subset
-        return ordered_asset_list, keep_in_env_num
+        prefix_fixed = ordered_asset_list[:keep_in_env_num]
+        suffix = ordered_asset_list[keep_in_env_num:]
+        obstacle_assets = [a for a in suffix if a.get("asset_type") == "objects"]
+        other_assets = [a for a in suffix if a.get("asset_type") != "objects"]
+        # Shuffle only non-obstacle assets (deterministic under global seed)
+        random.shuffle(other_assets)
+        final_list = prefix_fixed + obstacle_assets + other_assets
+        return final_list, keep_in_env_num
 
-    def select_assets_for_sim(self):
+    def select_assets_for_sim(self) -> tuple[list[list[dict[str, object]]], int]:
         self.global_env_asset_dicts = []
         for i in range(self.num_envs):
             logger.debug(f"Loading assets for env: {i}")

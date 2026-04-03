@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import torch
 from isaacgym.torch_utils import tensor_clamp
 
@@ -5,20 +7,20 @@ from isaacgym.torch_utils import tensor_clamp
 class TensorPID:
     def __init__(
         self,
-        num_envs,
-        num_dims,
-        Kp,
-        Kd,
-        Ki,
-        dt,
-        integral_min_limit,
-        integral_max_limit,
-        derivative_saturation_min_limit,
-        derivative_saturation_max_limit,
-        output_min_limit,
-        output_max_limit,
-        device=torch.device("cuda"),
-    ):
+        num_envs: int,
+        num_dims: int,
+        Kp: list[float],
+        Kd: list[float],
+        Ki: list[float],
+        dt: float,
+        integral_min_limit: list[float],
+        integral_max_limit: list[float],
+        derivative_saturation_min_limit: list[float],
+        derivative_saturation_max_limit: list[float],
+        output_min_limit: list[float],
+        output_max_limit: list[float],
+        device: torch.device = torch.device("cuda"),
+    ) -> None:
         self.device = device
         self.Kp = torch.tensor(Kp, device=self.device)
         self.Kd = torch.tensor(Kd, device=self.device)
@@ -38,7 +40,7 @@ class TensorPID:
         self.prev_error = torch.zeros((num_envs, num_dims), device=self.device)
         self.reset_state = torch.ones((num_envs, num_dims), device=self.device)
 
-    def update(self, error):
+    def update(self, error: torch.Tensor) -> torch.Tensor:
         self.integral += error * self.dt
         # calculate PID terms
         proportional_term = self.Kp * error
@@ -61,12 +63,12 @@ class TensorPID:
         self.reset_state[:, :] = 0.0
         return output
 
-    def reset(self):
+    def reset(self) -> None:
         self.integral[:, :] = 0
         self.prev_error[:, :] = 0
         self.reset_state[:, :] = 1.0
 
-    def reset_idx(self, env_idx):
+    def reset_idx(self, env_idx: torch.Tensor) -> None:
         self.integral[env_idx, :] = 0
         self.prev_error[env_idx, :] = 0.0
         self.reset_state[env_idx, :] = 1.0

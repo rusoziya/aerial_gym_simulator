@@ -1,8 +1,17 @@
+from __future__ import annotations
+
 import torch
 
-from aerial_gym.utils.math import *
-
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import (
+    compute_vee_map,
+    quat_from_euler_xyz_tensor,
+    quat_inverse,
+    quat_mul,
+    quat_rotate,
+    quat_to_rotation_matrix,
+    torch_rand_float_tensor,
+)
 
 logger = CustomLogger("base_lee_controller")
 
@@ -11,7 +20,7 @@ logger.setLevel("DEBUG")
 
 import pytorch3d.transforms as p3d_transforms
 
-from aerial_gym.control.controllers.base_controller import *
+from aerial_gym.control.controllers.base_controller import BaseController
 
 
 class BaseLeeController(BaseController):
@@ -20,13 +29,15 @@ class BaseLeeController(BaseController):
     It will be inherited by the specific controller classes.
     """
 
-    def __init__(self, control_config, num_envs, device, mode="robot"):
+    def __init__(
+        self, control_config: object, num_envs: int, device: str, mode: str = "robot"
+    ) -> None:
         super().__init__(control_config, num_envs, device, mode)
         self.cfg = control_config
         self.num_envs = num_envs
         self.device = device
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict: dict[str, torch.Tensor]) -> None:
         super().init_tensors(global_tensor_dict)
 
         # Read from config and set the values for controller parameters
@@ -75,22 +86,22 @@ class BaseLeeController(BaseController):
         # buffer tensor to be used by torch.jit functions for various purposes
         self.buffer_tensor = torch.zeros((self.num_envs, 3, 3), device=self.device)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: object, **kwargs: object) -> torch.Tensor:
         return self.update(*args, **kwargs)
 
-    def reset_commands(self):
+    def reset_commands(self) -> None:
         self.wrench_command[:] = 0.0
 
-    def reset(self):
+    def reset(self) -> None:
         self.reset_idx(env_ids=None)
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor | None) -> None:
         if env_ids is None:
             env_ids = torch.arange(self.K_rot_tensor.shape[0])
         self.randomize_params(env_ids)
 
-    def randomize_params(self, env_ids):
-        if self.cfg.randomize_params == False:
+    def randomize_params(self, env_ids: torch.Tensor) -> None:
+        if not self.cfg.randomize_params:
             # logger.debug(
             #     "Randomization of controller parameters is disabled based on config setting."
             # )
@@ -108,7 +119,9 @@ class BaseLeeController(BaseController):
             self.K_angvel_tensor_min[env_ids], self.K_angvel_tensor_max[env_ids]
         )
 
-    def compute_acceleration(self, setpoint_position, setpoint_velocity):
+    def compute_acceleration(
+        self, setpoint_position: torch.Tensor, setpoint_velocity: torch.Tensor
+    ) -> torch.Tensor:
         position_error_world_frame = setpoint_position - self.robot_position
         # logger.debug(
         #     f"position_error_world_frame: {position_error_world_frame}, setpoint_position: {setpoint_position}, robot_position: {self.robot_position}"
@@ -124,7 +137,9 @@ class BaseLeeController(BaseController):
         )
         return accel_command
 
-    def compute_body_torque(self, setpoint_orientation, setpoint_angvel):
+    def compute_body_torque(
+        self, setpoint_orientation: torch.Tensor, setpoint_angvel: torch.Tensor
+    ) -> torch.Tensor:
         setpoint_angvel[:, 2] = torch.clamp(
             setpoint_angvel[:, 2], -self.cfg.max_yaw_rate, self.cfg.max_yaw_rate
         )
@@ -163,7 +178,7 @@ def calculate_desired_orientation_from_forces_and_yaw(forces_command, yaw_setpoi
 # @torch.jit.script
 def calculate_desired_orientation_for_position_velocity_control(
     forces_command, yaw_setpoint, rotation_matrix_desired
-):
+) -> None:
     b3_c = torch.div(forces_command, torch.norm(forces_command, dim=1).unsqueeze(1))
     temp_dir = torch.zeros_like(forces_command)
     temp_dir[:, 0] = torch.cos(yaw_setpoint)

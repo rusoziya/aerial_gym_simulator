@@ -1,8 +1,13 @@
-from abc import ABC, abstractmethod
+from __future__ import annotations
 
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from aerial_gym.registry.controller_registry import controller_registry
 from aerial_gym.utils.logging import CustomLogger
+
+if TYPE_CHECKING:
+    from aerial_gym.env_manager.global_tensor_dict_schema import GlobalTensorDict
 
 logger = CustomLogger("BaseRobot")
 
@@ -13,10 +18,13 @@ class BaseRobot(ABC):
 
     """
 
-    def __init__(self, robot_config, controller_name, env_config, device):
+    def __init__(
+        self, robot_config: object, controller_name: str, env_config: object, device: str
+    ) -> None:
         self.cfg = robot_config
-        self.num_envs = env_config.env.num_envs
-        self.device = device
+        self.num_envs: int = env_config.env.num_envs
+        self.device: str = device
+        self._global_tensor_dict: GlobalTensorDict = {}
 
         self.controller, self.controller_config = controller_registry.make_controller(
             controller_name,
@@ -34,42 +42,32 @@ class BaseRobot(ABC):
         self.num_actions = self.controller_config.num_actions
 
     @abstractmethod
-    def init_tensors(self, global_tensor_dict):
-        self.dt = global_tensor_dict["dt"]
-        self.gravity = global_tensor_dict["gravity"]
-        self.robot_state = global_tensor_dict["robot_state_tensor"]
-        self.robot_position = global_tensor_dict["robot_position"]
-        self.robot_orientation = global_tensor_dict["robot_orientation"]
-        self.robot_linvel = global_tensor_dict["robot_linvel"]
-        self.robot_angvel = global_tensor_dict["robot_angvel"]
+    def init_tensors(self, global_tensor_dict: GlobalTensorDict) -> None:
+        self.dt = global_tensor_dict.dt
+        self.gravity = global_tensor_dict.gravity
+        self.robot_state = global_tensor_dict.robot_state_tensor
+        self.robot_position = global_tensor_dict.robot_position
+        self.robot_orientation = global_tensor_dict.robot_orientation
+        self.robot_linvel = global_tensor_dict.robot_linvel
+        self.robot_angvel = global_tensor_dict.robot_angvel
 
         # tensors for robot forces and torques
-        self.robot_force_tensors = global_tensor_dict["robot_force_tensor"]
-        self.robot_torque_tensors = global_tensor_dict["robot_torque_tensor"]
+        self.robot_force_tensors = global_tensor_dict.robot_force_tensor
+        self.robot_torque_tensors = global_tensor_dict.robot_torque_tensor
 
-        self.env_bounds_min = global_tensor_dict["env_bounds_min"]
-        self.env_bounds_max = global_tensor_dict["env_bounds_max"]
+        self.env_bounds_min = global_tensor_dict.env_bounds_min
+        self.env_bounds_max = global_tensor_dict.env_bounds_max
+        # Keep a reference for optional features (e.g., curriculum level)
+        self._global_tensor_dict = global_tensor_dict
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         pass
 
     @abstractmethod
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         pass
 
     @abstractmethod
-    def step(self):
+    def step(self) -> None:
         pass
-
-    # @abstractmethod
-    # def apply_noise(self):
-    #     pass
-
-    # @abstractmethod
-    # def get_state(self):
-    #     pass
-
-    # @abstractmethod
-    # def set_state(self, state):
-    #     pass

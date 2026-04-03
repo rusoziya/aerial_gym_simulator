@@ -1,16 +1,17 @@
+from __future__ import annotations
+
 import time
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.registry.task_registry import task_registry
+
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 
 from aerial_gym.examples.rl_games_example.rl_games_inference import MLP
-
-import time
-import numpy as np
-
-import matplotlib.pyplot as plt
+from aerial_gym.registry.task_registry import task_registry
 
 if __name__ == "__main__":
     logger.print_example_message()
@@ -42,7 +43,7 @@ if __name__ == "__main__":
             rl_task_env.task_config.observation_space_dim,
             rl_task_env.task_config.action_space_dim,
             # "networks/morphy_policy_for_rigid_airframe.pth"
-            "networks/attitude_policy.pth"
+            "networks/attitude_policy.pth",
             # "networks/morphy_policy_for_flexible_airframe_joint_aware.pth",
         )
         .to("cuda:0")
@@ -63,5 +64,5 @@ if __name__ == "__main__":
             actions[:] = model.forward(obs["observations"])
 
             end_time = time.time()
-            
+
     end = time.time()

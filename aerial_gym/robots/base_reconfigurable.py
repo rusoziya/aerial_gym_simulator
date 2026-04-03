@@ -1,9 +1,10 @@
-from aerial_gym.robots.base_multirotor import BaseMultirotor
+from __future__ import annotations
+
 import torch
 
-from aerial_gym.utils.math import torch_rand_float_tensor, pd_control
-
+from aerial_gym.robots.base_multirotor import BaseMultirotor
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import pd_control, torch_rand_float_tensor
 
 logger = CustomLogger("reconfigurable_robot_class")
 
@@ -27,7 +28,7 @@ class BaseReconfigurable(BaseMultirotor):
 
         self.init_joint_response_params(self.cfg)
 
-    def init_joint_response_params(self, cfg):
+    def init_joint_response_params(self, cfg) -> None:
         self.joint_stiffness = torch.tensor(
             cfg.reconfiguration_config.stiffness, device=self.device, dtype=torch.float32
         ).expand(self.num_envs, -1)
@@ -36,10 +37,10 @@ class BaseReconfigurable(BaseMultirotor):
             cfg.reconfiguration_config.damping, device=self.device, dtype=torch.float32
         ).expand(self.num_envs, -1)
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict) -> None:
         super().init_tensors(global_tensor_dict)
-        self.dof_states = global_tensor_dict["dof_state_tensor"]
-        self.dof_control_mode = global_tensor_dict["dof_control_mode"]
+        self.dof_states = global_tensor_dict.dof_state_tensor
+        self.dof_control_mode = global_tensor_dict.dof_control_mode
 
         self.dof_effort_tensor = torch.zeros_like(self.dof_states[..., 0])
         self.dof_position_setpoint_tensor = torch.zeros_like(self.dof_states[..., 0])
@@ -48,18 +49,18 @@ class BaseReconfigurable(BaseMultirotor):
         self.dof_states_position = self.dof_states[..., 0]
         self.dof_states_velocity = self.dof_states[..., 1]
 
-        global_tensor_dict["dof_position_setpoint_tensor"] = self.dof_position_setpoint_tensor
-        global_tensor_dict["dof_velocity_setpoint_tensor"] = self.dof_velocity_setpoint_tensor
-        global_tensor_dict["dof_effort_tensor"] = self.dof_effort_tensor
+        global_tensor_dict.dof_position_setpoint_tensor = self.dof_position_setpoint_tensor
+        global_tensor_dict.dof_velocity_setpoint_tensor = self.dof_velocity_setpoint_tensor
+        global_tensor_dict.dof_effort_tensor = self.dof_effort_tensor
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         super().reset_idx(env_ids)
         self.dof_states[env_ids, :] = torch_rand_float_tensor(
             lower=self.joint_init_state_min[env_ids],
             upper=self.joint_init_state_max[env_ids],
         )
 
-    def call_arm_controller(self):
+    def call_arm_controller(self) -> None:
         """
         Call the controller for the arm of the quadrotor. This function is called every simulation step.
         """
@@ -77,13 +78,13 @@ class BaseReconfigurable(BaseMultirotor):
         else:
             return
 
-    def set_dof_position_targets(self, dof_pos_target):
+    def set_dof_position_targets(self, dof_pos_target) -> None:
         self.dof_position_setpoint_tensor[:] = dof_pos_target
 
-    def set_dof_velocity_targets(self, dof_vel_target):
+    def set_dof_velocity_targets(self, dof_vel_target) -> None:
         self.dof_velocity_setpoint_tensor[:] = dof_vel_target
 
-    def step(self, action_tensor):
+    def step(self, action_tensor) -> None:
         """
         Update the state of the quadrotor. This function is called every simulation step.
         """

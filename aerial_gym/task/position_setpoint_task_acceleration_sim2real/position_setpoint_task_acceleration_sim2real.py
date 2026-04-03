@@ -1,19 +1,18 @@
-from aerial_gym.task.base_task import BaseTask
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
+from __future__ import annotations
+
 import numpy as np
+import torch
+from gym.spaces import Box, Dict
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_task import BaseTask
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("position_setpoint_task")
 
 
-def dict_to_class(dict):
+def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
 
 
@@ -42,19 +41,10 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
             )
         logger.info("Building environment for position setpoint task.")
         logger.info(
-            "\nSim Name: {},\nEnv Name: {},\nRobot Name: {}, \nController Name: {}".format(
-                self.task_config.sim_name,
-                self.task_config.env_name,
-                self.task_config.robot_name,
-                self.task_config.controller_name,
-            )
+            f"\nSim Name: {self.task_config.sim_name},\nEnv Name: {self.task_config.env_name},\nRobot Name: {self.task_config.robot_name}, \nController Name: {self.task_config.controller_name}"
         )
         logger.info(
-            "\nNum Envs: {},\nUse Warp: {},\nHeadless: {}".format(
-                self.task_config.num_envs,
-                self.task_config.use_warp,
-                self.task_config.headless,
-            )
+            f"\nNum Envs: {self.task_config.num_envs},\nUse Warp: {self.task_config.use_warp},\nHeadless: {self.task_config.headless}"
         )
 
         self.sim_env = SimBuilder().build_env(
@@ -86,8 +76,6 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
             (self.sim_env.num_envs, 3), device=self.device, requires_grad=False
         )
 
-        # self.action_file = open("actions.txt", "w")
-
         # Get the dictionary once from the environment and use it to get the observations later.
         # This is to avoid constant retuning of data back anf forth across functions as the tensors update and can be read in-place.
         self.obs_dict = self.sim_env.get_obs()
@@ -105,8 +93,6 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
             shape=(self.task_config.action_space_dim,),
             dtype=np.float32,
         )
-        # self.action_transformation_function = self.sim_env.robot_manager.robot.action_transformation_function
-
         self.num_envs = self.sim_env.num_envs
 
         self.counter = 0
@@ -136,16 +122,16 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
             ),
         }
 
-    def close(self):
+    def close(self) -> None:
         self.sim_env.delete_env()
 
-    def reset(self):
+    def reset(self) -> None:
         self.target_position[:, 0:3] = 0.0  # torch.rand_like(self.target_position) * 10.0
         self.infos = {}
         self.sim_env.reset()
         return self.get_return_tuple()
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         self.target_position[:, 0:3] = (
             0.0  # (torch.rand_like(self.target_position[env_ids]) * 10.0)
         )
@@ -153,10 +139,10 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
         self.sim_env.reset_idx(env_ids)
         return
 
-    def render(self):
+    def render(self) -> None:
         return None
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         self.counter += 1
         self.prev_actions[:] = self.actions
         self.prev_actions_vehicle_frame[:, 0:3] = quat_rotate(
@@ -168,8 +154,6 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
         )
         self.actions = actions
         self.actions[:, 0:3] = 2.0 * self.actions[:, 0:3]
-        # self.action_file.write(f"{self.actions[0].cpu().numpy()[0]}, {self.actions[0].cpu().numpy()[1]}, {self.actions[0].cpu().numpy()[2]}, {self.actions[0].cpu().numpy()[3]},\n")
-        # print(self.actions[0].cpu().numpy())
 
         # this uses the action, gets observations
         # calculates rewards, returns tuples
@@ -183,7 +167,7 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
         # This is important for the RL agent to get the correct state after the reset.
         self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
 
-        if self.task_config.return_state_before_reset == True:
+        if self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         self.truncations[:] = torch.where(
@@ -193,12 +177,12 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
 
         self.infos = {}  # self.obs_dict["infos"]
 
-        if self.task_config.return_state_before_reset == False:
+        if not self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         return return_tuple
 
-    def get_return_tuple(self):
+    def get_return_tuple(self) -> None:
         self.process_obs_for_task()
         return (
             self.task_obs,
@@ -208,7 +192,7 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
             self.infos,
         )
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         position_error = self.target_position - self.obs_dict["robot_position"]
         self.obs_dict["robot_orientation"][:] = (
             torch.sign(self.obs_dict["robot_orientation"][:, 3]).unsqueeze(1)
@@ -236,7 +220,7 @@ class PositionSetpointTaskAccelerationSim2Real(BaseTask):
         self.task_obs["terminations"] = self.terminations
         self.task_obs["truncations"] = self.truncations
 
-    def compute_rewards_and_crashes(self, obs_dict):
+    def compute_rewards_and_crashes(self, obs_dict) -> None:
         robot_position = obs_dict["robot_position"]
         robot_body_linvel = obs_dict["robot_body_linvel"]
         target_position = self.target_position

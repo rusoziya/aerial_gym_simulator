@@ -1,3 +1,4 @@
+
 import warp as wp
 
 INVALID_PIXEL_VAL = wp.constant(-1.0)
@@ -79,7 +80,7 @@ class StereoCameraWarpKernels:
             # start ray from the point which it reached the far plane
             if not wp.mesh_query_ray(mesh, ro + rd * far_plane, rd_reverse, distance_to_second_cam, t2, u, v, sign, n, f):
                 dist = NO_HIT_RAY_VAL
-        
+
         if pointcloud_in_world_frame:
             pixels[env_id, cam_id, y, x] = ro + dist * rd
         else:
@@ -219,7 +220,7 @@ class StereoCameraWarpKernels:
             # start ray from the point which it reached the far plane
             if not wp.mesh_query_ray(mesh, ro + rd * far_plane / multiplier, rd_reverse, distance_to_stereo, t2, u, v, sign, n, f):
                 dist = NO_HIT_RAY_VAL
-        
+
         pixels[env_id, cam_id, y, x] = dist
 
     @staticmethod
@@ -275,7 +276,7 @@ class StereoCameraWarpKernels:
             )  # multiplier to project each ray on principal axis for depth instead of range
         dist = INVALID_PIXEL_VAL
         segmentation_value = NO_HIT_SEGMENTATION_VAL
-        
+
         if wp.mesh_query_ray(mesh, ro, rd, far_plane / multiplier, t, u, v, sign, n, f):
             endpoint = ro + rd * t*0.999
             distance_to_stereo = wp.length(stereo_cam_pos - endpoint)

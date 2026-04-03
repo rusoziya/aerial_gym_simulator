@@ -1,14 +1,14 @@
+from __future__ import annotations
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
 import torch
-from aerial_gym.utils.helpers import get_args
-
-import matplotlib.pyplot as plt
 
 from aerial_gym.config.sim_config.base_sim_no_gravity_config import BaseSimNoGravityConfig
 from aerial_gym.registry.sim_registry import sim_config_registry
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.utils.helpers import get_args
 
 if __name__ == "__main__":
     args = get_args()
@@ -37,6 +37,6 @@ if __name__ == "__main__":
         if i % 200 == 0:
             logger.info(f"Step {i}, changing target shape.")
             env_manager.reset()
-            dof_pos = 2*(torch.ones((env_manager.num_envs, 6)).to("cuda:0") - 0.5)
+            dof_pos = 2 * (torch.ones((env_manager.num_envs, 6)).to("cuda:0") - 0.5)
             env_manager.robot_manager.robot.set_dof_velocity_targets((3.14159 / 5.0) * dof_pos)
         env_manager.step(actions=actions)

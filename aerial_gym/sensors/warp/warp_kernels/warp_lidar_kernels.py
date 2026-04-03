@@ -1,3 +1,4 @@
+
 import warp as wp
 
 NO_HIT_RAY_VAL = wp.constant(1000.0)

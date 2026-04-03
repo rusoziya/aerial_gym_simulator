@@ -1,11 +1,10 @@
-from urdfpy import URDF
-import numpy as np
+from __future__ import annotations
 
+import numpy as np
 import trimesh as tm
+from urdfpy import URDF
 
 from aerial_gym.assets.base_asset import BaseAsset
-
-
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
@@ -16,7 +15,7 @@ class WarpAsset(BaseAsset):
         super().__init__(asset_name, asset_file, loading_options)
         self.load_from_file(self.file)
 
-    def load_from_file(self, asset_file):
+    def load_from_file(self, asset_file) -> None:
         self.file = asset_file
         # get trimesh collision and visual meshes
         self.urdf_asset = URDF.load(asset_file)
@@ -121,16 +120,16 @@ class WarpAsset(BaseAsset):
         self.variable_segmentation_mask = np.array(self.variable_segmentation_mask)
 
         # assert the above but print an error message if the assertion fails
-        assert len(self.asset_vertex_segmentation_value) == len(
-            self.asset_unified_mesh.vertices
-        ), f"len(self.asset_vertex_segmentation_value) = {len(self.asset_vertex_segmentation_value)}, len(self.asset_unified_mesh.vertices) = {len(self.asset_unified_mesh.vertices)}"
+        assert len(self.asset_vertex_segmentation_value) == len(self.asset_unified_mesh.vertices), (
+            f"len(self.asset_vertex_segmentation_value) = {len(self.asset_vertex_segmentation_value)}, len(self.asset_unified_mesh.vertices) = {len(self.asset_unified_mesh.vertices)}"
+        )
 
         # also assert that the segmentation mask is the same length as the vertices
-        assert len(self.variable_segmentation_mask) == len(
-            self.asset_unified_mesh.vertices
-        ), f"len(self.variable_segmentation_mask) = {len(self.variable_segmentation_mask)}, len(self.asset_unified_mesh.vertices) = {len(self.asset_unified_mesh.vertices)}"
+        assert len(self.variable_segmentation_mask) == len(self.asset_unified_mesh.vertices), (
+            f"len(self.variable_segmentation_mask) = {len(self.variable_segmentation_mask)}, len(self.asset_unified_mesh.vertices) = {len(self.asset_unified_mesh.vertices)}"
+        )
 
         # also assert that the length of the segmentation mask is the same as the length of the segmentation values
-        assert len(self.variable_segmentation_mask) == len(
-            self.asset_vertex_segmentation_value
-        ), f"len(self.variable_segmentation_mask) = {len(self.variable_segmentation_mask)}, len(self.asset_vertex_segmentation_value) = {len(self.asset_vertex_segmentation_value)}"
+        assert len(self.variable_segmentation_mask) == len(self.asset_vertex_segmentation_value), (
+            f"len(self.variable_segmentation_mask) = {len(self.variable_segmentation_mask)}, len(self.asset_vertex_segmentation_value) = {len(self.asset_vertex_segmentation_value)}"
+        )

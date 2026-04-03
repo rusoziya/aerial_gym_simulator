@@ -1,23 +1,25 @@
-from aerial_gym.sensors.base_sensor import BaseSensor
+from __future__ import annotations
+
 import torch
+
+from aerial_gym.sensors.base_sensor import BaseSensor
 from aerial_gym.utils.math import (
-    quat_from_euler_xyz,
-    tensor_clamp,
-    quat_rotate_inverse,
-    quat_mul,
-    torch_rand_float_tensor,
     quat_from_euler_xyz_tensor,
+    quat_mul,
+    quat_rotate_inverse,
+    tensor_clamp,
+    torch_rand_float_tensor,
 )
 
 
 class IMUSensor(BaseSensor):
-    def __init__(self, sensor_config, num_envs, device):
+    def __init__(self, sensor_config: object, num_envs: int, device: str) -> None:
         super().__init__(sensor_config=sensor_config, num_envs=num_envs, device=device)
         self.world_frame = self.cfg.world_frame
 
         self.gravity_compensation = self.cfg.gravity_compensation
 
-    def init_tensors(self, global_tensor_dict=None):
+    def init_tensors(self, global_tensor_dict: dict[str, object] | None = None) -> None:
         self.global_tensor_dict = global_tensor_dict
         super().init_tensors(self.global_tensor_dict)
 
@@ -71,18 +73,18 @@ class IMUSensor(BaseSensor):
 
         self.global_tensor_dict["imu_measurement"] = self.imu_meas
 
-    def sample_noise(self):
+    def sample_noise(self) -> None:
         self.noise = (
             torch.randn((self.num_envs, 6), device=self.device) * self.imu_noise_std / self.sqrt_dt
         )
 
-    def update_bias(self):
+    def update_bias(self) -> None:
         self.bias_update_step = (
             torch.randn((self.num_envs, 6), device=self.device) * self.bias_std * self.sqrt_dt
         )
         self.bias += self.bias_update_step  # check if this is correct
 
-    def update(self):
+    def update(self) -> None:
         """
         world_frame: if accel_t and ang_rate_t are in world frame or not
         """
@@ -130,7 +132,7 @@ class IMUSensor(BaseSensor):
         self.imu_meas[:, 3:] = ang_rate_meas
         return
 
-    def reset(self):
+    def reset(self) -> None:
         self.bias.zero_()
         self.bias[:] = self.max_bias_init_value * (2.0 * (torch.rand_like(self.bias) - 0.5))
         self.sensor_quats[:] = quat_from_euler_xyz_tensor(
@@ -139,7 +141,7 @@ class IMUSensor(BaseSensor):
             )
         )
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         self.bias[env_ids, :] = (
             self.max_bias_init_value * (2.0 * (torch.rand_like(self.bias) - 0.5))
         )[env_ids, :]
@@ -149,5 +151,5 @@ class IMUSensor(BaseSensor):
             )
         )[env_ids]
 
-    def get_observation(self):
+    def get_observation(self) -> None:
         pass

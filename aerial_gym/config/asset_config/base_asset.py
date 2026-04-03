@@ -1,41 +1,41 @@
+from __future__ import annotations
+
 from aerial_gym import AERIAL_GYM_DIRECTORY
 
 
 class BaseAssetParams:
-    num_assets = 1  # number of assets to include
+    num_assets: int = 1
 
-    asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets"
-    file = None  # if file=None, random assets will be selected. If not None, this file will be used
+    asset_folder: str = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets"
+    file: str | None = None
 
-    min_position_ratio = [0.5, 0.5, 0.5]  # min position as a ratio of the bounds
-    max_position_ratio = [0.5, 0.5, 0.5]  # max position as a ratio of the bounds
+    min_position_ratio: list[float] = [0.5, 0.5, 0.5]
+    max_position_ratio: list[float] = [0.5, 0.5, 0.5]
 
-    collision_mask = 1
+    collision_mask: int = 1
 
-    disable_gravity = False
-    replace_cylinder_with_capsule = (
-        True  # replace collision cylinders with capsules, leads to faster/more stable simulation
-    )
-    flip_visual_attachments = True  # Some .obj meshes must be flipped from y-up to z-up
-    density = 0.000001
-    angular_damping = 0.0001
-    linear_damping = 0.0001
-    max_angular_velocity = 100.0
-    max_linear_velocity = 100.0
-    armature = 0.001
+    disable_gravity: bool = False
+    replace_cylinder_with_capsule: bool = True
+    flip_visual_attachments: bool = True
+    density: float = 0.000001
+    angular_damping: float = 0.0001
+    linear_damping: float = 0.0001
+    max_angular_velocity: float = 100.0
+    max_linear_velocity: float = 100.0
+    armature: float = 0.001
 
-    collapse_fixed_joints = True
-    fix_base_link = True
-    color = None
-    keep_in_env = False
+    collapse_fixed_joints: bool = True
+    fix_base_link: bool = True
+    color: list[int] | None = None
+    keep_in_env: bool = False
 
-    body_semantic_label = 0
-    link_semantic_label = 0
-    per_link_semantic = False
-    semantic_masked_links = {}
-    place_force_sensor = False
-    force_sensor_parent_link = "base_link"
-    force_sensor_transform = [
+    body_semantic_label: int = 0
+    link_semantic_label: int = 0
+    per_link_semantic: bool = False
+    semantic_masked_links: dict[str, int] = {}
+    place_force_sensor: bool = False
+    force_sensor_parent_link: str = "base_link"
+    force_sensor_transform: list[float] = [
         0.0,
         0.0,
         0.0,
@@ -43,5 +43,5 @@ class BaseAssetParams:
         0.0,
         0.0,
         1.0,
-    ]  # position, quat x, y, z, w
-    use_collision_mesh_instead_of_visual = False
+    ]
+    use_collision_mesh_instead_of_visual: bool = False

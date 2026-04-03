@@ -1,19 +1,18 @@
-from aerial_gym.task.base_task import BaseTask
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
+from __future__ import annotations
+
 import numpy as np
+import torch
+from gym.spaces import Box, Dict
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_task import BaseTask
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("position_setpoint_task")
 
 
-def dict_to_class(dict):
+def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
 
 
@@ -42,19 +41,10 @@ class PositionSetpointTask(BaseTask):
             )
         logger.info("Building environment for position setpoint task.")
         logger.info(
-            "\nSim Name: {},\nEnv Name: {},\nRobot Name: {}, \nController Name: {}".format(
-                self.task_config.sim_name,
-                self.task_config.env_name,
-                self.task_config.robot_name,
-                self.task_config.controller_name,
-            )
+            f"\nSim Name: {self.task_config.sim_name},\nEnv Name: {self.task_config.env_name},\nRobot Name: {self.task_config.robot_name}, \nController Name: {self.task_config.controller_name}"
         )
         logger.info(
-            "\nNum Envs: {},\nUse Warp: {},\nHeadless: {}".format(
-                self.task_config.num_envs,
-                self.task_config.use_warp,
-                self.task_config.headless,
-            )
+            f"\nNum Envs: {self.task_config.num_envs},\nUse Warp: {self.task_config.use_warp},\nHeadless: {self.task_config.headless}"
         )
 
         self.sim_env = SimBuilder().build_env(
@@ -98,8 +88,6 @@ class PositionSetpointTask(BaseTask):
             shape=(self.task_config.action_space_dim,),
             dtype=np.float32,
         )
-        # self.action_transformation_function = self.sim_env.robot_manager.robot.action_transformation_function
-
         self.num_envs = self.sim_env.num_envs
 
         self.counter = 0
@@ -129,16 +117,16 @@ class PositionSetpointTask(BaseTask):
             ),
         }
 
-    def close(self):
+    def close(self) -> None:
         self.sim_env.delete_env()
 
-    def reset(self):
+    def reset(self) -> None:
         self.target_position[:, 0:3] = 0.0  # torch.rand_like(self.target_position) * 10.0
         self.infos = {}
         self.sim_env.reset()
         return self.get_return_tuple()
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         self.target_position[:, 0:3] = (
             0.0  # (torch.rand_like(self.target_position[env_ids]) * 10.0)
         )
@@ -146,10 +134,10 @@ class PositionSetpointTask(BaseTask):
         self.sim_env.reset_idx(env_ids)
         return
 
-    def render(self):
+    def render(self) -> None:
         return None
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         self.counter += 1
         self.prev_actions[:] = self.actions
         self.actions = actions
@@ -166,7 +154,7 @@ class PositionSetpointTask(BaseTask):
         # This is important for the RL agent to get the correct state after the reset.
         self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
 
-        if self.task_config.return_state_before_reset == True:
+        if self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         self.truncations[:] = torch.where(
@@ -176,12 +164,12 @@ class PositionSetpointTask(BaseTask):
 
         self.infos = {}  # self.obs_dict["infos"]
 
-        if self.task_config.return_state_before_reset == False:
+        if not self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         return return_tuple
 
-    def get_return_tuple(self):
+    def get_return_tuple(self) -> None:
         self.process_obs_for_task()
         return (
             self.task_obs,
@@ -191,7 +179,7 @@ class PositionSetpointTask(BaseTask):
             self.infos,
         )
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         self.task_obs["observations"][:, 0:3] = (
             self.target_position - self.obs_dict["robot_position"]
         )
@@ -202,7 +190,7 @@ class PositionSetpointTask(BaseTask):
         self.task_obs["terminations"] = self.terminations
         self.task_obs["truncations"] = self.truncations
 
-    def compute_rewards_and_crashes(self, obs_dict):
+    def compute_rewards_and_crashes(self, obs_dict) -> None:
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
         robot_linvel = obs_dict["robot_linvel"]
@@ -254,12 +242,12 @@ def compute_reward(
     parameter_dict,
 ):
     # type: (Tensor, Tensor, Tensor, Tensor, Tensor, float, Tensor, Tensor, Dict[str, Tensor]) -> Tuple[Tensor, Tensor]
-    
+
     dist = torch.norm(pos_error, dim=1)
 
     pos_reward = exp_func(dist, 3.0, 8.0) + exp_func(dist, 2.0, 4.0)
 
-    dist_reward = (20 - dist) / 40.0  
+    dist_reward = (20 - dist) / 40.0
 
     ups = quat_axis(robot_quats, 2)
     tiltage = torch.abs(1 - ups[..., 2])
@@ -268,15 +256,11 @@ def compute_reward(
     spinnage = torch.norm(robot_angvels, dim=1)
     ang_vel_reward = (1.0 / (1.0 + spinnage * spinnage)) * 3
 
-    total_reward = (
-        pos_reward + dist_reward + pos_reward * (up_reward + ang_vel_reward)
-    )
+    total_reward = pos_reward + dist_reward + pos_reward * (up_reward + ang_vel_reward)
     total_reward[:] = curriculum_level_multiplier * total_reward
 
     crashes[:] = torch.where(dist > 8.0, torch.ones_like(crashes), crashes)
 
     total_reward[:] = torch.where(crashes > 0.0, -20 * torch.ones_like(total_reward), total_reward)
-    
-    
 
     return total_reward, crashes

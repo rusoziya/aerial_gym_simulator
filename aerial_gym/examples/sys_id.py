@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
 import torch
-from aerial_gym.utils.helpers import get_args
 from matplotlib import pyplot as plt
+
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.utils.helpers import get_args
 
 CONTROLLER_MODES = {
     "attitude": "lmf2_attitude_control",

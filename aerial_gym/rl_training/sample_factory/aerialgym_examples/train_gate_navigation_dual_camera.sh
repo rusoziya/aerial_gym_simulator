@@ -1,0 +1,762 @@
+#!/bin/bash
+
+# Train Gate Navigation with Dual Camera (Drone + Static) and GPU Monitoring
+# This script runs gate navigation training with memory-optimized dual camera system
+#
+# Usage:
+#   ./train_gate_navigation_dual_camera.sh [EXPERIMENT_NAME] [--view] [--gifs]
+#
+# EXPERIMENT_NAME: Optional custom experiment name
+#   If not provided, auto-generates based on timestamp
+#
+# --view: Optional flag to enable visualization (slower training)
+#   If not provided, runs in headless mode for maximum performance
+#
+# --gifs: Optional flag to save episode GIFs (drone + static camera)
+#   If not provided, no GIF saving (faster training)
+#
+# Examples:
+#   ./train_gate_navigation_dual_camera.sh                           # Headless training
+#   ./train_gate_navigation_dual_camera.sh --view                    # Training with visualization
+#   ./train_gate_navigation_dual_camera.sh --gifs                    # Headless training with GIF saving
+#   ./train_gate_navigation_dual_camera.sh --view --gifs             # Training with visualization and GIF saving
+#   ./train_gate_navigation_dual_camera.sh my_experiment             # Headless with custom name
+#   ./train_gate_navigation_dual_camera.sh my_experiment --view      # Viewing with custom name
+#   ./train_gate_navigation_dual_camera.sh my_experiment --gifs      # Headless with custom name and GIF saving
+
+set -e  # Exit on any error
+
+# Enforce deterministic cuBLAS workspace for reproducible matmul
+export CUBLAS_WORKSPACE_CONFIG=:16:8
+
+# Parse arguments
+EXPERIMENT_NAME=""
+ENABLE_VIEWER=false
+ENABLE_GIFS=false
+EXTRA_ARGS=""
+ASYNC_RL=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --help|-h)
+            echo "Usage: $0 [EXPERIMENT_NAME] [--view] [--gifs]"
+            echo ""
+            echo "This script trains gate navigation with dual cameras:"
+            echo "  - Environment: gate_env"
+            echo "  - Robot: X500 with D455 camera"
+            echo "  - Static camera: D455 behind gate (270x480 resolution)"
+            echo "  - Observation space: 150D"
+            echo "  - Action space: 4D (x_vel, y_vel, z_vel, yaw_rate) - VELOCITY CONTROLLER"
+            echo "  - Memory optimization: Shared VAE model reduces GPU usage by ~50%"
+            echo "  - Gradient monitoring: ENABLED - tracks static camera usage during training"
+            echo "  - EXPERIMENT: Removed target guidance for pure vision-based navigation"
+            echo ""
+            echo "Arguments:"
+            echo "  EXPERIMENT_NAME: Optional custom experiment name"
+            echo "  --view:          Enable visualization (slower but visual feedback)"
+            echo "  --gifs:          Save episode GIFs for both drone and static cameras"
+            echo ""
+            echo "Examples:"
+            echo "  $0                           # Headless training"
+            echo "  $0 --view                    # Training with visualization"
+            echo "  $0 --gifs                    # Headless training with GIF saving"
+            echo "  $0 --view --gifs             # Training with visualization and GIF saving"
+            echo "  $0 my_experiment             # Headless with custom name"
+            echo "  $0 my_experiment --view      # Viewing with custom name"
+            echo "  $0 my_experiment --gifs      # Headless with custom name and GIF saving"
+            exit 0
+            ;;
+        --view)
+            ENABLE_VIEWER=true
+            shift
+            ;;
+        --gifs)
+            ENABLE_GIFS=true
+            shift
+            ;;
+        --envs=*)
+            ENV_AGENTS="${1#*=}"
+            shift
+            ;;
+        --env_agents=*)
+            ENV_AGENTS="${1#*=}"
+            shift
+            ;;
+        --disable_gate_size_randomization=*)
+            DISABLE_GATE_SIZE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --fixed_gate_scale_percent=*)
+            FIXED_GATE_SCALE_PERCENT="${1#*=}"
+            shift
+            ;;
+        --disable_obstacle_randomization=*)
+            DISABLE_OBSTACLE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --fixed_obstacles_behind_gate=*)
+            FIXED_OBSTACLES_BEHIND_GATE="${1#*=}"
+            shift
+            ;;
+        --disable_static_camera_orientation_randomization=*)
+            DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_camera_noise_randomization=*)
+            DISABLE_CAMERA_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_camera_frame_dropout_randomization=*)
+            DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_drone_camera_noise_randomization=*)
+            DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_static_camera_noise_randomization=*)
+            DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_drone_camera_frame_dropout=*)
+            DISABLE_DRONE_CAMERA_FRAME_DROPOUT="${1#*=}"
+            shift
+            ;;
+        --disable_static_camera_frame_dropout=*)
+            DISABLE_STATIC_CAMERA_FRAME_DROPOUT="${1#*=}"
+            shift
+            ;;
+        --disable_state_noise_randomization=*)
+            DISABLE_STATE_NOISE_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_spawn_position_randomization=*)
+            DISABLE_SPAWN_POSITION_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_spawn_orientation_randomization=*)
+            DISABLE_SPAWN_ORIENTATION_RANDOMIZATION="${1#*=}"
+            shift
+            ;;
+        --disable_curriculum_multiplier=*)
+            DISABLE_CURRICULUM_MULTIPLIER="${1#*=}"
+            shift
+            ;;
+        --force_curriculum_level=*)
+            FORCE_CURRICULUM_LEVEL="${1#*=}"
+            shift
+            ;;
+        --disable_dynamic_camera_following=*)
+            DISABLE_DYNAMIC_CAMERA_FOLLOWING="${1#*=}"
+            shift
+            ;;
+        --enable_dynamic_camera_following=*)
+            ENABLE_DYNAMIC_CAMERA_FOLLOWING="${1#*=}"
+            shift
+            ;;
+        --fusion=*)
+            FUSION="${1#*=}"
+            shift
+            ;;
+        --gate_per_feature=*)
+            GATE_PER_FEATURE="${1#*=}"
+            shift
+            ;;
+        --enable_static_camera_yaw_sweep=*)
+            ENABLE_STATIC_CAMERA_YAW_SWEEP="${1#*=}"
+            shift
+            ;;
+        --static_camera_yaw_sweep_speed_deg=*)
+            STATIC_CAMERA_YAW_SWEEP_SPEED_DEG="${1#*=}"
+            shift
+            ;;
+        --static_camera_base_y=*)
+            STATIC_CAMERA_BASE_Y="${1#*=}"
+            shift
+            ;;
+        --static_camera_base_z=*)
+            STATIC_CAMERA_BASE_Z="${1#*=}"
+            shift
+            ;;
+        --dynamic_camera_follow_y_offset_m=*)
+            DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M="${1#*=}"
+            shift
+            ;;
+        --enable_static_fov_reward=*)
+            ENABLE_STATIC_FOV_REWARD="${1#*=}"
+            shift
+            ;;
+        --enable_static_camera_locked=*)
+            ENABLE_STATIC_CAMERA_LOCKED="${1#*=}"
+            shift
+            ;;
+        --enable_static_camera_arc_follow=*)
+            ENABLE_STATIC_CAMERA_ARC_FOLLOW="${1#*=}"
+            shift
+            ;;
+        --static_camera_arc_radius_m=*)
+            STATIC_CAMERA_ARC_RADIUS_M="${1#*=}"
+            shift
+            ;;
+        --async_rl=*)
+            ASYNC_RL="${1#*=}"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        --train_steps=*)
+            TRAIN_STEPS="${1#*=}"
+            shift
+            ;;
+        --num_epochs=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --num_batches_per_epoch=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --train_for_seconds=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --restart_behavior=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --load_checkpoint_kind=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --serial_mode=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --async_rl=*)
+            ASYNC_RL="${1#*=}"
+            shift
+            ;;
+        --policy_workers_per_policy=*)
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --*)
+            # Pass through any other unknown --flags to the python command
+            EXTRA_ARGS="$EXTRA_ARGS ${1}"
+            shift
+            ;;
+        --train_for_env_steps=*)
+            TRAIN_STEPS="${1#*=}"
+            shift
+            ;;
+        --seed=*)
+            SEED_VAL="${1#*=}"
+            shift
+            ;;
+        *)
+            if [ -z "$EXPERIMENT_NAME" ]; then
+                EXPERIMENT_NAME="$1"
+            else
+                echo "Error: Unknown argument $1"
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Gate Navigation Training Configuration (defaults tuned for 150k-step runs)
+CONFIG_NAME="Gate Navigation Dual Camera Configuration"
+# If not set via CLI parsing above, default to 256 envs for step alignment (256*32=8192)
+if [ -z "${ENV_AGENTS}" ]; then
+    ENV_AGENTS=256
+fi
+EFFECTIVE_BATCH=4096
+BATCH_SIZE=2048
+NUM_BATCHES_TO_ACCUMULATE=2
+CONFIG_PREFIX="gate_nav_dual_cam"
+
+# Set experiment name - use provided name or auto-generate
+if [ -n "$EXPERIMENT_NAME" ]; then
+    echo "Using custom experiment name: $EXPERIMENT_NAME"
+else
+    EXPERIMENT_NAME="${CONFIG_PREFIX}_$(date +%Y%m%d_%H%M%S)"
+    echo "Auto-generated experiment name: $EXPERIMENT_NAME"
+fi
+# Define run output directory and ensure it exists; also export for Python side
+RUN_DIR="./train_dir/${EXPERIMENT_NAME}"
+mkdir -p "$RUN_DIR"
+export SF_TRAIN_DIR="$RUN_DIR"
+echo -e "${GREEN}Run directory: ${RUN_DIR}${NC}"
+
+# Total env steps to stop at (exactly 19 updates with 256 envs * 32 rollout)
+# Target W&B global_step set by user; adjust TRAIN_STEPS accordingly.
+# Note: final global_step ≈ TRAIN_STEPS + drain_rollouts * (env_agents*rollout)
+# With sync mode and your setup drain_rollouts≈3 and quantum=8192.
+# User requested final ≈ 1,212,416, so default TRAIN_STEPS to match exactly unless overridden.
+if [ -z "${TRAIN_STEPS}" ]; then
+    TRAIN_STEPS=1212416
+fi
+GPU_MONITOR_INTERVAL=1000
+GPU_LOG_FILE="../../../logs/gpu_usage_gate_nav_${EXPERIMENT_NAME}.csv"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}=== Gate Navigation Dual Camera Training with GPU Monitoring ===${NC}"
+echo -e "${YELLOW}Environment: gate_env${NC}"
+echo -e "${YELLOW}Robot: X500 with D455 camera${NC}"
+echo -e "${YELLOW}Static camera: D455 behind gate (270x480 resolution)${NC}"
+echo -e "${YELLOW}Observation space: 141D (13D basic + 64D drone VAE + 64D static camera VAE) - PURE VISION${NC}"
+echo -e "${GREEN}⚡ MEMORY OPTIMIZATION: Shared VAE model reduces GPU usage by ~50%${NC}"
+echo -e "${BLUE}🔬 GRADIENT MONITORING: Tracks static camera usage during training${NC}"
+echo -e "${YELLOW}Action space: 4D (x_vel, y_vel, z_vel, yaw_rate) - VELOCITY CONTROLLER${NC}"
+if [ "$ENV_AGENTS" -ge 128 ]; then
+  PAR_LABEL="HIGH PARALLELIZATION CONFIG"
+elif [ "$ENV_AGENTS" -ge 32 ]; then
+  PAR_LABEL="UPDATED CONFIG - high parallelization"
+else
+  PAR_LABEL="ORIGINAL DCE CONFIG - standard"
+fi
+echo -e "${GREEN}Environments: ${ENV_AGENTS} (${PAR_LABEL})${NC}"
+
+# Dynamic batch adjustment to maintain effective batch size
+EFFECTIVE_BATCH_ACTUAL=$(( BATCH_SIZE * NUM_BATCHES_TO_ACCUMULATE ))
+if [ "$EFFECTIVE_BATCH_ACTUAL" -ne "$EFFECTIVE_BATCH" ]; then
+    NUM_BATCHES_TO_ACCUMULATE=$(( (EFFECTIVE_BATCH + BATCH_SIZE - 1) / BATCH_SIZE ))
+    EFFECTIVE_BATCH_ACTUAL=$(( BATCH_SIZE * NUM_BATCHES_TO_ACCUMULATE ))
+fi
+echo -e "${GREEN}Dynamic batch: batch_size=${BATCH_SIZE}, accumulate=${NUM_BATCHES_TO_ACCUMULATE} ⇒ effective_batch=${EFFECTIVE_BATCH_ACTUAL}${NC}"
+if [ "$ENABLE_VIEWER" = true ]; then
+    echo -e "${GREEN}🖥️  Viewer: ENABLED (slower training, visual feedback)${NC}"
+else
+    echo -e "${YELLOW}⚡ Viewer: DISABLED (maximum performance, prevents Isaac Gym conflicts)${NC}"
+fi
+
+if [ "$ENABLE_GIFS" = true ]; then
+    echo -e "${GREEN}📹 GIF Saving: ENABLED (drone + static camera episodes saved as GIFs)${NC}"
+else
+    echo -e "${YELLOW}⚡ GIF Saving: DISABLED (faster training, no GIF generation)${NC}"
+fi
+
+# Echo gate size ablation flags if provided
+if [ -n "$DISABLE_GATE_SIZE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Gate size randomization disabled flag: ${DISABLE_GATE_SIZE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$FIXED_GATE_SCALE_PERCENT" ]; then
+    echo -e "${YELLOW}Fixed gate scale percent: ${FIXED_GATE_SCALE_PERCENT}${NC}"
+fi
+if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Obstacle randomization disabled flag: ${DISABLE_OBSTACLE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
+    echo -e "${YELLOW}Fixed obstacles behind gate: ${FIXED_OBSTACLES_BEHIND_GATE}${NC}"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Static camera orientation randomization disabled flag: ${DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Camera noise randomization disabled flag: ${DISABLE_CAMERA_NOISE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}DRONE camera noise disabled override: ${DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}STATIC camera noise disabled override: ${DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Camera frame dropout randomization disabled flag: ${DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}State noise randomization disabled flag: ${DISABLE_STATE_NOISE_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_SPAWN_POSITION_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Spawn POSITION randomization disabled flag: ${DISABLE_SPAWN_POSITION_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION" ]; then
+    echo -e "${YELLOW}Spawn ORIENTATION randomization disabled flag: ${DISABLE_SPAWN_ORIENTATION_RANDOMIZATION}${NC}"
+fi
+if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
+    echo -e "${YELLOW}Curriculum multiplier disabled flag: ${DISABLE_CURRICULUM_MULTIPLIER}${NC}"
+fi
+if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
+    echo -e "${YELLOW}Force curriculum level: ${FORCE_CURRICULUM_LEVEL}${NC}"
+fi
+if [ -n "$DISABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    echo -e "${YELLOW}Disable dynamic camera following flag: ${DISABLE_DYNAMIC_CAMERA_FOLLOWING}${NC}"
+fi
+if [ -n "$ENABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    echo -e "${YELLOW}Enable dynamic camera following override: ${ENABLE_DYNAMIC_CAMERA_FOLLOWING}${NC}"
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_YAW_SWEEP" ]; then
+    echo -e "${YELLOW}Static camera yaw sweep: ${ENABLE_STATIC_CAMERA_YAW_SWEEP}${NC}"
+fi
+if [ -n "$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG" ]; then
+    echo -e "${YELLOW}Static camera yaw sweep speed (deg/s): ${STATIC_CAMERA_YAW_SWEEP_SPEED_DEG}${NC}"
+fi
+echo ""
+echo -e "${YELLOW}Using fresh experiment name: ${EXPERIMENT_NAME}${NC}"
+echo -e "${YELLOW}This ensures no configuration conflicts with previous runs${NC}"
+echo ""
+
+
+# Function to cleanup background processes
+cleanup() {
+    echo -e "\n${YELLOW}Cleaning up background processes...${NC}"
+    if [[ ! -z $GPU_MONITOR_PID ]]; then
+        kill $GPU_MONITOR_PID 2>/dev/null || true
+        wait $GPU_MONITOR_PID 2>/dev/null || true
+        echo -e "${GREEN}GPU monitoring stopped${NC}"
+    fi
+}
+
+# Set trap to cleanup on script exit
+trap cleanup EXIT
+
+if [ "${ENABLE_GPU_MONITORING:-false}" = true ]; then
+    echo -e "${YELLOW}GPU Monitoring Interval: ${GPU_MONITOR_INTERVAL}s${NC}"
+    echo -e "${YELLOW}GPU Log File: ${GPU_LOG_FILE}${NC}"
+
+    # Create logs directory
+    mkdir -p ../../../logs
+
+    # Check if nvidia-smi is available
+    if ! command -v nvidia-smi &> /dev/null; then
+        echo -e "${RED}Error: nvidia-smi not found. GPU monitoring will not work.${NC}"
+        exit 1
+    fi
+
+    # Start GPU monitoring in background
+    echo -e "${GREEN}Starting GPU monitoring...${NC}"
+    python ../../../logs/monitor_gpu.py --interval $GPU_MONITOR_INTERVAL --output "$GPU_LOG_FILE" &
+    GPU_MONITOR_PID=$!
+
+    # Give GPU monitor time to start
+    sleep 2
+
+    # Check if GPU monitor is running
+    if ! kill -0 $GPU_MONITOR_PID 2>/dev/null; then
+        echo -e "${RED}Error: Failed to start GPU monitoring${NC}"
+        exit 1
+    fi
+
+    echo -e "${GREEN}GPU monitoring started (PID: $GPU_MONITOR_PID)${NC}"
+    echo -e "${BLUE}Monitor GPU usage in real-time: ${NC}watch -n 1 nvidia-smi"
+    echo ""
+    echo "================================================================================"
+    echo ""
+fi
+
+# Display current GPU status
+if [ "${ENABLE_GPU_MONITORING:-false}" = true ]; then
+python - <<'PY'
+import subprocess
+import time
+
+def show_gpu_status():
+    try:
+        result = subprocess.run(
+            ['nvidia-smi', '--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw', '--format=csv,nounits,noheader'],
+            capture_output=True, text=True, check=True
+        )
+        lines = result.stdout.strip().split('\n')
+        print(f'[{time.strftime("%H:%M:%S")}] GPU Status:')
+        print('-' * 80)
+        for i, line in enumerate(lines):
+            name, util, mem_used, mem_total, temp, power = line.split(', ')
+            mem_used_mb = int(mem_used)
+            mem_total_mb = int(mem_total)
+            mem_used_gb = mem_used_mb / 1024
+            mem_total_gb = int(mem_total_mb / 1024)
+            mem_percent = (mem_used_mb / mem_total_mb) * 100
+
+            print(f'GPU {i} ({name}):')
+            print(f'  VRAM: {mem_used_mb}MB/{mem_total_gb:.1f}GB ({mem_percent:.1f}%)')
+            print(f'  Utilization: {util}%')
+            print(f'  Temperature: {temp}°C')
+            print(f'  Power: {power}W')
+
+            # Visual VRAM bar
+            bar_length = 40
+            filled = int((mem_percent / 100) * bar_length)
+            bar = '█' * filled + '░' * (bar_length - filled)
+            print(f'  VRAM: [{bar}] {mem_percent:.1f}%')
+    except Exception as e:
+        print('Could not get GPU status:', e)
+
+show_gpu_status()
+PY
+fi
+
+# Clear existing training directory for fresh start
+echo -e "${YELLOW}Skipping deletion of ./train_dir to preserve previous experiments${NC}"
+
+# Clear GPU cache before training
+echo -e "${YELLOW}Clearing GPU cache...${NC}"
+python -c "import torch; torch.cuda.empty_cache(); print('GPU cache cleared')"
+
+# Export environment variables for Sample Factory training
+export SF_ENV_AGENTS=${ENV_AGENTS}
+echo -e "${GREEN}Set SF_ENV_AGENTS=${ENV_AGENTS} environment variable for all processes (${PAR_LABEL})${NC}"
+
+# Export gate-size ablation flags so worker subprocesses inherit them
+if [ -n "$DISABLE_GATE_SIZE_RANDOMIZATION" ]; then
+    export SF_DISABLE_GATE_SIZE_RANDOMIZATION=$DISABLE_GATE_SIZE_RANDOMIZATION
+fi
+if [ -n "$FIXED_GATE_SCALE_PERCENT" ]; then
+    export SF_FIXED_GATE_SCALE_PERCENT=$FIXED_GATE_SCALE_PERCENT
+fi
+if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
+    export SF_DISABLE_OBSTACLE_RANDOMIZATION=$DISABLE_OBSTACLE_RANDOMIZATION
+fi
+if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
+    export SF_FIXED_OBSTACLES_BEHIND_GATE=$FIXED_OBSTACLES_BEHIND_GATE
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION" ]; then
+    export SF_DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION=$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION
+fi
+if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_CAMERA_NOISE_RANDOMIZATION=$DISABLE_CAMERA_NOISE_RANDOMIZATION
+fi
+if [ -n "$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION=$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION=$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION
+fi
+if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
+    export SF_DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION=$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION
+fi
+if [ -n "$DISABLE_DRONE_CAMERA_FRAME_DROPOUT" ]; then
+    export SF_DISABLE_DRONE_CAMERA_FRAME_DROPOUT=$DISABLE_DRONE_CAMERA_FRAME_DROPOUT
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_FRAME_DROPOUT" ]; then
+    export SF_DISABLE_STATIC_CAMERA_FRAME_DROPOUT=$DISABLE_STATIC_CAMERA_FRAME_DROPOUT
+fi
+if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
+    export SF_DISABLE_STATE_NOISE_RANDOMIZATION=$DISABLE_STATE_NOISE_RANDOMIZATION
+fi
+if [ -n "$DISABLE_SPAWN_POSITION_RANDOMIZATION" ]; then
+    export SF_DISABLE_SPAWN_POSITION_RANDOMIZATION=$DISABLE_SPAWN_POSITION_RANDOMIZATION
+fi
+if [ -n "$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION" ]; then
+    export SF_DISABLE_SPAWN_ORIENTATION_RANDOMIZATION=$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION
+fi
+if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
+    export SF_DISABLE_CURRICULUM_MULTIPLIER=$DISABLE_CURRICULUM_MULTIPLIER
+fi
+if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
+    export SF_FORCE_CURRICULUM_LEVEL=$FORCE_CURRICULUM_LEVEL
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_YAW_SWEEP" ]; then
+    export SF_ENABLE_STATIC_CAMERA_YAW_SWEEP=$ENABLE_STATIC_CAMERA_YAW_SWEEP
+fi
+if [ -n "$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG" ]; then
+    export SF_STATIC_CAMERA_YAW_SWEEP_SPEED_DEG=$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_ARC_FOLLOW" ]; then
+    export SF_ENABLE_STATIC_CAMERA_ARC_FOLLOW=$ENABLE_STATIC_CAMERA_ARC_FOLLOW
+fi
+if [ -n "$STATIC_CAMERA_ARC_RADIUS_M" ]; then
+    export SF_STATIC_CAMERA_ARC_RADIUS_M=$STATIC_CAMERA_ARC_RADIUS_M
+fi
+if [ -n "$STATIC_CAMERA_BASE_Y" ]; then
+    export SF_STATIC_CAMERA_BASE_Y=$STATIC_CAMERA_BASE_Y
+fi
+if [ -n "$STATIC_CAMERA_BASE_Z" ]; then
+    export SF_STATIC_CAMERA_BASE_Z=$STATIC_CAMERA_BASE_Z
+fi
+if [ -n "$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M" ]; then
+    export SF_DYNAMIC_CAMERA_FOLLOW_OFFSET_Y=$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M
+fi
+if [ -n "$ENABLE_STATIC_FOV_REWARD" ]; then
+    export SF_ENABLE_STATIC_FOV_REWARD=$ENABLE_STATIC_FOV_REWARD
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_LOCKED" ]; then
+    export SF_STATIC_CAMERA_LOCKED_FOLLOW=$ENABLE_STATIC_CAMERA_LOCKED
+fi
+
+# Export headless setting for both main process and worker processes
+if [ "$ENABLE_VIEWER" = true ]; then
+    export SF_HEADLESS=false
+    echo -e "${GREEN}Set SF_HEADLESS=false environment variable for viewer mode${NC}"
+else
+    export SF_HEADLESS=true
+    echo -e "${YELLOW}Set SF_HEADLESS=true environment variable for headless mode${NC}"
+fi
+
+echo -e "${GREEN}Starting Gate Navigation training...${NC}"
+echo -e "${GREEN}CRITICAL: Using shared VAE model to prevent GPU memory overflow${NC}"
+if [ "$ENABLE_VIEWER" = true ]; then
+    echo -e "${GREEN}Training with visualization enabled${NC}"
+else
+    echo -e "${YELLOW}Training in headless mode for maximum performance and Isaac Gym compatibility${NC}"
+fi
+
+# Build training command with proper headless parameter
+TRAIN_CMD="python train_aerialgym_custom_net_gate.py \
+    --env=quad_with_obstacles_gate \
+    --experiment=\"${EXPERIMENT_NAME}\" \
+    --train_dir=./train_dir \
+    --num_workers=1 \
+    --num_envs_per_worker=1 \
+    --env_agents=${ENV_AGENTS} \
+    --obs_key=\"observations\" \
+    --batch_size=${BATCH_SIZE} \
+    --num_batches_to_accumulate=${NUM_BATCHES_TO_ACCUMULATE} \
+    --num_batches_per_epoch=8 \
+    --num_epochs=4 \
+    --rollout=32 \
+    --learning_rate=0.0003 \
+    --use_rnn=true \
+    --rnn_size=64 \
+    --rnn_num_layers=1 \
+    --encoder_mlp_layers 512 256 64 \
+    --gamma=0.98 \
+    --reward_scale=0.1 \
+    --max_grad_norm=1.0 \
+    --normalize_input=true \
+    --use_env_info_cache=false \
+    --with_wandb=true \
+    --wandb_project=\"final_training_gate\" \
+    --wandb_user=\"ziya-ruso-ucl\" \
+    --wandb_group=\"gate_navigation_training\" \
+    --wandb_tags \"aerial_gym\" \"gate_navigation\" \"dual_camera\" \"x500\" \"sample_factory\" \"memory_optimized\" \
+    --save_every_sec=1800 \
+    --save_best_every_sec=500 \
+    --train_for_env_steps=${TRAIN_STEPS} \
+    --train_for_seconds=0 \
+    --async_rl=${ASYNC_RL} \
+    --serial_mode=true \
+    --policy_workers_per_policy=1 ${EXTRA_ARGS}"
+
+# Append seed if provided
+if [ -n "$SEED_VAL" ]; then
+    TRAIN_CMD="$TRAIN_CMD --seed=$SEED_VAL"
+fi
+
+# Add headless parameter based on viewer preference
+if [ "$ENABLE_VIEWER" = false ]; then
+    TRAIN_CMD="$TRAIN_CMD --headless=true"
+else
+    TRAIN_CMD="$TRAIN_CMD --headless=false"
+fi
+
+# Add GIF saving parameter if requested
+if [ "$ENABLE_GIFS" = true ]; then
+    TRAIN_CMD="$TRAIN_CMD --save_gifs=true"
+fi
+
+# Add gradient monitoring only when explicitly enabled
+if [ "${ENABLE_GRADIENT_MONITORING:-false}" = true ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_gradient_monitoring=true --gradient_log_interval=${GRADIENT_LOG_INTERVAL:-1000} --gradient_print_interval=${GRADIENT_PRINT_INTERVAL:-0}"
+fi
+
+# Add gate size ablation flags if provided
+if [ -n "$DISABLE_GATE_SIZE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_gate_size_randomization=$DISABLE_GATE_SIZE_RANDOMIZATION"
+fi
+if [ -n "$FIXED_GATE_SCALE_PERCENT" ]; then
+    TRAIN_CMD="$TRAIN_CMD --fixed_gate_scale_percent=$FIXED_GATE_SCALE_PERCENT"
+fi
+if [ -n "$DISABLE_OBSTACLE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_obstacle_randomization=$DISABLE_OBSTACLE_RANDOMIZATION"
+fi
+if [ -n "$FIXED_OBSTACLES_BEHIND_GATE" ]; then
+    TRAIN_CMD="$TRAIN_CMD --fixed_obstacles_behind_gate=$FIXED_OBSTACLES_BEHIND_GATE"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_static_camera_orientation_randomization=$DISABLE_STATIC_CAMERA_ORIENT_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_camera_noise_randomization=$DISABLE_CAMERA_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_camera_frame_dropout_randomization=$DISABLE_CAMERA_FRAME_DROPOUT_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_drone_camera_noise_randomization=$DISABLE_DRONE_CAMERA_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_static_camera_noise_randomization=$DISABLE_STATIC_CAMERA_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_DRONE_CAMERA_FRAME_DROPOUT" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_drone_camera_frame_dropout=$DISABLE_DRONE_CAMERA_FRAME_DROPOUT"
+fi
+if [ -n "$DISABLE_STATIC_CAMERA_FRAME_DROPOUT" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_static_camera_frame_dropout=$DISABLE_STATIC_CAMERA_FRAME_DROPOUT"
+fi
+if [ -n "$DISABLE_STATE_NOISE_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_state_noise_randomization=$DISABLE_STATE_NOISE_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_SPAWN_POSITION_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_spawn_position_randomization=$DISABLE_SPAWN_POSITION_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_spawn_orientation_randomization=$DISABLE_SPAWN_ORIENTATION_RANDOMIZATION"
+fi
+if [ -n "$DISABLE_CURRICULUM_MULTIPLIER" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_curriculum_multiplier=$DISABLE_CURRICULUM_MULTIPLIER"
+fi
+if [ -n "$FORCE_CURRICULUM_LEVEL" ]; then
+    TRAIN_CMD="$TRAIN_CMD --force_curriculum_level=$FORCE_CURRICULUM_LEVEL"
+fi
+if [ -n "$DISABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    TRAIN_CMD="$TRAIN_CMD --disable_dynamic_camera_following=$DISABLE_DYNAMIC_CAMERA_FOLLOWING"
+fi
+if [ -n "$ENABLE_DYNAMIC_CAMERA_FOLLOWING" ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_dynamic_camera_following=$ENABLE_DYNAMIC_CAMERA_FOLLOWING"
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_YAW_SWEEP" ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_static_camera_yaw_sweep=$ENABLE_STATIC_CAMERA_YAW_SWEEP"
+fi
+if [ -n "$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_yaw_sweep_speed_deg=$STATIC_CAMERA_YAW_SWEEP_SPEED_DEG"
+fi
+if [ -n "$STATIC_CAMERA_BASE_Y" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_base_y=$STATIC_CAMERA_BASE_Y"
+fi
+if [ -n "$STATIC_CAMERA_BASE_Z" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_base_z=$STATIC_CAMERA_BASE_Z"
+fi
+if [ -n "$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M" ]; then
+    TRAIN_CMD="$TRAIN_CMD --dynamic_camera_follow_y_offset_m=$DYNAMIC_CAMERA_FOLLOW_Y_OFFSET_M"
+fi
+if [ -n "$ENABLE_STATIC_CAMERA_ARC_FOLLOW" ]; then
+    TRAIN_CMD="$TRAIN_CMD --enable_static_camera_arc_follow=$ENABLE_STATIC_CAMERA_ARC_FOLLOW"
+fi
+if [ -n "$STATIC_CAMERA_ARC_RADIUS_M" ]; then
+    TRAIN_CMD="$TRAIN_CMD --static_camera_arc_radius_m=$STATIC_CAMERA_ARC_RADIUS_M"
+fi
+
+# Add fusion flags if provided
+if [ -n "$FUSION" ]; then
+    TRAIN_CMD="$TRAIN_CMD --fusion=$FUSION"
+fi
+if [ -n "$GATE_PER_FEATURE" ]; then
+    TRAIN_CMD="$TRAIN_CMD --gate_per_feature=$GATE_PER_FEATURE"
+fi
+
+echo -e "${YELLOW}Training command:${NC}"
+echo "$TRAIN_CMD"
+echo ""
+
+# Run training with error handling
+if eval $TRAIN_CMD; then
+    echo -e "\n${GREEN}✓ Training completed successfully!${NC}"
+    echo -e "${BLUE}GPU usage log saved to: $GPU_LOG_FILE${NC}"
+    echo -e "${GREEN}Check wandb for training metrics and curves${NC}"
+else
+    echo -e "\n${RED}❌ Training failed or was interrupted${NC}"
+    echo -e "${BLUE}GPU usage log saved to: $GPU_LOG_FILE${NC}"
+    echo -e "${RED}Check the log for CUDA memory issues - optimization may need further tuning${NC}"
+    exit 1
+fi
+
+echo -e "\n${GREEN}All processes completed successfully${NC}"

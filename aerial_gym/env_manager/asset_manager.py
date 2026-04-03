@@ -1,17 +1,25 @@
-from typing import Any
-from aerial_gym.utils.math import *
+from __future__ import annotations
+
+import torch
 
 from aerial_gym.utils.logging import CustomLogger
+from aerial_gym.utils.math import (
+    quat_from_euler_xyz_tensor,
+    torch_interpolate_ratio,
+    torch_rand_float_tensor,
+)
 
 logger = CustomLogger("asset_manager")
 logger.setLevel("DEBUG")
 
 
 class AssetManager:
-    def __init__(self, global_tensor_dict, num_keep_in_env):
+    def __init__(self, global_tensor_dict: dict[str, torch.Tensor], num_keep_in_env: int) -> None:
         self.init_tensors(global_tensor_dict, num_keep_in_env)
 
-    def init_tensors(self, global_tensor_dict, num_keep_in_env):
+    def init_tensors(
+        self, global_tensor_dict: dict[str, torch.Tensor], num_keep_in_env: int
+    ) -> None:
         self.env_asset_state_tensor = global_tensor_dict["env_asset_state_tensor"]
         self.asset_min_state_ratio = global_tensor_dict["asset_min_state_ratio"]
         self.asset_max_state_ratio = global_tensor_dict["asset_max_state_ratio"]
@@ -27,28 +35,23 @@ class AssetManager:
         )
         self.num_keep_in_env = num_keep_in_env
 
-    def prepare_for_sim(self):
+    def prepare_for_sim(self) -> None:
         self.reset(self.num_keep_in_env)
         logger.warning(f"Number of obstacles to be kept in the environment: {self.num_keep_in_env}")
 
-    def pre_physics_step(self, actions):
+    def pre_physics_step(self, actions: torch.Tensor) -> None:
         pass
 
-    def post_physics_step(self):
+    def post_physics_step(self) -> None:
         pass
 
-    def step(self, actions):
+    def step(self, actions: object) -> None:
         pass
-        # Implement this function if needed.
-        # this functionality can do speciic things with the environment assets on stepping.
-        # nothing really needs to be done for static environments.
-        # if force needs to be applied, it should be done in the other classes and it's
-        # better to leave this class to manipulate the state tensors.
 
-    def reset(self, num_obstacles_per_env):
+    def reset(self, num_obstacles_per_env: int) -> None:
         self.reset_idx(torch.arange(self.env_asset_state_tensor.shape[0]), num_obstacles_per_env)
 
-    def reset_idx(self, env_ids, num_obstacles_per_env=0):
+    def reset_idx(self, env_ids: torch.Tensor, num_obstacles_per_env: int = 0) -> None:
         if num_obstacles_per_env < self.num_keep_in_env:
             logger.info(
                 "Number of obstacles required in the environment by the \
@@ -67,5 +70,7 @@ class AssetManager:
         self.env_asset_state_tensor[env_ids, :, 3:7] = quat_from_euler_xyz_tensor(
             sampled_asset_state_ratio[env_ids, :, 3:6]
         )
-        # put those obstacles not needed in the environment outside
-        self.env_asset_state_tensor[env_ids, num_obstacles_per_env:, 0:3] = -1000.0
+
+        env_list: list[int] = env_ids.tolist()
+        for eid in env_list:
+            self.env_asset_state_tensor[eid, num_obstacles_per_env:, 0:3] = -1000.0

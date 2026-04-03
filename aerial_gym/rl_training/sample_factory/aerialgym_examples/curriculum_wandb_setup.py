@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 """
 Curriculum Learning WandB Setup Utility
 ========================================
@@ -16,22 +18,20 @@ Features:
 - Provides curriculum learning insights and recommendations
 """
 
-import wandb
 import argparse
-import time
-from typing import Dict, List, Optional
+from typing import List
 
 
 class CurriculumWandBSetup:
     """Utility class for setting up comprehensive curriculum learning tracking in WandB"""
-    
+
     def __init__(self, project_name: str, entity: str):
         self.project_name = project_name
         self.entity = entity
-        
-    def create_curriculum_dashboard(self):
+
+    def create_curriculum_dashboard(self) -> None:
         """Create a custom WandB dashboard for curriculum learning monitoring"""
-        
+
         # Dashboard configuration
         dashboard_config = {
             "displayName": "Curriculum Learning Monitor",
@@ -46,15 +46,15 @@ class CurriculumWandBSetup:
                             "query": {
                                 "metrics": ["curriculum/current_level"],
                                 "groupBy": [],
-                            }
+                            },
                         },
                         {
                             "title": "Curriculum Progress Fraction",
-                            "type": "line", 
+                            "type": "line",
                             "query": {
                                 "metrics": ["curriculum/current_progress"],
                                 "groupBy": [],
-                            }
+                            },
                         },
                         {
                             "title": "Curriculum Progression Rate",
@@ -62,9 +62,9 @@ class CurriculumWandBSetup:
                             "query": {
                                 "metrics": ["curriculum/progression_rate"],
                                 "groupBy": [],
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 },
                 {
                     "name": "Performance Metrics",
@@ -75,15 +75,18 @@ class CurriculumWandBSetup:
                             "query": {
                                 "metrics": ["curriculum/success_rate", "curriculum/current_level"],
                                 "groupBy": [],
-                            }
+                            },
                         },
                         {
                             "title": "Success Rate Moving Average",
                             "type": "line",
                             "query": {
-                                "metrics": ["curriculum/success_rate", "curriculum/success_rate_ma5"],
+                                "metrics": [
+                                    "curriculum/success_rate",
+                                    "curriculum/success_rate_ma5",
+                                ],
                                 "groupBy": [],
-                            }
+                            },
                         },
                         {
                             "title": "Crash vs Timeout Rates",
@@ -91,9 +94,9 @@ class CurriculumWandBSetup:
                             "query": {
                                 "metrics": ["curriculum/crash_rate", "curriculum/timeout_rate"],
                                 "groupBy": [],
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 },
                 {
                     "name": "Cumulative Statistics",
@@ -102,74 +105,74 @@ class CurriculumWandBSetup:
                             "title": "Total Episodes by Type",
                             "type": "bar",
                             "query": {
-                                "metrics": ["curriculum/total_successes", "curriculum/total_crashes", "curriculum/total_timeouts"],
+                                "metrics": [
+                                    "curriculum/total_successes",
+                                    "curriculum/total_crashes",
+                                    "curriculum/total_timeouts",
+                                ],
                                 "groupBy": [],
-                            }
+                            },
                         }
-                    ]
-                }
-            ]
+                    ],
+                },
+            ],
         }
-        
+
         print("Creating curriculum learning dashboard...")
         print("Dashboard configuration created. Apply this manually in WandB UI for now.")
         print(f"Dashboard config: {dashboard_config}")
-        
-    def setup_curriculum_alerts(self):
+
+    def setup_curriculum_alerts(self) -> None:
         """Set up automated alerts for curriculum learning monitoring"""
-        
+
         alert_configs = [
             {
                 "name": "Curriculum Stalling Alert",
                 "condition": "curriculum/progression_rate < 0.01 for 1000 steps",
                 "description": "Alert when curriculum progression stalls",
-                "action": "Send notification when curriculum learning plateaus"
+                "action": "Send notification when curriculum learning plateaus",
             },
             {
-                "name": "Low Success Rate Alert", 
+                "name": "Low Success Rate Alert",
                 "condition": "curriculum/success_rate < 0.3 for 500 steps",
                 "description": "Alert when success rate drops too low",
-                "action": "Send notification when performance degrades significantly"
+                "action": "Send notification when performance degrades significantly",
             },
             {
                 "name": "Curriculum Milestone Achievement",
                 "condition": "curriculum/current_level % 5 == 0",
                 "description": "Celebrate curriculum milestones",
-                "action": "Send congratulatory message for curriculum progress"
-            }
+                "action": "Send congratulatory message for curriculum progress",
+            },
         ]
-        
+
         print("\nSetting up curriculum learning alerts...")
         for alert in alert_configs:
             print(f"- {alert['name']}: {alert['description']}")
-        
+
         print("\nNote: Set up these alerts manually in WandB UI using the conditions above.")
-        
+
     def generate_curriculum_analysis_queries(self) -> List[str]:
         """Generate useful WandB queries for curriculum analysis"""
-        
+
         queries = [
             # Performance analysis by curriculum level
             "SELECT curriculum/success_rate, curriculum/crash_rate GROUP BY curriculum/current_level",
-            
             # Curriculum progression efficiency
             "SELECT curriculum/current_level, curriculum/progression_rate WHERE curriculum/progression_rate > 0",
-            
             # Success rate trend analysis
             "SELECT curriculum/success_rate_ma5, curriculum/current_level ORDER BY _step",
-            
             # Milestone achievement tracking
             "SELECT curriculum/milestone_level, curriculum/milestone_success_rate, curriculum/milestone_step",
-            
             # Performance correlation with training progress
             "SELECT curriculum/success_rate, reward, curriculum/current_level",
         ]
-        
+
         return queries
-        
-    def print_setup_instructions(self):
+
+    def print_setup_instructions(self) -> None:
         """Print comprehensive setup instructions for curriculum tracking"""
-        
+
         instructions = """
 🚀 CURRICULUM LEARNING WANDB SETUP COMPLETE!
 ============================================
@@ -182,7 +185,7 @@ class CurriculumWandBSetup:
 
 📈 KEY METRICS TO TRACK:
 - curriculum/current_level: Monitor curriculum progression
-- curriculum/success_rate: Track learning performance  
+- curriculum/success_rate: Track learning performance
 - curriculum/progression_rate: Measure learning efficiency
 - curriculum/success_rate_ma5: Smooth success rate trends
 
@@ -205,39 +208,39 @@ class CurriculumWandBSetup:
 
 Happy curriculum learning! 🎯
         """
-        
+
         print(instructions)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Set up WandB curriculum learning tracking")
     parser.add_argument("--project", required=True, help="WandB project name")
     parser.add_argument("--entity", required=True, help="WandB entity name")
-    
+
     args = parser.parse_args()
-    
+
     # Initialize curriculum setup
     curriculum_setup = CurriculumWandBSetup(args.project, args.entity)
-    
+
     print(f"Setting up curriculum learning tracking for project: {args.project}")
     print(f"Entity: {args.entity}")
-    print("="*60)
-    
+    print("=" * 60)
+
     # Create dashboard configuration
     curriculum_setup.create_curriculum_dashboard()
-    
+
     # Setup alerts
     curriculum_setup.setup_curriculum_alerts()
-    
+
     # Generate analysis queries
     queries = curriculum_setup.generate_curriculum_analysis_queries()
-    print(f"\n📊 USEFUL ANALYSIS QUERIES:")
+    print("\n📊 USEFUL ANALYSIS QUERIES:")
     for i, query in enumerate(queries, 1):
         print(f"{i}. {query}")
-    
+
     # Print setup instructions
     curriculum_setup.print_setup_instructions()
 
 
 if __name__ == "__main__":
-    main() 
+    main()

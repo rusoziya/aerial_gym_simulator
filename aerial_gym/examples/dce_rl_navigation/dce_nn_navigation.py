@@ -1,32 +1,24 @@
+from __future__ import annotations
+
 import time
-import isaacgym
 
 # isort: on
 import torch
+
+from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
+from aerial_gym.examples.dce_rl_navigation.sf_inference_class import NN_Inference_Class
+from aerial_gym.registry.task_registry import task_registry
 from aerial_gym.rl_training.sample_factory.aerialgym_examples.train_aerialgym_custom_net import (
     parse_aerialgym_cfg,
 )
 from aerial_gym.utils import get_args
-from aerial_gym.registry.task_registry import task_registry
 
 
-from aerial_gym.examples.dce_rl_navigation.dce_navigation_task import DCE_RL_Navigation_Task
-from aerial_gym.examples.dce_rl_navigation.sf_inference_class import NN_Inference_Class
-
-import matplotlib
-import numpy as np
-from PIL import Image
-
-
-def sample_command(args):
+def sample_command(args) -> None:
     use_warp = True
     # Enable viewing by default for inference - user can override with --headless
-    headless = getattr(args, 'headless', False)  # Default to False (viewing enabled)
+    headless: bool = args.headless if args.headless is not None else False
     print(f"DCE Inference - Headless mode: {headless}")
-    
-    # seg_frames = []
-    # depth_frames = []
-    # merged_image_frames = []
 
     rl_task = task_registry.make_task(
         "dce_navigation_task", seed=42, use_warp=use_warp, headless=headless
@@ -45,9 +37,7 @@ def sample_command(args):
         obs, rewards, termination, truncation, infos = rl_task.step(command_actions)
 
         obs["obs"] = obs["observations"]
-        # print(obs["observations"].shape)
         action = nn_model.get_action(obs)
-        # print("Action", action, action.shape)
         action = torch.tensor(action).expand(rl_task.num_envs, -1)
         command_actions[:] = action
 
@@ -60,65 +50,9 @@ def sample_command(args):
             print(f"Resetting environments {truncated_envs} due to Timeout")
         nn_model.reset(reset_ids)
 
-    # # Uncomment the below lines to save the frames from an episode as a GIF
-    #     # save obs to file as a .gif
-    #     image1 = (
-    #         255.0 * rl_task.obs_dict["depth_range_pixels"][0, 0].cpu().numpy()
-    #     ).astype(np.uint8)
-    #     seg_image1 = rl_task.obs_dict["segmentation_pixels"][0, 0].cpu().numpy()
-    #     seg_image1[seg_image1 <= 0] = seg_image1[seg_image1 > 0].min()
-    #     seg_image1_normalized = (seg_image1 - seg_image1.min()) / (
-    #         seg_image1.max() - seg_image1.min()
-    #     )
 
-    #     # set colormap to plasma in matplotlib
-    #     seg_image1_normalized_plasma = matplotlib.cm.plasma(seg_image1_normalized)
-    #     seg_image1 = Image.fromarray((seg_image1_normalized_plasma * 255.0).astype(np.uint8))
-
-    #     depth_image1 = Image.fromarray(image1)
-    #     image_4d = np.zeros((image1.shape[0], image1.shape[1], 4))
-    #     image_4d[:, :, 0] = image1
-    #     image_4d[:, :, 1] = image1
-    #     image_4d[:, :, 2] = image1
-    #     image_4d[:, :, 3] = 255.0
-    #     merged_image = np.concatenate((image_4d, seg_image1_normalized_plasma * 255.0), axis=0)
-    #     # save frames to array:
-    #     seg_frames.append(seg_image1)
-    #     depth_frames.append(depth_image1)
-    #     merged_image_frames.append(Image.fromarray(merged_image.astype(np.uint8)))
-    # if termination[0] or truncation[0]:
-    #     print("i", i)
-    #     rl_task.reset()
-    #     # save frames as a gif:
-    #     seg_frames[0].save(
-    #         f"seg_frames_{i}.gif",
-    #         save_all=True,
-    #         append_images=seg_frames[1:],
-    #         duration=100,
-    #         loop=0,
-    #     )
-    #     depth_frames[0].save(
-    #         f"depth_frames_{i}.gif",
-    #         save_all=True,
-    #         append_images=depth_frames[1:],
-    #         duration=100,
-    #         loop=0,
-    #     )
-    #     merged_image_frames[0].save(
-    #         f"merged_image_frames_{i}.gif",
-    #         save_all=True,
-    #         append_images=merged_image_frames[1:],
-    #         duration=100,
-    #         loop=0,
-    #     )
-    #     seg_frames = []
-    #     depth_frames = []
-    #     merged_image_frames = []
-
-
-def get_network(num_envs):
+def get_network(num_envs) -> None:
     """Script entry point."""
-    # register_aerialgym_custom_components()
     cfg = parse_aerialgym_cfg(evaluation=True)
     print("CFG is:", cfg)
     nn_model = NN_Inference_Class(num_envs, 3, 81, cfg)

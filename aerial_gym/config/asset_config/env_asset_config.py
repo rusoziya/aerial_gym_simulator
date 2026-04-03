@@ -1,11 +1,40 @@
-from aerial_gym.config.asset_config.base_asset import *
+from __future__ import annotations
 
 import numpy as np
+
+from aerial_gym.config.asset_config.base_asset import *
 
 THIN_SEMANTIC_ID = 1
 TREE_SEMANTIC_ID = 2
 OBJECT_SEMANTIC_ID = 3
 WALL_SEMANTIC_ID = 8
+
+
+def _make_wall_class(
+    name: str,
+    urdf_file: str,
+    position: list[float],
+    has_collision_mask: bool = True,
+    has_per_link_semantic: bool = True,
+) -> type:
+    """Generate a wall config class with the given position and URDF."""
+    state_ratio = position + [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    attrs = {
+        "num_assets": 1,
+        "asset_folder": f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/walls",
+        "file": urdf_file,
+        "min_state_ratio": state_ratio,
+        "max_state_ratio": state_ratio,
+        "keep_in_env": True,
+        "collapse_fixed_joints": True,
+        "semantic_id": -1,
+        "color": [100, 200, 210],
+    }
+    if has_collision_mask:
+        attrs["collision_mask"] = 1
+    if has_per_link_semantic:
+        attrs["per_link_semantic"] = True
+    return type(name, (BaseAssetParams,), attrs)
 
 
 class EnvObjectConfig:
@@ -194,276 +223,20 @@ class EnvObjectConfig:
 
         # color = [80,255,100]
 
-    class left_wall(BaseAssetParams):
-        num_assets = 1
-
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/walls"
-        file = "left_wall.urdf"
-
-        collision_mask = 1  # objects with the same collision mask will not collide
-
-        min_state_ratio = [
-            0.5,
-            1.0,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-        max_state_ratio = [
-            0.5,
-            1.0,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-
-        keep_in_env = True
-
-        collapse_fixed_joints = True
-        per_link_semantic = True
-        semantic_id = -1  # semantic_id = WALL_SEMANTIC_ID
-        color = [100, 200, 210]
-
-    class right_wall(BaseAssetParams):
-        num_assets = 1
-
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/walls"
-        file = "right_wall.urdf"
-
-        min_state_ratio = [
-            0.5,
-            0.0,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-        max_state_ratio = [
-            0.5,
-            0.0,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-
-        keep_in_env = True
-
-        collapse_fixed_joints = True
-        semantic_id = -1  # semantic_id = WALL_SEMANTIC_ID
-        color = [100, 200, 210]
-
-    class top_wall(BaseAssetParams):
-        num_assets = 1
-
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/walls"
-        file = "top_wall.urdf"
-
-        collision_mask = 1  # objects with the same collision mask will not collide
-
-        min_state_ratio = [
-            0.5,
-            0.5,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-        max_state_ratio = [
-            0.5,
-            0.5,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-
-        keep_in_env = True
-
-        collapse_fixed_joints = True
-        per_link_semantic = True
-        semantic_id = -1  # semantic_id = WALL_SEMANTIC_ID
-        color = [100, 200, 210]
-
-    class bottom_wall(BaseAssetParams):
-        num_assets = 1
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/walls"
-        file = "bottom_wall.urdf"
-
-        collision_mask = 1  # objects with the same collision mask will not collide
-
-        min_state_ratio = [
-            0.5,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-        max_state_ratio = [
-            0.5,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-
-        keep_in_env = True
-
-        collapse_fixed_joints = True
-        per_link_semantic = True
-        semantic_id = -1  # semantic_id = WALL_SEMANTIC_ID
-        color = [100, 150, 150]
-
-    class front_wall(BaseAssetParams):
-        num_assets = 1
-
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/walls"
-        file = "front_wall.urdf"
-
-        collision_mask = 1  # objects with the same collision mask will not collide
-
-        min_state_ratio = [
-            1.0,
-            0.5,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-        max_state_ratio = [
-            1.0,
-            0.5,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-
-        keep_in_env = True
-
-        collapse_fixed_joints = True
-        per_link_semantic = True
-        semantic_id = -1  # semantic_id = WALL_SEMANTIC_ID
-        color = [100, 200, 210]
-
-    class back_wall(BaseAssetParams):
-        num_assets = 1
-
-        asset_folder = f"{AERIAL_GYM_DIRECTORY}/resources/models/environment_assets/walls"
-        file = "back_wall.urdf"
-
-        collision_mask = 1  # objects with the same collision mask will not collide
-
-        min_state_ratio = [
-            0.0,
-            0.5,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-        max_state_ratio = [
-            0.0,
-            0.5,
-            0.5,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-
-        keep_in_env = True
-
-        collapse_fixed_joints = True
-        semantic_id = -1  # semantic_id = WALL_SEMANTIC_ID
-        color = [100, 200, 210]
+    left_wall = _make_wall_class("left_wall", "left_wall.urdf", [0.5, 1.0, 0.5])
+    right_wall = _make_wall_class(
+        "right_wall",
+        "right_wall.urdf",
+        [0.5, 0.0, 0.5],
+        has_collision_mask=False,
+        has_per_link_semantic=False,
+    )
+    top_wall = _make_wall_class("top_wall", "top_wall.urdf", [0.5, 0.5, 1.0])
+    bottom_wall = _make_wall_class("bottom_wall", "bottom_wall.urdf", [0.5, 0.5, 0.0])
+    front_wall = _make_wall_class("front_wall", "front_wall.urdf", [1.0, 0.5, 0.5])
+    back_wall = _make_wall_class(
+        "back_wall", "back_wall.urdf", [0.0, 0.5, 0.5], has_per_link_semantic=False
+    )
 
 
 # Create module-level exports for easier importing

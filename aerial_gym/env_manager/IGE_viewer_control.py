@@ -1,14 +1,13 @@
-from isaacgym import gymapi
-import numpy as np
-
-from aerial_gym.utils.math import quat_from_euler_xyz
+from __future__ import annotations
 
 import sys
-import torch
 import time
 
+import torch
+from isaacgym import gymapi
+
 from aerial_gym.utils.logging import CustomLogger
-from aerial_gym.utils.math import quat_rotate_inverse, quat_rotate
+from aerial_gym.utils.math import quat_from_euler_xyz, quat_rotate
 
 logger = CustomLogger("IGE_viewer_control")
 
@@ -93,20 +92,20 @@ class IGEViewerControl:
 
         self.create_viewer()
 
-    def set_actor_and_env_handles(self, actor_handles, env_handles):
+    def set_actor_and_env_handles(self, actor_handles, env_handles) -> None:
         self.actor_handles = actor_handles
         self.env_handles = env_handles
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict) -> None:
         self.robot_positions = global_tensor_dict["robot_position"]
         self.robot_vehicle_orientations = global_tensor_dict["robot_orientation"]
 
-    def create_viewer(self):
+    def create_viewer(self) -> None:
         """
         Create the camera sensor for the viewer. Set the camera properties and attach it to the reference environment.
         """
         logger.debug("Creating viewer")
-        if self.headless == True:
+        if self.headless:
             logger.warn("Headless mode enabled. Not creating viewer.")
             return
         # subscribe to keyboard shortcuts
@@ -154,7 +153,7 @@ class IGEViewerControl:
 
         return self.viewer
 
-    def handle_keyboard_events(self):
+    def handle_keyboard_events(self) -> None:
         # check for keyboard events
         for evt in self.gym.query_viewer_action_events(self.viewer):
             if evt.action == "QUIT" and evt.value > 0:
@@ -176,32 +175,32 @@ class IGEViewerControl:
             elif evt.action == "sync_frame_time" and evt.value > 0:
                 self.toggle_sync_frame_time()
 
-    def reset_all_envs(self):
+    def reset_all_envs(self) -> None:
         logger.warning("Resetting all environments.")
         self.env_manager.reset()
         self.env_manager.global_tensor_dict["truncations"][:] = 1
 
-    def toggle_sync_frame_time(self):
+    def toggle_sync_frame_time(self) -> None:
         """
         Toggle the sync frame time.
         """
         self.sync_frame_time = not self.sync_frame_time
-        logger.warning("Sync frame time: {}".format(self.sync_frame_time))
+        logger.warning(f"Sync frame time: {self.sync_frame_time}")
 
-    def get_viewer_image(self):
+    def get_viewer_image(self) -> None:
         """
         Get the image from the viewer.
         """
         return self.camera_image_tensor
 
-    def toggle_viewer_sync(self):
+    def toggle_viewer_sync(self) -> None:
         """
         Toggle the viewer sync.
         """
         self.enable_viewer_sync = not self.enable_viewer_sync
-        logger.warning("Viewer sync: {}".format(self.enable_viewer_sync))
+        logger.warning(f"Viewer sync: {self.enable_viewer_sync}")
 
-    def toggle_camera_follow_type(self):
+    def toggle_camera_follow_type(self) -> None:
         """
         Toggle the camera follow mode.
         """
@@ -210,24 +209,24 @@ class IGEViewerControl:
             if self.camera_follow_type == gymapi.FOLLOW_POSITION
             else gymapi.FOLLOW_POSITION
         )
-        logger.warning("Camera follow type: {}".format(self.camera_follow_type))
+        logger.warning(f"Camera follow type: {self.camera_follow_type}")
 
-    def toggle_camera_follow(self):
+    def toggle_camera_follow(self) -> None:
         self.camera_follow = not self.camera_follow
-        logger.warning("Camera follow: {}".format(self.camera_follow))
+        logger.warning(f"Camera follow: {self.camera_follow}")
         self.set_camera_lookat()
 
-    def switch_target_env_up(self):
+    def switch_target_env_up(self) -> None:
         self.current_target_env = (self.current_target_env + 1) % len(self.actor_handles)
-        logger.warning("Switching target environment to: {}".format(self.current_target_env))
+        logger.warning(f"Switching target environment to: {self.current_target_env}")
         self.set_camera_lookat()
 
-    def switch_target_env_down(self):
+    def switch_target_env_down(self) -> None:
         self.current_target_env = (self.current_target_env - 1) % len(self.actor_handles)
-        logger.warning("Switching target environment to: {}".format(self.current_target_env))
+        logger.warning(f"Switching target environment to: {self.current_target_env}")
         self.set_camera_lookat()
 
-    def pause_simulation(self):
+    def pause_simulation(self) -> None:
         self.pause_sim = not self.pause_sim
         logger.warning(
             "Simulation Paused. You can control the viewer at a reduced rate with full keyboard control."
@@ -235,10 +234,9 @@ class IGEViewerControl:
         while self.pause_sim:
             self.render()
             time.sleep(0.1)
-            # self.gym.poll_viewer_events(self.viewer)
         return
 
-    def set_camera_lookat(self, pos=None, quat_or_target=None):
+    def set_camera_lookat(self, pos=None, quat_or_target=None) -> None:
         """
         Set the camera position.
         """
@@ -268,7 +266,7 @@ class IGEViewerControl:
                 self.local_transform.p,
                 self.lookat,
             )
-        if self.camera_follow == False:
+        if not self.camera_follow:
             target_pos = quat_or_target
             self.lookat = gymapi.Vec3(target_pos[0], target_pos[1], target_pos[2])
             self.gym.viewer_camera_look_at(
@@ -278,7 +276,7 @@ class IGEViewerControl:
                 self.lookat,
             )
 
-    def render(self):
+    def render(self) -> None:
         """
         Draw the viewer.
         """

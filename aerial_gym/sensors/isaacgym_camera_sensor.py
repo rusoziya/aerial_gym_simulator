@@ -1,8 +1,9 @@
-from aerial_gym.sensors.base_sensor import BaseSensor
+from __future__ import annotations
 
-from isaacgym import gymutil, gymtorch, gymapi
+from isaacgym import gymapi, gymtorch
 from isaacgym.torch_utils import *
 
+from aerial_gym.sensors.base_sensor import BaseSensor
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("IsaacGymCameraSensor")
@@ -14,7 +15,9 @@ class IsaacGymCameraSensor(BaseSensor):
     Supports depth and semantic segmentation images. Color image support is not yet implemented.
     """
 
-    def __init__(self, sensor_config, num_envs, gym, sim, device):
+    def __init__(
+        self, sensor_config: object, num_envs: int, gym: object, sim: object, device: str
+    ) -> None:
         super().__init__(sensor_config=sensor_config, num_envs=num_envs, device=device)
         self.device = device
         self.num_envs = num_envs
@@ -29,7 +32,7 @@ class IsaacGymCameraSensor(BaseSensor):
         self.color_tensors = []
         self.cam_handles = []
 
-    def init_cam_config(self):
+    def init_cam_config(self) -> None:
         """
         Initialize the camera properties and local transform for the camera sensor. Uses the sensor params from the config file.
 
@@ -70,7 +73,7 @@ class IsaacGymCameraSensor(BaseSensor):
             angle_quat[0], angle_quat[1], angle_quat[2], angle_quat[3]
         )
 
-    def add_sensor_to_env(self, env_id, env_handle, actor_handle):
+    def add_sensor_to_env(self, env_id: int, env_handle: object, actor_handle: object) -> None:
         """
         Add the camera sensor to the environment. Set each camera sensor with appriopriate properties, and attach it to the actor.\
         The camera sensor is attached to the actor using the pose_handle, which is the handle of the actor's pose in the environment.
@@ -118,10 +121,9 @@ class IsaacGymCameraSensor(BaseSensor):
                 )
             )
         )
-        # self.color_tensors.append(gymtorch.wrap_tensor(self.gym.get_camera_image_gpu_tensor(self.sim, env_handle, self.cam_handle, gymapi.IMAGE_COLOR)))
         logger.debug(f"Camera sensor added to env {env_handle} and actor {actor_handle}")
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict: dict[str, object]) -> None:
         """
         Initialize the tensors for the camera sensor. Depth tensors are mandatory, semantic tensors are optional.
         Args:
@@ -136,7 +138,7 @@ class IsaacGymCameraSensor(BaseSensor):
         # At some point, RGB cam support for Warp would be added on our end. Please use Isaac Gym's native RGB Camera till then.
         self.rgb_pixels = global_tensor_dict["rgb_pixels"]
 
-    def capture(self):
+    def capture(self) -> None:
         """
         In the case of Isaac Gym cameras, it involves triggering the sensors to capture the images after fetch_results is run.
         Subsequently, the images have to be stored individually in the relevant tensor slices.
@@ -155,7 +157,7 @@ class IsaacGymCameraSensor(BaseSensor):
                     ]
         self.gym.end_access_image_tensors(self.sim)
 
-    def update(self):
+    def update(self) -> None:
         """
         Update the camera sensor. Capture image, apply the same post-processing as other cameras.
         The values in the depth tensor are set to the aceptable limits and normalized if required.
@@ -165,31 +167,30 @@ class IsaacGymCameraSensor(BaseSensor):
         self.apply_range_limits()
         self.normalize_observation()
 
-    def apply_range_limits(self):
+    def apply_range_limits(self) -> None:
         """ """
-        # logger.debug("Applying range limits")
         self.pixels[self.pixels > self.cfg.max_range] = self.cfg.far_out_of_range_value
         self.pixels[self.pixels < self.cfg.min_range] = self.cfg.near_out_of_range_value
-        # logger.debug("[DONE] Applying range limits")
 
-    def normalize_observation(self):
-        if self.cfg.normalize_range and self.cfg.pointcloud_in_world_frame == False:
-            # logger.debug("Normalizing pointcloud values")
+    def normalize_observation(self) -> None:
+        if self.cfg.normalize_range and not self.cfg.pointcloud_in_world_frame:
             self.pixels[:] = self.pixels / self.cfg.max_range
-        if self.cfg.pointcloud_in_world_frame == True:
+        if self.cfg.pointcloud_in_world_frame:
             logger.error("Pointcloud is in world frame. Not supported for this sensor")
 
-    def apply_noise(self):
-        if self.cfg.sensor_noise.enable_sensor_noise == True:
-            # logger.debug("Applying sensor noise")
+    def apply_noise(self) -> None:
+        if self.cfg.sensor_noise.enable_sensor_noise:
             self.pixels[:] = torch.normal(
                 mean=self.pixels, std=self.cfg.sensor_noise.pixel_std_dev_multiplier * self.pixels
             )
             self.pixels[
-                torch.bernoulli(torch.ones_like(self.pixels) * self.cfg.sensor_noise.pixel_dropout_prob) > 0
+                torch.bernoulli(
+                    torch.ones_like(self.pixels) * self.cfg.sensor_noise.pixel_dropout_prob
+                )
+                > 0
             ] = self.cfg.near_out_of_range_value
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         """
         Reset the camera pose for the specified env_ids. Nothing to be done for Isaac Gym's camera sensor
         Changing the pose for each camera sensor w.r.t actor requires a very expensive loop operation.
@@ -197,7 +198,7 @@ class IsaacGymCameraSensor(BaseSensor):
         # Nothing to be doen here for Isaac Gym's camera sensor
         pass
 
-    def reset(self):
+    def reset(self) -> None:
         """
         Reset the camera pose for all envs. Nothing to be done for Isaac Gym's camera sensor.
         Changing the pose for each camera sensor w.r.t actor requires a very expensive loop operation.
@@ -205,5 +206,5 @@ class IsaacGymCameraSensor(BaseSensor):
         # Nothing to be doen here for Isaac Gym's camera sensor
         pass
 
-    def get_observation(self):
+    def get_observation(self) -> tuple[torch.Tensor, torch.Tensor | None]:
         return self.pixels, self.segmentation_pixels

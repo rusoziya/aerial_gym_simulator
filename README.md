@@ -56,7 +56,7 @@ Equipped with GPU-accelerated and customizable ray-casting based LiDAR and Camer
 - **RL-based control and navigation policies** of your choice can be added for robot learning tasks. [Includes scripts to get started with training your own robots.](https://ntnu-arl.github.io/aerial_gym_simulator/6_rl_training).
 
 
-> [!IMPORTANT] 
+> [!IMPORTANT]
 > Support for [**Isaac Lab**](https://isaac-sim.github.io/IsaacLab/) and [**Isaac Sim**](https://developer.nvidia.com/isaac/sim) is currently under development. We anticipate releasing this feature in the near future.
 
 
@@ -75,8 +75,8 @@ When referencing the Aerial Gym Simulator in your research, please cite the foll
 ```bibtex
 @ARTICLE{kulkarni2025@aerialgym,
   author={Kulkarni, Mihir and Rehberg, Welf and Alexis, Kostas},
-  journal={IEEE Robotics and Automation Letters}, 
-  title={Aerial Gym Simulator: A Framework for Highly Parallelized Simulation of Aerial Robots}, 
+  journal={IEEE Robotics and Automation Letters},
+  title={Aerial Gym Simulator: A Framework for Highly Parallelized Simulation of Aerial Robots},
   year={2025},
   volume={},
   number={},
@@ -90,8 +90,8 @@ If you use the reinforcement learning policy provided alongside this simulator f
 ```bibtex
 @INPROCEEDINGS{kulkarni2024@dceRL,
   author={Kulkarni, Mihir and Alexis, Kostas},
-  booktitle={2024 IEEE International Conference on Robotics and Automation (ICRA)}, 
-  title={Reinforcement Learning for Collision-free Flight Exploiting Deep Collision Encoding}, 
+  booktitle={2024 IEEE International Conference on Robotics and Automation (ICRA)},
+  title={Reinforcement Learning for Collision-free Flight Exploiting Deep Collision Encoding},
   year={2024},
   volume={},
   number={},
@@ -122,7 +122,7 @@ Welf Rehberg &nbsp;&nbsp;&nbsp;&nbsp; [Email](mailto:welf.rehberg@ntnu.no) &nbsp
 
 Theodor J. L. Forgaard &nbsp;&nbsp;&nbsp; [Email](mailto:tjforgaa@stud.ntnu.no) &nbsp; [GitHb](https://github.com/tforgaard) &nbsp; [LinkedIn](https://www.linkedin.com/in/theodor-johannes-line-forgaard-665b5311a/)
 
-Kostas Alexis &nbsp;&nbsp;&nbsp;&nbsp; [Email](mailto:konstantinos.alexis@ntnu.no) &nbsp;  [GitHub](https://github.com/kostas-alexis) &nbsp; 
+Kostas Alexis &nbsp;&nbsp;&nbsp;&nbsp; [Email](mailto:konstantinos.alexis@ntnu.no) &nbsp;  [GitHub](https://github.com/kostas-alexis) &nbsp;
  [LinkedIn](https://www.linkedin.com/in/kostas-alexis-67713918/) &nbsp; [X (formerly Twitter)](https://twitter.com/arlteam)
 
 This work is done at the [Autonomous Robots Lab](https://www.autonomousrobotslab.com), [Norwegian University of Science and Technology (NTNU)](https://www.ntnu.no). For more information, visit our [Website](https://www.autonomousrobotslab.com/).
@@ -135,6 +135,84 @@ This repository utilizes some of the code and helper scripts from [https://githu
 
 
 
-## FAQs and Troubleshooting 
+## Development Workflow
+
+### Makefile Commands
+
+All training and evaluation is driven through `make` targets and YAML config files:
+
+| Command | Description |
+|---|---|
+| `make train CONFIG=configs/<file>.yaml` | Train with a config file |
+| `make eval CONFIG=configs/<file>.yaml` | Evaluate a trained checkpoint |
+| `make play CONFIG=configs/<file>.yaml` | Visualize a trained policy |
+| `make train-gate` | Train gate navigation (default SF config) |
+| `make validate-config` | Validate a config file without running |
+| `make dry-run` | Print the command without executing |
+| `make lint` | Run ruff linter |
+| `make format` | Format code with ruff |
+| `make test` | Run the test suite |
+| `make clean` | Remove `__pycache__` and `.pyc` files |
+
+Run `make help` to see the full list of targets.
+
+### Running Tests
+
+Tests do not require Isaac Gym or a GPU. They use `importlib` to load modules
+directly, bypassing the `aerial_gym.__init__` that imports `isaacgym`.
+
+```bash
+python -m pytest tests/test_*.py -v          # Run all tests
+python -m pytest tests/ -k reward            # Run reward tests only
+python -m pytest tests/ -k config            # Run config tests only
+```
+
+### Config System
+
+The pipeline uses a **Pydantic schema-driven** config system (`aerial_gym/config/run_config.py`).
+Each run is configured by a YAML file in `configs/` that is validated against `RunConfig` —
+a hierarchy of strict Pydantic models that reject unknown fields and enforce type constraints.
+
+- **Modes**: `train`, `eval`, `play`, `inference_suite` (controlled by the `mode:` field)
+- **Override from CLI**: `--set camera.enable_arc_follow=true` applies dotted-key overrides before validation
+- **Quick targets**: `make train-gate`, `make train-gate-arc`, `make eval-gate-drone-only`, etc.
+
+Config sub-schemas cover: `CommonConfig`, `TrainingConfig`, `SampleFactoryConfig`, `EvalConfig`,
+`CurriculumOverrides`, `CameraOverrides`, `AblationConfig`, and `InferenceSuiteConfig`.
+All fields have explicit types, defaults, and validation constraints — no raw dicts with
+unknown keys are accepted.
+
+---
+
+## FAQs and Troubleshooting
 
 Please refer to our [website](https://ntnu-arl.github.io/aerial_gym_simulator/7_FAQ_and_troubleshooting/) or to the [Issues](https://github.com/ntnu-arl/aerial_gym_simulator/issues) section in the GitHub repository for more information.
+
+---
+
+## Gate Navigation Task
+
+This fork extends the Aerial Gym Simulator with a gate navigation task for autonomous drone flight through gates using dual-camera visual observations.
+
+### Overview
+
+- **150D observation space**: drone position (3D) + static camera pose (6D) + orientation (3D) + velocities (6D) + actions (4D) + dual VAE latents (128D)
+- **4D velocity control**: x_vel, y_vel, z_vel, yaw_rate
+- **Curriculum learning**: 21 levels (3-23) controlling obstacle count, spawn range, camera noise, frame dropout, and state noise
+- **Gate-adaptive rewards**: passage detection, center alignment bonus, camera facing, boundary violation penalties
+
+### Training (Sample Factory)
+
+```bash
+cd aerial_gym/rl_training/sample_factory
+python aerialgym_examples/train_aerialgym_custom_net_gate.py --env=quad_with_obstacles_gate --env_agents=16
+```
+
+### Tests
+
+```bash
+conda activate aerialgym
+python -m pytest tests/ -v          # Run all behavior-capture tests (~10s)
+python -m pytest tests/ -k reward   # Run reward tests only
+python -m pytest tests/ -k config   # Run config tests only
+```

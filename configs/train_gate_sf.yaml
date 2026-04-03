@@ -1,0 +1,107 @@
+# Replicates: train_gate_navigation_dual_camera.sh (default invocation, no CLI overrides)
+#
+# Trains a dual-camera RNN policy (drone D455 + static D455) for gate navigation
+# using Sample Factory PPO with gated fusion encoder.
+#
+# Environment: gate_env | Robot: X500 with D455 camera
+# Static camera: D455 behind gate (270x480 resolution)
+# Observation space: 150D (22D proprio + 64D drone VAE + 64D static camera VAE)
+# Action space: 4D (x_vel, y_vel, z_vel, yaw_rate) via velocity controller
+#
+# Default env agents: 256, rollout: 32 => quantum = 8192 steps/update
+# Effective batch: batch_size(2048) * accumulate(2) = 4096
+# Default train steps: 1,212,416 (yields ~19 PPO updates with 256 envs * 32 rollout)
+
+mode: train
+
+common:
+  task: navigation_task_gate
+  num_envs: 256
+  seed: 42
+  device: "cuda:0"
+  headless: true
+  use_warp: true
+
+training:
+  total_steps: 1_212_416
+  batch_size: 8192
+  learning_rate: 0.0003
+  gamma: 0.98
+  rollout_horizon: 32
+  max_grad_norm: 1.0
+  num_epochs: 4
+  checkpoint_interval: 5_000_000
+  checkpoint_dir: "./train_dir"
+
+sample_factory:
+  env_name: quad_with_obstacles_gate
+  experiment_name: ""  # auto-generated from timestamp if empty
+  train_dir: "./train_dir"
+  num_workers: 1
+  num_envs_per_worker: 1
+  # RNN settings
+  use_rnn: true
+  rnn_size: 64
+  rnn_type: gru
+  rnn_num_layers: 1
+  # Encoder architecture
+  encoder_mlp_layers: [512, 256, 64]
+  # Gated fusion (dual-camera inputs)
+  fusion: gated
+  gate_per_feature: true
+  # Batching: effective_batch = batch_size(2048) * accumulate(2) = 4096
+  num_batches_per_epoch: 8
+  num_batches_to_accumulate: 2
+  save_best_after: 1_000_000
+  # Synchronous single-worker mode (Isaac Gym is single-process)
+  async_rl: false
+  serial_mode: true
+  batched_sampling: true
+  policy_workers_per_policy: 1
+  # PPO hyperparameters
+  adaptive_stddev: true
+  reward_scale: 0.1
+  ppo_clip_ratio: 0.2
+  value_loss_coeff: 2.0
+  exploration_loss_coeff: 0.001
+  nonlinearity: elu
+  # Learning rate schedule
+  lr_schedule: kl_adaptive_epoch
+  lr_schedule_kl_threshold: 0.016
+  # Normalization
+  normalize_input: true
+  normalize_returns: true
+  kl_loss_coeff: 0.1
+  # Checkpoint and resume
+  restart_behavior: resume
+  save_every_sec: 1800
+  save_best_every_sec: 500
+  # Observation key used by the custom network
+  obs_key: observations
+  # GAE and value estimation
+  gae_lambda: 0.95
+  with_vtrace: false
+  value_bootstrap: true
+  # Training time limit (0 = unlimited, use total_steps instead)
+  train_for_seconds: 0
+
+wandb:
+  enabled: true
+  project: final_training_gate
+  entity: ""
+  user: "ziya-ruso-ucl"
+  group: gate_navigation_training
+  tags: [aerial_gym, gate_navigation, dual_camera, x500, sample_factory, memory_optimized]
+
+curriculum:
+  min_level: 3
+  max_level: 23
+
+camera:
+  static_camera_base_y: -2.0
+  static_camera_base_z: adaptive
+
+# Environment variables set by the shell script (documented for reference):
+# CUBLAS_WORKSPACE_CONFIG=:16:8  (deterministic cuBLAS)
+# SF_ENV_AGENTS=256
+# SF_HEADLESS=true

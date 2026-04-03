@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import torch
+
 from aerial_gym import AERIAL_GYM_DIRECTORY
 
 
@@ -68,31 +71,18 @@ class task_config:
         success_rate_for_increase = 0.7
         success_rate_for_decrease = 0.6
 
-        def update_curriculim_level(self, success_rate, current_level):
+        def update_curriculim_level(self, success_rate, current_level) -> None:
             if success_rate > self.success_rate_for_increase:
                 return min(current_level + self.increase_step, self.max_level)
             elif success_rate < self.success_rate_for_decrease:
                 return max(current_level - self.decrease_step, self.min_level)
             return current_level
 
-    # def action_transformation_function(action):
-    #     clamped_action = torch.clamp(action, -1.0, 1.0)
-    #     max_speed = 1.5  # [m/s]
-    #     max_yawrate = torch.pi / 3  # [rad/s]
-    #     processed_action = clamped_action.clone()
-    #     processed_action[:, 0:3] = max_speed*processed_action[:, 0:3]
-    #     processed_action[:, 3] = max_yawrate*processed_action[:, 3]
-    #     return processed_action
-
     @staticmethod
-    def action_transformation_function(action):
+    def action_transformation_function(action) -> None:
         clamped_action = torch.clamp(action, -1.0, 1.0)
         max_speed = 2.0  # [m/s]
         max_yawrate = torch.pi / 3  # [rad/s]
-
-        # clamped_action[:, 0:3] = max_speed * clamped_action[:, 0:3]
-        # clamped_action[:, 3] = max_yawrate * clamped_action[:, 3]
-        # return clamped_action
 
         max_inclination_angle = torch.pi / 4  # [rad]
 

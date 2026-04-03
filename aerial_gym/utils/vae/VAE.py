@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+from typing import Callable
+
 import torch
 import torch.nn as nn
 
 
 class ImgDecoder(nn.Module):
-    def __init__(self, input_dim=1, latent_dim=64, with_logits=False):
+    def __init__(self, input_dim: int = 1, latent_dim: int = 64, with_logits: bool = False) -> None:
         """
         Parameters
         ----------
@@ -34,10 +38,10 @@ class ImgDecoder(nn.Module):
         print("[ImgDecoder] Done with create_model")
         print("Defined decoder.")
 
-    def forward(self, z):
+    def forward(self, z: torch.Tensor) -> torch.Tensor:
         return self.decode(z)
 
-    def decode(self, z):
+    def decode(self, z: torch.Tensor) -> torch.Tensor:
         x = self.dense(z)
         x = torch.relu(x)
         x = self.dense1(x)
@@ -56,12 +60,10 @@ class ImgDecoder(nn.Module):
         x = torch.relu(x)
 
         x = self.deconv7(x)
-        # print(f"- After deconv 7, mean: {x.mean():.3f} var: {x.var():.3f}")
         if self.with_logits:
             return x
 
         x = torch.sigmoid(x)
-        # print(f"- After sigmoid, mean: {x.mean():.3f} var: {x.var():.3f}")
         return x
 
 
@@ -70,7 +72,7 @@ class ImgEncoder(nn.Module):
     ResNet8 architecture as encoder.
     """
 
-    def __init__(self, input_dim, latent_dim):
+    def __init__(self, input_dim: int, latent_dim: int) -> None:
         """
         Parameters:
         ----------
@@ -86,7 +88,7 @@ class ImgEncoder(nn.Module):
         self.elu = nn.ELU()
         print("Defined encoder.")
 
-    def define_encoder(self):
+    def define_encoder(self) -> None:
         # define conv functions
         self.conv0 = nn.Conv2d(self.input_dim, 32, kernel_size=5, stride=2, padding=2)
         self.conv0_1 = nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=2)
@@ -113,10 +115,10 @@ class ImgEncoder(nn.Module):
 
         print("Encoder network initialized.")
 
-    def forward(self, img):
+    def forward(self, img: torch.Tensor) -> torch.Tensor:
         return self.encode(img)
 
-    def encode(self, img):
+    def encode(self, img: torch.Tensor) -> torch.Tensor:
         """
         Encodes the input image.
         """
@@ -157,18 +159,24 @@ class ImgEncoder(nn.Module):
 class Lambda(nn.Module):
     """Lambda function that accepts tensors as input."""
 
-    def __init__(self, func):
+    def __init__(self, func: Callable[[torch.Tensor], torch.Tensor]) -> None:
         super(Lambda, self).__init__()
         self.func = func
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.func(x)
 
 
 class VAE(nn.Module):
     """Variational Autoencoder for reconstruction of depth images."""
 
-    def __init__(self, input_dim=1, latent_dim=64, with_logits=False, inference_mode=False):
+    def __init__(
+        self,
+        input_dim: int = 1,
+        latent_dim: int = 64,
+        with_logits: bool = False,
+        inference_mode: bool = False,
+    ) -> None:
         """
         Parameters
         ----------
@@ -192,7 +200,9 @@ class VAE(nn.Module):
         self.mean_params = Lambda(lambda x: x[:, : self.latent_dim])  # mean parameters
         self.logvar_params = Lambda(lambda x: x[:, self.latent_dim :])  # log variance parameters
 
-    def forward(self, img):
+    def forward(
+        self, img: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Do a forward pass of the VAE. Generates a reconstructed image based on img
         Parameters
         ----------
@@ -216,7 +226,9 @@ class VAE(nn.Module):
         img_recon = self.img_decoder(z_sampled)
         return img_recon, mean, logvar, z_sampled
 
-    def forward_test(self, img):
+    def forward_test(
+        self, img: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Do a forward pass of the VAE. Generates a reconstructed image based on img
         Parameters
         ----------
@@ -240,7 +252,7 @@ class VAE(nn.Module):
         img_recon = self.img_decoder(z_sampled)
         return img_recon, mean, logvar, z_sampled
 
-    def encode(self, img):
+    def encode(self, img: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Do a forward pass of the VAE. Generates a latent vector based on img
         Parameters
         ----------
@@ -259,7 +271,7 @@ class VAE(nn.Module):
 
         return z_sampled, means, std
 
-    def decode(self, z):
+    def decode(self, z: torch.Tensor) -> torch.Tensor:
         """Do a forward pass of the VAE. Generates a reconstructed image based on z
         Parameters
         ----------
@@ -271,5 +283,5 @@ class VAE(nn.Module):
             return torch.sigmoid(img_recon)
         return img_recon
 
-    def set_inference_mode(self, mode):
+    def set_inference_mode(self, mode: bool) -> None:
         self.inference_mode = mode

@@ -1,21 +1,17 @@
+from __future__ import annotations
+
+import torch
+
 from aerial_gym.task.position_setpoint_task_reconfigurable.position_setpoint_task_reconfigurable import (
     PositionSetpointTaskReconfigurable,
 )
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
-import numpy as np
-
-from aerial_gym.utils.math import *
-
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("position_setpoint_task")
 
 
-def dict_to_class(dict):
+def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
 
 
@@ -39,7 +35,7 @@ class PositionSetpointTaskMorphy(PositionSetpointTaskReconfigurable):
                 torch.zeros(self.num_envs, self.task_config.num_joints)
             )
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         self.counter += 1
         self.prev_actions[:] = self.actions
         self.actions = self.task_config.process_actions_for_task(
@@ -60,7 +56,7 @@ class PositionSetpointTaskMorphy(PositionSetpointTaskReconfigurable):
         # This is important for the RL agent to get the correct state after the reset.
         self.rewards[:], self.terminations[:] = self.compute_rewards_and_crashes(self.obs_dict)
 
-        if self.task_config.return_state_before_reset == True:
+        if self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         self.truncations[:] = torch.where(
@@ -70,12 +66,12 @@ class PositionSetpointTaskMorphy(PositionSetpointTaskReconfigurable):
 
         self.infos = {}  # self.obs_dict["infos"]
 
-        if self.task_config.return_state_before_reset == False:
+        if not self.task_config.return_state_before_reset:
             return_tuple = self.get_return_tuple()
 
         return return_tuple
 
-    def process_obs_for_task(self):
+    def process_obs_for_task(self) -> None:
         self.task_obs["observations"][:, 0:3] = (
             self.target_position - self.obs_dict["robot_position"]
         )
@@ -103,7 +99,7 @@ class PositionSetpointTaskMorphy(PositionSetpointTaskReconfigurable):
         self.task_obs["terminations"] = self.terminations
         self.task_obs["truncations"] = self.truncations
 
-    def compute_rewards_and_crashes(self, obs_dict):
+    def compute_rewards_and_crashes(self, obs_dict) -> None:
         robot_position = obs_dict["robot_position"]
         target_position = self.target_position
         robot_vehicle_orientation = obs_dict["robot_vehicle_orientation"]

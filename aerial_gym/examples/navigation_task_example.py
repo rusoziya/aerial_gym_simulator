@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 import time
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.registry.task_registry import task_registry
 import torch
+
+from aerial_gym.registry.task_registry import task_registry
 
 if __name__ == "__main__":
     logger.print_example_message()

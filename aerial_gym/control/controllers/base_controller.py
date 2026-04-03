@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import torch
 
 
 class BaseController:
-    def __init__(self, control_config, num_envs, device, mode="robot"):
+    def __init__(
+        self, control_config: object, num_envs: int, device: str, mode: str = "robot"
+    ) -> None:
         self.cfg = control_config
         self.num_envs = num_envs
         self.device = device
         self.mode = mode
 
-    def init_tensors(self, global_tensor_dict):
+    def init_tensors(self, global_tensor_dict: dict[str, torch.Tensor]) -> None:
         if self.mode == "robot":
             self.robot_position = global_tensor_dict["robot_position"]
             self.robot_orientation = global_tensor_dict["robot_orientation"]

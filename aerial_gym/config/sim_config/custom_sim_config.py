@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 This is a custom sim config file. It is used to define the simulation parameters.
 """

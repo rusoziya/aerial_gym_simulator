@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 import numpy as np
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
-from PIL import Image
+import os
+import random
+
 import matplotlib
 import torch
-import os, random
+from PIL import Image
+
+from aerial_gym.sim.sim_builder import SimBuilder
 
 seed = 0
 
@@ -18,9 +24,7 @@ if __name__ == "__main__":
     torch.cuda.manual_seed_all(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
-    logger.critical("Setting seed: {}".format(seed))
-
-
+    logger.critical(f"Setting seed: {seed}")
 
     env_manager = SimBuilder().build_env(
         sim_name="base_sim",
@@ -70,8 +74,6 @@ if __name__ == "__main__":
             seg_frames[-1].save(f"faceid_frames_{i}.png")
             depth_frames[-1].save(f"normal_frames_{i}.png")
 
-
-
             seg_frames = []
             depth_frames = []
             merged_image_frames = []
@@ -89,26 +91,24 @@ if __name__ == "__main__":
             cosine_vec = torch.abs(
                 torch.sum(one_vec * env_manager.global_tensor_dict["depth_range_pixels"], dim=-1)
             )
-            # max_dr = torch.max(cosine_vec)
-            # min_dr = torch.min(cosine_vec)
-
-            # print(torch.mean(cosine_vec), max_dr, min_dr)
             image1 = (255.0 * cosine_vec)[0, 0].cpu().numpy().astype(np.uint8)
 
             seg_image1 = env_manager.global_tensor_dict["segmentation_pixels"][0, 0].cpu().numpy()
-        except Exception as e:
+        except (KeyError, RuntimeError) as e:
             logger.error("Error in getting images")
             logger.error("Seems like the image tensors have not been created yet.")
             logger.error("This is likely due to absence of a functional camera in the environment")
             raise e
-        
+
         # discretize image for better visualization
-        seg_image1[seg_image1 > 0] = (10*np.mod(seg_image1[seg_image1 > 0], 26) + 1).astype(np.uint8)
+        seg_image1[seg_image1 > 0] = (10 * np.mod(seg_image1[seg_image1 > 0], 26) + 1).astype(
+            np.uint8
+        )
         seg_image1[seg_image1 <= 0] = 0
         # set colormap to plasma in matplotlib
-        seg_image1_normalized_plasma = matplotlib.cm.plasma(seg_image1/255.0)
-        mod_image = (255.0*seg_image1_normalized_plasma).astype(np.uint8)
-        
+        seg_image1_normalized_plasma = matplotlib.cm.plasma(seg_image1 / 255.0)
+        mod_image = (255.0 * seg_image1_normalized_plasma).astype(np.uint8)
+
         # set channel to opaque
         mod_image[:, :, 3] = 255
         seg_image1_discrete = Image.fromarray(mod_image)

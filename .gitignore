@@ -6,6 +6,7 @@ runs/
 *.ckpt
 *.tfevents*
 *.egg-info/
+.env
 
 */__pycache__/
 nn/

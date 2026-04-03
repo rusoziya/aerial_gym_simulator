@@ -1,14 +1,19 @@
+from __future__ import annotations
+
+import random
+
 import matplotlib.image
 import numpy as np
-import random
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
-from PIL import Image
+
 import matplotlib
 import torch
-import random
+from PIL import Image
+
+from aerial_gym.sim.sim_builder import SimBuilder
 
 if __name__ == "__main__":
     logger.warning("\n\n\nEnvironment to save a depth/range and segmentation image.\n\n\n")
@@ -79,21 +84,14 @@ if __name__ == "__main__":
                 255.0 * env_manager.global_tensor_dict["depth_range_pixels"][0, 0].cpu().numpy()
             ).astype(np.uint8)
             seg_image1 = env_manager.global_tensor_dict["segmentation_pixels"][0, 0].cpu().numpy()
-        except Exception as e:
+        except (KeyError, RuntimeError) as e:
             logger.error("Error in getting images")
             logger.error("Seems like the image tensors have not been created yet.")
             logger.error("This is likely due to absence of a functional camera in the environment")
             raise e
-        # seg_image1[seg_image1 <= 0] = seg_image1[seg_image1 > 0].min()
         seg_image1_normalized = (seg_image1 - seg_image1.min()) / (
             seg_image1.max() - seg_image1.min()
         )
-
-        # for when Isaac Gym cameras are used for RGB images
-        # image_frame1 = env_manager.global_tensor_dict["rgb_pixels"][0, 0].cpu().numpy().astype(np.uint8)
-        # # save to file
-        # im1 = Image.fromarray(image_frame1)
-        # im1.save(f"image_frame_{i}.png")
 
         # set colormap to plasma in matplotlib
         seg_image1_normalized_plasma = matplotlib.cm.plasma(seg_image1_normalized)

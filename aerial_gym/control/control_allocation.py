@@ -1,13 +1,15 @@
-import torch
-from aerial_gym.control.motor_model import MotorModel
+from __future__ import annotations
 
+import torch
+
+from aerial_gym.control.motor_model import MotorModel
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger("control_allocation")
 
 
 class ControlAllocator:
-    def __init__(self, num_envs, dt, config, device):
+    def __init__(self, num_envs: int, dt: float, config: object, device: str) -> None:
         self.num_envs = num_envs
         self.dt = dt
         self.cfg = config
@@ -22,16 +24,16 @@ class ControlAllocator:
         )
         self.output_wrench = torch.zeros((self.num_envs, 6), device=self.device)
 
-        assert (
-            len(self.cfg.allocation_matrix[0]) == self.cfg.num_motors
-        ), "Allocation matrix must have 6 rows and num_motors columns."
+        assert len(self.cfg.allocation_matrix[0]) == self.cfg.num_motors, (
+            "Allocation matrix must have 6 rows and num_motors columns."
+        )
 
         self.force_torque_allocation_matrix = torch.tensor(
             self.cfg.allocation_matrix, device=self.device, dtype=torch.float32
         )
         alloc_matrix_rank = torch.linalg.matrix_rank(self.force_torque_allocation_matrix)
         if alloc_matrix_rank < 6:
-            print("WARNING: allocation matrix is not full rank. Rank: {}".format(alloc_matrix_rank))
+            print(f"WARNING: allocation matrix is not full rank. Rank: {alloc_matrix_rank}")
         self.force_torque_allocation_matrix = self.force_torque_allocation_matrix.expand(
             self.num_envs, -1, -1
         )
@@ -46,10 +48,12 @@ class ControlAllocator:
             device=self.device,
         )
         logger.warning(
-            f"Control allocation does not account for actuator limits. This leads to suboptimal allocation"
+            "Control allocation does not account for actuator limits. This leads to suboptimal allocation"
         )
 
-    def allocate_output(self, command, output_mode):
+    def allocate_output(
+        self, command: torch.Tensor, output_mode: str
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         if self.force_application_level == "motor_link":
             if output_mode == "forces":
                 motor_thrusts = self.update_motor_thrusts_with_forces(command)
@@ -64,8 +68,7 @@ class ControlAllocator:
 
         return forces, torques
 
-    def update_wrench(self, ref_wrench):
-
+    def update_wrench(self, ref_wrench: torch.Tensor) -> torch.Tensor:
         ref_motor_thrusts = torch.bmm(
             self.inv_force_torque_allocation_matrix, ref_wrench.unsqueeze(-1)
         ).squeeze(-1)
@@ -78,12 +81,11 @@ class ControlAllocator:
 
         return self.output_wrench
 
-    def update_motor_thrusts_with_forces(self, ref_forces):
+    def update_motor_thrusts_with_forces(self, ref_forces: torch.Tensor) -> torch.Tensor:
         current_motor_thrust = self.motor_model.update_motor_thrusts(ref_forces)
         return current_motor_thrust
 
-    def update_motor_thrusts_with_wrench(self, ref_wrench):
-
+    def update_motor_thrusts_with_wrench(self, ref_wrench: torch.Tensor) -> torch.Tensor:
         ref_motor_thrusts = torch.bmm(
             self.inv_force_torque_allocation_matrix, ref_wrench.unsqueeze(-1)
         ).squeeze(-1)
@@ -92,15 +94,17 @@ class ControlAllocator:
 
         return current_motor_thrust
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids: torch.Tensor) -> None:
         self.motor_model.reset_idx(env_ids)
         # here we can randomize the allocation matrix if desired
 
-    def reset(self):
+    def reset(self) -> None:
         self.motor_model.reset()
         # here we can randomize the allocation matrix if desired
 
-    def calc_motor_forces_torques_from_thrusts(self, motor_thrusts):
+    def calc_motor_forces_torques_from_thrusts(
+        self, motor_thrusts: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         motor_forces = torch.stack(
             [
                 torch.zeros_like(motor_thrusts),
@@ -113,7 +117,7 @@ class ControlAllocator:
         motor_torques = cq * motor_forces * (-self.motor_directions[None, :, None])
         return motor_forces, motor_torques
 
-    def set_single_allocation_matrix(self, alloc_matrix):
+    def set_single_allocation_matrix(self, alloc_matrix: torch.Tensor) -> None:
         if alloc_matrix.shape != (6, self.cfg.num_motors):
             raise ValueError("Allocation matrix must have shape (6, num_motors)")
         self.force_torque_allocation_matrix[:] = torch.tensor(

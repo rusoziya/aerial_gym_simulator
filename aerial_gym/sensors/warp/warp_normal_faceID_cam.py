@@ -1,6 +1,9 @@
-# import nvtx
-import warp as wp
+from __future__ import annotations
+
 import math
+
+import torch
+import warp as wp
 
 from aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels import (
     DepthCameraWarpKernels,
@@ -8,7 +11,9 @@ from aerial_gym.sensors.warp.warp_kernels.warp_camera_kernels import (
 
 
 class WarpNormalFaceIDCam:
-    def __init__(self, num_envs, config, mesh_ids_array, device="cuda:0"):
+    def __init__(
+        self, num_envs: int, config: object, mesh_ids_array: object, device: str = "cuda:0"
+    ) -> None:
         self.cfg = config
         self.num_envs = num_envs
         self.num_sensors = self.cfg.num_sensors
@@ -34,7 +39,7 @@ class WarpNormalFaceIDCam:
 
         self.initialize_camera_matrices()
 
-    def initialize_camera_matrices(self):
+    def initialize_camera_matrices(self) -> None:
         # Calculate camera params
         W = self.width
         H = self.height
@@ -69,9 +74,9 @@ class WarpNormalFaceIDCam:
         self.c_x = int(u_0)
         self.c_y = int(v_0)
 
-    def create_render_graph(self, debug=False):
+    def create_render_graph(self, debug: bool = False) -> None:
         if not debug:
-            print(f"creating render graph")
+            print("creating render graph")
             wp.capture_begin(device=self.device)
         # with wp.ScopedTimer("render"):
         wp.launch(
@@ -92,20 +97,22 @@ class WarpNormalFaceIDCam:
             device=self.device,
         )
         if not debug:
-            print(f"finishing capture of render graph")
+            print("finishing capture of render graph")
             self.graph = wp.capture_end(device=self.device)
 
-    def set_image_tensors(self, pixels, segmentation_pixels=None):
+    def set_image_tensors(
+        self, pixels: torch.Tensor, segmentation_pixels: torch.Tensor | None = None
+    ) -> None:
         # init buffers. None when uninitialized
         self.pixels = wp.from_torch(pixels, dtype=wp.vec3)
         self.face_pixels = wp.from_torch(segmentation_pixels, dtype=wp.int32)
 
-    def set_pose_tensor(self, positions, orientations):
+    def set_pose_tensor(self, positions: torch.Tensor, orientations: torch.Tensor) -> None:
         self.camera_position_array = wp.from_torch(positions, dtype=wp.vec3)
         self.camera_orientation_array = wp.from_torch(orientations, dtype=wp.quat)
 
     # @nvtx.annotate()
-    def capture(self, debug=False):
+    def capture(self, debug: bool = False) -> torch.Tensor:
         if self.graph is None:
             self.create_render_graph(debug=debug)
         if self.graph is not None:

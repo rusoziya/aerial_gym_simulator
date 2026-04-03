@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
 import torch
+
+from aerial_gym.sim.sim_builder import SimBuilder
 
 if __name__ == "__main__":
     logger.debug("this is how a debug message looks like")

@@ -1,25 +1,23 @@
-import rospy
+from __future__ import annotations
 
-# import Image, Twist, Odometry, Velocity message from ROS
-from sensor_msgs.msg import Image
-from geometry_msgs.msg import Twist, PoseStamped, Vector3, TwistStamped
-from nav_msgs.msg import Odometry
-from std_msgs.msg import Float32MultiArray, Empty
-from visualization_msgs.msg import Marker
-
-from mavros_msgs.msg import State
-import cv2
-import numpy as np
-import math
-import time
-import torch
-from scipy.spatial.transform import Rotation as R
-from config import *
 import argparse
+import math
 import struct
+import time
 
+import numpy as np
+import rospy
+import torch
+from config import *
+from geometry_msgs.msg import PoseStamped, Twist, TwistStamped, Vector3
+from mavros_msgs.msg import State
+from nav_msgs.msg import Odometry
 from sample_factory_inference import RL_Nav_Interface
+from scipy.spatial.transform import Rotation as R
+from sensor_msgs.msg import Image
+from std_msgs.msg import Empty, Float32MultiArray
 from vae_image_encoder import VAEImageEncoder
+from visualization_msgs.msg import Marker
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
 
@@ -43,10 +41,10 @@ class EMA:
         self.beta = beta
         self.value = None
 
-    def reset(self):
+    def reset(self) -> None:
         self.value = None
 
-    def update(self, new_value):
+    def update(self, new_value) -> None:
         if self.value is None:
             self.value = new_value
         else:
@@ -154,10 +152,10 @@ class RlNavClass:
 
         self.odom_timer = rospy.timer.Timer(rospy.Duration(0.5), self.timer_cb)
 
-    def timer_cb(self, event):
+    def timer_cb(self, event) -> None:
         print("No odom received")
 
-    def target_callback(self, target):
+    def target_callback(self, target) -> None:
         self.target[0] = target.pose.position.x
         self.target[1] = target.pose.position.y
         self.target[2] = target.pose.position.z
@@ -165,23 +163,22 @@ class RlNavClass:
         self.RL_net_interface.reset()
         self.prev_action = np.array([0.0, 0.0, 0.0, 0.0])
 
-    def reset_callback(self, msg):
+    def reset_callback(self, msg) -> None:
         self.RL_net_interface.reset()
         self.prev_action = np.array([0.0, 0.0, 0.0, 0.0])
         self.action = np.zeros(ACTION_DIMS)
         self.prev_action = self.action
         self.action_filter.reset()
 
-    def odom_callback(self, odom):
+    def odom_callback(self, odom) -> None:
         self.odom = odom
         self.position[0] = self.odom.pose.pose.position.x
         self.position[1] = self.odom.pose.pose.position.y
         self.position[2] = self.odom.pose.pose.position.z
-        # print("Current position: ", self.position)
-        # print("current orientation: ", self.odom.pose.pose.orientation)
         quat_msg = self.odom.pose.pose.orientation
         quat = R.from_quat([quat_msg.x, quat_msg.y, quat_msg.z, quat_msg.w])
-        ### TODO: Check if this is the correct order for the euler angles
+        # scipy expects [x,y,z,w] quaternion order (same as Isaac Gym / ROS),
+        # and "xyz" intrinsic Euler yields (roll, pitch, yaw) -- both are correct here.
         rpy = quat.as_euler("xyz", degrees=False)
 
         self.rpy[0] = rpy[0]
@@ -191,7 +188,6 @@ class RlNavClass:
         self.vehicle_rpy = self.rpy.copy()
         self.vehicle_rpy[2] = 0.0
         self.vehicle_frame_matrix = R.from_euler("xyz", self.rpy, degrees=False)
-        # print(self.rpy)
 
         self.body_lin_vel = np.zeros(3)
         self.body_lin_vel[0] = odom.twist.twist.linear.x
@@ -204,7 +200,7 @@ class RlNavClass:
         self.odom_timer.shutdown()
         self.odom_timer = rospy.timer.Timer(rospy.Duration(0.5), self.timer_cb)
 
-    def process_image(self, image, to_torch=True, device="cpu"):
+    def process_image(self, image, to_torch=True, device="cpu") -> None:
         image[image > IMAGE_MAX_DEPTH] = IMAGE_MAX_DEPTH
         image[image < IMAGE_MIN_DEPTH] = -1
 
@@ -223,7 +219,7 @@ class RlNavClass:
             filtered_image = image.clone()
         return filtered_image, image
 
-    def publish_action(self, action=None):
+    def publish_action(self, action=None) -> None:
         if action is None:
             action = self.action
 
@@ -273,7 +269,6 @@ class RlNavClass:
         action_msg.linear.x = vel_x
         action_msg.linear.z = vel_z
         action_msg.angular.z = yaw_rate
-        # self.action_pub.publish(action_msg)
         action_viz_msg = TwistStamped()
         action_viz_msg.header.frame_id = BODY_FRAME_ID
         action_viz_msg.twist = action_msg
@@ -316,12 +311,10 @@ class RlNavClass:
 
         self.goal_dir_publisher.publish(goal_dir_marker)
 
-    def mavros_state_callback(self, data):
-        # check if mavros state is "OFFBOARD" or "GUIDED".
-        # if it is either of them, set enable to True, otherwise set it to False
+    def mavros_state_callback(self, data) -> None:
         if self.use_mavros_state:
             if data.mode == "OFFBOARD" or data.mode == "GUIDED":
-                if self.enable == False:
+                if not self.enable:
                     self.RL_net_interface.reset()
                     self.prev_action = np.array([0.0, 0.0, 0.0, 0.0])
                     print("[DONE] Resetting network.")
@@ -331,13 +324,10 @@ class RlNavClass:
         else:
             self.enable = True
 
-    def prepare_state_input_tensor(self):
+    def prepare_state_input_tensor(self) -> None:
         nn_input = np.zeros(TOTAL_IP_DIMS)
         self.goal_dir = self.target - self.position
         self.goal_dir = self.vehicle_frame_matrix.inv().apply(self.goal_dir)
-        # print("Goal dir: ", self.goal_dir)
-        # print("Target: ", self.target)
-        # print("Position: ", self.position)
 
         self.current_dir_msg = PoseStamped()
         self.current_dir_msg.pose.position.x = self.position[0]
@@ -347,9 +337,9 @@ class RlNavClass:
         self.current_dir_msg.pose.orientation.w = 1.0
         self.current_direction_body_pub.publish(self.current_dir_msg)
 
-        if self.use_mavros_state == False:
+        if not self.use_mavros_state:
             self.enable = True
-        if self.enable == False:
+        if not self.enable:
             # publish a zero action
             self.publish_action(np.array([-1.0, 0.0, 0.0]))
             return
@@ -367,7 +357,7 @@ class RlNavClass:
         self.nn_input_tensor[17 : 17 + LATENT_SPACE] = self.img_latent
         self.nn_input_tensor = self.nn_input_tensor.unsqueeze(0).to(self.device)
 
-    def image_callback(self, data):
+    def image_callback(self, data) -> None:
         image_cb_start = time.time()
         # # convert from ROS image to torch image
         if IS_SIM:
@@ -413,37 +403,6 @@ if __name__ == "__main__":
     parser.add_argument("--sim", default="True")
     parser.add_argument("--show_cv", default="False")
     args, unknown_args = parser.parse_known_args()
-
-    # if args.sim == "False":
-    #     IS_SIM = False
-    #     IMAGE_TOPIC = "/d455/depth/image_rect_raw"
-    #     ODOM_TOPIC = "/mavros/local_position/odom_in_map"
-    #     ACTION_PUB_TOPIC = "/mavros/setpoint_velocity/cmd_vel_unstamped"
-    #     MAVROS_STATE_TOPIC = "/mavros/state"
-    #     TARGET_TOPIC = "/target"
-    #     CALCULATE_RECONSTRUCTION = True
-    #     TARGET_FRAME_ID = "map"
-    #     BODY_FRAME_ID = "state"
-    #     MAVROS_STATE_TOPIC = "/mavros/state"
-    #     USE_MAVROS_STATE = True
-    #     BODY_FRAME_DIR_TOPIC = "/current_direction"
-    #     ODOM_FRAME_ID = "t265_pose_frame"
-    #     PUBLISH_FILTERED_IMAGE = True
-
-    # else:
-    # IS_SIM = True
-    # IMAGE_TOPIC = "/m100/depth_image"
-    # ODOM_TOPIC = "/m100/odom"
-    # ACTION_PUB_TOPIC = "/m100/cmd_vel"
-    # MAVROS_STATE_TOPIC = "/m100/mavros/state"
-    # CALCULATE_RECONSTRUCTION = True
-    # USE_MAVROS_STATE = False
-    # TARGET_FRAME_ID = "empty_world"
-    # BODY_FRAME_DIR_TOPIC = "/current_direction"
-
-    # BODY_FRAME_ID = "m100/base_link"
-    # ODOM_FRAME_ID = "m100/base_link"
-    # PUBLISH_FILTERED_IMAGE = False
 
     IS_SIM = True
     IMAGE_TOPIC = "/m100/front/depth_image"

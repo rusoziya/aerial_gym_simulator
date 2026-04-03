@@ -1,4 +1,4 @@
-import torch
+from __future__ import annotations
 
 
 class task_config:

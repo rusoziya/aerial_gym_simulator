@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from aerial_gym.config.sensor_config.base_sensor_config import BaseSensorConfig
-import numpy as np
 
 
 class BaseDepthCameraConfig(BaseSensorConfig):
@@ -13,11 +14,13 @@ class BaseDepthCameraConfig(BaseSensorConfig):
     # camera params VFOV is calcuated from the aspect ratio and HFOV
     # VFOV = 2 * atan(tan(HFOV/2) / aspect_ratio)
 
-    height = 135  # 270
-    width = 240  # 480
+    height = 135  # 270 -> 135
+    width = 240  # 480 -> 240
     horizontal_fov_deg = 87.000
-    max_range = 10.0
-    min_range = 0.2
+    # Align onboard drone camera range with static D455 normalization window
+    # so downstream processing can use a consistent [near, far] mapping.
+    max_range = 20.0
+    min_range = 0.4
 
     # Type of camera (depth, range, pointcloud, segmentation)
     # You can combine: (depth+segmentation), (range+segmentation), (pointcloud+segmentation)
@@ -38,18 +41,16 @@ class BaseDepthCameraConfig(BaseSensorConfig):
 
     # do not change this.
     normalize_range = (
-        False
-        if (return_pointcloud == True and pointcloud_in_world_frame == True)
-        else normalize_range
+        False if (return_pointcloud and pointcloud_in_world_frame) else normalize_range
     )  # divide by max_range. Ignored when pointcloud is in world frame
 
     # what to do with out of range values
     far_out_of_range_value = (
-        max_range if normalize_range == True else -1.0
-    )  # Will be [-1]U[0,1] if normalize_range is True, otherwise will be value set by user in place of -1.0
+        max_range if normalize_range else -1.0
+    )  # With normalization, becomes 1.0
     near_out_of_range_value = (
-        -max_range if normalize_range == True else -1.0
-    )  # Will be [-1]U[0,1] if normalize_range is True, otherwise will be value set by user in place of -1.0
+        0.0 if normalize_range else -1.0
+    )  # With normalization, becomes 0.0 (no negatives)
 
     # randomize placement of the sensor
     randomize_placement = True

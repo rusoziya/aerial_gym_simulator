@@ -1,20 +1,20 @@
+from __future__ import annotations
+
 from aerial_gym.utils.logging import CustomLogger
 
 logger = CustomLogger(__name__)
-from aerial_gym.sim.sim_builder import SimBuilder
-import torch
-from aerial_gym.utils.helpers import get_args
-
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
+
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.utils.helpers import get_args
 
 try:
     import scienceplots
 
-    # set theme to a scientific theme for matplotlib
     plt.style.use(["science", "vibrant"])
-except:
-    # set plt theme to seaborn colorblind
+except ImportError:
     plt.style.use("seaborn-v0_8-colorblind")
 
 import csv
@@ -22,14 +22,14 @@ import csv
 angle_list = []
 
 
-def read_csv(filename):
-    with open(filename, "r") as file:
+def read_csv(filename) -> None:
+    with open(filename) as file:
         reader = csv.reader(file)
         for t, theta in reader:
             try:
                 if float(t) > 0.06 and float(theta) < 15.0:
                     angle_list.append([float(t), float(theta)])
-            except:
+            except ValueError:
                 pass
 
 
@@ -40,7 +40,7 @@ time_stamp = np.array([x[0] for x in angle_list])
 angle_rad = np.array([x[1] * torch.pi / 180.0 for x in angle_list])
 
 
-def mass_spring_damper(y, t, k_p, k_v):
+def mass_spring_damper(y, t, k_p, k_v) -> None:
     theta, omega = y
     dydt = [omega, -k_v * omega - k_p * torch.sign(theta) * theta**2]
     return dydt
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         headless=args.headless,
         use_warp=args.use_warp,
     )
-    if env_manager.robot_manager.robot.cfg.robot_asset.fix_base_link == False:
+    if not env_manager.robot_manager.robot.cfg.robot_asset.fix_base_link:
         logger.error(
             "The base link is not fixed for this robot. The base link should be fixed in morphy_config.py for this example to work."
         )
@@ -116,7 +116,6 @@ if __name__ == "__main__":
                 x_inp = torch.tensor(x).to("cuda:0")
                 x_inp[0] -= 7.2 * torch.pi / 180.0
                 xdot = mass_spring_damper(x_inp, 0, *popt)
-                # print(xdot)
                 for j in range(2):
                     x[j] += xdot[j].cpu().numpy() * dt
 
@@ -132,8 +131,6 @@ if __name__ == "__main__":
             ax.plot(time_stamp, angle_rad, label="Ground Truth Response")
             ax.set(xlabel="Time (s)", ylabel=r"$\theta_j$ (rad)")
             ax.legend()
-            # save plot as a pdf
-            # plt.savefig('morphy_response.pdf')
             plt.show()
             exit(0)
         env_manager.step(actions=actions)

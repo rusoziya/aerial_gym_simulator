@@ -1,19 +1,18 @@
+from __future__ import annotations
+
 import numpy as np
 
 from aerial_gym import AERIAL_GYM_DIRECTORY
-
 from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
     BaseDepthCameraConfig,
 )
+from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 from aerial_gym.config.sensor_config.lidar_config.base_lidar_config import (
     BaseLidarConfig,
 )
-from aerial_gym.config.sensor_config.lidar_config.osdome_64_config import OSDome_64_Config
-from aerial_gym.config.sensor_config.imu_config.base_imu_config import BaseImuConfig
 
 
 class MorphyStiffCfg:
-
     class init_config:
         # init_state tensor is of the format [ratio_x, ratio_y, ratio_z, roll_radians, pitch_radians, yaw_radians, 1.0 (for maintaining shape), vx, vy, vz, wx, wy, wz]
         min_init_state = [
@@ -174,3 +173,4 @@ class MorphyStiffCfg:
             max_thrust_rate = 100000.0
             thrust_to_torque_ratio = 0.01
             use_discrete_approximation = True
+            integration_scheme = "rk4"

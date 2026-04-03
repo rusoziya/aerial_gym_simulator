@@ -1,19 +1,16 @@
-from aerial_gym.task.base_task import BaseTask
-from aerial_gym.sim.sim_builder import SimBuilder
+from __future__ import annotations
+
 import torch
-import numpy as np
 
-from aerial_gym.utils.math import *
-
+from aerial_gym.sim.sim_builder import SimBuilder
+from aerial_gym.task.base_task import BaseTask
 from aerial_gym.utils.logging import CustomLogger
-
-import gymnasium as gym
-from gym.spaces import Dict, Box
+from aerial_gym.utils.math import *
 
 logger = CustomLogger("custom_task")
 
 
-def dict_to_class(dict):
+def dict_to_class(dict) -> None:
     return type("ClassFromDict", (object,), dict)
 
 
@@ -55,21 +52,21 @@ class CustomTask(BaseTask):
             ),
         }
 
-    def close(self):
+    def close(self) -> None:
         self.sim_env.delete_env()
 
-    def reset(self):
+    def reset(self) -> None:
         # write your implementation here
         return None
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids) -> None:
         # write your implementation here
         return
 
-    def render(self):
+    def render(self) -> None:
         return self.sim_env.render()
 
-    def step(self, actions):
+    def step(self, actions) -> None:
         # this uses the action, gets observations
         # calculates rewards, returns tuples
         # In this case, the episodes that are terminated need to be

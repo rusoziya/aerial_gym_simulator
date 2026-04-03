@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .base_sim_config import BaseSimConfig
 
 

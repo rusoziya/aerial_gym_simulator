@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 
@@ -16,17 +18,27 @@ class control:
 
     num_actions = 4
     max_inclination_angle_rad = np.pi / 3.0
+    # max_yaw_rate = 1.5
     max_yaw_rate = np.pi / 3.0
+    K_pos_tensor_max = [
+        2.2,
+        2.2,
+        2.8,
+    ]  # INCREASED Z from 1.0 to 2.5, added 20% variation for domain randomization
+    K_pos_tensor_min = [1.8, 1.8, 2.2]  # Added 20% variation range for position gain randomization
 
-    K_pos_tensor_max = [2.0, 2.0, 1.0]  # used for lee_position_control only
-    K_pos_tensor_min = [2.0, 2.0, 1.0]  # used for lee_position_control only
-
+    # ENHANCED VELOCITY DAMPING for improved velocity controller stability
     K_vel_tensor_max = [
-        3.3,
-        3.3,
-        1.3,
+        4.5,  # INCREASED from 3.3 for stronger X-Y damping (velocity controller stability)
+        4.5,  # INCREASED from 3.3 for stronger X-Y damping (velocity controller stability)
+        5.0,  # INCREASED from 4.0 for stronger Z damping (altitude stability)
     ]  # used for lee_position_control, lee_velocity_control only
-    K_vel_tensor_min = [2.7, 2.7, 1.7]
+
+    K_vel_tensor_min = [
+        3.8,
+        3.8,
+        4.2,
+    ]  # INCREASED from [2.7, 2.7, 3.5] for consistent stronger damping
 
     K_rot_tensor_max = [
         1.85,

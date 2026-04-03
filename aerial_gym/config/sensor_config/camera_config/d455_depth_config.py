@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 from aerial_gym.config.sensor_config.camera_config.base_depth_camera_config import (
     BaseDepthCameraConfig,
 )
-import numpy as np
 
 
 class RsD455Config(BaseDepthCameraConfig):
@@ -12,13 +13,14 @@ class RsD455Config(BaseDepthCameraConfig):
     # If you use more than one sensors above, there is a need to specify the sensor placement for each sensor
     # this can be added here, but the user can implement this if needed.
 
-    height = 270
-    width = 480
+    height = 135
+    width = 240
     horizontal_fov_deg = 87.000
     # camera params VFOV is calcuated from the aspect ratio and HFOV
     # VFOV = 2 * atan(tan(HFOV/2) / aspect_ratio)
-    max_range = 15.0
-    min_range = 0.2
+    # Standardized depth range to match runtime normalization
+    max_range = 20.0
+    min_range = 0.4
 
     # Type of camera (depth, range, pointcloud, segmentation)
     # You can combine: (depth+segmentation), (range+segmentation), (pointcloud+segmentation)
@@ -39,17 +41,15 @@ class RsD455Config(BaseDepthCameraConfig):
 
     # do not change this.
     normalize_range = (
-        False
-        if (return_pointcloud == True and pointcloud_in_world_frame == True)
-        else normalize_range
+        False if (return_pointcloud and pointcloud_in_world_frame) else normalize_range
     )  # divide by max_range. Ignored when pointcloud is in world frame
 
     # what to do with out of range values
     far_out_of_range_value = (
-        max_range if normalize_range == True else -1.0
+        max_range if normalize_range else -1.0
     )  # Will be [-1]U[0,1] if normalize_range is True, otherwise will be value set by user in place of -1.0
     near_out_of_range_value = (
-        -max_range if normalize_range == True else -1.0
+        -max_range if normalize_range else -1.0
     )  # Will be [-1]U[0,1] if normalize_range is True, otherwise will be value set by user in place of -1.0
 
     # randomize placement of the sensor

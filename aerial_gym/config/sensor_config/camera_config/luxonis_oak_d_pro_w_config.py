@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from aerial_gym.config.sensor_config.camera_config.luxonis_oak_d_config import (
     LuxonisOakDConfig,
 )

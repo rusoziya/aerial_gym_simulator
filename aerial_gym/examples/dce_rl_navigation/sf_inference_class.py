@@ -1,26 +1,19 @@
-import time
-from collections import deque
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import numpy as np
 import torch
-from torch import Tensor
-
-from sample_factory.algo.utils.gymnasium_utils import convert_space
+from gymnasium import spaces
 from sample_factory.algo.learning.learner import Learner
 from sample_factory.algo.sampling.batched_sampling import preprocess_actions
 from sample_factory.algo.utils.action_distributions import argmax_actions
 from sample_factory.algo.utils.env_info import EnvInfo
-from sample_factory.algo.utils.misc import ExperimentStatus
+from sample_factory.algo.utils.gymnasium_utils import convert_space
 from sample_factory.algo.utils.rl_utils import prepare_and_normalize_obs
 from sample_factory.algo.utils.tensor_utils import unsqueeze_tensor
 from sample_factory.cfg.arguments import load_from_checkpoint
 from sample_factory.model.actor_critic import create_actor_critic
 from sample_factory.model.model_utils import get_rnn_size
-from sample_factory.utils.attr_dict import AttrDict
-from sample_factory.utils.typing import Config, StatusCode
-from gymnasium import spaces
-
+from sample_factory.utils.typing import Config
 from torch import nn
 
 
@@ -62,7 +55,7 @@ class NN_Inference_Class(nn.Module):
             device=self.device,
         )
 
-    def init_env_info(self):
+    def init_env_info(self) -> None:
         self.env_info = EnvInfo(
             obs_space=self.observation_space,
             action_space=self.action_space,
@@ -74,10 +67,10 @@ class NN_Inference_Class(nn.Module):
             frameskip=self.cfg.env_frameskip,
         )
 
-    def reset(self, env_ids):
+    def reset(self, env_ids) -> None:
         self.rnn_states[env_ids] = 0.0
 
-    def get_action(self, obs, get_np=False, get_robot_zero=False):
+    def get_action(self, obs, get_np=False, get_robot_zero=False) -> None:
         with torch.no_grad():
             # put obs to device
             processed_obs = prepare_and_normalize_obs(self.actor_critic, obs)

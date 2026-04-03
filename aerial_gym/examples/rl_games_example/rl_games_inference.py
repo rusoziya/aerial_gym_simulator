@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from collections import OrderedDict
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class MLP(nn.Module):
@@ -27,7 +29,7 @@ class MLP(nn.Module):
         )
         self.load_network(path)
 
-    def load_network(self, path):
+    def load_network(self, path) -> None:
         sd = torch.load(path)["model"]
 
         # clean the state dict and load it
@@ -42,7 +44,7 @@ class MLP(nn.Module):
                 od2[key2] = sd[str(key)]
         # strictly load the state dict
         self.network.load_state_dict(od2, strict=True)
-        print("Loaded MLP network from {}".format(path))
+        print(f"Loaded MLP network from {path}")
 
-    def forward(self, x):
+    def forward(self, x) -> None:
         return self.network(x)
