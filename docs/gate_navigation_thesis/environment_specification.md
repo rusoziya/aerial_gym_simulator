@@ -2,6 +2,9 @@
 
 > Detailed specification from Chapter 3 of: Z. Ruso, *"Reinforcement Learning for Cooperative Multi-View Depth-Based Perception in Autonomous UAV Navigation,"* MSc Thesis, UCL, 2025.
 
+![System overview of the simulation-RL stack](figures/fig3_1_system_overview_sim_rl_stack.png)
+*Figure 3.1: System overview — rendering, physics, robot, and environment managers exchange data via a Global Tensor Dictionary; the task layer composes observations, rewards, and terminations.*
+
 ## Simulator Stack
 
 The simulator is built on **NVIDIA Isaac Gym** and orchestrated through **Aerial Gym** to execute batched, vectorized environments on a single CUDA device. The entire control loop operates with GPU-native tensors for observations, actions, rewards, and terminations, minimizing host-device transfers.
@@ -67,11 +70,17 @@ This scalar summarizes traversal quality — lower values indicate more centered
 
 ## Parallelization
 
+![Vectorized simulation layout](figures/fig3_3a_vectorized_layout_topdown.png)
+*Figure 3.3: Vectorized simulation layout — tiled arena grid enabling 128 independent environments (top-down view).*
+
 Training uses **128 environments** tiled in a grid on a single GPU. Each environment occupies an identical 8x8x4 m cell separated by opaque chamber walls that serve three purposes:
 
 1. Prevent the static camera from "seeing" neighboring arenas (consistent depth histograms)
 2. Bound line-of-sight to prevent far-plane saturation and cross-scene clutter corruption
 3. Improve determinism and batched throughput by limiting ray casts and contacts to local geometry
+
+![Gate navigation environment and assets](figures/fig3_4a_gate_env_front.png) ![Gate environment oblique](figures/fig3_4b_gate_env_oblique.png)
+*Figure 3.4: Gate-navigation environment — front view (left) and oblique view (right).*
 
 ## Asset Catalogue
 

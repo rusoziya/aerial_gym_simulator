@@ -46,6 +46,8 @@ When a camera stream is ablated, its branch is short-circuited and contributes n
 
 ## Mode 1: FixedYaw (Randomized Fixed Yaw)
 
+![FixedYaw frame](figures/fig4_11_fixedyaw_frame1.png)
+
 **Origin:** Fixed behind gate at c_0 = (0, y_0, z_0), 2.0 m behind gate on centerline
 
 **Orientation:** At each episode reset, the azimuth about the gate centre is sampled uniformly from a curriculum-dependent range: +/-3 deg at L=3 increasing to +/-19 deg at L=23. The sampled yaw is held constant for the entire episode.
@@ -61,6 +63,8 @@ When a camera stream is ablated, its branch is short-circuited and contributes n
 ---
 
 ## Mode 2: YawSweep (Randomized Sweeping Yaw)
+
+![YawSweep frame](figures/fig4_12_yawsweep_frame1.png)
 
 **Origin:** Fixed at c_0 (no positional motion)
 
@@ -108,6 +112,8 @@ t_t^z = g_z
 
 ## Mode 3: LockedFollow (Target-Locked Yaw)
 
+![LockedFollow frame](figures/fig4_13_lockedfollow_frame1.png)
+
 **Origin:** Fixed at c_0 (no positional motion)
 
 **Orientation:** Optical axis continuously reorients toward the drone. Look-target t_t = r_t.
@@ -126,6 +132,8 @@ theta_t chosen so forward axis points along r_t - c_t
 ---
 
 ## Mode 4: DynFollow (Dynamic Drone Follow)
+
+![DynFollow frame](figures/fig4_14_dynfollow_frame1.png)
 
 **Origin:** Trails the drone with a fixed world-frame offset.
 
@@ -157,6 +165,8 @@ else:
 
 ## Mode 5: ArcFollow (Target Arc Follow)
 
+![ArcFollow frame](figures/fig4_15_arcfollow_frame1.png)
+
 **Origin:** Translates on a circular arc around the gate center.
 
 ```
@@ -187,6 +197,8 @@ t_t = (1 - w) * r_t + w * g,  w = 0.3
 ---
 
 ## Mode 6: DroneOnly (Drone-Only Ablation)
+
+![DroneOnly frame](figures/fig4_16_droneonly_frame1.png)
 
 **Implementation:** The static stream is removed by exact-slice ablation of obs[86:150] (exocentric camera latents) prior to normalization. This short-circuits fusion to the onboard branch:
 

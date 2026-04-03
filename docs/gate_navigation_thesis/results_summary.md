@@ -2,6 +2,15 @@
 
 > Key findings from Chapter 6 of: Z. Ruso, *"Reinforcement Learning for Cooperative Multi-View Depth-Based Perception in Autonomous UAV Navigation,"* MSc Thesis, UCL, 2025.
 
+![Training results](figures/fig6_results_training_chart_a.png)
+*Figure 6a: Training results — success rate progression across camera modes.*
+
+![Evaluation results](figures/fig6_results_eval_chart_a.png)
+*Figure 6b: Evaluation results — performance comparison across difficulty levels and camera modes.*
+
+![Results comparison](figures/fig6_results_comparison.png)
+*Figure 6c: Cross-mode comparison of key metrics.*
+
 ## Key Findings
 
 ### RQ1: Does a second viewpoint improve navigation?

@@ -61,7 +61,20 @@ Applied **post-normalization** to emulate real sensor artifacts:
 
 Noise is applied **per frame** (not carried across steps). Camera viewpoint jitter is applied **per episode** (at reset).
 
+### Sensor Views
+
+![Ego clean depth](figures/fig3_6a_ego_clean_depth.png) ![Exo clean depth](figures/fig3_6b_exo_clean_depth.png)
+
+![Ego noised depth](figures/fig3_6c_ego_noised_depth.png) ![Exo noised depth](figures/fig3_6d_exo_noised_depth.png)
+
+![Ego segmentation](figures/fig3_6e_ego_segmentation.png) ![Exo segmentation](figures/fig3_6f_exo_segmentation.png)
+
+*Figure 3.6: Egocentric (drone) and exocentric (static) camera views — clean depth (top), noised depth (middle), and segmentation (bottom).*
+
 ## Stage 2: Variational Autoencoder (VAE)
+
+![VAE architecture](figures/fig4_3_vae_architecture.png)
+*Figure 4.3: VAE encoder-decoder architecture.*
 
 ### Architecture: Collision-Aware VAE
 
@@ -137,6 +150,12 @@ aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_
 
 ## Stage 3: Gated Late Fusion
 
+![Dual fusion encoder architecture](figures/fig4_5_dual_fusion_encoder.png)
+*Figure 4.5: Dual depth image fusion architecture — gated late fusion with per-feature gating.*
+
+![Gated fusion detail](figures/fig4_6b_gated_fusion_detail.png) ![Concat fusion detail](figures/fig4_6c_concat_fusion_detail.png)
+*Figure 4.6: Fusion variants — gated late fusion (left) vs. early concatenation (right).*
+
 ### Architecture
 
 Two fusion strategies are supported; **gated late fusion** is the default and recommended approach.
@@ -206,6 +225,9 @@ Input: [proprio (22D), z_fused (64D)] = 86D
 ```
 
 This hourglass architecture (86→512→256→64) provides capacity and then compresses to match the GRU input dimension, avoiding extra projection layers.
+
+![GRU diagram](figures/fig4_7_gru_diagram.png)
+*Figure 4.7: GRU — reset gate r_t controls exposure of previous state; update gate z_t blends old and candidate states.*
 
 ### GRU (Gated Recurrent Unit)
 

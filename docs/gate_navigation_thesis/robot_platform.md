@@ -2,6 +2,9 @@
 
 > Detailed specification from Chapters 3.4 and Appendices B-D of: Z. Ruso, *"Reinforcement Learning for Cooperative Multi-View Depth-Based Perception in Autonomous UAV Navigation,"* MSc Thesis, UCL, 2025.
 
+![X500 quadrotor](figures/fig3_5a_x500_simulated.png) ![X500 physical](figures/fig3_5b_x500_physical.png)
+*Figure 3.5: X500 quadrotor — simulated gate-navigation view (left) and the physical X500 platform (right).*
+
 ## X500 Quadrotor Platform
 
 The simulated airframe is a four-rotor quadrotor in an X-configuration, sized to traverse a rectangular gate with width ~2.5 m and height ~2.3 m. The form factor matches widely used research platforms (the physical X500) and keeps the rotor disk outside aperture margins at typical approach attitudes.

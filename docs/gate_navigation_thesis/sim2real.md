@@ -6,6 +6,9 @@
 
 All training and evaluation in this project were conducted in simulation. Transferring the learned dual-view navigation policy to a real UAV is a critical next step. This document describes the planned sim-to-real pipeline, the hardware platform, the deployment architecture, and the existing sim2real code in the repository.
 
+![X500 hardware setup](figures/fig7_1a_x500_hardware_setup.jpeg) ![Jetson Orin NX](figures/fig7_1b_jetson_orin_nx.jpeg)
+*Figure 7.1: Sim-to-real setup — Holybro X500 V2 with Intel RealSense D455 (left) and NVIDIA Jetson Orin NX for onboard inference (right).*
+
 ## Target Hardware Platform
 
 | Component | Specification |

@@ -26,6 +26,15 @@ The curriculum begins at an intermediate difficulty (Level 13) and enforces a **
 
 Levels 23-33 are reserved for evaluation to assess zero-shot generalization beyond the training envelope. Level 33 is a held-out, previously unseen extrapolation test.
 
+![Curriculum scenes L3 to L33](figures/fig4_8_curriculum_scenes_L3_to_L33.png)
+*Figure 4.8: Representative scenes from the curriculum (Levels 3-33, left to right). Higher levels apply stronger domain randomization — more clutter, greater pose variation, and increased occlusions.*
+
+![3D gate navigation scene](figures/fig4_9_3d_gate_navigation_scene.png)
+*Figure 4.9: 3D overview — red frame: gate; black triangle: exocentric camera; colored panels: drone spawn zones across curriculum levels; purple cubes: cluttered obstacle region.*
+
+![Top-down spawn zones](figures/fig4_10a_topdown_spawn_zones.png) ![Side view spawn zones](figures/fig4_10b_side_view_spawn_zones.png)
+*Figure 4.10: Top-down (left) and side (right) views — spawn positions by curriculum level (blue L=3, orange L=13, green L=23); dotted arcs show camera yaw-sweep ranges.*
+
 ## Difficulty Axes
 
 The curriculum increases difficulty along **multiple independent axes** simultaneously. All interpolations between Level 3 and Level 23 are linear.

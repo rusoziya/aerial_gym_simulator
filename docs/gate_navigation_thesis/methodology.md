@@ -2,6 +2,12 @@
 
 > Detailed specification from Chapter 5 of: Z. Ruso, *"Reinforcement Learning for Cooperative Multi-View Depth-Based Perception in Autonomous UAV Navigation,"* MSc Thesis, UCL, 2025.
 
+![RL closed-loop stack](figures/fig4_1_rl_closed_loop_stack.png)
+*Figure 4.1: Closed-loop RL stack — the simulator outputs images and state; the DCE encoder produces latents that, with state, feed PPO to yield actions; a velocity controller maps actions to control inputs.*
+
+![Gradient attribution pipeline](figures/fig5_1_gradient_attribution_pipeline.png)
+*Figure 5.1: Saliency-based gradient attribution pipeline — capture input gradients at the encoder, mask and aggregate per feature, log slice shares (state, egocentric, exocentric).*
+
 ## Research Questions
 
 | ID | Question | Hypothesis |
