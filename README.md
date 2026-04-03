@@ -272,3 +272,20 @@ python -m pytest tests/ -v          # Run all behavior-capture tests (~10s)
 python -m pytest tests/ -k reward   # Run reward tests only
 python -m pytest tests/ -k config   # Run config tests only
 ```
+
+### Documentation
+
+See **[GATE_NAVIGATION.md](GATE_NAVIGATION.md)** for the full end-to-end guide. Detailed subsystem docs:
+
+| Document | Content |
+|----------|---------|
+| [Environment Specification](docs/gate_navigation_thesis/environment_specification.md) | Simulator stack, workspace geometry, coordinate frames, assets |
+| [Robot Platform & Control](docs/gate_navigation_thesis/robot_platform.md) | X500 specs, motor model, SE(3) controller |
+| [Visual Pipeline & Fusion](docs/gate_navigation_thesis/visual_pipeline.md) | VAE architecture, gated/concat fusion, MLP+GRU encoder |
+| [Reward Shaping](docs/gate_navigation_thesis/reward_shaping.md) | All reward components with equations and design rationale |
+| [Curriculum Learning](docs/gate_navigation_thesis/curriculum.md) | Full curriculum tables, domain randomization schedules |
+| [Camera Modes](docs/gate_navigation_thesis/camera_modes.md) | 6 exocentric camera modes with equations |
+| [Methodology](docs/gate_navigation_thesis/methodology.md) | Experimental design, PPO config, metrics |
+| [Results Summary](docs/gate_navigation_thesis/results_summary.md) | Key findings per research question |
+| [Sim-to-Real](docs/gate_navigation_thesis/sim2real.md) | Hardware platform, deployment architecture, ROS node |
+| [Future Work](docs/gate_navigation_thesis/future_work.md) | Planned extensions and research directions |
