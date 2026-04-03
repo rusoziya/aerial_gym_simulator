@@ -13,10 +13,10 @@ The only shipped model weights in the repo are:
 - `aerial_gym/utils/vae/weights/ICRA_test_set_more_sim_data_kld_beta_3_LD_64_epoch_49.pth`
 - `aerial_gym/examples/dce_rl_navigation/TRAINED/HIGH_CONFIG_16ENV_2/checkpoint_p0/HIGH_CONFIG_16ENV_2_best_000025464_13041664_reward_1463.917.pth`
 
-Recommended clone command (smaller transfer on flaky networks):
+Recommended clone command (fastest, ~200 MB transfer):
 
 ```bash
-git clone --filter=blob:none --depth=1 https://github.com/rusoziya/aerial_gym_simulator.git
+git clone --depth=1 https://github.com/rusoziya/aerial_gym_simulator.git
 ```
 
 If you need full history later:
