@@ -246,11 +246,9 @@ Please refer to our [website](https://ntnu-arl.github.io/aerial_gym_simulator/7_
 
 ## Gate Navigation Task
 
-![Cooperative multi-view gate navigation](docs/gate_navigation_thesis/figures/fig1_thesis_overview_banner.png)
+![Cooperative multi-view gate navigation](docs/gate_navigation_thesis/figures/fig1_1_system_concept.png)
 
 This fork extends the Aerial Gym Simulator with a **cooperative multi-view gate navigation** task: a quadrotor learns to fly through gates using dual depth cameras (onboard + static/peer) fused via a learned gating mechanism, trained end-to-end with PPO in simulation.
-
-![Gate navigation environment](docs/gate_navigation_thesis/figures/fig4_9_3d_gate_navigation_scene.png)
 
 ### Overview
 
