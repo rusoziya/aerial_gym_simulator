@@ -644,12 +644,12 @@ For deeper technical detail on individual subsystems, see these companion docume
 
 | Document | Content |
 |----------|---------|
-| [Environment Specification](docs/environment_specification.md) | Simulator stack, workspace geometry, coordinate frames, assets, parallelization, determinism |
-| [Robot Platform & Control](docs/robot_platform.md) | X500 quadrotor specs, motor model, SE(3) controller, wrench allocation, spawn states |
-| [Reward Shaping](docs/reward_shaping.md) | All reward components with equations, parameters, design rationale, scaling rules |
-| [Curriculum Learning](docs/curriculum.md) | Full curriculum tables, progression rules, domain randomization schedules, ablation toggles |
-| [Camera Modes](docs/camera_modes.md) | All 6 exocentric camera modes with equations, fusion regimes, configuration |
-| [Experimental Methodology](docs/methodology.md) | Research questions, experimental design, training/eval protocol, PPO config, metrics, reproducibility |
+| [Environment Specification](docs/gate_navigation_thesis/environment_specification.md) | Simulator stack, workspace geometry, coordinate frames, assets, parallelization, determinism |
+| [Robot Platform & Control](docs/gate_navigation_thesis/robot_platform.md) | X500 quadrotor specs, motor model, SE(3) controller, wrench allocation, spawn states |
+| [Reward Shaping](docs/gate_navigation_thesis/reward_shaping.md) | All reward components with equations, parameters, design rationale, scaling rules |
+| [Curriculum Learning](docs/gate_navigation_thesis/curriculum.md) | Full curriculum tables, progression rules, domain randomization schedules, ablation toggles |
+| [Camera Modes](docs/gate_navigation_thesis/camera_modes.md) | All 6 exocentric camera modes with equations, fusion regimes, configuration |
+| [Experimental Methodology](docs/gate_navigation_thesis/methodology.md) | Research questions, experimental design, training/eval protocol, PPO config, metrics, reproducibility |
 
 ---
 
